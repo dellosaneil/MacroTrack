@@ -10,11 +10,16 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.data.local.AppDatabase
 import org.thelazybattley.macrotrack.data.repository.FoodRepositoryImpl
+import org.thelazybattley.macrotrack.data.repository.RecipeRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.FoodRepository
+import org.thelazybattley.macrotrack.domain.repository.RecipeRepository
 import org.thelazybattley.macrotrack.domain.usecase.CalculateTDEEUseCase
-import org.thelazybattley.macrotrack.domain.usecase.GetAllFoodUseCase
-import org.thelazybattley.macrotrack.domain.usecase.GetFoodByNameUseCase
-import org.thelazybattley.macrotrack.domain.usecase.InsertFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.GetFoodByNameUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
 import org.thelazybattley.macrotrack.ui.TestViewModel
 
 expect val platformModule: Module
@@ -22,7 +27,12 @@ expect val platformModule: Module
 val sharedModule = module {
     single<AppDatabase> { getRoomDatabase(get()) }
     single { get<AppDatabase>().foodDao() }
+    single { get<AppDatabase>().recipeDao() }
+}
+
+val repositoryModule = module {
     singleOf(::FoodRepositoryImpl) { bind<FoodRepository>() }
+    singleOf(::RecipeRepositoryImpl) { bind<RecipeRepository>() }
 }
 
 val useCaseModule = module {
@@ -30,6 +40,9 @@ val useCaseModule = module {
     factoryOf(::InsertFoodUseCase)
     factoryOf(::GetAllFoodUseCase)
     factoryOf(::GetFoodByNameUseCase)
+    factoryOf(::GetAllRecipeUseCase)
+    factoryOf(::GetRecipeByNameUseCase)
+    factoryOf(::InsertRecipeUseCase)
 }
 
 val viewModelModule = module {
@@ -39,6 +52,6 @@ val viewModelModule = module {
 fun initKoin() {
     startKoin {
         printLogger()
-        modules(platformModule, sharedModule, viewModelModule, useCaseModule)
+        modules(platformModule, sharedModule, viewModelModule, useCaseModule, repositoryModule)
     }
 }
