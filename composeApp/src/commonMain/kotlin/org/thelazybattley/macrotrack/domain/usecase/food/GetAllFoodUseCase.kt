@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.domain.usecase
+package org.thelazybattley.macrotrack.domain.usecase.food
 
 import kotlinx.coroutines.flow.Flow
 import org.thelazybattley.macrotrack.domain.model.Food

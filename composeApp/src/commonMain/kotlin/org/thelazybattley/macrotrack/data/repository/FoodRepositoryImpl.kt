@@ -2,8 +2,8 @@ package org.thelazybattley.macrotrack.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.thelazybattley.macrotrack.data.local.dao.dao.FoodDao
-import org.thelazybattley.macrotrack.data.local.entity.food.toFood
+import org.thelazybattley.macrotrack.data.local.dao.FoodDao
+import org.thelazybattley.macrotrack.data.local.entity.toFood
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.toEntity
 import org.thelazybattley.macrotrack.domain.repository.FoodRepository

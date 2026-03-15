@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.domain.usecase
+package org.thelazybattley.macrotrack.domain.usecase.food
 
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.repository.FoodRepository

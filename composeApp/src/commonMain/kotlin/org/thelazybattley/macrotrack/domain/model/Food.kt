@@ -1,6 +1,6 @@
 package org.thelazybattley.macrotrack.domain.model
 
-import org.thelazybattley.macrotrack.data.local.entity.food.FoodEntity
+import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 
 data class Food(
     val macros: FoodMacros,
