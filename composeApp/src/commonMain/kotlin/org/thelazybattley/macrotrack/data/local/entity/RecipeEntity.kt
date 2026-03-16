@@ -9,15 +9,12 @@ import org.thelazybattley.macrotrack.domain.model.Recipe
 @Serializable
 data class RecipeEntity(
     @PrimaryKey val name: String,
-    val ingredients: List<FoodEntity>
+    val ingredients: List<IngredientEntity>
 )
 
 fun RecipeEntity.toRecipe() = Recipe(
     name = name,
-    ingredients = ingredients
-        .map { entity ->
-            entity.toFood()
-        }
+    ingredients = ingredients.map { it.toDomain() }
 )
 
 
