@@ -1,18 +1,21 @@
 package org.thelazybattley.macrotrack.ui
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import org.thelazybattley.macrotrack.ui.theme.LocalColors
-import org.thelazybattley.macrotrack.ui.theme.MyTheme
+import org.thelazybattley.macrotrack.ui.theme.AppTheme
 
 @Composable
-@Preview
+@Preview(showBackground = true)
 fun App() {
-    MyTheme {
-        Text(
-            text = "Testing",
-            color = LocalColors.current.black
-        )
+    AppTheme {
+        Scaffold {
+            Text(
+                text = "Testing",
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }

@@ -5,14 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import org.thelazybattley.macrotrack.ui.App
-import org.thelazybattley.macrotrack.ui.theme.MyTheme
+import org.thelazybattley.macrotrack.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            MyTheme {
+            AppTheme {
                 App()
             }
         }
