@@ -20,9 +20,11 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.build_muscle_chart
 import macrotrack.composeapp.generated.resources.calorie_deficit
@@ -41,10 +43,30 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
+import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
+import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
-fun OnboardingGoalSettingScreen(modifier: Modifier = Modifier) {
+fun OnboardingGoalSettingScreen() {
+    val viewModel: OnboardingViewModel = koinViewModel<OnboardingViewModel>()
+    val viewState by viewModel.state.collectAsStateWithLifecycle()
+    OnboardingGoalSettingScreen(
+        modifier = Modifier,
+        viewState = viewState,
+        callbacks = viewModel,
+    )
+}
+
+@Composable
+fun OnboardingGoalSettingScreen(
+    modifier: Modifier = Modifier,
+    viewState: OnboardingViewState,
+    callbacks: OnboardingCallbacks
+) {
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
     Scaffold(
@@ -81,33 +103,33 @@ fun OnboardingGoalSettingScreen(modifier: Modifier = Modifier) {
                     GoalChoices(
                         modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
                         titleRes = Res.string.lose_weight,
-                        isSelected = false,
+                        isSelected = viewState.selectedGoal == Goal.LOSE_WEIGHT,
                         descriptionRes = Res.string.calorie_deficit,
                         icon = Res.drawable.lose_weight_chart
                     ) {
-
+                        callbacks.onGoalSelected(goal = Goal.LOSE_WEIGHT)
                     }
                 }
                 item {
                     GoalChoices(
                         modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
                         titleRes = Res.string.maintain_weight,
-                        isSelected = false,
+                        isSelected = viewState.selectedGoal == Goal.MAINTAIN_WEIGHT,
                         descriptionRes = Res.string.stay_balanced,
                         icon = Res.drawable.maintain_balance
                     ) {
-
+                        callbacks.onGoalSelected(goal = Goal.MAINTAIN_WEIGHT)
                     }
                 }
                 item {
                     GoalChoices(
                         modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
-                        titleRes = Res.string.calorie_surplus,
-                        isSelected = false,
-                        descriptionRes = Res.string.gain_weight,
+                        titleRes = Res.string.gain_weight,
+                        isSelected = viewState.selectedGoal == Goal.GAIN_WEIGHT,
+                        descriptionRes = Res.string.calorie_surplus,
                         icon = Res.drawable.build_muscle_chart
                     ) {
-
+                        callbacks.onGoalSelected(goal = Goal.GAIN_WEIGHT)
                     }
                 }
             }
@@ -118,7 +140,8 @@ fun OnboardingGoalSettingScreen(modifier: Modifier = Modifier) {
                 shape = RoundedCornerShape(size = 14.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colors.blue
-                )
+                ),
+                enabled = viewState.selectedGoal != null
             ) {
                 Text(
                     text = stringResource(resource = Res.string.continue_text),

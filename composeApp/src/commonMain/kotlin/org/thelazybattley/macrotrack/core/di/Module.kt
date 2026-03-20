@@ -6,6 +6,7 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.data.local.AppDatabase
 import org.thelazybattley.macrotrack.data.repository.FoodRepositoryImpl
@@ -19,6 +20,7 @@ import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
+import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 
 expect val platformModule: Module
 
@@ -44,7 +46,7 @@ val useCaseModule = module {
 }
 
 val viewModelModule = module {
-//    viewModelOf(::TestViewModel)
+    viewModelOf(::OnboardingViewModel)
 }
 
 fun initKoin() {
