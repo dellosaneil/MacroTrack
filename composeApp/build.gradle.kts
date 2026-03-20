@@ -59,6 +59,9 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        val commonMain by getting {
+            resources.srcDirs("src/commonMain/resources")
+        }
     }
 }
 
