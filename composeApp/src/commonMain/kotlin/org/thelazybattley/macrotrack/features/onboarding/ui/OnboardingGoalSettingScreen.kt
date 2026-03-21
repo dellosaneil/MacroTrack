@@ -142,7 +142,9 @@ fun OnboardingGoalAndStatsScreen(
                         style = typography.regular11
                     )
                     OnboardingStatsTextField(
-                        suffixText = Res.string.yrs
+                        suffixText = Res.string.yrs,
+                        maxLength = 3,
+                        keyboardType = KeyboardType.Number
                     )
                 }
             }
@@ -167,7 +169,9 @@ fun OnboardingGoalAndStatsScreen(
                         style = typography.regular11
                     )
                     OnboardingStatsTextField(
-                        suffixText = Res.string.cm
+                        suffixText = Res.string.cm,
+                        maxLength = 6,
+                        keyboardType = KeyboardType.Decimal
                     )
                 }
             }
@@ -179,7 +183,9 @@ fun OnboardingGoalAndStatsScreen(
                         style = typography.regular11
                     )
                     OnboardingStatsTextField(
-                        suffixText = Res.string.kg
+                        suffixText = Res.string.kg,
+                        maxLength = 6,
+                        keyboardType = KeyboardType.Decimal
                     )
                 }
             }
@@ -274,6 +280,8 @@ private fun OnboardingSelectSex(
 private fun OnboardingStatsTextField(
     modifier: Modifier = Modifier,
     suffixText: StringResource,
+    maxLength: Int,
+    keyboardType: KeyboardType
 ) {
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
@@ -282,17 +290,25 @@ private fun OnboardingStatsTextField(
         value = value,
         onValueChange = { newText ->
             val filtered = buildString {
-                var hasDecimal = false
-                newText.forEach { char ->
-                    if (char.isDigit()) {
-                        append(char)
-                    } else if (char == '.' && !hasDecimal) {
-                        append(char)
-                        hasDecimal = true
+                if(keyboardType == KeyboardType.Decimal) {
+                    var hasDecimal = false
+                    newText.forEach { char ->
+                        if (char.isDigit()) {
+                            append(char)
+                        } else if (char == '.' && !hasDecimal) {
+                            append(char)
+                            hasDecimal = true
+                        }
+                    }
+                } else {
+                    newText.forEach { char ->
+                        if (char.isDigit()) {
+                            append(char)
+                        }
                     }
                 }
             }
-            value = filtered.take(n = 6)
+            value = filtered.take(n = maxLength)
         },
         modifier = modifier.height(height = 48.dp)
             .border(
@@ -327,7 +343,7 @@ private fun OnboardingStatsTextField(
             )
         },
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Decimal,
+            keyboardType = keyboardType,
             imeAction = ImeAction.Next
         ),
         singleLine = true
