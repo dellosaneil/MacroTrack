@@ -127,7 +127,7 @@ fun OnboardingScreen(
                     width = 1.dp,
                     color = colors.lightGray
                 ),
-                enabled = viewState.selectedGoal != null
+                enabled = isButtonEnabled(viewState = viewState)
             ) {
                 Text(
                     text = stringResource(resource = Res.string.continue_text),
@@ -136,6 +136,20 @@ fun OnboardingScreen(
             }
             Spacer(modifier = Modifier.height(height = 16.dp))
         }
+    }
+}
+
+private fun isButtonEnabled(viewState: OnboardingViewState): Boolean {
+    return when (viewState.currentStep) {
+        OnboardingStep.GOAL_AND_STATS -> {
+            viewState.age > 0 &&
+            viewState.height > 0 &&
+            viewState.weight > 0 &&
+            viewState.selectedGoal != null &&
+            viewState.selectedGender != null
+        }
+
+        OnboardingStep.ACTIVITY_AND_TARGETS -> false
     }
 }
 

@@ -145,7 +145,9 @@ fun OnboardingGoalAndStatsScreen(
                         suffixText = Res.string.yrs,
                         maxLength = 3,
                         keyboardType = KeyboardType.Number
-                    )
+                    ) { age ->
+                        callbacks.onAgeUpdated(age = age.toIntOrNull() ?: 0)
+                    }
                 }
             }
             item {
@@ -172,7 +174,9 @@ fun OnboardingGoalAndStatsScreen(
                         suffixText = Res.string.cm,
                         maxLength = 6,
                         keyboardType = KeyboardType.Decimal
-                    )
+                    ) { height ->
+                        callbacks.onHeightUpdated(height = height.toDoubleOrNull() ?: 0.0)
+                    }
                 }
             }
             item {
@@ -186,7 +190,9 @@ fun OnboardingGoalAndStatsScreen(
                         suffixText = Res.string.kg,
                         maxLength = 6,
                         keyboardType = KeyboardType.Decimal
-                    )
+                    ) { weight ->
+                        callbacks.onWeightUpdated(weight = weight.toDoubleOrNull() ?: 0.0)
+                    }
                 }
             }
         }
@@ -281,7 +287,8 @@ private fun OnboardingStatsTextField(
     modifier: Modifier = Modifier,
     suffixText: StringResource,
     maxLength: Int,
-    keyboardType: KeyboardType
+    keyboardType: KeyboardType,
+    onValueChange: (String) -> Unit
 ) {
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
@@ -290,7 +297,7 @@ private fun OnboardingStatsTextField(
         value = value,
         onValueChange = { newText ->
             val filtered = buildString {
-                if(keyboardType == KeyboardType.Decimal) {
+                if (keyboardType == KeyboardType.Decimal) {
                     var hasDecimal = false
                     newText.forEach { char ->
                         if (char.isDigit()) {
@@ -309,6 +316,7 @@ private fun OnboardingStatsTextField(
                 }
             }
             value = filtered.take(n = maxLength)
+            onValueChange(value)
         },
         modifier = modifier.height(height = 48.dp)
             .border(

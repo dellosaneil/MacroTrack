@@ -10,4 +10,7 @@ data class OnboardingViewState(
     val selectedActivityLevel: ActivityLevel? = null,
     val selectedGender: UserGender? = null,
     val currentStep: OnboardingStep = OnboardingStep.GOAL_AND_STATS,
+    val age: Int = 0,
+    val height: Double = 0.0,
+    val weight: Double = 0.0
 )

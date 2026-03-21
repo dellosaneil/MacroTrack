@@ -43,4 +43,28 @@ class OnboardingViewModel : ViewModel(), OnboardingCallbacks {
         }
     }
 
+    override fun onAgeUpdated(age: Int) {
+        _state.update { currentState ->
+            currentState.copy(
+                age = age
+            )
+        }
+    }
+
+    override fun onHeightUpdated(height: Double) {
+        _state.update { currentState ->
+            currentState.copy(
+                height = height
+            )
+        }
+    }
+
+    override fun onWeightUpdated(weight: Double) {
+        _state.update { currentState ->
+            currentState.copy(
+                weight = weight
+            )
+        }
+    }
+
 }

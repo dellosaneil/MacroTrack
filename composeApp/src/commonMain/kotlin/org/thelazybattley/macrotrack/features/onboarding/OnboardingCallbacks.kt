@@ -14,6 +14,13 @@ interface OnboardingCallbacks {
 
     fun onContinueClicked()
 
+    fun onAgeUpdated(age: Int)
+
+    fun onHeightUpdated(height: Double)
+
+    fun onWeightUpdated(weight: Double)
+
+
     companion object {
         fun default() = run {
             object : OnboardingCallbacks {
@@ -30,6 +37,18 @@ interface OnboardingCallbacks {
                 }
 
                 override fun onContinueClicked() {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onAgeUpdated(age: Int) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onHeightUpdated(height: Double) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onWeightUpdated(weight: Double) {
                     TODO("Not yet implemented")
                 }
 
