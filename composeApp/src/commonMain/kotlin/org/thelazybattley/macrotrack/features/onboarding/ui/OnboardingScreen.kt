@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -21,12 +23,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.activity_and_targets
+import macrotrack.composeapp.generated.resources.choose_your_goal
 import macrotrack.composeapp.generated.resources.continue_text
+import macrotrack.composeapp.generated.resources.set_up_your_profile
 import macrotrack.composeapp.generated.resources.step_count
-import macrotrack.composeapp.generated.resources.tell_us_about_yourself
-import macrotrack.composeapp.generated.resources.used_to_estimate_your_daily_energy_needs_accurately
-import macrotrack.composeapp.generated.resources.we_will_calculate_daily_calorie_and_macro_targets
-import macrotrack.composeapp.generated.resources.whats_your_main_goal
+import macrotrack.composeapp.generated.resources.tell_us_how_active_you_are
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -52,6 +54,7 @@ fun OnboardingScreen(
     viewState: OnboardingViewState,
     callbacks: OnboardingCallbacks
 ) {
+    val pagerState = rememberPagerState { OnboardingStep.entries.size }
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
     Scaffold(
@@ -61,13 +64,13 @@ fun OnboardingScreen(
         Column(
             modifier = Modifier.fillMaxSize()
                 .padding(paddingValues = innerPadding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 8.dp),
             verticalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
             Text(
                 text = stringResource(
                     Res.string.step_count,
-                    viewState.currentStep.stepNumber,
+                    viewState.currentStep.ordinal.inc(),
                     OnboardingStep.entries.size
                 ),
                 color = colors.blue,
@@ -84,12 +87,28 @@ fun OnboardingScreen(
                 style = typography.regular13
             )
 
-            OnboardingGoalSettingScreen(
-                modifier = Modifier,
-                viewState = viewState,
-                callbacks = callbacks
-            )
+            HorizontalPager(
+                state = pagerState,
+                userScrollEnabled = false
+            ) { page ->
+                when (page) {
+                    OnboardingStep.GOAL_AND_STATS.ordinal -> {
+                        OnboardingGoalAndStatsScreen(
+                            modifier = Modifier,
+                            viewState = viewState,
+                            callbacks = callbacks
+                        )
+                    }
 
+                    OnboardingStep.ACTIVITY_AND_TARGETS.ordinal -> {
+                        OnboardingActivityAndTargets(
+                            modifier = Modifier,
+                            viewState = viewState,
+                            callbacks = callbacks
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.weight(weight = 1f))
             Button(
@@ -133,17 +152,14 @@ private fun PreviewOnboardingScreen() {
 
 enum class OnboardingStep(
     val titleRes: StringResource,
-    val descriptionRes: StringResource,
-    val stepNumber: Int
+    val descriptionRes: StringResource
 ) {
-    GOAL(
-        titleRes = Res.string.whats_your_main_goal,
-        descriptionRes = Res.string.we_will_calculate_daily_calorie_and_macro_targets,
-        stepNumber = 1
+    GOAL_AND_STATS(
+        titleRes = Res.string.set_up_your_profile,
+        descriptionRes = Res.string.choose_your_goal
     ),
-    BODY_STATS(
-        titleRes = Res.string.tell_us_about_yourself,
-        descriptionRes = Res.string.used_to_estimate_your_daily_energy_needs_accurately,
-        stepNumber = 2
+    ACTIVITY_AND_TARGETS(
+        titleRes = Res.string.activity_and_targets,
+        descriptionRes = Res.string.tell_us_how_active_you_are
     )
 }

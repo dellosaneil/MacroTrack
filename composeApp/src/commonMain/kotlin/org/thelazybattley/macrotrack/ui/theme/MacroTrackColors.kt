@@ -13,5 +13,8 @@ data class MacroTrackColors(
     val whiteSmoke: Color,
     val lightGray: Color,
     val skyBlue: Color,
-    val babyBlue: Color
+    val babyBlue: Color,
+    val charcoalGray: Color,
+    val mediumGray: Color,
+    val offWhite: Color,
 )

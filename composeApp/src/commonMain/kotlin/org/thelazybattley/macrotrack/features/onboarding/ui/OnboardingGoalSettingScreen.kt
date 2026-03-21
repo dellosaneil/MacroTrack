@@ -2,31 +2,53 @@ package org.thelazybattley.macrotrack.features.onboarding.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.age
 import macrotrack.composeapp.generated.resources.build_muscle_chart
 import macrotrack.composeapp.generated.resources.calorie_deficit
 import macrotrack.composeapp.generated.resources.calorie_surplus
+import macrotrack.composeapp.generated.resources.cm
+import macrotrack.composeapp.generated.resources.current_weight
 import macrotrack.composeapp.generated.resources.gain_weight
+import macrotrack.composeapp.generated.resources.height
+import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.lose_weight
 import macrotrack.composeapp.generated.resources.lose_weight_chart
 import macrotrack.composeapp.generated.resources.maintain_balance
 import macrotrack.composeapp.generated.resources.maintain_weight
+import macrotrack.composeapp.generated.resources.sex
 import macrotrack.composeapp.generated.resources.stay_balanced
+import macrotrack.composeapp.generated.resources.your_main_goal
+import macrotrack.composeapp.generated.resources.your_stats
+import macrotrack.composeapp.generated.resources.yrs
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -37,48 +59,164 @@ import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
-fun OnboardingGoalSettingScreen(
+fun OnboardingGoalAndStatsScreen(
     modifier: Modifier = Modifier,
     viewState: OnboardingViewState,
     callbacks: OnboardingCallbacks
 ) {
-    LazyVerticalGrid(
-        modifier = modifier,
-        columns = GridCells.Adaptive(minSize = 148.dp)
+    val colors = MacroTrackTheme.colors
+    val typography = MacroTrackTheme.typography
+    Column(
+        verticalArrangement = Arrangement.spacedBy(space = 4.dp)
     ) {
-        item {
-            GoalChoices(
-                modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
-                titleRes = Res.string.lose_weight,
-                isSelected = viewState.selectedGoal == Goal.LOSE_WEIGHT,
-                descriptionRes = Res.string.calorie_deficit,
-                icon = Res.drawable.lose_weight_chart
-            ) {
-                callbacks.onGoalSelected(goal = Goal.LOSE_WEIGHT)
+        Text(
+            text = stringResource(resource = Res.string.your_main_goal),
+            color = colors.charcoalGray,
+            style = typography.bold12
+        )
+        LazyVerticalGrid(
+            modifier = modifier,
+            columns = GridCells.Adaptive(minSize = 148.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+        ) {
+            item {
+                GoalChoices(
+                    titleRes = Res.string.lose_weight,
+                    isSelected = viewState.selectedGoal == Goal.LOSE_WEIGHT,
+                    descriptionRes = Res.string.calorie_deficit,
+                    icon = Res.drawable.lose_weight_chart
+                ) {
+                    callbacks.onGoalSelected(goal = Goal.LOSE_WEIGHT)
+                }
+            }
+            item {
+                GoalChoices(
+                    titleRes = Res.string.maintain_weight,
+                    isSelected = viewState.selectedGoal == Goal.MAINTAIN_WEIGHT,
+                    descriptionRes = Res.string.stay_balanced,
+                    icon = Res.drawable.maintain_balance
+                ) {
+                    callbacks.onGoalSelected(goal = Goal.MAINTAIN_WEIGHT)
+                }
+            }
+            item {
+                GoalChoices(
+                    titleRes = Res.string.gain_weight,
+                    isSelected = viewState.selectedGoal == Goal.GAIN_WEIGHT,
+                    descriptionRes = Res.string.calorie_surplus,
+                    icon = Res.drawable.build_muscle_chart
+                ) {
+                    callbacks.onGoalSelected(goal = Goal.GAIN_WEIGHT)
+                }
             }
         }
-        item {
-            GoalChoices(
-                modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
-                titleRes = Res.string.maintain_weight,
-                isSelected = viewState.selectedGoal == Goal.MAINTAIN_WEIGHT,
-                descriptionRes = Res.string.stay_balanced,
-                icon = Res.drawable.maintain_balance
-            ) {
-                callbacks.onGoalSelected(goal = Goal.MAINTAIN_WEIGHT)
+        Spacer(modifier = Modifier)
+        Text(
+            text = stringResource(Res.string.your_stats),
+            color = colors.charcoalGray,
+            style = typography.bold12
+        )
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 148.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+        ) {
+            item {
+                OnboardingStatsTextField(
+                    labelText = Res.string.age,
+                    suffixText = Res.string.yrs
+                )
+            }
+            item {
+                OnboardingStatsTextField(
+                    labelText = Res.string.sex,
+                    suffixText = Res.string.yrs
+                )
+            }
+            item {
+                OnboardingStatsTextField(
+                    labelText = Res.string.height,
+                    suffixText = Res.string.cm
+                )
+            }
+            item {
+                OnboardingStatsTextField(
+                    labelText = Res.string.current_weight,
+                    suffixText = Res.string.kg
+                )
             }
         }
-        item {
-            GoalChoices(
-                modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
-                titleRes = Res.string.gain_weight,
-                isSelected = viewState.selectedGoal == Goal.GAIN_WEIGHT,
-                descriptionRes = Res.string.calorie_surplus,
-                icon = Res.drawable.build_muscle_chart
-            ) {
-                callbacks.onGoalSelected(goal = Goal.GAIN_WEIGHT)
-            }
-        }
+    }
+}
+
+@Composable
+private fun OnboardingStatsTextField(
+    modifier: Modifier = Modifier,
+    labelText: StringResource,
+    suffixText: StringResource,
+) {
+    val colors = MacroTrackTheme.colors
+    val typography = MacroTrackTheme.typography
+    var value by remember { mutableStateOf(value = "") }
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        Text(
+            text = stringResource(resource = labelText),
+            color = colors.gray,
+            style = typography.regular11
+        )
+        TextField(
+            value = value,
+            onValueChange = { newText ->
+                val filtered = buildString {
+                    var hasDecimal = false
+                    newText.forEach { char ->
+                        if (char.isDigit()) {
+                            append(char)
+                        } else if (char == '.' && !hasDecimal) {
+                            append(char)
+                            hasDecimal = true
+                        }
+                    }
+                }
+                value = filtered.take(n = 6)
+            },
+            modifier = modifier.height(height = 48.dp),
+            shape = RoundedCornerShape(size = 12.dp),
+            textStyle = typography.bold15.copy(
+                color = colors.black
+            ),
+            suffix = {
+                Text(
+                    text = stringResource(resource = suffixText),
+                    color = colors.mediumGray,
+                    style = typography.regular11
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = colors.offWhite,
+                unfocusedContainerColor = colors.offWhite,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent
+            ),
+            placeholder = {
+                Text(
+                    text = "-",
+                    color = colors.mediumGray,
+                    style = typography.bold15,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Decimal,
+                imeAction = ImeAction.Next
+            ),
+            singleLine = true
+        )
     }
 }
 
@@ -126,18 +264,16 @@ private fun GoalChoices(
                 color = colors.gray,
                 style = typography.regular10
             )
-
         }
-
     }
-
 }
 
-@Preview
+@Preview(showBackground = true, backgroundColor = 0xffffffff)
 @Composable
-private fun PreviewOnboardingGoalSettingScreen() {
+private fun PreviewOnboardingGoalAndStatsScreen() {
     MacroTrackTheme {
-        OnboardingGoalSettingScreen(
+        OnboardingGoalAndStatsScreen(
+            modifier = Modifier.padding(8.dp),
             viewState = OnboardingViewState(),
             callbacks = OnboardingCallbacks.default()
         )

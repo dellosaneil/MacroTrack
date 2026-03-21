@@ -1,17 +1,26 @@
 <resources>
     <string name="step_count">STEP %1$d OF %2$d</string>
-    <string name="whats_your_main_goal">What's your main goal?</string>
-    <string name="we_will_calculate_daily_calorie_and_macro_targets">We'll calculate your daily calorie and macro targets.</string>
+    <string name="set_up_your_profile">Set up your profile</string>
+    <string name="choose_your_goal">Choose your goal and tell us about yourself</string>
     <string name="lose_weight">Lose weight</string>
     <string name="maintain_weight">Maintain weight</string>
     <string name="gain_weight">Gain weight</string>
     <string name="stay_balanced">Stay balanced</string>
     <string name="calorie_surplus">Calorie surplus</string>
-    <string name="tell_us_about_yourself">Tell us about yourself</string>
-    <string name="used_to_estimate_your_daily_energy_needs_accurately">Used to estimate your daily energy needs accurately.</string>
+    <string name="activity_and_targets">Activity and Targets</string>
+    <string name="tell_us_how_active_you_are">Tell us how active you are to set your calorie target.</string>
 
     <string name="calorie_deficit">Calorie deficit</string>
     <string name="continue_text">Continue</string>
-
-
+    <string name="your_stats">YOUR STATS</string>
+    <string name="your_main_goal">YOUR MAIN GOAL</string>
+    <string name="age">Age</string>
+    <string name="yrs">yrs</string>
+    <string name="sex">Sex</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="height">Height</string>
+    <string name="cm">cm</string>
+    <string name="current_weight">Current Weight</string>
+    <string name="kg">kg</string>
 </resources>

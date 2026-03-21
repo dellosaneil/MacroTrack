@@ -12,6 +12,9 @@ val WhiteSmoke = Color(0xFFF5F5F5)
 val LightGray = Color(0xFFEBEBEB)
 val SkyBlue = Color(0xFFBBDEFB)
 val BabyBlue = Color(0xFF90CAF9)
+val CharcoalGray = Color(0xFF49454F)
+val MediumGray = Color(0xFFAAAAAA)
+val OffWhite = Color(0xFFF2F5FA)
 
 
 val DarkWhite = Color(0xFF1C1B1F)
@@ -25,3 +28,7 @@ val DarkWhiteSmoke = Color(0xFF2B2930)
 val DarkLightGray = Color(0xFF49454F)
 val DarkSkyBlue = Color(0xFF2B2930)
 val DarkBabyBlue = Color(0xFF4A4458)
+val DarkCharcoalGray = Color(0xFFCAC4D0)
+val DarkMediumGray = Color(0xFF938F99)
+val DarkOffWhite = Color(0xFF2B2930)
+

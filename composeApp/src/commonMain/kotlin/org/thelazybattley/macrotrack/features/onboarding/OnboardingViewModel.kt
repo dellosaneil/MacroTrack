@@ -31,9 +31,9 @@ class OnboardingViewModel : ViewModel(), OnboardingCallbacks {
 
     override fun onContinueClicked() {
         _state.update { currentState ->
-            val nextStepNumber = currentState.currentStep.stepNumber.inc()
+            val nextStepNumber = currentState.currentStep.ordinal
             currentState.copy(
-                currentStep = OnboardingStep.entries.first { it.stepNumber == nextStepNumber }
+                currentStep = OnboardingStep.entries.firstOrNull { it.ordinal == nextStepNumber } ?: OnboardingStep.GOAL_AND_STATS
             )
         }
     }

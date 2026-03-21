@@ -31,7 +31,10 @@ val lightMacroTrackColors = MacroTrackColors(
     whiteSmoke = WhiteSmoke,
     lightGray = LightGray,
     skyBlue = SkyBlue,
-    babyBlue = BabyBlue
+    babyBlue = BabyBlue,
+    charcoalGray = CharcoalGray,
+    mediumGray = MediumGray,
+    offWhite = OffWhite
 )
 
 val darkMacroTrackColors = MacroTrackColors(
@@ -45,7 +48,10 @@ val darkMacroTrackColors = MacroTrackColors(
     whiteSmoke = DarkWhiteSmoke,
     lightGray = DarkLightGray,
     skyBlue = DarkSkyBlue,
-    babyBlue = DarkBabyBlue
+    babyBlue = DarkBabyBlue,
+    charcoalGray = DarkCharcoalGray,
+    mediumGray = DarkMediumGray,
+    offWhite = DarkOffWhite
 )
 
 
