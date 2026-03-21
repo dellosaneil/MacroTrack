@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.onboarding.ui
 
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -96,13 +97,19 @@ fun OnboardingScreen(
                 },
                 shape = RoundedCornerShape(size = 14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.blue
+                    containerColor = colors.blue,
+                    disabledContainerColor = colors.skyBlue,
+                    contentColor = colors.white,
+                    disabledContentColor = colors.babyBlue,
+                ),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = colors.lightGray
                 ),
                 enabled = viewState.selectedGoal != null
             ) {
                 Text(
                     text = stringResource(resource = Res.string.continue_text),
-                    color = colors.white,
                     style = typography.bold15
                 )
             }
