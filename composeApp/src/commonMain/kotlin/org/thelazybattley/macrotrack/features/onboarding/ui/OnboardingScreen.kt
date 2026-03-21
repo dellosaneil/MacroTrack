@@ -66,7 +66,9 @@ fun OnboardingScreen(
         ) {
             Text(
                 text = stringResource(
-                    Res.string.step_count
+                    Res.string.step_count,
+                    viewState.currentStep.stepNumber,
+                    OnboardingStep.entries.size
                 ),
                 color = colors.blue,
                 style = typography.bold11
