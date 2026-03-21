@@ -2,7 +2,10 @@ package org.thelazybattley.macrotrack.features.onboarding.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +17,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -23,8 +30,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +47,7 @@ import macrotrack.composeapp.generated.resources.calorie_deficit
 import macrotrack.composeapp.generated.resources.calorie_surplus
 import macrotrack.composeapp.generated.resources.cm
 import macrotrack.composeapp.generated.resources.current_weight
+import macrotrack.composeapp.generated.resources.drop_down
 import macrotrack.composeapp.generated.resources.gain_weight
 import macrotrack.composeapp.generated.resources.height
 import macrotrack.composeapp.generated.resources.kg
@@ -54,6 +65,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.UserGender
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -123,27 +135,135 @@ fun OnboardingGoalAndStatsScreen(
             horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
             item {
-                OnboardingStatsTextField(
-                    labelText = Res.string.age,
-                    suffixText = Res.string.yrs
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                    Text(
+                        text = stringResource(resource = Res.string.age),
+                        color = colors.gray,
+                        style = typography.regular11
+                    )
+                    OnboardingStatsTextField(
+                        suffixText = Res.string.yrs
+                    )
+                }
             }
             item {
-                OnboardingStatsTextField(
-                    labelText = Res.string.sex,
-                    suffixText = Res.string.yrs
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                    Text(
+                        text = stringResource(resource = Res.string.sex),
+                        color = colors.gray,
+                        style = typography.regular11
+                    )
+                    OnboardingSelectSex(
+                        callbacks = callbacks,
+                        selectedGender = viewState.selectedGender
+                    )
+                }
             }
             item {
-                OnboardingStatsTextField(
-                    labelText = Res.string.height,
-                    suffixText = Res.string.cm
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                    Text(
+                        text = stringResource(resource = Res.string.height),
+                        color = colors.gray,
+                        style = typography.regular11
+                    )
+                    OnboardingStatsTextField(
+                        suffixText = Res.string.cm
+                    )
+                }
             }
             item {
-                OnboardingStatsTextField(
-                    labelText = Res.string.current_weight,
-                    suffixText = Res.string.kg
+                Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                    Text(
+                        text = stringResource(resource = Res.string.current_weight),
+                        color = colors.gray,
+                        style = typography.regular11
+                    )
+                    OnboardingStatsTextField(
+                        suffixText = Res.string.kg
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OnboardingSelectSex(
+    modifier: Modifier = Modifier,
+    callbacks: OnboardingCallbacks,
+    selectedGender: UserGender?,
+) {
+    var isExpanded by remember { mutableStateOf(value = false) }
+    val colors = MacroTrackTheme.colors
+    val typography = MacroTrackTheme.typography
+
+    ExposedDropdownMenuBox(
+        modifier = modifier,
+        expanded = isExpanded,
+        onExpandedChange = {
+            isExpanded = !isExpanded
+        }
+    ) {
+        Box(
+            modifier = Modifier.height(height = 48.dp)
+                .fillMaxWidth()
+                .background(
+                    color = colors.offWhite,
+                    shape = RoundedCornerShape(size = 12.dp)
+                )
+                .border(
+                    width = 1.dp,
+                    color = colors.lightGray,
+                    shape = RoundedCornerShape(size = 12.dp)
+                )
+                .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+        ) {
+            Image(
+                painter = painterResource(resource = Res.drawable.drop_down),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .size(size = 6.dp)
+                    .align(alignment = Alignment.CenterEnd)
+                    .graphicsLayer {
+                        rotationZ = if (isExpanded) 180f else 0f
+                    }
+            )
+            Text(
+                text = selectedGender?.name ?: "",
+                color = colors.black,
+                style = typography.bold15,
+                modifier = Modifier.align(alignment = Alignment.Center)
+            )
+        }
+        ExposedDropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = {
+                isExpanded = false
+            },
+            containerColor = colors.white,
+            modifier = Modifier.clip(shape = RoundedCornerShape(size = 12.dp))
+        ) {
+            UserGender.entries.forEach { gender ->
+                val isSelected = gender == selectedGender
+                val textStyle = typography.regular11.copy(
+                    color = if (isSelected) colors.blue else colors.black,
+                    fontWeight = if (isSelected) typography.bold11.fontWeight else typography.regular11.fontWeight
+                )
+                val background = if (isSelected) colors.lightBlue else colors.white
+                DropdownMenuItem(
+                    modifier = Modifier.background(color = background),
+                    text = {
+                        Text(
+                            text = gender.name,
+                            style = textStyle,
+                        )
+                    },
+                    onClick = {
+                        callbacks.onGenderSelected(gender)
+                        isExpanded = false
+                    }
                 )
             }
         }
@@ -153,71 +273,65 @@ fun OnboardingGoalAndStatsScreen(
 @Composable
 private fun OnboardingStatsTextField(
     modifier: Modifier = Modifier,
-    labelText: StringResource,
     suffixText: StringResource,
 ) {
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
     var value by remember { mutableStateOf(value = "") }
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-    ) {
-        Text(
-            text = stringResource(resource = labelText),
-            color = colors.gray,
-            style = typography.regular11
-        )
-        TextField(
-            value = value,
-            onValueChange = { newText ->
-                val filtered = buildString {
-                    var hasDecimal = false
-                    newText.forEach { char ->
-                        if (char.isDigit()) {
-                            append(char)
-                        } else if (char == '.' && !hasDecimal) {
-                            append(char)
-                            hasDecimal = true
-                        }
+    TextField(
+        value = value,
+        onValueChange = { newText ->
+            val filtered = buildString {
+                var hasDecimal = false
+                newText.forEach { char ->
+                    if (char.isDigit()) {
+                        append(char)
+                    } else if (char == '.' && !hasDecimal) {
+                        append(char)
+                        hasDecimal = true
                     }
                 }
-                value = filtered.take(n = 6)
-            },
-            modifier = modifier.height(height = 48.dp),
-            shape = RoundedCornerShape(size = 12.dp),
-            textStyle = typography.bold15.copy(
-                color = colors.black
+            }
+            value = filtered.take(n = 6)
+        },
+        modifier = modifier.height(height = 48.dp)
+            .border(
+                width = 1.dp,
+                color = MacroTrackTheme.colors.lightGray,
+                shape = RoundedCornerShape(size = 12.dp)
             ),
-            suffix = {
-                Text(
-                    text = stringResource(resource = suffixText),
-                    color = colors.mediumGray,
-                    style = typography.regular11
-                )
-            },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = colors.offWhite,
-                unfocusedContainerColor = colors.offWhite,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent
-            ),
-            placeholder = {
-                Text(
-                    text = "-",
-                    color = colors.mediumGray,
-                    style = typography.bold15,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal,
-                imeAction = ImeAction.Next
-            ),
-            singleLine = true
-        )
-    }
+        shape = RoundedCornerShape(size = 12.dp),
+        textStyle = typography.bold15.copy(
+            color = colors.black
+        ),
+        suffix = {
+            Text(
+                text = stringResource(resource = suffixText),
+                color = colors.mediumGray,
+                style = typography.regular11
+            )
+        },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = colors.offWhite,
+            unfocusedContainerColor = colors.offWhite,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent
+        ),
+        placeholder = {
+            Text(
+                text = "-",
+                color = colors.mediumGray,
+                style = typography.bold15,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Decimal,
+            imeAction = ImeAction.Next
+        ),
+        singleLine = true
+    )
 }
 
 @Composable

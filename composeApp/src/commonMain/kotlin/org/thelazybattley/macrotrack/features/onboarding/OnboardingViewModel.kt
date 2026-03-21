@@ -26,14 +26,19 @@ class OnboardingViewModel : ViewModel(), OnboardingCallbacks {
     }
 
     override fun onGenderSelected(gender: UserGender) {
-        TODO("Not yet implemented")
+        _state.update { currentState ->
+            currentState.copy(
+                selectedGender = gender
+            )
+        }
     }
 
     override fun onContinueClicked() {
         _state.update { currentState ->
             val nextStepNumber = currentState.currentStep.ordinal
             currentState.copy(
-                currentStep = OnboardingStep.entries.firstOrNull { it.ordinal == nextStepNumber } ?: OnboardingStep.GOAL_AND_STATS
+                currentStep = OnboardingStep.entries.firstOrNull { it.ordinal == nextStepNumber }
+                    ?: OnboardingStep.GOAL_AND_STATS
             )
         }
     }
