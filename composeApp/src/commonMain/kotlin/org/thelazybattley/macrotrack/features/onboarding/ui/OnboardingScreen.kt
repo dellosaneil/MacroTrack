@@ -17,6 +17,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +58,10 @@ fun OnboardingScreen(
     val pagerState = rememberPagerState { OnboardingStep.entries.size }
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
+    LaunchedEffect(key1 = viewState.currentStep.ordinal) {
+        pagerState.animateScrollToPage(page = viewState.currentStep.ordinal)
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = colors.white
@@ -148,7 +153,6 @@ private fun isButtonEnabled(viewState: OnboardingViewState): Boolean {
             viewState.selectedGoal != null &&
             viewState.selectedGender != null
         }
-
         OnboardingStep.ACTIVITY_AND_TARGETS -> false
     }
 }

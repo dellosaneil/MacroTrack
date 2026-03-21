@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.onboarding.ui
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,6 +17,7 @@ fun OnboardingActivityAndTargets(
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
 
+    Spacer(modifier = Modifier.fillMaxSize())
 }
 
 @Preview
