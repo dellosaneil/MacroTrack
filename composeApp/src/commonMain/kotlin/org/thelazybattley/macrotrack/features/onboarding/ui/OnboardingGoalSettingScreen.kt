@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -78,8 +82,16 @@ fun OnboardingGoalAndStatsScreen(
 ) {
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     Column(
-        verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+        verticalArrangement = Arrangement.spacedBy(space = 4.dp),
+        modifier= Modifier.pointerInput(Unit) {
+            detectTapGestures {
+                focusManager.clearFocus()
+                keyboardController?.hide()
+            }
+        }
     ) {
         Text(
             text = stringResource(resource = Res.string.your_main_goal),
@@ -352,7 +364,7 @@ private fun OnboardingStatsTextField(
         },
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
-            imeAction = ImeAction.Next
+            imeAction = ImeAction.Done
         ),
         singleLine = true
     )
