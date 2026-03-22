@@ -14,6 +14,8 @@ interface OnboardingCallbacks {
 
     fun onContinueClicked()
 
+    fun onBackClicked()
+
     fun onAgeUpdated(age: Int)
 
     fun onHeightUpdated(height: Double)
@@ -37,6 +39,10 @@ interface OnboardingCallbacks {
                 }
 
                 override fun onContinueClicked() {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onBackClicked() {
                     TODO("Not yet implemented")
                 }
 

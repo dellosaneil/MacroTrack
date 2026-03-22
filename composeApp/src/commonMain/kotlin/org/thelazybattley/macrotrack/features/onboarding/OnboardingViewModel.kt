@@ -71,4 +71,14 @@ class OnboardingViewModel : ViewModel(), OnboardingCallbacks {
         }
     }
 
+    override fun onBackClicked() {
+        _state.update { currentState ->
+            val nextStepNumber = currentState.currentStep.ordinal.dec()
+            currentState.copy(
+                currentStep = OnboardingStep.entries.firstOrNull { it.ordinal == nextStepNumber }
+                    ?: OnboardingStep.GOAL_AND_STATS
+            )
+        }
+    }
+
 }

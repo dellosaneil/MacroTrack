@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.features.onboarding.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,12 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.activity_level_camel
+import macrotrack.composeapp.generated.resources.back
 import macrotrack.composeapp.generated.resources.choose_your_goal
 import macrotrack.composeapp.generated.resources.continue_text
 import macrotrack.composeapp.generated.resources.how_active_are_you
+import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.set_up_your_profile
 import macrotrack.composeapp.generated.resources.step_count
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
@@ -89,7 +94,9 @@ fun OnboardingScreen(
             verticalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().height(height = 24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(
                     space = 4.dp,
                     alignment = Alignment.CenterHorizontally
@@ -105,6 +112,28 @@ fun OnboardingScreen(
                     )
                 }
             }
+
+            if (viewState.currentStep.ordinal != 0) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable {
+                        callbacks.onBackClicked()
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_chevron_left),
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = colors.deepBlue
+                    )
+                    Text(
+                        text = stringResource(resource = Res.string.back),
+                        color = colors.deepBlue,
+                        style = typography.medium13
+                    )
+                }
+            }
+
             Text(
                 text = stringResource(
                     Res.string.step_count,
