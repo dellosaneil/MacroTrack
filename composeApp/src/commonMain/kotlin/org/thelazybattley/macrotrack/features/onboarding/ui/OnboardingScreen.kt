@@ -44,7 +44,6 @@ import macrotrack.composeapp.generated.resources.how_active_are_you
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.personalized_plan
 import macrotrack.composeapp.generated.resources.set_up_your_profile
-import macrotrack.composeapp.generated.resources.step_count
 import macrotrack.composeapp.generated.resources.youre_all_set
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -135,16 +134,6 @@ fun OnboardingScreen(
                     )
                 }
             }
-
-            Text(
-                text = stringResource(
-                    Res.string.step_count,
-                    viewState.currentStep.ordinal.inc(),
-                    OnboardingStep.entries.size
-                ),
-                color = colors.blue,
-                style = typography.bold11
-            )
             Text(
                 text = stringResource(resource = viewState.currentStep.titleRes),
                 color = colors.black,
@@ -182,7 +171,6 @@ fun OnboardingScreen(
                         OnboardingSummaryScreen(
                             modifier = Modifier,
                             viewState = viewState,
-                            callbacks = callbacks
                         )
                     }
                 }
@@ -226,7 +214,6 @@ private fun isButtonEnabled(viewState: OnboardingViewState): Boolean {
                     viewState.selectedGoal != null &&
                     viewState.selectedGender != null
         }
-
         OnboardingStep.ACTIVITY_LEVEL -> viewState.selectedActivityLevel != null
         OnboardingStep.SUMMARY -> true
     }
