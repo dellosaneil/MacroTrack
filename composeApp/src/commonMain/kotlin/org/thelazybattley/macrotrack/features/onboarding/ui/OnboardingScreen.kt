@@ -34,7 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.activity_level
+import macrotrack.composeapp.generated.resources.activity_level_camel
 import macrotrack.composeapp.generated.resources.choose_your_goal
 import macrotrack.composeapp.generated.resources.continue_text
 import macrotrack.composeapp.generated.resources.how_active_are_you
@@ -138,7 +138,7 @@ fun OnboardingScreen(
                         )
                     }
 
-                    OnboardingStep.ACTIVITY_AND_TARGETS.ordinal -> {
+                    OnboardingStep.ACTIVITY_LEVEL.ordinal -> {
                         OnboardingSetActivityLevel(
                             modifier = Modifier,
                             viewState = viewState,
@@ -187,7 +187,7 @@ private fun isButtonEnabled(viewState: OnboardingViewState): Boolean {
                     viewState.selectedGender != null
         }
 
-        OnboardingStep.ACTIVITY_AND_TARGETS -> viewState.selectedActivityLevel != null
+        OnboardingStep.ACTIVITY_LEVEL -> viewState.selectedActivityLevel != null
     }
 }
 
@@ -210,8 +210,8 @@ enum class OnboardingStep(
         titleRes = Res.string.set_up_your_profile,
         descriptionRes = Res.string.choose_your_goal
     ),
-    ACTIVITY_AND_TARGETS(
-        titleRes = Res.string.activity_level,
+    ACTIVITY_LEVEL(
+        titleRes = Res.string.activity_level_camel,
         descriptionRes = Res.string.how_active_are_you
     )
 }

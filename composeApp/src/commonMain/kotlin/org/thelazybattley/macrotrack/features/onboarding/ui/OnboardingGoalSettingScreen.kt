@@ -3,7 +3,6 @@ package org.thelazybattley.macrotrack.features.onboarding.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,16 +28,13 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -210,7 +206,7 @@ private fun OnboardingSelectSex(
     callbacks: OnboardingCallbacks,
     selectedGender: UserGender?,
 ) {
-    var isExpanded by remember { mutableStateOf(value = false) }
+    var isExpanded by rememberSaveable { mutableStateOf(value = false) }
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
 
@@ -297,7 +293,7 @@ private fun OnboardingStatsTextField(
 ) {
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
-    var value by remember { mutableStateOf(value = "") }
+    var value by rememberSaveable { mutableStateOf(value = "") }
     TextField(
         value = value,
         onValueChange = { newText ->
