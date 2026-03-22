@@ -22,7 +22,11 @@ class OnboardingViewModel : ViewModel(), OnboardingCallbacks {
     }
 
     override fun onActivityLevelSelected(activityLevel: ActivityLevel) {
-        TODO("Not yet implemented")
+        _state.update { currentState ->
+            currentState.copy(
+                selectedActivityLevel = activityLevel
+            )
+        }
     }
 
     override fun onGenderSelected(gender: UserGender) {
