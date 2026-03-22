@@ -1,7 +1,6 @@
 package org.thelazybattley.macrotrack.features.onboarding.ui
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -22,6 +21,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -46,18 +46,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.age
-import macrotrack.composeapp.generated.resources.build_muscle_chart
 import macrotrack.composeapp.generated.resources.calorie_deficit
 import macrotrack.composeapp.generated.resources.calorie_surplus
 import macrotrack.composeapp.generated.resources.cm
 import macrotrack.composeapp.generated.resources.current_weight
-import macrotrack.composeapp.generated.resources.drop_down
 import macrotrack.composeapp.generated.resources.gain_weight
 import macrotrack.composeapp.generated.resources.height
+import macrotrack.composeapp.generated.resources.ic_chevron_down
+import macrotrack.composeapp.generated.resources.ic_gain_weight
+import macrotrack.composeapp.generated.resources.ic_lose_weight
+import macrotrack.composeapp.generated.resources.ic_maintain_weight
 import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.lose_weight
-import macrotrack.composeapp.generated.resources.lose_weight_chart
-import macrotrack.composeapp.generated.resources.maintain_balance
 import macrotrack.composeapp.generated.resources.maintain_weight
 import macrotrack.composeapp.generated.resources.sex
 import macrotrack.composeapp.generated.resources.stay_balanced
@@ -86,7 +86,7 @@ fun OnboardingGoalAndStatsScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     Column(
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
-        modifier= Modifier.pointerInput(Unit) {
+        modifier = Modifier.pointerInput(Unit) {
             detectTapGestures {
                 focusManager.clearFocus()
                 keyboardController?.hide()
@@ -109,7 +109,7 @@ fun OnboardingGoalAndStatsScreen(
                     titleRes = Res.string.lose_weight,
                     isSelected = viewState.selectedGoal == Goal.LOSE_WEIGHT,
                     descriptionRes = Res.string.calorie_deficit,
-                    icon = Res.drawable.lose_weight_chart
+                    icon = Res.drawable.ic_lose_weight
                 ) {
                     callbacks.onGoalSelected(goal = Goal.LOSE_WEIGHT)
                 }
@@ -119,7 +119,7 @@ fun OnboardingGoalAndStatsScreen(
                     titleRes = Res.string.maintain_weight,
                     isSelected = viewState.selectedGoal == Goal.MAINTAIN_WEIGHT,
                     descriptionRes = Res.string.stay_balanced,
-                    icon = Res.drawable.maintain_balance
+                    icon = Res.drawable.ic_maintain_weight
                 ) {
                     callbacks.onGoalSelected(goal = Goal.MAINTAIN_WEIGHT)
                 }
@@ -129,7 +129,7 @@ fun OnboardingGoalAndStatsScreen(
                     titleRes = Res.string.gain_weight,
                     isSelected = viewState.selectedGoal == Goal.GAIN_WEIGHT,
                     descriptionRes = Res.string.calorie_surplus,
-                    icon = Res.drawable.build_muscle_chart
+                    icon = Res.drawable.ic_gain_weight
                 ) {
                     callbacks.onGoalSelected(goal = Goal.GAIN_WEIGHT)
                 }
@@ -243,16 +243,17 @@ private fun OnboardingSelectSex(
                 )
                 .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
         ) {
-            Image(
-                painter = painterResource(resource = Res.drawable.drop_down),
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_chevron_down),
                 contentDescription = null,
                 modifier = Modifier
                     .padding(end = 16.dp)
-                    .size(size = 6.dp)
+                    .size(size = 12.dp)
                     .align(alignment = Alignment.CenterEnd)
                     .graphicsLayer {
                         rotationZ = if (isExpanded) 180f else 0f
-                    }
+                    },
+                tint = colors.gray,
             )
             Text(
                 text = selectedGender?.name ?: "",
@@ -398,10 +399,11 @@ private fun GoalChoices(
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Image(
+            Icon(
                 painter = painterResource(resource = icon),
                 contentDescription = null,
-                modifier = Modifier.size(size = 30.dp)
+                tint = Color.Unspecified,
+                modifier = Modifier.padding(top = 8.dp).size(size = 30.dp)
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(

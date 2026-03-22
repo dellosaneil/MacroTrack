@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <!-- Left outer plate -->
+    <path
+        android:pathData="M6,22 C4,22 4,42 6,42 L12,42 L12,22 Z"
+        android:fillColor="#FFDEA8" />
+    <path
+        android:pathData="M6,22 L12,22 L12,42 L6,42 C4,42 4,22 6,22 Z"
+        android:strokeColor="#7E5700"
+        android:strokeWidth="2"
+        android:fillColor="#00000000" />
+
+    <!-- Left inner plate -->
+    <path
+        android:pathData="M12,26 L18,26 L18,38 L12,38 Z"
+        android:fillColor="#FFDEA8" />
+    <path
+        android:pathData="M12,26 L18,26 L18,38 L12,38 Z"
+        android:strokeColor="#7E5700"
+        android:strokeWidth="2"
+        android:fillColor="#00000000" />
+
+    <!-- Right inner plate -->
+    <path
+        android:pathData="M46,26 L52,26 L52,38 L46,38 Z"
+        android:fillColor="#FFDEA8" />
+    <path
+        android:pathData="M46,26 L52,26 L52,38 L46,38 Z"
+        android:strokeColor="#7E5700"
+        android:strokeWidth="2"
+        android:fillColor="#00000000" />
+
+    <!-- Right outer plate -->
+    <path
+        android:pathData="M52,22 L58,22 C60,22 60,42 58,42 L52,42 Z"
+        android:fillColor="#FFDEA8" />
+    <path
+        android:pathData="M52,22 L58,22 C60,22 60,42 58,42 L52,42 Z"
+        android:strokeColor="#7E5700"
+        android:strokeWidth="2"
+        android:fillColor="#00000000" />
+
+    <!-- Bar -->
+    <path
+        android:pathData="M18,29 L46,29 L46,35 L18,35 Z"
+        android:fillColor="#7E5700" />
+
+    <!-- Bar sheen -->
+    <path
+        android:pathData="M18,30.5 L46,30.5"
+        android:strokeColor="#FFDEA8"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:strokeAlpha="0.5" />
+
+    <!-- Arrow up stem -->
+    <path
+        android:pathData="M32,22 L32,10"
+        android:strokeColor="#7E5700"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Arrow up chevron -->
+    <path
+        android:pathData="M26,16 L32,10 L38,16"
+        android:strokeColor="#7E5700"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+
+    <!-- Arrow up bar -->
+    <path
+        android:pathData="M24,8 L40,8"
+        android:strokeColor="#7E5700"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Muscle highlight dots -->
+    <path
+        android:pathData="M8,30 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
+        android:fillColor="#7E5700"
+        android:fillAlpha="0.4" />
+    <path
+        android:pathData="M56,30 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
+        android:fillColor="#7E5700"
+        android:fillAlpha="0.4" />
+
+</vector>
