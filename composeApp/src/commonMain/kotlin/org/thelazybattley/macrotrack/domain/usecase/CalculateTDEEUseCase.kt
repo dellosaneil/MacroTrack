@@ -6,8 +6,8 @@ import kotlin.math.roundToInt
 
 class CalculateTDEEUseCase {
     operator fun invoke(
-        height: Double, // cm
-        weight: Double, // kg
+        height: Double,
+        weight: Double,
         age: Int,
         gender: UserGender,
         activityLevel: ActivityLevel
