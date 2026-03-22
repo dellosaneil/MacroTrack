@@ -53,6 +53,8 @@ import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
 fun OnboardingScreen() {
@@ -72,8 +74,7 @@ fun OnboardingScreen(
     callbacks: OnboardingCallbacks
 ) {
     val pagerState = rememberPagerState { OnboardingStep.entries.size }
-    val colors = MacroTrackTheme.colors
-    val typography = MacroTrackTheme.typography
+
     LaunchedEffect(key1 = viewState.currentStep.ordinal) {
         pagerState.animateScrollToPage(page = viewState.currentStep.ordinal)
     }

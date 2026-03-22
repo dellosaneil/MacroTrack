@@ -44,14 +44,14 @@ import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
 fun OnboardingSetActivityLevel(
     modifier: Modifier = Modifier, viewState: OnboardingViewState,
     callbacks: OnboardingCallbacks
 ) {
-    val colors = MacroTrackTheme.colors
-    val typography = MacroTrackTheme.typography
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
@@ -118,8 +118,6 @@ private fun ActivityLevelChoices(
     icon: DrawableResource,
     onClick: () -> Unit
 ) {
-    val colors = MacroTrackTheme.colors
-    val typography = MacroTrackTheme.typography
     val background = if (isSelected) {
         colors.skyBlue
     } else {

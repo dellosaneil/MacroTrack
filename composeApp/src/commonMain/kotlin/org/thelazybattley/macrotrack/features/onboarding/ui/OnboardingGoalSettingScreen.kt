@@ -69,6 +69,8 @@ import org.thelazybattley.macrotrack.domain.model.UserGender
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
 fun OnboardingGoalAndStatsScreen(
@@ -76,8 +78,7 @@ fun OnboardingGoalAndStatsScreen(
     viewState: OnboardingViewState,
     callbacks: OnboardingCallbacks
 ) {
-    val colors = MacroTrackTheme.colors
-    val typography = MacroTrackTheme.typography
+
     Column(
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
     ) {
@@ -207,8 +208,7 @@ private fun OnboardingSelectSex(
     selectedGender: UserGender?,
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(value = false) }
-    val colors = MacroTrackTheme.colors
-    val typography = MacroTrackTheme.typography
+
 
     ExposedDropdownMenuBox(
         modifier = modifier,
@@ -291,8 +291,6 @@ private fun OnboardingStatsTextField(
     keyboardType: KeyboardType,
     onValueChange: (String) -> Unit
 ) {
-    val colors = MacroTrackTheme.colors
-    val typography = MacroTrackTheme.typography
     var value by rememberSaveable { mutableStateOf(value = "") }
     TextField(
         value = value,
@@ -368,8 +366,7 @@ private fun GoalChoices(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val colors = MacroTrackTheme.colors
-    val typography = MacroTrackTheme.typography
+
     val borderColor = if (isSelected) colors.blue else colors.gray
     val backgroundColor = if (isSelected) colors.lightBlue else colors.white
     OutlinedCard(

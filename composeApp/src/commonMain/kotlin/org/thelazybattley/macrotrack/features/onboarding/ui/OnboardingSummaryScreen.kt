@@ -75,20 +75,19 @@ fun OnboardingSummaryScreen(
             modifier = Modifier.fillMaxWidth(),
             icon = Res.drawable.ic_feature_wearable,
             title = Res.string.step_counter,
-            description = Res.string.calories_burned_automatically,
-
-            )
+            description = Res.string.calories_burned_automatically
+        )
         WhatYouGetCard(
             modifier = Modifier.fillMaxWidth(),
             icon = Res.drawable.ic_feature_report,
             title = Res.string.weekly_progress_reports,
-            description = Res.string.macros_calories_and_trends,
+            description = Res.string.macros_calories_and_trends
         )
         WhatYouGetCard(
             modifier = Modifier.fillMaxWidth(),
             icon = Res.drawable.ic_feature_water_cup,
             title = Res.string.water_intake_tracker,
-            description = Res.string.daily_hydration_goals,
+            description = Res.string.daily_hydration_goals
         )
     }
 }
@@ -110,7 +109,7 @@ private fun WhatYouGetCard(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-            modifier = Modifier.padding(all = 8.dp)
+            modifier = Modifier.padding(all = 12.dp)
         ) {
             Icon(
                 painter = painterResource(resource = icon),
