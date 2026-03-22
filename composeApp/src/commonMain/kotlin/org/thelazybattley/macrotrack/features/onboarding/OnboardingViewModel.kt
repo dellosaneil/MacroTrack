@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.UserGender
+import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingStep
 
-class OnboardingViewModel : ViewModel(), OnboardingCallbacks {
+class OnboardingViewModel(private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase) :
+    ViewModel(), OnboardingCallbacks {
     private val _state = MutableStateFlow(OnboardingViewState())
     val state = _state.asStateFlow()
 
@@ -40,10 +43,28 @@ class OnboardingViewModel : ViewModel(), OnboardingCallbacks {
     override fun onContinueClicked() {
         _state.update { currentState ->
             val nextStepNumber = currentState.currentStep.ordinal.inc()
+            var macroGoals: MacroGoals? = null
+            if (nextStepNumber == OnboardingStep.SUMMARY.ordinal && listOf(
+                    currentState.selectedGender,
+                    currentState.selectedActivityLevel,
+                    currentState.selectedGoal
+                ).all { it != null }
+            ) {
+                macroGoals = calculateMacrosGoalUseCase(
+                    height = currentState.height,
+                    weight = currentState.weight,
+                    age = currentState.age,
+                    gender = currentState.selectedGender!!,
+                    activityLevel = currentState.selectedActivityLevel!!,
+                    goal = currentState.selectedGoal!!
+                )
+            }
             currentState.copy(
                 currentStep = OnboardingStep.entries.firstOrNull { it.ordinal == nextStepNumber }
-                    ?: OnboardingStep.GOAL_AND_STATS
+                    ?: OnboardingStep.GOAL_AND_STATS,
+                macroGoals = macroGoals
             )
+
         }
     }
 

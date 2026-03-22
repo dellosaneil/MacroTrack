@@ -97,7 +97,7 @@ private fun WhatYouGetCard(
     modifier: Modifier = Modifier,
     icon: DrawableResource,
     title: StringResource,
-    description: StringResource,
+    description: StringResource
 ) {
     Card(
         modifier = modifier,
@@ -137,7 +137,7 @@ private fun WhatYouGetCard(
 private fun SummaryMacroCard(
     modifier: Modifier = Modifier,
     label: StringResource,
-    macro: Double
+    macro: Int
 ) {
     Card(
         modifier = modifier,
@@ -192,7 +192,7 @@ private fun DailyGoalCard(
             )
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = "1,850",
+                    text = viewState.macroGoals?.calories.toString(),
                     color = colors.white,
                     style = typography.bold36
                 )
@@ -213,16 +213,17 @@ private fun DailyGoalCard(
                 SummaryMacroCard(
                     modifier = Modifier.weight(1f),
                     label = Res.string.protein,
-                    macro = 123.0
+                    macro = viewState.macroGoals?.protein ?: 0
                 )
                 SummaryMacroCard(
                     modifier = Modifier.weight(1f),
                     label = Res.string.carbs,
-                    macro = 32.0
+                    macro = viewState.macroGoals?.carbs ?: 0
                 )
                 SummaryMacroCard(
                     modifier = Modifier.weight(1f),
-                    label = Res.string.fat, macro = 232.0
+                    label = Res.string.fat,
+                    macro = viewState.macroGoals?.fat ?: 0
                 )
             }
         }
