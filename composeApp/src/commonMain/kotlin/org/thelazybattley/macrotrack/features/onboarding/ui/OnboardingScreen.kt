@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.features.onboarding.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,9 +71,16 @@ fun OnboardingScreen(
     LaunchedEffect(key1 = viewState.currentStep.ordinal) {
         pagerState.animateScrollToPage(page = viewState.currentStep.ordinal)
     }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold(
-        modifier = modifier,
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures {
+                focusManager.clearFocus()
+                keyboardController?.hide()
+            }
+        },
         containerColor = colors.white
     ) { innerPadding ->
         Column(
@@ -176,8 +187,7 @@ private fun isButtonEnabled(viewState: OnboardingViewState): Boolean {
                     viewState.selectedGoal != null &&
                     viewState.selectedGender != null
         }
-
-        OnboardingStep.ACTIVITY_AND_TARGETS -> false
+        OnboardingStep.ACTIVITY_AND_TARGETS -> viewState.selectedActivityLevel != null
     }
 }
 

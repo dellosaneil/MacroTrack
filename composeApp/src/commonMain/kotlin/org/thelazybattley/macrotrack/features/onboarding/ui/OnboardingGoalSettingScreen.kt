@@ -82,16 +82,8 @@ fun OnboardingGoalAndStatsScreen(
 ) {
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
     Column(
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures {
-                focusManager.clearFocus()
-                keyboardController?.hide()
-            }
-        }
     ) {
         Text(
             text = stringResource(resource = Res.string.your_main_goal),
