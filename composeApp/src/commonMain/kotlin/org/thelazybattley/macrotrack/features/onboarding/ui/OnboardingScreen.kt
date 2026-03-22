@@ -42,8 +42,10 @@ import macrotrack.composeapp.generated.resources.choose_your_goal
 import macrotrack.composeapp.generated.resources.continue_text
 import macrotrack.composeapp.generated.resources.how_active_are_you
 import macrotrack.composeapp.generated.resources.ic_chevron_left
+import macrotrack.composeapp.generated.resources.personalized_plan
 import macrotrack.composeapp.generated.resources.set_up_your_profile
 import macrotrack.composeapp.generated.resources.step_count
+import macrotrack.composeapp.generated.resources.youre_all_set
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -156,7 +158,8 @@ fun OnboardingScreen(
 
             HorizontalPager(
                 state = pagerState,
-                userScrollEnabled = false
+                userScrollEnabled = false,
+                verticalAlignment = Alignment.Top
             ) { page ->
                 when (page) {
                     OnboardingStep.GOAL_AND_STATS.ordinal -> {
@@ -169,6 +172,14 @@ fun OnboardingScreen(
 
                     OnboardingStep.ACTIVITY_LEVEL.ordinal -> {
                         OnboardingSetActivityLevel(
+                            modifier = Modifier,
+                            viewState = viewState,
+                            callbacks = callbacks
+                        )
+                    }
+
+                    OnboardingStep.SUMMARY.ordinal -> {
+                        OnboardingSummaryScreen(
                             modifier = Modifier,
                             viewState = viewState,
                             callbacks = callbacks
@@ -217,6 +228,7 @@ private fun isButtonEnabled(viewState: OnboardingViewState): Boolean {
         }
 
         OnboardingStep.ACTIVITY_LEVEL -> viewState.selectedActivityLevel != null
+        OnboardingStep.SUMMARY -> true
     }
 }
 
@@ -242,5 +254,9 @@ enum class OnboardingStep(
     ACTIVITY_LEVEL(
         titleRes = Res.string.activity_level_camel,
         descriptionRes = Res.string.how_active_are_you
+    ),
+    SUMMARY(
+        titleRes = Res.string.youre_all_set,
+        descriptionRes = Res.string.personalized_plan
     )
 }
