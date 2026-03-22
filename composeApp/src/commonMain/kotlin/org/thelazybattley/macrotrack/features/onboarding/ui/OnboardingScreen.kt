@@ -34,12 +34,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.activity_and_targets
+import macrotrack.composeapp.generated.resources.activity_level
 import macrotrack.composeapp.generated.resources.choose_your_goal
 import macrotrack.composeapp.generated.resources.continue_text
+import macrotrack.composeapp.generated.resources.how_active_are_you
 import macrotrack.composeapp.generated.resources.set_up_your_profile
 import macrotrack.composeapp.generated.resources.step_count
-import macrotrack.composeapp.generated.resources.tell_us_how_active_you_are
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -73,9 +73,8 @@ fun OnboardingScreen(
     }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-
     Scaffold(
-        modifier = Modifier.pointerInput(Unit) {
+        modifier = modifier.pointerInput(Unit) {
             detectTapGestures {
                 focusManager.clearFocus()
                 keyboardController?.hide()
@@ -187,6 +186,7 @@ private fun isButtonEnabled(viewState: OnboardingViewState): Boolean {
                     viewState.selectedGoal != null &&
                     viewState.selectedGender != null
         }
+
         OnboardingStep.ACTIVITY_AND_TARGETS -> viewState.selectedActivityLevel != null
     }
 }
@@ -211,7 +211,7 @@ enum class OnboardingStep(
         descriptionRes = Res.string.choose_your_goal
     ),
     ACTIVITY_AND_TARGETS(
-        titleRes = Res.string.activity_and_targets,
-        descriptionRes = Res.string.tell_us_how_active_you_are
+        titleRes = Res.string.activity_level,
+        descriptionRes = Res.string.how_active_are_you
     )
 }

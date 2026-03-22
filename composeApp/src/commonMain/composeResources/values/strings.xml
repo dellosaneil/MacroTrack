@@ -7,8 +7,8 @@
     <string name="gain_weight">Gain weight</string>
     <string name="stay_balanced">Stay balanced</string>
     <string name="calorie_surplus">Calorie surplus</string>
-    <string name="activity_and_targets">Activity and Targets</string>
-    <string name="tell_us_how_active_you_are">Tell us how active you are to set your calorie target.</string>
+    <string name="activity_level">Activity Level</string>
+    <string name="how_active_are_you">How active are you on a typical week? This sets your daily calorie target.</string>
 
     <string name="calorie_deficit">Calorie deficit</string>
     <string name="continue_text">Continue</string>
