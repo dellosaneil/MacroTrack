@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -44,73 +46,66 @@ import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
-fun OnboardingActivityAndTargets(
+fun OnboardingSetActivityLevel(
     modifier: Modifier = Modifier, viewState: OnboardingViewState,
     callbacks: OnboardingCallbacks
 ) {
     val colors = MacroTrackTheme.colors
     val typography = MacroTrackTheme.typography
-    Column(
+    LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
     ) {
-        Text(
-            text = stringResource(resource = Res.string.activity_level),
-            color = colors.charcoalGray,
-            style = typography.bold12
-        )
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-        ) {
+        item {
+            Text(
+                text = stringResource(resource = Res.string.activity_level),
+                color = colors.charcoalGray,
+                style = typography.bold12
+            )
+        }
+        items(items = ActivityLevel.entries, key = {
+            it.name
+        }) { activityLevel ->
             ActivityLevelChoices(
                 modifier = Modifier,
-                isSelected = viewState.selectedActivityLevel == ActivityLevel.SEDENTARY,
-                title = Res.string.sedentary,
-                description = Res.string.little_or_no_exercise,
-                icon = Res.drawable.ic_heartbeat_sedentary
-
+                isSelected = viewState.selectedActivityLevel == activityLevel,
+                title = activityLevel.titleRes(),
+                description = activityLevel.descriptionRes(),
+                icon = activityLevel.iconRes(),
             ) {
-                callbacks.onActivityLevelSelected(activityLevel = ActivityLevel.SEDENTARY)
-            }
-            ActivityLevelChoices(
-                modifier = Modifier,
-                isSelected = viewState.selectedActivityLevel == ActivityLevel.LIGHTLY_ACTIVE,
-                title = Res.string.lightly_active,
-                description = Res.string.one_to_three_days_per_week,
-                icon = Res.drawable.ic_heartbeat_lightly_active
-
-            ) {
-                callbacks.onActivityLevelSelected(activityLevel = ActivityLevel.LIGHTLY_ACTIVE)
-            }
-            ActivityLevelChoices(
-                modifier = Modifier,
-                isSelected = viewState.selectedActivityLevel == ActivityLevel.MODERATELY_ACTIVE,
-                title = Res.string.moderately_active,
-                description = Res.string.three_to_five_days_a_week,
-                icon = Res.drawable.ic_heartbeat_moderately_active
-            ) {
-                callbacks.onActivityLevelSelected(activityLevel = ActivityLevel.MODERATELY_ACTIVE)
-            }
-            ActivityLevelChoices(
-                modifier = Modifier,
-                isSelected = viewState.selectedActivityLevel == ActivityLevel.VERY_ACTIVE,
-                title = Res.string.very_active,
-                description = Res.string.six_to_seven_days_a_week,
-                icon = Res.drawable.ic_heartbeat_very_active
-            ) {
-                callbacks.onActivityLevelSelected(activityLevel = ActivityLevel.VERY_ACTIVE)
-            }
-            ActivityLevelChoices(
-                modifier = Modifier,
-                isSelected = viewState.selectedActivityLevel == ActivityLevel.EXTREMELY_ACTIVE,
-                title = Res.string.extremely_active,
-                description = Res.string.hard_training_or_sport,
-                icon = Res.drawable.ic_heartbeat_extremely_active
-            ) {
-                callbacks.onActivityLevelSelected(activityLevel = ActivityLevel.EXTREMELY_ACTIVE)
+                callbacks.onActivityLevelSelected(activityLevel = activityLevel)
             }
         }
+    }
+}
+
+private fun ActivityLevel.descriptionRes(): StringResource {
+    return when (this) {
+        ActivityLevel.SEDENTARY -> Res.string.little_or_no_exercise
+        ActivityLevel.LIGHTLY_ACTIVE -> Res.string.one_to_three_days_per_week
+        ActivityLevel.MODERATELY_ACTIVE -> Res.string.three_to_five_days_a_week
+        ActivityLevel.VERY_ACTIVE -> Res.string.six_to_seven_days_a_week
+        ActivityLevel.EXTREMELY_ACTIVE -> Res.string.hard_training_or_sport
+    }
+}
+
+private fun ActivityLevel.iconRes(): DrawableResource {
+    return when (this) {
+        ActivityLevel.SEDENTARY -> Res.drawable.ic_heartbeat_sedentary
+        ActivityLevel.LIGHTLY_ACTIVE -> Res.drawable.ic_heartbeat_lightly_active
+        ActivityLevel.MODERATELY_ACTIVE -> Res.drawable.ic_heartbeat_moderately_active
+        ActivityLevel.VERY_ACTIVE -> Res.drawable.ic_heartbeat_very_active
+        ActivityLevel.EXTREMELY_ACTIVE -> Res.drawable.ic_heartbeat_extremely_active
+    }
+}
+
+private fun ActivityLevel.titleRes(): StringResource {
+    return when (this) {
+        ActivityLevel.SEDENTARY -> Res.string.sedentary
+        ActivityLevel.LIGHTLY_ACTIVE -> Res.string.lightly_active
+        ActivityLevel.MODERATELY_ACTIVE -> Res.string.moderately_active
+        ActivityLevel.VERY_ACTIVE -> Res.string.very_active
+        ActivityLevel.EXTREMELY_ACTIVE -> Res.string.extremely_active
     }
 }
 
@@ -182,9 +177,9 @@ private fun ActivityLevelChoices(
 
 @Preview(showBackground = true)
 @Composable
-private fun PreviewOnboardingActivityAndTargets() {
+private fun PreviewOnboardingSetActivityLevel() {
     MacroTrackTheme {
-        OnboardingActivityAndTargets(
+        OnboardingSetActivityLevel(
             modifier = Modifier,
             viewState = OnboardingViewState(),
             callbacks = OnboardingCallbacks.default()

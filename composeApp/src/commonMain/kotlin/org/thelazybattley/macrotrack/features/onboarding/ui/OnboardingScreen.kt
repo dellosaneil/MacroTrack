@@ -140,7 +140,7 @@ fun OnboardingScreen(
                     }
 
                     OnboardingStep.ACTIVITY_AND_TARGETS.ordinal -> {
-                        OnboardingActivityAndTargets(
+                        OnboardingSetActivityLevel(
                             modifier = Modifier,
                             viewState = viewState,
                             callbacks = callbacks
