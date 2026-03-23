@@ -23,6 +23,8 @@ import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 
 expect val platformModule: Module
@@ -49,6 +51,8 @@ val useCaseModule = module {
     factoryOf(::GetRecipeByNameUseCase)
     factoryOf(::InsertRecipeUseCase)
     factoryOf(::CalculateMacrosGoalUseCase)
+    factoryOf(::InsertUserDetailsUseCase)
+    factoryOf(::GetUserDetailsUseCase)
 }
 
 val viewModelModule = module {
