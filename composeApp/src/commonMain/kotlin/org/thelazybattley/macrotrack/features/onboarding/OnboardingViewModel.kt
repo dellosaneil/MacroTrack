@@ -11,7 +11,9 @@ import org.thelazybattley.macrotrack.domain.model.UserGender
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingStep
 
-class OnboardingViewModel(private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase) :
+class OnboardingViewModel(
+    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+) :
     ViewModel(), OnboardingCallbacks {
     private val _state = MutableStateFlow(OnboardingViewState())
     val state = _state.asStateFlow()

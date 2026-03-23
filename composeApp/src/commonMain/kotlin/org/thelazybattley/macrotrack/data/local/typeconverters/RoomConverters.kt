@@ -1,7 +1,6 @@
 package org.thelazybattley.macrotrack.data.local.typeconverters
 
 import androidx.room.TypeConverter
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.IngredientEntity

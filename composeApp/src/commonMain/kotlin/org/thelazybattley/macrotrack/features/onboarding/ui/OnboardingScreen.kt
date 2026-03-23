@@ -42,6 +42,7 @@ import macrotrack.composeapp.generated.resources.choose_your_goal
 import macrotrack.composeapp.generated.resources.continue_text
 import macrotrack.composeapp.generated.resources.how_active_are_you
 import macrotrack.composeapp.generated.resources.ic_chevron_left
+import macrotrack.composeapp.generated.resources.lets_go
 import macrotrack.composeapp.generated.resources.personalized_plan
 import macrotrack.composeapp.generated.resources.set_up_your_profile
 import macrotrack.composeapp.generated.resources.youre_all_set
@@ -196,8 +197,13 @@ fun OnboardingScreen(
                 ),
                 enabled = isButtonEnabled(viewState = viewState)
             ) {
+                val text = if(viewState.currentStep == OnboardingStep.SUMMARY) {
+                    Res.string.lets_go
+                } else {
+                    Res.string.continue_text
+                }
                 Text(
-                    text = stringResource(resource = Res.string.continue_text),
+                    text = stringResource(resource = text),
                     style = typography.bold15
                 )
             }

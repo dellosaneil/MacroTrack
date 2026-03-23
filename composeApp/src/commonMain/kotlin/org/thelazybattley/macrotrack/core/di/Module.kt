@@ -11,8 +11,10 @@ import org.koin.dsl.module
 import org.thelazybattley.macrotrack.data.local.AppDatabase
 import org.thelazybattley.macrotrack.data.repository.FoodRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.RecipeRepositoryImpl
+import org.thelazybattley.macrotrack.data.repository.UserDetailsRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.FoodRepository
 import org.thelazybattley.macrotrack.domain.repository.RecipeRepository
+import org.thelazybattley.macrotrack.domain.repository.UserDetailsRepository
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateTDEEUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
@@ -29,11 +31,13 @@ val sharedModule = module {
     single<AppDatabase> { getRoomDatabase(get()) }
     single { get<AppDatabase>().foodDao() }
     single { get<AppDatabase>().recipeDao() }
+    single { get<AppDatabase>().userDetailsDao() }
 }
 
 val repositoryModule = module {
     singleOf(::FoodRepositoryImpl) { bind<FoodRepository>() }
     singleOf(::RecipeRepositoryImpl) { bind<RecipeRepository>() }
+    singleOf(::UserDetailsRepositoryImpl) { bind<UserDetailsRepository>() }
 }
 
 val useCaseModule = module {
