@@ -241,7 +241,7 @@ private fun OnboardingSelectSex(
                     .graphicsLayer {
                         rotationZ = if (isExpanded) 180f else 0f
                     },
-                tint = colors.gray,
+                tint = colors.blue,
             )
             Text(
                 text = selectedGender?.name ?: "",
@@ -387,7 +387,7 @@ private fun GoalChoices(
             Icon(
                 painter = painterResource(resource = icon),
                 contentDescription = null,
-                tint = Color.Unspecified,
+                tint = colors.blue,
                 modifier = Modifier.padding(top = 8.dp).size(size = 30.dp)
             )
             Spacer(modifier = Modifier.height(24.dp))

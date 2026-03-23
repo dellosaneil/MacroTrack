@@ -126,7 +126,7 @@ fun OnboardingScreen(
                         painter = painterResource(resource = Res.drawable.ic_chevron_left),
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
-                        tint = colors.deepBlue
+                        tint = colors.blue,
                     )
                     Text(
                         text = stringResource(resource = Res.string.back),

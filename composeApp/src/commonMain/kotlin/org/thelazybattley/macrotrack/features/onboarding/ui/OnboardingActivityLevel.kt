@@ -150,7 +150,7 @@ private fun ActivityLevelChoices(
             Icon(
                 painter = painterResource(resource = icon),
                 contentDescription = null,
-                tint = Color.Unspecified,
+                tint = colors.blue,
                 modifier = Modifier.size(size = 36.dp)
             )
 

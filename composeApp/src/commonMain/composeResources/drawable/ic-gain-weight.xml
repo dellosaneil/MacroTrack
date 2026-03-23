@@ -1,97 +1,48 @@
-<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="64dp"
     android:height="64dp"
     android:viewportWidth="64"
     android:viewportHeight="64">
-
-    <!-- Left outer plate -->
-    <path
-        android:pathData="M6,22 C4,22 4,42 6,42 L12,42 L12,22 Z"
-        android:fillColor="#FFDEA8" />
-    <path
-        android:pathData="M6,22 L12,22 L12,42 L6,42 C4,42 4,22 6,22 Z"
-        android:strokeColor="#7E5700"
-        android:strokeWidth="2"
-        android:fillColor="#00000000" />
-
-    <!-- Left inner plate -->
-    <path
-        android:pathData="M12,26 L18,26 L18,38 L12,38 Z"
-        android:fillColor="#FFDEA8" />
-    <path
-        android:pathData="M12,26 L18,26 L18,38 L12,38 Z"
-        android:strokeColor="#7E5700"
-        android:strokeWidth="2"
-        android:fillColor="#00000000" />
-
-    <!-- Right inner plate -->
-    <path
-        android:pathData="M46,26 L52,26 L52,38 L46,38 Z"
-        android:fillColor="#FFDEA8" />
-    <path
-        android:pathData="M46,26 L52,26 L52,38 L46,38 Z"
-        android:strokeColor="#7E5700"
-        android:strokeWidth="2"
-        android:fillColor="#00000000" />
-
-    <!-- Right outer plate -->
-    <path
-        android:pathData="M52,22 L58,22 C60,22 60,42 58,42 L52,42 Z"
-        android:fillColor="#FFDEA8" />
-    <path
-        android:pathData="M52,22 L58,22 C60,22 60,42 58,42 L52,42 Z"
-        android:strokeColor="#7E5700"
-        android:strokeWidth="2"
-        android:fillColor="#00000000" />
-
-    <!-- Bar -->
-    <path
-        android:pathData="M18,29 L46,29 L46,35 L18,35 Z"
-        android:fillColor="#7E5700" />
-
-    <!-- Bar sheen -->
-    <path
-        android:pathData="M18,30.5 L46,30.5"
-        android:strokeColor="#FFDEA8"
-        android:strokeWidth="1.5"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"
-        android:strokeAlpha="0.5" />
-
-    <!-- Arrow up stem -->
-    <path
-        android:pathData="M32,22 L32,10"
-        android:strokeColor="#7E5700"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000" />
-
-    <!-- Arrow up chevron -->
-    <path
-        android:pathData="M26,16 L32,10 L38,16"
-        android:strokeColor="#7E5700"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="#00000000" />
-
-    <!-- Arrow up bar -->
-    <path
-        android:pathData="M24,8 L40,8"
-        android:strokeColor="#7E5700"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000" />
-
-    <!-- Muscle highlight dots -->
-    <path
-        android:pathData="M8,30 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
-        android:fillColor="#7E5700"
-        android:fillAlpha="0.4" />
-    <path
-        android:pathData="M56,30 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
-        android:fillColor="#7E5700"
-        android:fillAlpha="0.4" />
-
+  <path
+      android:pathData="M6,22L12,22L12,42L6,42C4,42 4,22 6,22Z"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"/>
+  <path
+      android:pathData="M13.5,26L15.5,26A1.5,1.5 0,0 1,17 27.5L17,36.5A1.5,1.5 0,0 1,15.5 38L13.5,38A1.5,1.5 0,0 1,12 36.5L12,27.5A1.5,1.5 0,0 1,13.5 26z"
+      android:strokeWidth="1.8"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"/>
+  <path
+      android:pathData="M48.5,26L50.5,26A1.5,1.5 0,0 1,52 27.5L52,36.5A1.5,1.5 0,0 1,50.5 38L48.5,38A1.5,1.5 0,0 1,47 36.5L47,27.5A1.5,1.5 0,0 1,48.5 26z"
+      android:strokeWidth="1.8"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"/>
+  <path
+      android:pathData="M52,22L58,22C60,22 60,42 58,42L52,42Z"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"/>
+  <path
+      android:pathData="M20,29L44,29A3,3 0,0 1,47 32L47,32A3,3 0,0 1,44 35L20,35A3,3 0,0 1,17 32L17,32A3,3 0,0 1,20 29z"
+      android:fillColor="#000000"/>
+  <path
+      android:pathData="M32,22L32,10"
+      android:strokeWidth="3"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M26,16L32,10L38,16"
+      android:strokeLineJoin="round"
+      android:strokeWidth="3"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M24,8L40,8"
+      android:strokeWidth="3"
+      android:fillColor="#00000000"
+      android:strokeColor="#000000"
+      android:strokeLineCap="round"/>
 </vector>
