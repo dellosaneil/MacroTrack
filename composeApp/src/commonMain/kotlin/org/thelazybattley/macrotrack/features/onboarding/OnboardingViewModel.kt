@@ -20,7 +20,7 @@ class OnboardingViewModel(
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
 ) :
     ViewModel(), OnboardingCallbacks {
-    private val _state = MutableStateFlow(OnboardingViewState())
+    private val _state = MutableStateFlow(value = OnboardingViewState())
     val state = _state.asStateFlow()
 
     override fun onGoalSelected(goal: Goal) {
@@ -56,11 +56,17 @@ class OnboardingViewModel(
                     height = _state.value.height,
                     gender = _state.value.selectedGender!!,
                     activityLevel = _state.value.selectedActivityLevel!!,
-                    goal = _state.value.selectedGoal!!
+                    goal = _state.value.selectedGoal!!,
                 )
                 insertUserDetailsUseCase(
                     userDetails = userDetails
-                )
+                ).also {
+                    _state.update { currentState ->
+                        currentState.copy(
+                            isFinished = true
+                        )
+                    }
+                }
             }
             return
         }

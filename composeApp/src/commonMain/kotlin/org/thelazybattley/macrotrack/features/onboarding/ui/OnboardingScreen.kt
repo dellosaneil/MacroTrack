@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,13 +57,14 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun OnboardingScreen() {
+fun OnboardingScreen(onFinishButtonClicked: () -> Unit) {
     val viewModel: OnboardingViewModel = koinViewModel<OnboardingViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     OnboardingScreen(
         modifier = Modifier,
         viewState = viewState,
         callbacks = viewModel,
+        onFinish = onFinishButtonClicked
     )
 }
 
@@ -72,143 +72,144 @@ fun OnboardingScreen() {
 fun OnboardingScreen(
     modifier: Modifier = Modifier,
     viewState: OnboardingViewState,
-    callbacks: OnboardingCallbacks
+    callbacks: OnboardingCallbacks,
+    onFinish: () -> Unit
 ) {
     val pagerState = rememberPagerState { OnboardingStep.entries.size }
 
     LaunchedEffect(key1 = viewState.currentStep.ordinal) {
         pagerState.animateScrollToPage(page = viewState.currentStep.ordinal)
     }
+    LaunchedEffect(key1 = viewState.isFinished) {
+        if (viewState.isFinished) {
+            onFinish()
+        }
+    }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    Scaffold(
-        modifier = modifier.pointerInput(Unit) {
-            detectTapGestures {
-                focusManager.clearFocus()
-                keyboardController?.hide()
-            }
-        },
-        containerColor = colors.white
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(paddingValues = innerPadding)
-                .padding(horizontal = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+    Column(
+        modifier = modifier.fillMaxSize()
+            .padding(horizontal = 8.dp)
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                }
+            },
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 4.dp,
+                alignment = Alignment.CenterHorizontally
+            ),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(
-                    space = 4.dp,
-                    alignment = Alignment.CenterHorizontally
-                ),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                repeat(times = pagerState.pageCount) {
-                    Spacer(
-                        modifier = Modifier
-                            .clip(shape = CircleShape)
-                            .size(size = 8.dp)
-                            .background(color = if (it == pagerState.currentPage) colors.blue else colors.lightGray)
-                    )
-                }
-            }
-
-            if (viewState.currentStep.ordinal != 0) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        callbacks.onBackClicked()
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(resource = Res.drawable.ic_chevron_left),
-                        contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = colors.blue,
-                    )
-                    Text(
-                        text = stringResource(resource = Res.string.back),
-                        color = colors.deepBlue,
-                        style = typography.medium13
-                    )
-                }
-            }
-            Text(
-                text = stringResource(resource = viewState.currentStep.titleRes),
-                color = colors.black,
-                style = typography.bold24
-            )
-            Text(
-                text = stringResource(resource = viewState.currentStep.descriptionRes),
-                color = colors.gray,
-                style = typography.regular13
-            )
-
-            HorizontalPager(
-                state = pagerState,
-                userScrollEnabled = false,
-                verticalAlignment = Alignment.Top
-            ) { page ->
-                when (page) {
-                    OnboardingStep.GOAL_AND_STATS.ordinal -> {
-                        OnboardingGoalAndStatsScreen(
-                            modifier = Modifier,
-                            viewState = viewState,
-                            callbacks = callbacks
-                        )
-                    }
-
-                    OnboardingStep.ACTIVITY_LEVEL.ordinal -> {
-                        OnboardingSetActivityLevel(
-                            modifier = Modifier,
-                            viewState = viewState,
-                            callbacks = callbacks
-                        )
-                    }
-
-                    OnboardingStep.SUMMARY.ordinal -> {
-                        OnboardingSummaryScreen(
-                            modifier = Modifier,
-                            viewState = viewState,
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(weight = 1f))
-            Button(
-                modifier = Modifier.fillMaxWidth().height(height = 46.dp),
-                onClick = {
-                    callbacks.onContinueClicked()
-                },
-                shape = RoundedCornerShape(size = 14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.blue,
-                    disabledContainerColor = colors.skyBlue,
-                    contentColor = colors.white,
-                    disabledContentColor = colors.babyBlue,
-                ),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = colors.lightGray
-                ),
-                enabled = isButtonEnabled(viewState = viewState)
-            ) {
-                val text = if(viewState.currentStep == OnboardingStep.SUMMARY) {
-                    Res.string.lets_go
-                } else {
-                    Res.string.continue_text
-                }
-                Text(
-                    text = stringResource(resource = text),
-                    style = typography.bold15
+            repeat(times = pagerState.pageCount) {
+                Spacer(
+                    modifier = Modifier
+                        .clip(shape = CircleShape)
+                        .size(size = 8.dp)
+                        .background(color = if (it == pagerState.currentPage) colors.blue else colors.lightGray)
                 )
             }
-            Spacer(modifier = Modifier.height(height = 16.dp))
         }
+
+        if (viewState.currentStep.ordinal != 0) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable {
+                    callbacks.onBackClicked()
+                }
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_chevron_left),
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = colors.blue,
+                )
+                Text(
+                    text = stringResource(resource = Res.string.back),
+                    color = colors.deepBlue,
+                    style = typography.medium13
+                )
+            }
+        }
+        Text(
+            text = stringResource(resource = viewState.currentStep.titleRes),
+            color = colors.black,
+            style = typography.bold24
+        )
+        Text(
+            text = stringResource(resource = viewState.currentStep.descriptionRes),
+            color = colors.gray,
+            style = typography.regular13
+        )
+
+        HorizontalPager(
+            state = pagerState,
+            userScrollEnabled = false,
+            verticalAlignment = Alignment.Top
+        ) { page ->
+            when (page) {
+                OnboardingStep.GOAL_AND_STATS.ordinal -> {
+                    OnboardingGoalAndStatsScreen(
+                        modifier = Modifier,
+                        viewState = viewState,
+                        callbacks = callbacks
+                    )
+                }
+
+                OnboardingStep.ACTIVITY_LEVEL.ordinal -> {
+                    OnboardingSetActivityLevel(
+                        modifier = Modifier,
+                        viewState = viewState,
+                        callbacks = callbacks
+                    )
+                }
+
+                OnboardingStep.SUMMARY.ordinal -> {
+                    OnboardingSummaryScreen(
+                        modifier = Modifier,
+                        viewState = viewState,
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(weight = 1f))
+        Button(
+            modifier = Modifier.fillMaxWidth().height(height = 46.dp),
+            onClick = {
+                callbacks.onContinueClicked()
+            },
+            shape = RoundedCornerShape(size = 14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colors.blue,
+                disabledContainerColor = colors.skyBlue,
+                contentColor = colors.white,
+                disabledContentColor = colors.babyBlue,
+            ),
+            border = BorderStroke(
+                width = 1.dp,
+                color = colors.lightGray
+            ),
+            enabled = isButtonEnabled(viewState = viewState)
+        ) {
+            val text = if (viewState.currentStep == OnboardingStep.SUMMARY) {
+                Res.string.lets_go
+            } else {
+                Res.string.continue_text
+            }
+            Text(
+                text = stringResource(resource = text),
+                style = typography.bold15
+            )
+        }
+        Spacer(modifier = Modifier.height(height = 16.dp))
     }
 }
 
@@ -221,6 +222,7 @@ private fun isButtonEnabled(viewState: OnboardingViewState): Boolean {
                     viewState.selectedGoal != null &&
                     viewState.selectedGender != null
         }
+
         OnboardingStep.ACTIVITY_LEVEL -> viewState.selectedActivityLevel != null
         OnboardingStep.SUMMARY -> true
     }
@@ -233,7 +235,9 @@ private fun PreviewOnboardingScreen() {
         OnboardingScreen(
             viewState = OnboardingViewState(),
             callbacks = OnboardingCallbacks.default()
-        )
+        ) {
+
+        }
     }
 }
 

@@ -14,5 +14,6 @@ data class OnboardingViewState(
     val age: Int = 0,
     val height: Double = 0.0,
     val weight: Double = 0.0,
-    val macroGoals: MacroGoals? = null
+    val macroGoals: MacroGoals? = null,
+    val isFinished: Boolean = false
 )
