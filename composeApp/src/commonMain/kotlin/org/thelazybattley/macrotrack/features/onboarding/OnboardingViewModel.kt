@@ -1,18 +1,23 @@
 package org.thelazybattley.macrotrack.features.onboarding
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.UserGender
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingStep
 
 class OnboardingViewModel(
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
 ) :
     ViewModel(), OnboardingCallbacks {
     private val _state = MutableStateFlow(OnboardingViewState())
@@ -43,6 +48,24 @@ class OnboardingViewModel(
     }
 
     override fun onContinueClicked() {
+        if (_state.value.currentStep == OnboardingStep.SUMMARY) {
+            viewModelScope.launch {
+                val userDetails = UserDetails(
+                    weight = _state.value.weight,
+                    age = _state.value.age,
+                    height = _state.value.height,
+                    gender = _state.value.selectedGender!!,
+                    activityLevel = _state.value.selectedActivityLevel!!,
+                    goal = _state.value.selectedGoal!!
+                )
+                insertUserDetailsUseCase(
+                    userDetails = userDetails
+                )
+            }
+            return
+        }
+
+
         _state.update { currentState ->
             val nextStepNumber = currentState.currentStep.ordinal.inc()
             var macroGoals: MacroGoals? = null
