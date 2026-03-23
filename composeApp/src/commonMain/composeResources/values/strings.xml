@@ -6,6 +6,8 @@
     <string name="gain_weight">Gain weight</string>
     <string name="stay_balanced">Stay balanced</string>
     <string name="calorie_surplus">Calorie surplus</string>
+    <string name="macrotrack">MacroTrack</string>
+    <string name="track_improve_thrive">Track. Improve. Thrive.</string>
     <string name="activity_level_camel">Activity Level</string>
     <string name="how_active_are_you">How active are you on a typical week? This sets your daily calorie target.</string>
 

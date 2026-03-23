@@ -9,8 +9,8 @@ import org.thelazybattley.macrotrack.domain.repository.UserDetailsRepository
 class UserDetailsRepositoryImpl(
     private val userDetailsDao: UserDetailsDao
 ) : UserDetailsRepository {
-    override suspend fun getUserDetails(): UserDetails {
-        return userDetailsDao.getUserDetails().toDomain()
+    override suspend fun getUserDetails(): UserDetails? {
+        return userDetailsDao.getUserDetails()?.toDomain()
     }
 
     override suspend fun insertUserDetails(

@@ -26,6 +26,7 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
+import org.thelazybattley.macrotrack.features.splash.SplashViewModel
 
 expect val platformModule: Module
 
@@ -57,6 +58,7 @@ val useCaseModule = module {
 
 val viewModelModule = module {
     viewModelOf(::OnboardingViewModel)
+    viewModelOf(::SplashViewModel)
 }
 
 fun initKoin() {

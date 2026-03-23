@@ -13,5 +13,5 @@ interface UserDetailsDao {
     suspend fun insertUserDetails(userDetails: UserDetailsEntity)
 
     @Query("SELECT * FROM userdetailsentity LIMIT 1")
-    suspend fun getUserDetails(): UserDetailsEntity
+    suspend fun getUserDetails(): UserDetailsEntity?
 }

@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
+import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -29,7 +31,7 @@ fun App() {
             NavHost(
                 modifier = Modifier.padding(paddingValues = paddingValues),
                 navController = navController,
-                startDestination = MacroTrackDestination.ONBOARDING.route
+                startDestination = MacroTrackDestination.SPLASH_SCREEN.route
             ) {
                 composable(route = MacroTrackDestination.ONBOARDING.route) {
                     OnboardingScreen {
@@ -37,10 +39,18 @@ fun App() {
                     }
                 }
                 composable(route = MacroTrackDestination.HOME.route) {
-
+                    Text(text = "HOME!")
+                }
+                composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                    SplashScreen { destination ->
+                        navController.navigate(route = destination.route) {
+                            popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
                 }
             }
         }
-
     }
 }
