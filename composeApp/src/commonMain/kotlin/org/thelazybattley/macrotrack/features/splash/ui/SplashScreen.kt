@@ -17,11 +17,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_splash_screen
 import macrotrack.composeapp.generated.resources.macrotrack
@@ -59,18 +59,21 @@ fun SplashScreen(
     onNavigation: (MacroTrackDestination) -> Unit
 ) {
     val gradient = Brush.linearGradient(
-        colors = listOf(colors.royalBlue, colors.deepBlue, colors.brightBlue)
+        colors = listOf(colors.royalBlue, colors.deepBlueSplash, colors.brightBlue),
+        start = Offset(0f,0f),
+        end = Offset(x = Float.POSITIVE_INFINITY, y = Float.POSITIVE_INFINITY)
     )
     LaunchedEffect(key1 = viewState.isLoading) {
-        if (!viewState.isLoading && viewState.destination != null) {
-            delay(1_500)
-            onNavigation(viewState.destination)
-        }
+    //        if (!viewState.isLoading && viewState.destination != null) {
+    //            delay(1_500)
+    //            onNavigation(viewState.destination)
+    //        }
     }
 
     Column(
         modifier = modifier.fillMaxSize()
-            .background(brush = gradient),
+            .background(brush = gradient,
+                ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -79,13 +82,13 @@ fun SplashScreen(
                 .clip(shape = RoundedCornerShape(size = 16.dp))
                 .border(
                     width = 2.dp,
-                    color = colors.white.copy(
+                    color = colors.whiteSplash.copy(
                         alpha = 0.22f
                     ),
                     shape = RoundedCornerShape(size = 16.dp)
                 )
                 .background(
-                    color = colors.white.copy(
+                    color = colors.whiteSplash.copy(
                         alpha = 0.22f
                     )
                 ),
@@ -93,18 +96,18 @@ fun SplashScreen(
             Icon(
                 painter = painterResource(resource = Res.drawable.ic_splash_screen),
                 contentDescription = null,
-                tint = colors.white,
+                tint = colors.whiteSplash,
                 modifier = Modifier.size(size = 66.dp).padding(all = 16.dp)
             )
         }
         Text(
             text = stringResource(resource = Res.string.macrotrack),
-            color = colors.white,
+            color = colors.whiteSplash,
             style = typography.bold36
         )
         Text(
             text = stringResource(resource = Res.string.track_improve_thrive),
-            color = colors.white.copy(
+            color = colors.whiteSplash.copy(
                 alpha = 0.55f
             ),
             style = typography.regular13
@@ -118,7 +121,7 @@ fun SplashScreen(
 @Composable
 private fun PreviewSplashScreen() {
     MacroTrackTheme {
-        SplashScreen {
+        SplashScreen(viewState = SplashViewState()) {
 
         }
     }
