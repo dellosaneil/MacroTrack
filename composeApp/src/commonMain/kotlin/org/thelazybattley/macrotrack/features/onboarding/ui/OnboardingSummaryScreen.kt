@@ -24,10 +24,10 @@ import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.daily_calorie_goal
 import macrotrack.composeapp.generated.resources.daily_hydration_goals
 import macrotrack.composeapp.generated.resources.fat
-import macrotrack.composeapp.generated.resources.`ic-feature-meal-tracking`
-import macrotrack.composeapp.generated.resources.`ic-feature-report`
-import macrotrack.composeapp.generated.resources.`ic-feature-water-cup`
-import macrotrack.composeapp.generated.resources.`ic-feature-wearable`
+import macrotrack.composeapp.generated.resources.ic_feature_meal_tracking
+import macrotrack.composeapp.generated.resources.ic_feature_report
+import macrotrack.composeapp.generated.resources.ic_feature_water_cup
+import macrotrack.composeapp.generated.resources.ic_feature_wearable
 import macrotrack.composeapp.generated.resources.kcal_per_day
 import macrotrack.composeapp.generated.resources.log_all_your_meals_easily
 import macrotrack.composeapp.generated.resources.macros_calories_and_trends
@@ -67,25 +67,25 @@ fun OnboardingSummaryScreen(
         )
         WhatYouGetCard(
             modifier = Modifier.fillMaxWidth(),
-            icon = Res.drawable.`ic-feature-meal-tracking`,
+            icon = Res.drawable.ic_feature_meal_tracking,
             title = Res.string.meal_and_calorie_tracking,
             description = Res.string.log_all_your_meals_easily,
         )
         WhatYouGetCard(
             modifier = Modifier.fillMaxWidth(),
-            icon = Res.drawable.`ic-feature-wearable`,
+            icon = Res.drawable.ic_feature_wearable,
             title = Res.string.step_counter,
             description = Res.string.calories_burned_automatically
         )
         WhatYouGetCard(
             modifier = Modifier.fillMaxWidth(),
-            icon = Res.drawable.`ic-feature-report`,
+            icon = Res.drawable.ic_feature_report,
             title = Res.string.weekly_progress_reports,
             description = Res.string.macros_calories_and_trends
         )
         WhatYouGetCard(
             modifier = Modifier.fillMaxWidth(),
-            icon = Res.drawable.`ic-feature-water-cup`,
+            icon = Res.drawable.ic_feature_water_cup,
             title = Res.string.water_intake_tracker,
             description = Res.string.daily_hydration_goals
         )

@@ -23,11 +23,11 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.activity_level
 import macrotrack.composeapp.generated.resources.extremely_active
 import macrotrack.composeapp.generated.resources.hard_training_or_sport
-import macrotrack.composeapp.generated.resources.`ic-heartbeat-extremely-active`
-import macrotrack.composeapp.generated.resources.`ic-heartbeat-lightly-active`
-import macrotrack.composeapp.generated.resources.`ic-heartbeat-moderately-active`
-import macrotrack.composeapp.generated.resources.`ic-heartbeat-sedentary`
-import macrotrack.composeapp.generated.resources.`ic-heartbeat-very-active`
+import macrotrack.composeapp.generated.resources.ic_heartbeat_extremely_active
+import macrotrack.composeapp.generated.resources.ic_heartbeat_lightly_active
+import macrotrack.composeapp.generated.resources.ic_heartbeat_moderately_active
+import macrotrack.composeapp.generated.resources.ic_heartbeat_sedentary
+import macrotrack.composeapp.generated.resources.ic_heartbeat_very_active
 import macrotrack.composeapp.generated.resources.lightly_active
 import macrotrack.composeapp.generated.resources.little_or_no_exercise
 import macrotrack.composeapp.generated.resources.moderately_active
@@ -91,11 +91,11 @@ private fun ActivityLevel.descriptionRes(): StringResource {
 
 private fun ActivityLevel.iconRes(): DrawableResource {
     return when (this) {
-        ActivityLevel.SEDENTARY -> Res.drawable.`ic-heartbeat-sedentary`
-        ActivityLevel.LIGHTLY_ACTIVE -> Res.drawable.`ic-heartbeat-lightly-active`
-        ActivityLevel.MODERATELY_ACTIVE -> Res.drawable.`ic-heartbeat-moderately-active`
-        ActivityLevel.VERY_ACTIVE -> Res.drawable.`ic-heartbeat-very-active`
-        ActivityLevel.EXTREMELY_ACTIVE -> Res.drawable.`ic-heartbeat-extremely-active`
+        ActivityLevel.SEDENTARY -> Res.drawable.ic_heartbeat_sedentary
+        ActivityLevel.LIGHTLY_ACTIVE -> Res.drawable.ic_heartbeat_lightly_active
+        ActivityLevel.MODERATELY_ACTIVE -> Res.drawable.ic_heartbeat_moderately_active
+        ActivityLevel.VERY_ACTIVE -> Res.drawable.ic_heartbeat_very_active
+        ActivityLevel.EXTREMELY_ACTIVE -> Res.drawable.ic_heartbeat_extremely_active
     }
 }
 

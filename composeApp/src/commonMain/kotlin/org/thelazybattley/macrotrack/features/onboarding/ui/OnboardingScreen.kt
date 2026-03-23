@@ -41,7 +41,7 @@ import macrotrack.composeapp.generated.resources.back
 import macrotrack.composeapp.generated.resources.choose_your_goal
 import macrotrack.composeapp.generated.resources.continue_text
 import macrotrack.composeapp.generated.resources.how_active_are_you
-import macrotrack.composeapp.generated.resources.`ic-chevron-left`
+import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.personalized_plan
 import macrotrack.composeapp.generated.resources.set_up_your_profile
 import macrotrack.composeapp.generated.resources.youre_all_set
@@ -123,7 +123,7 @@ fun OnboardingScreen(
                     }
                 ) {
                     Icon(
-                        painter = painterResource(resource = Res.drawable.`ic-chevron-left`),
+                        painter = painterResource(resource = Res.drawable.ic_chevron_left),
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
                         tint = colors.deepBlue
