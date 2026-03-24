@@ -2,7 +2,6 @@ package org.thelazybattley.macrotrack.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import org.thelazybattley.macrotrack.features.home.ui.HomeTabScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
@@ -39,7 +39,7 @@ fun App() {
                     }
                 }
                 composable(route = MacroTrackDestination.HOME.route) {
-                    Text(text = "HOME!")
+                    HomeTabScreen()
                 }
                 composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
                     SplashScreen { destination ->

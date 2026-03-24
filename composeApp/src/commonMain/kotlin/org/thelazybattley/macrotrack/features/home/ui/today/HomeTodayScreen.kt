@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.home.ui.today
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,6 +66,17 @@ private fun CaloriesCard(modifier: Modifier = Modifier) {
                 .padding(all = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            var progress by remember { mutableStateOf(0f) }
+            val animatedProgress by animateFloatAsState(
+                targetValue = progress,
+                animationSpec = tween(
+                    durationMillis = 1500
+                )
+            )
+            LaunchedEffect(key1 = Unit) {
+                progress = 0.5f
+            }
+
             Box(
                 contentAlignment = Alignment.Center
             ) {
@@ -67,7 +85,8 @@ private fun CaloriesCard(modifier: Modifier = Modifier) {
                     color = colors.deepBlue,
                     strokeWidth = 10.dp,
                     trackColor = colors.lightGray,
-                    gapSize = 0.dp
+                    gapSize = 0.dp,
+                    progress = { animatedProgress }
                 )
                 Column {
                     Text(
