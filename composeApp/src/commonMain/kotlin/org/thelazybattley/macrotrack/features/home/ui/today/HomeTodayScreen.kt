@@ -71,11 +71,13 @@ fun HomeTodayScreen(
     callbacks: HomeTabCallbacks
 ) {
     LazyColumn(
-        modifier = modifier.padding(paddingValues = AppPadding),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
         item {
             CaloriesCard(modifier = Modifier.fillMaxWidth())
+        }
+        item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -103,10 +105,14 @@ fun HomeTodayScreen(
                     macroColor = colors.orange
                 )
             }
+        }
+        item {
             StepDetailsCard(
                 modifier = Modifier.fillMaxWidth(), steps = 521, goalSteps = 2000,
                 burned = 50
             )
+        }
+        item {
             LoggedMealsCard(modifier = Modifier.fillMaxWidth())
         }
     }

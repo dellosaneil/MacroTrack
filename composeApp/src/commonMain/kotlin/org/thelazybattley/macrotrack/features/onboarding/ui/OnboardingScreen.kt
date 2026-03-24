@@ -52,17 +52,16 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
-import org.thelazybattley.macrotrack.ui.AppPadding
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun OnboardingScreen(onFinishButtonClicked: () -> Unit) {
+fun OnboardingScreen(modifier: Modifier = Modifier, onFinishButtonClicked: () -> Unit) {
     val viewModel: OnboardingViewModel = koinViewModel<OnboardingViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     OnboardingScreen(
-        modifier = Modifier,
+        modifier = modifier,
         viewState = viewState,
         callbacks = viewModel,
         onFinish = onFinishButtonClicked
@@ -90,7 +89,6 @@ fun OnboardingScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     Column(
         modifier = modifier.fillMaxSize()
-            .padding(paddingValues = AppPadding)
             .pointerInput(Unit) {
                 detectTapGestures {
                     focusManager.clearFocus()

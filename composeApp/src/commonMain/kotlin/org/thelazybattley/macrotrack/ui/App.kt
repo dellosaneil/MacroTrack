@@ -35,12 +35,16 @@ fun App() {
                 startDestination = MacroTrackDestination.SPLASH_SCREEN.route
             ) {
                 composable(route = MacroTrackDestination.ONBOARDING.route) {
-                    OnboardingScreen {
+                    OnboardingScreen(
+                        modifier = Modifier.padding(paddingValues = AppPadding)
+                    ) {
                         navController.navigate(route = MacroTrackDestination.HOME.route)
                     }
                 }
                 composable(route = MacroTrackDestination.HOME.route) {
-                    HomeTabScreen()
+                    HomeTabScreen(
+                        modifier = Modifier.padding(paddingValues = AppPadding)
+                    )
                 }
                 composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
                     SplashScreen { destination ->
