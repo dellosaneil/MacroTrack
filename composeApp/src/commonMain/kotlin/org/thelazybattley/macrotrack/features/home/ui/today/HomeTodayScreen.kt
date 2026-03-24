@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,14 +35,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.add_a_meal
+import macrotrack.composeapp.generated.resources.breakfast
 import macrotrack.composeapp.generated.resources.burned
 import macrotrack.composeapp.generated.resources.carbs
+import macrotrack.composeapp.generated.resources.dinner
 import macrotrack.composeapp.generated.resources.eaten
 import macrotrack.composeapp.generated.resources.fat
 import macrotrack.composeapp.generated.resources.goal
 import macrotrack.composeapp.generated.resources.ic_heartbeat_lightly_active
 import macrotrack.composeapp.generated.resources.kcal
 import macrotrack.composeapp.generated.resources.kcal_burned_steps
+import macrotrack.composeapp.generated.resources.lunch
+import macrotrack.composeapp.generated.resources.meals_logged_today
+import macrotrack.composeapp.generated.resources.p_c_f
 import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.remaining
 import macrotrack.composeapp.generated.resources.steps_today
@@ -63,41 +70,128 @@ fun HomeTodayScreen(
     viewState: HomeTabViewState,
     callbacks: HomeTabCallbacks
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier.padding(paddingValues = AppPadding),
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
-        CaloriesCard(modifier = Modifier.fillMaxWidth())
-        Row(
+        item {
+            CaloriesCard(modifier = Modifier.fillMaxWidth())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+            ) {
+                MacroCardDetails(
+                    macro = Res.string.protein,
+                    modifier = Modifier.weight(weight = 1f),
+                    currentValue = 67,
+                    goalValue = 130,
+                    macroColor = colors.deepBlue
+                )
+                MacroCardDetails(
+                    macro = Res.string.carbs,
+                    modifier = Modifier.weight(weight = 1f),
+                    currentValue = 23,
+                    goalValue = 60,
+                    macroColor = colors.green
+                )
+                MacroCardDetails(
+                    macro = Res.string.fat,
+                    modifier = Modifier.weight(weight = 1f),
+                    currentValue = 34,
+                    goalValue = 55,
+                    macroColor = colors.orange
+                )
+            }
+            StepDetailsCard(
+                modifier = Modifier.fillMaxWidth(), steps = 521, goalSteps = 2000,
+                burned = 50
+            )
+            LoggedMealsCard(modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+@Composable
+private fun LoggedMealsCard(modifier: Modifier) {
+    Text(
+        text = stringResource(resource = Res.string.meals_logged_today),
+        color = colors.black,
+        style = typography.bold15
+    )
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = colors.offWhite
+        )
+    ) {
+        LoggedMealsDetails(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+            meal = Res.string.breakfast
+        )
+        HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+        LoggedMealsDetails(
+            modifier = Modifier.fillMaxWidth(),
+            meal = Res.string.lunch
+        )
+        HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+        LoggedMealsDetails(
+            modifier = Modifier.fillMaxWidth(),
+            meal = Res.string.dinner
+        )
+        HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+        Text(
+            text = stringResource(resource = Res.string.add_a_meal),
+            color = colors.deepBlue,
+            style = typography.bold14,
+            modifier = Modifier.padding(all = 16.dp)
+                .align(alignment = Alignment.CenterHorizontally)
+        )
+    }
+}
+
+@Composable
+private fun LoggedMealsDetails(
+    modifier: Modifier = Modifier,
+    meal: StringResource
+) {
+    Row(
+        modifier = modifier.padding(all = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier.size(size = 36.dp)
+                .background(
+                    color = colors.iceBlue,
+                    shape = RoundedCornerShape(size = 4.dp)
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            MacroCardDetails(
-                macro = Res.string.protein,
-                modifier = Modifier.weight(weight = 1f),
-                currentValue = 67,
-                goalValue = 130,
-                macroColor = colors.deepBlue
-            )
-            MacroCardDetails(
-                macro = Res.string.carbs,
-                modifier = Modifier.weight(weight = 1f),
-                currentValue = 23,
-                goalValue = 60,
-                macroColor = colors.green
-            )
-            MacroCardDetails(
-                macro = Res.string.fat,
-                modifier = Modifier.weight(weight = 1f),
-                currentValue = 34,
-                goalValue = 55,
-                macroColor = colors.orange
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_heartbeat_lightly_active),
+                contentDescription = null,
+                modifier = Modifier.size(size = 16.dp),
+                tint = colors.blue
             )
         }
-        StepDetailsCard(
-            modifier = Modifier.fillMaxWidth(), steps = 521, goalSteps = 2000,
-            burned = 50
+        Column {
+            Text(
+                text = stringResource(resource = meal),
+                color = colors.black,
+                style = typography.bold13
+            )
+            Text(
+                text = stringResource(resource = Res.string.p_c_f, 100, 100, 100),
+                color = colors.mediumGray,
+                style = typography.regular10
+            )
+        }
+        Spacer(modifier = Modifier.weight(weight = 1f))
+        Text(
+            text = stringResource(resource = Res.string.kcal, 200),
+            color = colors.black,
+            style = typography.bold13
         )
     }
 }

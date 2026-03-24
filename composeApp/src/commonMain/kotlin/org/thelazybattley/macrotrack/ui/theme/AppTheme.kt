@@ -11,6 +11,7 @@ data class MacroTrackTypography(
     val bold11: TextStyle,
     val bold12: TextStyle,
     val bold13: TextStyle,
+    val bold14: TextStyle,
     val bold15: TextStyle,
     val bold16: TextStyle,
     val bold24: TextStyle,

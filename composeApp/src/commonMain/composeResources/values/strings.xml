@@ -61,4 +61,10 @@
     <string name="steps_today">%1$d steps today</string>
     <string name="kcal_burned_steps">%1$d kcal burned · %2$d% of goal</string>
     <string name="view">View</string>
+    <string name="meals_logged_today">Meals logged today</string>
+    <string name="breakfast">Breakfast</string>
+    <string name="lunch">Lunch</string>
+    <string name="dinner">Dinner</string>
+    <string name="p_c_f">P %1$dg · C %2$dg · F %3$dg</string>
+    <string name="add_a_meal">+ Add a meal</string>
 </resources>
