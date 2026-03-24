@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,10 +39,15 @@ import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.eaten
 import macrotrack.composeapp.generated.resources.fat
 import macrotrack.composeapp.generated.resources.goal
+import macrotrack.composeapp.generated.resources.ic_heartbeat_lightly_active
 import macrotrack.composeapp.generated.resources.kcal
+import macrotrack.composeapp.generated.resources.kcal_burned_steps
 import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.remaining
+import macrotrack.composeapp.generated.resources.steps_today
+import macrotrack.composeapp.generated.resources.view
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.features.home.HomeTabCallbacks
 import org.thelazybattley.macrotrack.features.home.HomeTabViewState
@@ -49,6 +55,7 @@ import org.thelazybattley.macrotrack.ui.AppPadding
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import kotlin.math.roundToInt
 
 @Composable
 fun HomeTodayScreen(
@@ -60,7 +67,7 @@ fun HomeTodayScreen(
         modifier = modifier.padding(paddingValues = AppPadding),
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
-        CaloriesCard()
+        CaloriesCard(modifier = Modifier.fillMaxWidth())
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -88,13 +95,104 @@ fun HomeTodayScreen(
                 macroColor = colors.orange
             )
         }
+        StepDetailsCard(
+            modifier = Modifier.fillMaxWidth(), steps = 521, goalSteps = 2000,
+            burned = 50
+        )
+    }
+}
+
+@Composable
+private fun StepDetailsCard(
+    modifier: Modifier,
+    steps: Int,
+    goalSteps: Int,
+    burned: Int
+) {
+    var progress by remember { mutableStateOf(0f) }
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        animationSpec = tween(
+            durationMillis = 1500
+        )
+    )
+    LaunchedEffect(key1 = Unit) {
+        progress = steps.toFloat() / goalSteps.toFloat()
+    }
+
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = colors.iceBlue
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = colors.skyBlue,
+                        shape = RoundedCornerShape(size = 8.dp)
+                    ).size(size = 42.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_heartbeat_lightly_active),
+                    contentDescription = null,
+                    modifier = Modifier.size(size = 16.dp),
+                    tint = colors.blue
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp),
+                modifier = Modifier.weight(weight = 1f)
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.steps_today, steps),
+                    color = colors.deepBlue,
+                    style = typography.bold13
+                )
+                Text(
+                    text = stringResource(
+                        resource = Res.string.kcal_burned_steps,
+                        burned, (progress * 100f).roundToInt()
+                    ),
+                    color = colors.deepBlue,
+                    style = typography.regular10
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(colors.lightGray)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(animatedProgress)
+                            .fillMaxHeight()
+                            .background(color = colors.deepBlue, shape = RoundedCornerShape(8.dp))
+                    )
+                }
+            }
+            Text(
+                text = stringResource(resource = Res.string.view),
+                color = colors.deepBlue,
+                style = typography.bold13
+            )
+        }
     }
 }
 
 @Composable
 private fun CaloriesCard(modifier: Modifier = Modifier) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
         shape = RoundedCornerShape(size = 16.dp),
         colors = CardDefaults.cardColors(
             containerColor = colors.offWhite

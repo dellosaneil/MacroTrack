@@ -18,6 +18,7 @@ val OffWhite = Color(0xFFF2F5FA)
 val DeepBlue = Color(0xFF1565C0)
 val RoyalBlue = Color(0xFF0D47A1)
 val BrightBlue = Color(0xFF1976D2)
+val IceBlue = Color(0xFFE3F2FD)
 
 
 val DarkWhite = Color(0xFF1C1B1F)
@@ -38,3 +39,4 @@ val DarkDeepBlue = Color(0xFFD0BCFF)
 val DarkRoyalBlue = Color(0xFF0D0C10)
 val DarkBrightBlue = Color(0xFF2B2930)
 val DarkDeepBlueSplash = Color(0xFF1C1B1F)
+val DarkIceBlue = Color(0xFF381E72)
