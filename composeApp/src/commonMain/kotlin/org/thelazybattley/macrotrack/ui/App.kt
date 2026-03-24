@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.ui
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -8,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,10 +25,9 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 fun App() {
     val navController = rememberNavController()
     val currentDestination: MacroTrackDestination by remember { mutableStateOf(value = MacroTrackDestination.HOME) }
-
     MacroTrackTheme {
         Scaffold(
-            containerColor = colors.white
+            containerColor = colors.white,
         ) { paddingValues ->
             NavHost(
                 modifier = Modifier.padding(paddingValues = paddingValues),
@@ -54,3 +55,5 @@ fun App() {
         }
     }
 }
+
+val AppPadding = PaddingValues(all = 16.dp)
