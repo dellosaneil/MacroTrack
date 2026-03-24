@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_splash_screen
 import macrotrack.composeapp.generated.resources.macrotrack
@@ -64,10 +65,10 @@ fun SplashScreen(
         end = Offset(x = Float.POSITIVE_INFINITY, y = Float.POSITIVE_INFINITY)
     )
     LaunchedEffect(key1 = viewState.isLoading) {
-    //        if (!viewState.isLoading && viewState.destination != null) {
-    //            delay(1_500)
-    //            onNavigation(viewState.destination)
-    //        }
+        if (!viewState.isLoading && viewState.destination != null) {
+            delay(1_500)
+            onNavigation(viewState.destination)
+        }
     }
 
     Column(

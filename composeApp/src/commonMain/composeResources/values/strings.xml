@@ -48,9 +48,14 @@
     <string name="meal_and_calorie_tracking">Meal &amp; calorie tracking</string>
     <string name="log_all_your_meals_easily">Log all your meals easily</string>
     <string name="step_counter">Step counter</string>
+    <string name="remaining">remaining</string>
     <string name="calories_burned_automatically">Calories burned automatically</string>
     <string name="weekly_progress_reports">Weekly progress reports</string>
     <string name="macros_calories_and_trends">Macros, calories, &amp; trends</string>
     <string name="water_intake_tracker">Water intake tracker</string>
     <string name="daily_hydration_goals">Daily hydration goals</string>
+    <string name="goal">Goal</string>
+    <string name="eaten">Eaten</string>
+    <string name="burned">Burned</string>
+    <string name="kcal">%1$d kcal</string>
 </resources>
