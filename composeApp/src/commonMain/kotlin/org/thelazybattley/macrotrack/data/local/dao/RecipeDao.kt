@@ -17,6 +17,6 @@ interface RecipeDao {
     fun getAllRecipes(): Flow<List<RecipeEntity>>
 
     @Query("SELECT * FROM recipeentity WHERE name = :name")
-    suspend fun getRecipeByName(name: String): List<RecipeEntity>
+    fun getRecipeByName(name: String): Flow<List<RecipeEntity>>
 
 }

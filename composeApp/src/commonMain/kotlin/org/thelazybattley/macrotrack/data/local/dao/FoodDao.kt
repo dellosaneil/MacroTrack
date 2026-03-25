@@ -16,5 +16,5 @@ interface FoodDao {
     fun getAllFoods(): Flow<List<FoodEntity>>
 
     @Query(value = "SELECT * FROM FoodEntity WHERE name = :name")
-    suspend fun getFoodByName(name: String): List<FoodEntity>
+    fun getFoodByName(name: String): Flow<List<FoodEntity>>
 }

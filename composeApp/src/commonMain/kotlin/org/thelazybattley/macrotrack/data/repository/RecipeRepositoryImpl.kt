@@ -21,9 +21,11 @@ class RecipeRepositoryImpl(private val dao: RecipeDao) : RecipeRepository {
         }
     }
 
-    override suspend fun getRecipeByName(name: String): List<Recipe> {
-        return dao.getRecipeByName(name = name).map { recipe ->
-            recipe.toRecipe()
+    override suspend fun getRecipeByName(name: String): Flow<List<Recipe>> {
+        return dao.getRecipeByName(name = name).map { flow ->
+            flow.map { entity ->
+                entity.toRecipe()
+            }
         }
     }
 }

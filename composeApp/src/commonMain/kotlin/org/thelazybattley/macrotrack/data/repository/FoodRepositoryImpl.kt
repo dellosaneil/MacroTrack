@@ -23,9 +23,11 @@ class FoodRepositoryImpl(
         }
     }
 
-    override suspend fun getFoodByName(name: String): List<Food> {
-        return dao.getFoodByName(name = name).map { food ->
-            food.toFood()
+    override suspend fun getFoodByName(name: String): Flow<List<Food>> {
+        return dao.getFoodByName(name = name).map { flow ->
+            flow.map { entity ->
+                entity.toFood()
+            }
         }
     }
 }
