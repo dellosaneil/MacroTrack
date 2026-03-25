@@ -74,7 +74,10 @@ fun HomeTodayScreen(
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
         item {
-            CaloriesCard(modifier = Modifier.fillMaxWidth())
+            CaloriesCard(
+                modifier = Modifier.fillMaxWidth(),
+                goalCalories = viewState.macroGoals?.calories ?: 0
+            )
         }
         item {
             Row(
@@ -86,28 +89,30 @@ fun HomeTodayScreen(
                     macro = Res.string.protein,
                     modifier = Modifier.weight(weight = 1f),
                     currentValue = 67,
-                    goalValue = 130,
+                    goalValue = viewState.macroGoals?.protein ?: 0,
                     macroColor = colors.deepBlue
                 )
                 MacroCardDetails(
                     macro = Res.string.carbs,
                     modifier = Modifier.weight(weight = 1f),
                     currentValue = 23,
-                    goalValue = 60,
+                    goalValue = viewState.macroGoals?.carbs ?: 0,
                     macroColor = colors.green
                 )
                 MacroCardDetails(
                     macro = Res.string.fat,
                     modifier = Modifier.weight(weight = 1f),
                     currentValue = 34,
-                    goalValue = 55,
+                    goalValue = viewState.macroGoals?.fat ?: 0,
                     macroColor = colors.orange
                 )
             }
         }
         item {
             StepDetailsCard(
-                modifier = Modifier.fillMaxWidth(), steps = 521, goalSteps = 2000,
+                modifier = Modifier.fillMaxWidth(),
+                steps = 521,
+                goalSteps = 2000,
                 burned = 50
             )
         }
@@ -289,7 +294,10 @@ private fun StepDetailsCard(
 }
 
 @Composable
-private fun CaloriesCard(modifier: Modifier = Modifier) {
+private fun CaloriesCard(
+    modifier: Modifier = Modifier,
+    goalCalories: Int
+) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(size = 16.dp),
@@ -325,9 +333,9 @@ private fun CaloriesCard(modifier: Modifier = Modifier) {
                     gapSize = 0.dp,
                     progress = { animatedProgress }
                 )
-                Column {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "1,340",
+                        text = goalCalories.toString(),
                         color = colors.black,
                         style = typography.bold15
                     )
@@ -347,7 +355,7 @@ private fun CaloriesCard(modifier: Modifier = Modifier) {
                 CalorieCardDetails(
                     modifier = Modifier,
                     title = Res.string.goal,
-                    kcal = 2000,
+                    kcal = goalCalories,
                 )
                 HorizontalDivider(color = colors.lightGray)
                 CalorieCardDetails(
@@ -382,7 +390,8 @@ private fun MacroCardDetails(
             durationMillis = 1500
         )
     )
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = goalValue) {
+        if(goalValue == 0) return@LaunchedEffect
         progress = currentValue.toFloat() / goalValue.toFloat()
     }
     Card(

@@ -15,7 +15,7 @@ import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
     entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class],
-    version = 2, exportSchema = true
+    version = 1, exportSchema = true
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 @TypeConverters(RoomConverters::class)
