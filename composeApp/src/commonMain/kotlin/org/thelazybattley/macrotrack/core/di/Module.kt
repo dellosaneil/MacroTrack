@@ -36,6 +36,7 @@ val sharedModule = module {
     single { get<AppDatabase>().foodDao() }
     single { get<AppDatabase>().recipeDao() }
     single { get<AppDatabase>().userDetailsDao() }
+    single { get<AppDatabase>().foodLogDao() }
 }
 
 val repositoryModule = module {
