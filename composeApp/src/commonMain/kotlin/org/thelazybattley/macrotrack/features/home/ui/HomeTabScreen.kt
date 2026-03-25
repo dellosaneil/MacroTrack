@@ -1,7 +1,10 @@
 package org.thelazybattley.macrotrack.features.home.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.PrimaryTabRow
@@ -14,8 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.month
@@ -60,7 +65,19 @@ fun HomeTabScreen(
             containerColor = colors.offWhite,
             contentColor = colors.black,
             indicator = {
-
+                Spacer(
+                    modifier = Modifier
+                        .tabIndicatorOffset(
+                            selectedTabIndex = selectedTimePeriod.ordinal
+                        )
+                        .fillMaxSize()
+                        .padding(all = 4.dp)
+                        .shadow(elevation = 1.dp, shape = RoundedCornerShape(size = 12.dp))
+                        .clip(shape = RoundedCornerShape(size = 12.dp))
+                        .background(
+                            color = colors.white
+                        ).zIndex(zIndex = -1f)
+                )
             },
             divider = {
 
