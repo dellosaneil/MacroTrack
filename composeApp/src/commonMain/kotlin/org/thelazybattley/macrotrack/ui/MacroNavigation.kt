@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -22,9 +24,13 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
 @Composable
 @Preview(showBackground = true)
-fun App() {
+fun MacroNavigation() {
     val navController = rememberNavController()
-    val currentDestination: MacroTrackDestination by remember { mutableStateOf(value = MacroTrackDestination.HOME) }
+    var currentDestination: MacroTrackDestination by remember { mutableStateOf(value = MacroTrackDestination.HOME) }
+    LaunchedEffect(key1 = navController.currentDestination) {
+        val destination = MacroTrackDestination.entries.find { destination -> destination.route == navController.currentDestination?.route } ?: return@LaunchedEffect
+        currentDestination = destination
+    }
     MacroTrackTheme {
         Scaffold(
             containerColor = colors.white,

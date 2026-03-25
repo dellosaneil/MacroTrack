@@ -9,6 +9,6 @@ interface FoodRepository {
 
     suspend fun getAllFoods(): Flow<List<Food>>
 
-    suspend fun getFoodByName(name: String): List<Food>
+    suspend fun getFoodByName(name: String): Flow<List<Food>>
 
 }

@@ -9,7 +9,7 @@ interface RecipeRepository {
 
     suspend fun getAllRecipe(): Flow<List<Recipe>>
 
-    suspend fun getRecipeByName(name: String): List<Recipe>
+    suspend fun getRecipeByName(name: String): Flow<List<Recipe>>
 
 
 }
