@@ -9,9 +9,11 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.data.local.AppDatabase
+import org.thelazybattley.macrotrack.data.repository.FoodLogRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.FoodRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.RecipeRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.UserDetailsRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
 import org.thelazybattley.macrotrack.domain.repository.FoodRepository
 import org.thelazybattley.macrotrack.domain.repository.RecipeRepository
 import org.thelazybattley.macrotrack.domain.repository.UserDetailsRepository
@@ -43,6 +45,7 @@ val repositoryModule = module {
     singleOf(::FoodRepositoryImpl) { bind<FoodRepository>() }
     singleOf(::RecipeRepositoryImpl) { bind<RecipeRepository>() }
     singleOf(::UserDetailsRepositoryImpl) { bind<UserDetailsRepository>() }
+    singleOf(::FoodLogRepositoryImpl) { bind<FoodLogRepository>() }
 }
 
 val useCaseModule = module {
