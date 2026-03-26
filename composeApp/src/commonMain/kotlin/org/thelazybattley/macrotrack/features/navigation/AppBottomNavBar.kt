@@ -37,7 +37,7 @@ fun MacroBottomNavBar(
         )
         NavigationBar(
             modifier = modifier,
-            containerColor = colors.white,
+            containerColor = colors.white
         ) {
             MacroTrackMainDestination.entries.forEachIndexed { index, destination ->
                 val isSelected = indexSelected == index
@@ -49,6 +49,7 @@ fun MacroBottomNavBar(
                 NavigationBarItem(
                     selected = isSelected,
                     onClick = {
+                        indexSelected = index
                         onDestinationClicked(destination)
                     },
                     icon = {
