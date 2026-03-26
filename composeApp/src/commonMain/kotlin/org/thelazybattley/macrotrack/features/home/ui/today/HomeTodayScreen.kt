@@ -130,6 +130,7 @@ private fun LoggedMealsCard(modifier: Modifier) {
         color = colors.black,
         style = typography.bold15
     )
+    Spacer(modifier = Modifier.height(height = 8.dp))
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(

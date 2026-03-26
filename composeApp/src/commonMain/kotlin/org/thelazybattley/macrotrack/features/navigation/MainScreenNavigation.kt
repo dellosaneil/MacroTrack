@@ -41,7 +41,9 @@ fun MainScreenNavigation(
         }
     ) { innerPadding ->
         NavHost(
-            modifier = Modifier.padding(paddingValues = innerPadding),
+            modifier = Modifier
+                .padding(paddingValues = innerPadding)
+                .padding(paddingValues = AppPadding),
             navController = navController,
             startDestination = MacroTrackMainDestination.HOME.route
         ) {
@@ -63,8 +65,6 @@ fun MainScreenNavigation(
                 Text("profile")
             }
         }
-
-
     }
 
 }
