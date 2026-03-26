@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.features.addmeal.ui.FoodFilter
 
 class AddMealViewModel: ViewModel(), AddMealCallbacks {
 
@@ -15,6 +16,14 @@ class AddMealViewModel: ViewModel(), AddMealCallbacks {
         _state.update { currentState ->
             currentState.copy(
                 selectedMealType = mealType
+            )
+        }
+    }
+
+    override fun onFoodFilterSelected(foodFilter: FoodFilter) {
+        _state.update { currentState ->
+            currentState.copy(
+                selectedFoodFilter = foodFilter
             )
         }
     }

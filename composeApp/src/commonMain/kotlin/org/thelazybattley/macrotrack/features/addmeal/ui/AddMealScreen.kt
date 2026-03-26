@@ -73,6 +73,11 @@ private fun AddMealScreen(
         ) {
 
         }
+        AddMealFoodFilterSelection(
+            modifier = Modifier.fillMaxWidth(),
+            callbacks = callbacks,
+            viewState = viewState
+        )
     }
 }
 

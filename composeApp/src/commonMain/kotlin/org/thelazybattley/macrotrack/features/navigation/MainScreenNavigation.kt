@@ -14,12 +14,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.thelazybattley.macrotrack.features.home.ui.HomeTabScreen
+import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackMainDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
 @Composable
 fun MainScreenNavigation(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigate: (MacroTrackDestination) -> Unit
 ) {
     val navController = rememberNavController()
     var currentDestination by remember { mutableStateOf(MacroTrackMainDestination.HOME) }
@@ -48,7 +50,9 @@ fun MainScreenNavigation(
             startDestination = MacroTrackMainDestination.HOME.route
         ) {
             composable(route = MacroTrackMainDestination.HOME.route) {
-                HomeTabScreen()
+                HomeTabScreen {
+                    onNavigate(it)
+                }
             }
             composable(route = MacroTrackMainDestination.LOG.route) {
                 Text(
@@ -76,5 +80,7 @@ fun MainScreenNavigation(
 )
 @Composable
 private fun MainScreenNavigation() {
-    MainScreenNavigation(modifier = Modifier)
+    MainScreenNavigation(modifier = Modifier) {
+
+    }
 }

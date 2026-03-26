@@ -33,18 +33,23 @@ import org.thelazybattley.macrotrack.features.home.HomeTabCallbacks
 import org.thelazybattley.macrotrack.features.home.HomeTabViewModel
 import org.thelazybattley.macrotrack.features.home.HomeTabViewState
 import org.thelazybattley.macrotrack.features.home.ui.today.HomeTodayScreen
+import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun HomeTabScreen(modifier: Modifier = Modifier) {
+fun HomeTabScreen(
+    modifier: Modifier = Modifier,
+    onNavigate: (MacroTrackDestination) -> Unit
+) {
     val viewModel = koinViewModel<HomeTabViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     HomeTabScreen(
         modifier = modifier,
         viewState = viewState,
-        callbacks = viewModel
+        callbacks = viewModel,
+        onNavigate = onNavigate
     )
 }
 
@@ -52,7 +57,8 @@ fun HomeTabScreen(modifier: Modifier = Modifier) {
 fun HomeTabScreen(
     modifier: Modifier = Modifier,
     viewState: HomeTabViewState,
-    callbacks: HomeTabCallbacks
+    callbacks: HomeTabCallbacks,
+    onNavigate: (MacroTrackDestination) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -105,7 +111,8 @@ fun HomeTabScreen(
 
         HomeTodayScreen(
             viewState = viewState,
-            callbacks = callbacks
+            callbacks = callbacks,
+            onNavigate = onNavigate
         )
     }
 
@@ -147,7 +154,7 @@ private fun PreviewHomeTabScreen() {
         HomeTabScreen(
             viewState = HomeTabViewState(),
             callbacks = HomeTabCallbacks.default(),
-        )
+        ) {}
     }
 }
 

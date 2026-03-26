@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,6 +59,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.features.home.HomeTabCallbacks
 import org.thelazybattley.macrotrack.features.home.HomeTabViewState
+import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -67,8 +69,17 @@ import kotlin.math.roundToInt
 fun HomeTodayScreen(
     modifier: Modifier = Modifier,
     viewState: HomeTabViewState,
-    callbacks: HomeTabCallbacks
+    callbacks: HomeTabCallbacks,
+    onNavigate: (MacroTrackDestination) -> Unit
 ) {
+    LaunchedEffect(key1 = viewState.isNavigationTriggered) {
+        if (viewState.isNavigationTriggered) {
+            onNavigate(viewState.onNavigation ?: return@LaunchedEffect)
+        }
+    }
+    LaunchedEffect(key1 = Unit) {
+        callbacks.resetNavigation()
+    }
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 16.dp),
@@ -118,13 +129,18 @@ fun HomeTodayScreen(
             )
         }
         item {
-            LoggedMealsCard(modifier = Modifier.fillMaxWidth())
+            LoggedMealsCard(modifier = Modifier.fillMaxWidth()) {
+                callbacks.onNavigation(destination = MacroTrackDestination.ADD_MEAL)
+            }
         }
     }
 }
 
 @Composable
-private fun LoggedMealsCard(modifier: Modifier) {
+private fun LoggedMealsCard(
+    modifier: Modifier,
+    addMealTriggered: () -> Unit
+) {
     Text(
         text = stringResource(resource = Res.string.meals_logged_today),
         color = colors.black,
@@ -158,6 +174,10 @@ private fun LoggedMealsCard(modifier: Modifier) {
             style = typography.bold14,
             modifier = Modifier.padding(all = 16.dp)
                 .align(alignment = Alignment.CenterHorizontally)
+                .clickable {
+                    addMealTriggered()
+                }
+
         )
     }
 }
@@ -393,7 +413,7 @@ private fun MacroCardDetails(
         )
     )
     LaunchedEffect(key1 = goalValue) {
-        if(goalValue == 0) return@LaunchedEffect
+        if (goalValue == 0) return@LaunchedEffect
         progress = currentValue.toFloat() / goalValue.toFloat()
     }
     Card(
@@ -470,9 +490,10 @@ private fun CalorieCardDetails(
 private fun PreviewHomeTodayScreen() {
     MacroTrackTheme {
         HomeTodayScreen(
-            modifier = Modifier,
             viewState = HomeTabViewState(),
-            callbacks = HomeTabCallbacks.default()
-        )
+            callbacks = HomeTabCallbacks.default(),
+        ) {
+
+        }
     }
 }
