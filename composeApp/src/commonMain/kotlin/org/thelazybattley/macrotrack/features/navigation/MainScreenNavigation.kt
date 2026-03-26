@@ -4,6 +4,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
@@ -18,17 +22,26 @@ fun MainScreenNavigation(
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
+    var currentDestination by remember { mutableStateOf(MacroTrackMainDestination.HOME) }
+    navController.addOnDestinationChangedListener { _, destination, _ ->
+        currentDestination = MacroTrackMainDestination.entries.find { macroDestination ->
+            destination.route == macroDestination.route
+        } ?: MacroTrackMainDestination.HOME
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = colors.white,
         bottomBar = {
-            MacroBottomNavBar { destination ->
+            MacroBottomNavBar(
+                selectedDestination = currentDestination,
+            ) { destination ->
                 navController.navigate(route = destination.route)
             }
         }
     ) { innerPadding ->
         NavHost(
-            modifier= Modifier.padding(paddingValues = innerPadding),
+            modifier = Modifier.padding(paddingValues = innerPadding),
             navController = navController,
             startDestination = MacroTrackMainDestination.HOME.route
         ) {

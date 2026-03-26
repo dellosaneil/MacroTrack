@@ -36,7 +36,9 @@ fun SplashScreenNavigationNavigation() {
             }
             composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
                 SplashScreen { destination ->
-                    navController.navigate(route = destination.route) {
+                    navController.navigate(
+                        route = destination.route
+                    ) {
                         popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
                             inclusive = true
                         }

@@ -10,10 +10,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,9 +23,9 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun MacroBottomNavBar(
     modifier: Modifier = Modifier,
+    selectedDestination: MacroTrackMainDestination?,
     onDestinationClicked: (MacroTrackMainDestination) -> Unit
 ) {
-    var indexSelected by remember { mutableIntStateOf(value = MacroTrackMainDestination.HOME.ordinal) }
     Column {
         HorizontalDivider(
             thickness = 1.dp,
@@ -40,7 +36,7 @@ fun MacroBottomNavBar(
             containerColor = colors.white
         ) {
             MacroTrackMainDestination.entries.forEachIndexed { index, destination ->
-                val isSelected = indexSelected == index
+                val isSelected = selectedDestination?.ordinal == index
                 val color = if (isSelected) {
                     colors.deepBlue
                 } else {
@@ -49,7 +45,6 @@ fun MacroBottomNavBar(
                 NavigationBarItem(
                     selected = isSelected,
                     onClick = {
-                        indexSelected = index
                         onDestinationClicked(destination)
                     },
                     icon = {
@@ -81,6 +76,7 @@ fun MacroBottomNavBar(
 private fun PreviewMacroBottomNavBar() {
     MacroBottomNavBar(
         modifier = Modifier.fillMaxWidth(),
+        selectedDestination = MacroTrackMainDestination.HOME
     ) {
 
     }
