@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.ui
+package org.thelazybattley.macrotrack.features.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -24,16 +24,26 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
 @Composable
 @Preview(showBackground = true)
-fun MacroNavigation() {
+fun AppNavigation() {
     val navController = rememberNavController()
     var currentDestination: MacroTrackDestination by remember { mutableStateOf(value = MacroTrackDestination.HOME) }
     LaunchedEffect(key1 = navController.currentDestination) {
-        val destination = MacroTrackDestination.entries.find { destination -> destination.route == navController.currentDestination?.route } ?: return@LaunchedEffect
+        val destination =
+            MacroTrackDestination.entries.find { destination -> destination.route == navController.currentDestination?.route }
+                ?: return@LaunchedEffect
         currentDestination = destination
     }
     MacroTrackTheme {
         Scaffold(
             containerColor = colors.white,
+            bottomBar = {
+                MacroBottomNavBar(
+                    modifier = Modifier,
+                    onDestinationClicked = { destination ->
+                        navController.navigate(route = destination.route)
+                    }
+                )
+            }
         ) { paddingValues ->
             NavHost(
                 modifier = Modifier.padding(paddingValues = paddingValues),
@@ -52,6 +62,26 @@ fun MacroNavigation() {
                         modifier = Modifier.padding(paddingValues = AppPadding)
                     )
                 }
+                composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                    SplashScreen { destination ->
+                        navController.navigate(route = destination.route) {
+                            popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                }
+
+                composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                    SplashScreen { destination ->
+                        navController.navigate(route = destination.route) {
+                            popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                }
+
                 composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
                     SplashScreen { destination ->
                         navController.navigate(route = destination.route) {

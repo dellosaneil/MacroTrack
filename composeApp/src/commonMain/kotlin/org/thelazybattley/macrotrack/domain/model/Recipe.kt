@@ -9,7 +9,7 @@ data class Recipe(
 
 fun Recipe.toEntity() = RecipeEntity(
     name = name,
-    ingredients = ingredients.map { it.toEntity() }
+    ingredients = ingredients
 )
 
 
