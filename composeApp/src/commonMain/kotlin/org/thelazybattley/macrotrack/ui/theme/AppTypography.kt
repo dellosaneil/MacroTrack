@@ -59,6 +59,10 @@ fun getMacroTrackTypography(): MacroTrackTypography {
             fontWeight = FontWeight.Normal,
             fontSize = 13.sp,
         ),
+        regular18 = textStyle.copy(
+            fontWeight = FontWeight.Normal,
+            fontSize = 18.sp,
+        ),
         medium13 = textStyle.copy(
             fontWeight = FontWeight.Medium,
             fontSize = 11.sp

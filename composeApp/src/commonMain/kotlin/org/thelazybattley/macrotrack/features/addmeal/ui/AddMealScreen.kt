@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +24,7 @@ import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_food
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
@@ -78,6 +82,19 @@ private fun AddMealScreen(
             callbacks = callbacks,
             viewState = viewState
         )
+        LazyColumn {
+            item {
+                HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+            }
+            items(items = viewState.filteredFoodList, key = { it.name }) { food ->
+                AddMealFoodDetails(
+                    modifier = Modifier.fillMaxWidth(),
+                    food = food
+                )
+                HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+            }
+        }
+
     }
 }
 
@@ -108,7 +125,13 @@ private fun PreviewAddMealScreen() {
         ) {
             AddMealScreen(
                 modifier = Modifier.padding(it),
-                viewState = AddMealViewState(),
+                viewState = AddMealViewState(
+                    filteredFoodList = listOf(
+                        dummyFood.copy(name = "Rice 1"),
+                        dummyFood.copy(name = "Rice 2"),
+                        dummyFood.copy(name = "Rice 3")
+                    )
+                ),
                 callbacks = AddMealCallbacks.default()
             )
         }

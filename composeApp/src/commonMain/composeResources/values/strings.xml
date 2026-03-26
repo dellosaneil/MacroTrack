@@ -85,5 +85,8 @@
     <string name="search_recipes">Search recipes</string>
     <string name="search_food">Search food</string>
     <string name="search_favourites">Search favourites</string>
+    <string name="w_p_c_f">%1$dg · P %2$dg · C %3$dg · F %4$dg</string>
+    <string name="plus">+</string>
+    <string name="minus">-</string>
 
 </resources>

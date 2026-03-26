@@ -16,3 +16,15 @@ fun Food.toEntity() = FoodEntity(
     calories = macros.calories,
     weight = weight
 )
+
+
+val dummyFood = Food(
+    name = "Rice",
+    weight = 100,
+    macros = FoodMacros(
+        calories = 242.2,
+        carbs = 10.0,
+        protein = 34.2,
+        fat = 12.3
+    )
+)

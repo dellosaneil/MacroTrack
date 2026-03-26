@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
@@ -69,21 +70,23 @@ private fun FoodFilterChip(
     }
 
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .clip(
+                shape = RoundedCornerShape(size = 12.dp)
+            )
+            .clickable {
+                onSelected()
+            },
         colors = CardDefaults.cardColors(
             containerColor = background,
             contentColor = textColor
         ),
-        shape = RoundedCornerShape(size = 12.dp)
     ) {
         Text(
             text = stringResource(resource = foodFilter.text),
             style = typography.bold11,
             modifier = Modifier
                 .padding(all = 8.dp)
-                .clickable {
-                    onSelected()
-                }
         )
     }
 }

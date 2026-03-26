@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -50,8 +49,8 @@ fun MainScreenNavigation(
             startDestination = MacroTrackMainDestination.HOME.route
         ) {
             composable(route = MacroTrackMainDestination.HOME.route) {
-                HomeTabScreen {
-                    onNavigate(it)
+                HomeTabScreen { destination ->
+                    onNavigate(destination)
                 }
             }
             composable(route = MacroTrackMainDestination.LOG.route) {
@@ -69,18 +68,5 @@ fun MainScreenNavigation(
                 Text("profile")
             }
         }
-    }
-
-}
-
-
-@Preview(
-    showBackground = true,
-    backgroundColor = 0xffffffff
-)
-@Composable
-private fun MainScreenNavigation() {
-    MainScreenNavigation(modifier = Modifier) {
-
     }
 }

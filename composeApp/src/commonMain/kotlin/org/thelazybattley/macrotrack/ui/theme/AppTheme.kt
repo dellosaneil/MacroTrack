@@ -21,6 +21,7 @@ data class MacroTrackTypography(
     val regular10: TextStyle,
     val regular11: TextStyle,
     val regular13: TextStyle,
+    val regular18: TextStyle,
 
     val medium13: TextStyle
 )
