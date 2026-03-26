@@ -1,8 +1,6 @@
 package org.thelazybattley.macrotrack.features.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,7 +18,6 @@ import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
-import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
 @Composable
 @Preview(showBackground = true)
@@ -34,60 +31,27 @@ fun AppNavigation() {
         currentDestination = destination
     }
     MacroTrackTheme {
-        Scaffold(
-            containerColor = colors.white,
-            bottomBar = {
-                MacroBottomNavBar(
-                    modifier = Modifier,
-                    onDestinationClicked = { destination ->
-                        navController.navigate(route = destination.route)
-                    }
+        NavHost(
+            navController = navController,
+            startDestination = MacroTrackDestination.SPLASH_SCREEN.route
+        ) {
+            composable(route = MacroTrackDestination.ONBOARDING.route) {
+                OnboardingScreen(
+                    modifier = Modifier
+                ) {
+                    navController.navigate(route = MacroTrackDestination.HOME.route)
+                }
+            }
+            composable(route = MacroTrackDestination.HOME.route) {
+                HomeTabScreen(
+                    modifier = Modifier
                 )
             }
-        ) { paddingValues ->
-            NavHost(
-                modifier = Modifier.padding(paddingValues = paddingValues),
-                navController = navController,
-                startDestination = MacroTrackDestination.SPLASH_SCREEN.route
-            ) {
-                composable(route = MacroTrackDestination.ONBOARDING.route) {
-                    OnboardingScreen(
-                        modifier = Modifier.padding(paddingValues = AppPadding)
-                    ) {
-                        navController.navigate(route = MacroTrackDestination.HOME.route)
-                    }
-                }
-                composable(route = MacroTrackDestination.HOME.route) {
-                    HomeTabScreen(
-                        modifier = Modifier.padding(paddingValues = AppPadding)
-                    )
-                }
-                composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
-                    SplashScreen { destination ->
-                        navController.navigate(route = destination.route) {
-                            popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
-                                inclusive = true
-                            }
-                        }
-                    }
-                }
-
-                composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
-                    SplashScreen { destination ->
-                        navController.navigate(route = destination.route) {
-                            popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
-                                inclusive = true
-                            }
-                        }
-                    }
-                }
-
-                composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
-                    SplashScreen { destination ->
-                        navController.navigate(route = destination.route) {
-                            popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
-                                inclusive = true
-                            }
+            composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                SplashScreen { destination ->
+                    navController.navigate(route = destination.route) {
+                        popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                            inclusive = true
                         }
                     }
                 }
@@ -96,4 +60,7 @@ fun AppNavigation() {
     }
 }
 
-val AppPadding = PaddingValues(all = 16.dp)
+val AppPadding = PaddingValues(
+    horizontal = 16.dp,
+    vertical = 8.dp
+)

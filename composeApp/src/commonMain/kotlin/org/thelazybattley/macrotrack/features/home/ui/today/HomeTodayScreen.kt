@@ -71,7 +71,8 @@ fun HomeTodayScreen(
 ) {
     LazyColumn(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(space = 16.dp)
+        verticalArrangement = Arrangement.spacedBy(space = 16.dp),
+        overscrollEffect = null
     ) {
         item {
             CaloriesCard(

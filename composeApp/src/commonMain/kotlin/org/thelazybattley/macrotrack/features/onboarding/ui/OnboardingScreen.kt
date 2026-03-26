@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +50,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
@@ -60,12 +62,18 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 fun OnboardingScreen(modifier: Modifier = Modifier, onFinishButtonClicked: () -> Unit) {
     val viewModel: OnboardingViewModel = koinViewModel<OnboardingViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-    OnboardingScreen(
+    Scaffold(
         modifier = modifier,
-        viewState = viewState,
-        callbacks = viewModel,
-        onFinish = onFinishButtonClicked
-    )
+        containerColor = colors.white
+    ) { innerPadding ->
+        OnboardingScreen(
+            modifier = modifier.padding(paddingValues = innerPadding)
+                .padding(paddingValues = AppPadding),
+            viewState = viewState,
+            callbacks = viewModel,
+            onFinish = onFinishButtonClicked
+        )
+    }
 }
 
 @Composable
