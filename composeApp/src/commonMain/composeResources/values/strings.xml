@@ -77,5 +77,6 @@
     <string name="progress">Progress</string>
     <string name="profile">Profile</string>
     <string name="add_meal">Add meal</string>
+    <string name="kcal_text">kcal</string>
 
 </resources>
