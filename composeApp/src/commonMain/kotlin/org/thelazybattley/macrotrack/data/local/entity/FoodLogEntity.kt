@@ -10,10 +10,11 @@ data class FoodLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val mealType: MealType,
     val recipeName: String,
+    val percentageEaten: Int
 )
 
 fun FoodLogEntity.toDomain() = FoodLog(
     mealType = mealType,
     recipeName = recipeName,
-    id = id
+    percentageEaten = percentageEaten
 )

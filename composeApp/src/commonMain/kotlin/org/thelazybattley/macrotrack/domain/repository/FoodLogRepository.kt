@@ -6,7 +6,10 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 
 interface FoodLogRepository {
 
-    suspend fun insertFoodLog(recipeName: String, mealType: MealType)
+    suspend fun insertFoodLog(
+        recipeName: String, mealType: MealType,
+        percentageEaten: Int
+    )
 
     suspend fun deleteFoodLog(id: Int)
 

@@ -12,11 +12,13 @@ import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
 class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
     override suspend fun insertFoodLog(
         recipeName: String,
-        mealType: MealType
+        mealType: MealType,
+        percentageEaten: Int
     ) = dao.insertFoodLog(
         foodLogEntity = FoodLogEntity(
             mealType = mealType,
-            recipeName = recipeName
+            recipeName = recipeName,
+            percentageEaten = percentageEaten
         )
     )
 
