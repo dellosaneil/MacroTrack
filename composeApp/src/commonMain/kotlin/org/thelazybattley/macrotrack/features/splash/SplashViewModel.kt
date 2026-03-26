@@ -20,7 +20,7 @@ class SplashViewModel(private val getUserDetailsUseCase: GetUserDetailsUseCase) 
                 val destination = if (user == null) {
                     MacroTrackDestination.ONBOARDING
                 } else {
-                    MacroTrackDestination.HOME
+                    MacroTrackDestination.MAIN
                 }
                 _state.update { currentState ->
                     currentState.copy(

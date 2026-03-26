@@ -2,18 +2,12 @@ package org.thelazybattley.macrotrack.features.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import org.thelazybattley.macrotrack.features.home.ui.HomeTabScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
@@ -21,15 +15,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
 @Preview(showBackground = true)
-fun AppNavigation() {
+fun SplashScreenNavigationNavigation() {
     val navController = rememberNavController()
-    var currentDestination: MacroTrackDestination by remember { mutableStateOf(value = MacroTrackDestination.HOME) }
-    LaunchedEffect(key1 = navController.currentDestination) {
-        val destination =
-            MacroTrackDestination.entries.find { destination -> destination.route == navController.currentDestination?.route }
-                ?: return@LaunchedEffect
-        currentDestination = destination
-    }
     MacroTrackTheme {
         NavHost(
             navController = navController,
@@ -39,11 +26,11 @@ fun AppNavigation() {
                 OnboardingScreen(
                     modifier = Modifier
                 ) {
-                    navController.navigate(route = MacroTrackDestination.HOME.route)
+                    navController.navigate(route = MacroTrackDestination.MAIN.route)
                 }
             }
-            composable(route = MacroTrackDestination.HOME.route) {
-                HomeTabScreen(
+            composable(route = MacroTrackDestination.MAIN.route) {
+                MainScreenNavigation(
                     modifier = Modifier
                 )
             }

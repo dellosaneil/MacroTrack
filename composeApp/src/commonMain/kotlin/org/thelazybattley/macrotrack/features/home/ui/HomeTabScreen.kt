@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +33,6 @@ import org.thelazybattley.macrotrack.features.home.HomeTabCallbacks
 import org.thelazybattley.macrotrack.features.home.HomeTabViewModel
 import org.thelazybattley.macrotrack.features.home.HomeTabViewState
 import org.thelazybattley.macrotrack.features.home.ui.today.HomeTodayScreen
-import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -43,19 +41,11 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 fun HomeTabScreen(modifier: Modifier = Modifier) {
     val viewModel = koinViewModel<HomeTabViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-
-    Scaffold(
+    HomeTabScreen(
         modifier = modifier,
-        containerColor = colors.white
-    ) { innerPadding ->
-        HomeTabScreen(
-            modifier = modifier
-                .padding(paddingValues = innerPadding)
-                .padding(paddingValues = AppPadding),
-            viewState = viewState,
-            callbacks = viewModel
-        )
-    }
+        viewState = viewState,
+        callbacks = viewModel
+    )
 }
 
 @Composable

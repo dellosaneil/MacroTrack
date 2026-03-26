@@ -19,7 +19,7 @@ enum class MacroTrackDestination(
 ) {
     SPLASH_SCREEN(route = "splash_screen"),
     ONBOARDING(route = "onboarding"),
-    HOME(route = "home")
+    MAIN(route = "main")
 }
 
 enum class MacroTrackMainDestination(
