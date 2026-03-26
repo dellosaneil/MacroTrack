@@ -27,8 +27,10 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_meal
 import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.fat
+import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.protein
+import macrotrack.composeapp.generated.resources.search_food
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -38,6 +40,7 @@ import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
+import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -77,6 +80,13 @@ private fun AddMealScreen(
             selectedMealType = viewState.selectedMealType
         )
         MacrosDetail(modifier = Modifier.fillMaxWidth())
+        CommonTextField(
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = Res.string.search_food,
+            prefixIcon = Res.drawable.ic_search
+        ) {
+
+        }
     }
 }
 

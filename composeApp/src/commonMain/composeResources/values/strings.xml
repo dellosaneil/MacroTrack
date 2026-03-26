@@ -78,5 +78,8 @@
     <string name="profile">Profile</string>
     <string name="add_meal">Add meal</string>
     <string name="kcal_text">kcal</string>
+    <string name="search_recipes">Search recipes</string>
+    <string name="search_food">Search food</string>
+    <string name="search_favourites">Search favourites</string>
 
 </resources>
