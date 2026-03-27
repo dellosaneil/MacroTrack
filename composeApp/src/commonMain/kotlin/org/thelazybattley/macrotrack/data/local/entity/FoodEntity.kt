@@ -14,7 +14,7 @@ data class FoodEntity(
     val carbs: Double,
     val fat: Double,
     val calories: Double,
-    val weight: Int
+    val weight: Double
 )
 
 fun FoodEntity.toFood() = Food(

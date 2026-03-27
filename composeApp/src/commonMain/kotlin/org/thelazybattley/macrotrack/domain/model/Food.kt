@@ -5,7 +5,7 @@ import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 data class Food(
     val macros: FoodMacros,
     val name: String,
-    val weight: Int
+    val weight: Double
 )
 
 fun Food.toEntity() = FoodEntity(
@@ -20,7 +20,7 @@ fun Food.toEntity() = FoodEntity(
 
 val dummyFood = Food(
     name = "Rice",
-    weight = 100,
+    weight = 100.0,
     macros = FoodMacros(
         calories = 242.2,
         carbs = 10.0,
