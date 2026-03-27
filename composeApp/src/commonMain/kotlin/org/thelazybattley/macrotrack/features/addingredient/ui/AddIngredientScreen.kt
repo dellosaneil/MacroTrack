@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.amount
+import macrotrack.composeapp.generated.resources.amount_in_grams
 import macrotrack.composeapp.generated.resources.calories_kcal
 import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.carbs_g
@@ -48,6 +48,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.addingredient.AddIngredientCallbacks
 import org.thelazybattley.macrotrack.features.addingredient.AddIngredientViewModel
 import org.thelazybattley.macrotrack.features.addingredient.AddIngredientViewState
+import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -62,7 +63,9 @@ fun AddIngredientScreen(modifier: Modifier = Modifier) {
         containerColor = colors.white,
     ) { innerPadding ->
         AddIngredientScreen(
-            modifier = modifier.padding(paddingValues = innerPadding),
+            modifier = modifier
+                .padding(paddingValues = innerPadding)
+                .padding(paddingValues = AppPadding),
             viewState = viewState,
             callbacks = viewModel
         )
@@ -82,26 +85,31 @@ fun AddIngredientScreen(
         TitleBar(modifier = Modifier.fillMaxWidth()) {
 
         }
-        AddIngredientTextField(
+        Spacer(modifier = Modifier)
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            title = Res.string.ingredient_name,
-            titleTextColor = colors.gray,
-            borderColor = colors.deepBlue,
-            placeholder = Res.string.chicken_breast
+            horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            AddIngredientTextField(
+                modifier = Modifier.weight(weight = 1f),
+                title = Res.string.ingredient_name,
+                titleTextColor = colors.gray,
+                borderColor = colors.deepBlue,
+                placeholder = Res.string.chicken_breast
+            ) {
 
+            }
+            AddIngredientTextField(
+                modifier = Modifier.weight(weight = 1f),
+                title = Res.string.amount_in_grams,
+                titleTextColor = colors.gray,
+                borderColor = colors.deepBlue,
+                placeholder = Res.string.placeholder_grams
+            ) {
+
+            }
         }
-
-        AddIngredientTextField(
-            modifier = Modifier.fillMaxWidth(),
-            title = Res.string.amount,
-            titleTextColor = colors.gray,
-            borderColor = colors.deepBlue,
-            placeholder = Res.string.placeholder_grams
-        ) {
-
-        }
-
 
         Text(
             text = stringResource(
@@ -111,14 +119,30 @@ fun AddIngredientScreen(
             color = colors.black
         )
 
-        AddIngredientTextField(
-            modifier = Modifier.fillMaxWidth(),
-            title = Res.string.calories_kcal,
-            titleTextColor = colors.gray,
-            borderColor = colors.deepBlue,
-            placeholder = Res.string.zero
-        ) {
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AddIngredientTextField(
+                modifier = Modifier.weight(weight = 1f),
+                title = Res.string.calories_kcal,
+                titleTextColor = colors.gray,
+                borderColor = colors.deepBlue,
+                placeholder = Res.string.zero
+            ) {
+
+            }
+            AddIngredientTextField(
+                modifier = Modifier.weight(weight = 1f),
+                title = Res.string.fat_g,
+                titleTextColor = colors.orange,
+                borderColor = colors.orange,
+                placeholder = Res.string.zero
+            ) {
+
+            }
         }
 
         Row(
@@ -146,15 +170,7 @@ fun AddIngredientScreen(
             }
         }
 
-        AddIngredientTextField(
-            modifier = Modifier,
-            title = Res.string.fat_g,
-            titleTextColor = colors.orange,
-            borderColor = colors.orange,
-            placeholder = Res.string.zero
-        ) {
 
-        }
 
         PreviewMacros(modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.weight(weight = 1f))
@@ -204,7 +220,7 @@ private fun AddIngredientTextField(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = stringResource(resource = title),
