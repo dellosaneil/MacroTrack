@@ -4,13 +4,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,12 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.add_a_meal
 import macrotrack.composeapp.generated.resources.breakfast
 import macrotrack.composeapp.generated.resources.burned
 import macrotrack.composeapp.generated.resources.carbs
@@ -59,6 +55,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.features.home.HomeTabCallbacks
 import org.thelazybattley.macrotrack.features.home.HomeTabViewState
+import org.thelazybattley.macrotrack.ui.common.CommonLinearProgressBar
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -168,17 +165,6 @@ private fun LoggedMealsCard(
             meal = Res.string.dinner
         )
         HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
-        Text(
-            text = stringResource(resource = Res.string.add_a_meal),
-            color = colors.deepBlue,
-            style = typography.bold14,
-            modifier = Modifier.padding(all = 16.dp)
-                .align(alignment = Alignment.CenterHorizontally)
-                .clickable {
-                    addMealTriggered()
-                }
-
-        )
     }
 }
 
@@ -236,12 +222,7 @@ private fun StepDetailsCard(
     burned: Int
 ) {
     var progress by remember { mutableStateOf(0f) }
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = tween(
-            durationMillis = 1500
-        )
-    )
+
     LaunchedEffect(key1 = Unit) {
         progress = steps.toFloat() / goalSteps.toFloat()
     }
@@ -291,20 +272,10 @@ private fun StepDetailsCard(
                     color = colors.deepBlue,
                     style = typography.regular10
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(colors.lightGray)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(animatedProgress)
-                            .fillMaxHeight()
-                            .background(color = colors.deepBlue, shape = RoundedCornerShape(8.dp))
-                    )
-                }
+                CommonLinearProgressBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    progress = progress
+                )
             }
             Text(
                 text = stringResource(resource = Res.string.view),
@@ -440,20 +411,10 @@ private fun MacroCardDetails(
                 color = colors.mediumGray
             )
             Spacer(modifier = Modifier.height(height = 8.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(colors.lightGray)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(animatedProgress)
-                        .fillMaxHeight()
-                        .background(color = macroColor, shape = RoundedCornerShape(8.dp))
-                )
-            }
+            CommonLinearProgressBar(
+                modifier = Modifier.fillMaxWidth(),
+                progress = progress
+            )
         }
 
     }

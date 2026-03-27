@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.add_meal
+import macrotrack.composeapp.generated.resources.add_lunch
 import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_food
 import org.jetbrains.compose.resources.stringResource
@@ -65,10 +65,6 @@ private fun AddMealScreen(
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
         TitleBar(modifier = Modifier.fillMaxWidth())
-        AddMealTypeSelection(
-            modifier = Modifier.fillMaxWidth(), callbacks = callbacks,
-            selectedMealType = viewState.selectedMealType
-        )
         MacrosDetail(modifier = Modifier.fillMaxWidth())
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
@@ -86,7 +82,10 @@ private fun AddMealScreen(
             item {
                 HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
             }
-            items(items = viewState.filteredFoodList, key = { it.name }) { food ->
+            items(
+                items = viewState.filteredFoodList,
+                key = { food -> food.name }
+            ) { food ->
                 AddMealFoodDetails(
                     modifier = Modifier.fillMaxWidth(),
                     food = food
@@ -107,7 +106,7 @@ private fun TitleBar(modifier: Modifier = Modifier) {
 
         }
         Text(
-            text = stringResource(resource = Res.string.add_meal),
+            text = stringResource(resource = Res.string.add_lunch),
             style = typography.bold16,
             color = colors.black,
             modifier = Modifier.align(alignment = Alignment.Center)

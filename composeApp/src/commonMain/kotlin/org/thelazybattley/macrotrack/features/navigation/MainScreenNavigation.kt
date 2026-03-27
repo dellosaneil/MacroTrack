@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import org.thelazybattley.macrotrack.features.foodlog.ui.FoodLogTabScreen
 import org.thelazybattley.macrotrack.features.home.ui.HomeTabScreen
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackMainDestination
@@ -24,10 +26,12 @@ fun MainScreenNavigation(
 ) {
     val navController = rememberNavController()
     var currentDestination by remember { mutableStateOf(MacroTrackMainDestination.HOME) }
-    navController.addOnDestinationChangedListener { _, destination, _ ->
-        currentDestination = MacroTrackMainDestination.entries.find { macroDestination ->
-            destination.route == macroDestination.route
-        } ?: MacroTrackMainDestination.HOME
+    LaunchedEffect(key1 = Unit) {
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            currentDestination = MacroTrackMainDestination.entries.find { macroDestination ->
+                destination.route == macroDestination.route
+            } ?: MacroTrackMainDestination.HOME
+        }
     }
 
     Scaffold(
@@ -54,9 +58,7 @@ fun MainScreenNavigation(
                 }
             }
             composable(route = MacroTrackMainDestination.LOG.route) {
-                Text(
-                    text = "Log"
-                )
+                FoodLogTabScreen()
             }
             composable(route = MacroTrackMainDestination.STEPS.route) {
                 Text("steps")

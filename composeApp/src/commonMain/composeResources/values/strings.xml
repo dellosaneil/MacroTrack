@@ -88,5 +88,13 @@
     <string name="w_p_c_f">%1$dg · P %2$dg · C %3$dg · F %4$dg</string>
     <string name="plus">+</string>
     <string name="minus">-</string>
+    <string name="add_breakfast">Add Breakfast</string>
+    <string name="add_lunch">Add Lunch</string>
+    <string name="add_dinner">Add Dinner</string>
+    <string name="add_snack">Add Snack</string>
+    <string name="calories_eaten">Calories eaten</string>
+    <string name="eaten_calories">Eaten: %1$d kcal</string>
+    <string name="remaining_calories">Remaining: %1$d kcal</string>
+
 
 </resources>
