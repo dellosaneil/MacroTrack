@@ -1,9 +1,11 @@
 package org.thelazybattley.macrotrack.features.addingredient
 
-import org.thelazybattley.macrotrack.domain.model.FoodMacros
-
 data class AddIngredientViewState(
-    val macros: FoodMacros? = null,
+    val protein: Double? = null,
+    val carbs: Double? = null,
+    val fat: Double? = null,
+    val calories: Double = 0.0,
     val weight: Double = 0.0,
-    val name: String = ""
+    val name: String = "",
+    val buttonEnabled: Boolean = false
 )

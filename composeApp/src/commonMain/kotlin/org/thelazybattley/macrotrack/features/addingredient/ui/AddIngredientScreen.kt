@@ -101,7 +101,7 @@ fun AddIngredientScreen(
                 borderColor = colors.deepBlue,
                 placeholder = Res.string.chicken_breast
             ) {
-
+                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.INGREDIENT_NAME)
             }
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
@@ -110,7 +110,7 @@ fun AddIngredientScreen(
                 borderColor = colors.deepBlue,
                 placeholder = Res.string.placeholder_grams
             ) {
-
+                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.AMOUNT_IN_GRAMS)
             }
         }
 
@@ -135,7 +135,7 @@ fun AddIngredientScreen(
                 borderColor = colors.deepBlue,
                 placeholder = Res.string.placeholder_calories
             ) {
-
+                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.CALORIES)
             }
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
@@ -144,7 +144,7 @@ fun AddIngredientScreen(
                 borderColor = colors.orange,
                 placeholder = Res.string.placeholder_fats
             ) {
-
+                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.FATS)
             }
         }
 
@@ -160,7 +160,7 @@ fun AddIngredientScreen(
                 borderColor = colors.deepBlue,
                 placeholder = Res.string.placeholder_protein
             ) {
-
+                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.PROTEIN)
             }
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
@@ -169,19 +169,17 @@ fun AddIngredientScreen(
                 borderColor = colors.green,
                 placeholder = Res.string.placeholder_carbs
             ) {
-
+                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.CARBS)
             }
         }
-
-
 
         PreviewMacros(modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.weight(weight = 1f))
         SaveIngredient(
             modifier = Modifier.fillMaxWidth(),
-            isEnabled = true
+            isEnabled = viewState.buttonEnabled
         ) {
-
+            callbacks.onSaveIngredient()
         }
     }
 }
@@ -306,6 +304,15 @@ private fun MacroDetail(
             style = typography.regular10
         )
     }
+}
+
+enum class AddIngredientTextFieldType {
+    INGREDIENT_NAME,
+    AMOUNT_IN_GRAMS,
+    CALORIES,
+    FATS,
+    PROTEIN,
+    CARBS
 }
 
 @Composable
