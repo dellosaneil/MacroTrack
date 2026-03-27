@@ -23,7 +23,8 @@ data class MacroTrackTypography(
     val regular13: TextStyle,
     val regular18: TextStyle,
 
-    val medium13: TextStyle
+    val medium11: TextStyle,
+    val medium13: TextStyle,
 )
 
 val lightMacroTrackColors = MacroTrackColors(

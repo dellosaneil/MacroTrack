@@ -30,6 +30,7 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCas
 import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
+import org.thelazybattley.macrotrack.features.addingredient.AddIngredientViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.home.HomeTabViewModel
@@ -75,6 +76,7 @@ val viewModelModule = module {
     viewModelOf(::HomeTabViewModel)
     viewModelOf(::AddMealViewModel)
     viewModelOf(::FoodLogViewModel)
+    viewModelOf(::AddIngredientViewModel)
 }
 
 fun initKoin() {
