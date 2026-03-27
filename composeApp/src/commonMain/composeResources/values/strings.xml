@@ -107,7 +107,10 @@
     <string name="preview_per">PREVIEW · PER %1$dg</string>
     <string name="save_ingredient">Save Ingredient</string>
     <string name="placeholder_grams">100 grams</string>
-    <string name="zero">0</string>
+    <string name="placeholder_calories">120kcal</string>
+    <string name="placeholder_protein">21g</string>
+    <string name="placeholder_fats">1g</string>
+    <string name="placeholder_carbs">0g</string>
     <string name="chicken_breast">e.g. Chicken Breast</string>
 
 </resources>

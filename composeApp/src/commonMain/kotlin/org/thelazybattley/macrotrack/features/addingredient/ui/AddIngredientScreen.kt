@@ -36,12 +36,15 @@ import macrotrack.composeapp.generated.resources.ingredient_name
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.macros_per_serving
 import macrotrack.composeapp.generated.resources.new_ingredient
+import macrotrack.composeapp.generated.resources.placeholder_calories
+import macrotrack.composeapp.generated.resources.placeholder_carbs
+import macrotrack.composeapp.generated.resources.placeholder_fats
 import macrotrack.composeapp.generated.resources.placeholder_grams
+import macrotrack.composeapp.generated.resources.placeholder_protein
 import macrotrack.composeapp.generated.resources.preview_per
 import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.protein_g
 import macrotrack.composeapp.generated.resources.save_ingredient
-import macrotrack.composeapp.generated.resources.zero
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -130,7 +133,7 @@ fun AddIngredientScreen(
                 title = Res.string.calories_kcal,
                 titleTextColor = colors.gray,
                 borderColor = colors.deepBlue,
-                placeholder = Res.string.zero
+                placeholder = Res.string.placeholder_calories
             ) {
 
             }
@@ -139,7 +142,7 @@ fun AddIngredientScreen(
                 title = Res.string.fat_g,
                 titleTextColor = colors.orange,
                 borderColor = colors.orange,
-                placeholder = Res.string.zero
+                placeholder = Res.string.placeholder_fats
             ) {
 
             }
@@ -155,7 +158,7 @@ fun AddIngredientScreen(
                 title = Res.string.protein_g,
                 titleTextColor = colors.gray,
                 borderColor = colors.deepBlue,
-                placeholder = Res.string.zero
+                placeholder = Res.string.placeholder_protein
             ) {
 
             }
@@ -164,7 +167,7 @@ fun AddIngredientScreen(
                 title = Res.string.carbs_g,
                 titleTextColor = colors.green,
                 borderColor = colors.green,
-                placeholder = Res.string.zero
+                placeholder = Res.string.placeholder_carbs
             ) {
 
             }
