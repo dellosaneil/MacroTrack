@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.amount
-import macrotrack.composeapp.generated.resources.calories_kcal
 import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.carbs_g
 import macrotrack.composeapp.generated.resources.chicken_breast
@@ -45,7 +44,6 @@ import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.macros_per_serving
 import macrotrack.composeapp.generated.resources.new_ingredient
 import macrotrack.composeapp.generated.resources.one_hundred
-import macrotrack.composeapp.generated.resources.placeholder_calories
 import macrotrack.composeapp.generated.resources.placeholder_carbs
 import macrotrack.composeapp.generated.resources.placeholder_fats
 import macrotrack.composeapp.generated.resources.placeholder_protein
@@ -167,17 +165,6 @@ fun AddIngredientScreen(
             style = typography.bold12,
             color = colors.black
         )
-
-        AddIngredientTextField(
-            modifier = Modifier.fillMaxWidth(),
-            title = Res.string.calories_kcal,
-            titleTextColor = colors.gray,
-            borderColor = colors.deepBlue,
-            placeholder = Res.string.placeholder_calories
-        ) {
-            callbacks.onTextFieldUpdated(value = it, type = AddIngredientTextFieldType.CALORIES)
-        }
-
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -356,7 +343,6 @@ private fun MacroDetail(
 enum class AddIngredientTextFieldType {
     INGREDIENT_NAME,
     AMOUNT_IN_GRAMS,
-    CALORIES,
     FATS,
     PROTEIN,
     CARBS

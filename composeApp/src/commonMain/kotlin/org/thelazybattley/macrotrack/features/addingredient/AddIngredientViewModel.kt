@@ -8,11 +8,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
+import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.features.addingredient.ui.AddIngredientTextFieldType
 
 class AddIngredientViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
+    private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase
 ) : ViewModel(), AddIngredientCallbacks {
 
     private val _state = MutableStateFlow(value = AddIngredientViewState())
@@ -50,23 +52,37 @@ class AddIngredientViewModel(
                 AddIngredientTextFieldType.AMOUNT_IN_GRAMS ->
                     currentState.copy(weight = value.toDoubleOrNull() ?: 0.0)
 
-                AddIngredientTextFieldType.CALORIES -> currentState.copy(
-                    calories = value.toDoubleOrNull() ?: 0.0
-                )
                 AddIngredientTextFieldType.FATS -> currentState.copy(
-                    fat = value.toDoubleOrNull()
+                    fat = value.toDoubleOrNull() ?: currentState.fat,
+                    calories = calculateCaloriesFromMacrosUseCase(
+                        protein = currentState.protein ?: 0.0,
+                        carbs = currentState.carbs ?: 0.0,
+                        fat = value.toDoubleOrNull() ?: 0.0
+                    )
                 )
+
                 AddIngredientTextFieldType.PROTEIN -> currentState.copy(
-                    protein = value.toDoubleOrNull()
+                    protein = value.toDoubleOrNull() ?: currentState.protein,
+                    calories = calculateCaloriesFromMacrosUseCase(
+                        protein = value.toDoubleOrNull() ?: 0.0,
+                        carbs = currentState.carbs ?: 0.0,
+                        fat = currentState.fat ?: 0.0
+                    )
 
                 )
+
                 AddIngredientTextFieldType.CARBS -> currentState.copy(
-                    carbs = value.toDoubleOrNull()
+                    carbs = value.toDoubleOrNull() ?: currentState.carbs,
+                    calories = calculateCaloriesFromMacrosUseCase(
+                        protein = currentState.protein ?: 0.0,
+                        carbs = value.toDoubleOrNull() ?: 0.0,
+                        fat = currentState.fat ?: 0.0
+                    )
                 )
             }
         }
         val isButtonEnabled = with(receiver = state.value) {
-            name.isNotBlank() && weight > 0 && calories > 0  && fat != null && protein != null && carbs != null
+            name.isNotBlank() && weight > 0 && calories > 0 && fat != null && protein != null && carbs != null
         }
         _state.update { currentState ->
             currentState.copy(buttonEnabled = isButtonEnabled)

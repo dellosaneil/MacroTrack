@@ -13,7 +13,7 @@ data class FoodEntity(
     val protein: Double,
     val carbs: Double,
     val fat: Double,
-    val calories: Double,
+    val calories: Int,
     val weight: Double
 )
 

@@ -17,6 +17,7 @@ import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
 import org.thelazybattley.macrotrack.domain.repository.FoodRepository
 import org.thelazybattley.macrotrack.domain.repository.RecipeRepository
 import org.thelazybattley.macrotrack.domain.repository.UserDetailsRepository
+import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateTDEEUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
@@ -68,6 +69,7 @@ val useCaseModule = module {
     factoryOf(::DeleteFoodLogUseCase)
     factoryOf(::GetAllFoodLogsUseCase)
     factoryOf(::InsertFoodLogUseCase)
+    factoryOf(::CalculateCaloriesFromMacrosUseCase)
 }
 
 val viewModelModule = module {
