@@ -47,7 +47,8 @@ val lightMacroTrackColors = MacroTrackColors(
     brightBlue = BrightBlue,
     deepBlueSplash = DeepBlue,
     whiteSplash = White,
-    iceBlue = IceBlue
+    iceBlue = IceBlue,
+    crimsonRed = CrimsonRed
 )
 
 val darkMacroTrackColors = MacroTrackColors(
@@ -70,7 +71,8 @@ val darkMacroTrackColors = MacroTrackColors(
     brightBlue = DarkBrightBlue,
     deepBlueSplash = DarkDeepBlueSplash,
     whiteSplash = DarkBlack,
-    iceBlue = DarkIceBlue
+    iceBlue = DarkIceBlue,
+    crimsonRed = DarkCrimsonRed
 )
 
 

@@ -50,6 +50,7 @@ import macrotrack.composeapp.generated.resources.placeholder_protein
 import macrotrack.composeapp.generated.resources.protein_g
 import macrotrack.composeapp.generated.resources.protein_percent
 import macrotrack.composeapp.generated.resources.save_ingredient
+import macrotrack.composeapp.generated.resources.this_food_is_already_saved
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -95,19 +96,35 @@ fun AddIngredientScreen(
 
         }
         Spacer(modifier = Modifier)
+        val textColor = if(viewState.duplicateFood) {
+            colors.crimsonRed
+        } else {
+            colors.gray
+        }
         AddIngredientTextField(
             modifier = Modifier.fillMaxWidth(),
             title = Res.string.ingredient_name,
-            titleTextColor = colors.gray,
+            titleTextColor = textColor,
             borderColor = colors.deepBlue,
-            placeholder = Res.string.chicken_breast
+            placeholder = Res.string.chicken_breast,
+            isError = viewState.duplicateFood
         ) {
             callbacks.onTextFieldUpdated(
                 value = it,
                 type = AddIngredientTextFieldType.INGREDIENT_NAME
             )
         }
-        Column(modifier = Modifier.fillMaxWidth()) {
+        if (viewState.duplicateFood) {
+            Text(
+                text = stringResource(resource = Res.string.this_food_is_already_saved),
+                style = typography.regular10,
+                color = colors.crimsonRed
+            )
+        }
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+        ) {
             Text(
                 text = stringResource(resource = Res.string.amount),
                 color = colors.gray,
@@ -152,9 +169,7 @@ fun AddIngredientScreen(
                         color = colors.deepBlue,
                         modifier = Modifier.align(alignment = Alignment.Center)
                     )
-
                 }
-
             }
         }
 
@@ -353,6 +368,7 @@ private fun AddIngredientTextField(
     borderColor: Color,
     isEnabled: Boolean = true,
     onTextFieldSize: (IntSize) -> Unit = {},
+    isError: Boolean = false,
     onValueChanged: (String) -> Unit
 ) {
     Column(
@@ -374,6 +390,7 @@ private fun AddIngredientTextField(
             borderColor = borderColor,
             onValueChanged = onValueChanged,
             isEnabled = isEnabled,
+            isError = isError,
         )
     }
 }

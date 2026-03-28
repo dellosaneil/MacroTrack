@@ -42,11 +42,20 @@ fun CommonTextField(
         unfocusedContainerColor = colors.offWhite,
         unfocusedIndicatorColor = Color.Transparent,
         focusedIndicatorColor = Color.Transparent,
+        errorContainerColor = colors.whiteSmoke,
+        errorIndicatorColor = Color.Transparent
     ),
     isEnabled: Boolean = true,
+    isError: Boolean = false,
     onValueChanged: (String) -> Unit,
 ) {
     var value by remember { mutableStateOf(value = "") }
+    val updatedBorderColor = if(isError) {
+        colors.crimsonRed
+    } else {
+        borderColor
+    }
+
     TextField(
         value = value,
         onValueChange = { newValue ->
@@ -55,7 +64,7 @@ fun CommonTextField(
         },
         modifier = modifier
             .border(
-                border = BorderStroke(width = 1.dp, color = borderColor),
+                border = BorderStroke(width = 1.dp, color = updatedBorderColor),
                 shape = RoundedCornerShape(size = 12.dp)
             ),
         placeholder = {
@@ -78,7 +87,8 @@ fun CommonTextField(
                 )
             }
         },
-        enabled = isEnabled
+        enabled = isEnabled,
+        isError = isError,
     )
 }
 

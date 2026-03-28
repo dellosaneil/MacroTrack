@@ -22,5 +22,6 @@ data class MacroTrackColors(
     val brightBlue: Color,
     val deepBlueSplash: Color,
     val whiteSplash: Color,
-    val iceBlue: Color
+    val iceBlue: Color,
+    val crimsonRed: Color
 )

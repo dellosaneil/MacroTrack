@@ -118,5 +118,6 @@
     <string name="protein_percent">Protein %1$d%</string>
     <string name="fat_percent">Fat %1$d%</string>
     <string name="carbs_percent">Carbs %1$d%</string>
+    <string name="this_food_is_already_saved">This ingredient is already saved. You can edit it instead of adding a new one.</string>
 
 </resources>

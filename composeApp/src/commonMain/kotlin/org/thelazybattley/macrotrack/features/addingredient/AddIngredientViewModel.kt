@@ -9,16 +9,31 @@ import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.features.addingredient.ui.AddIngredientTextFieldType
 
 class AddIngredientViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
-    private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase
+    private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase,
+    private val getAllFoodUseCase: GetAllFoodUseCase
 ) : ViewModel(), AddIngredientCallbacks {
 
     private val _state = MutableStateFlow(value = AddIngredientViewState())
     val state = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            getAllFoodUseCase().collect { foodList ->
+                _state.update { currentState ->
+                    currentState.copy(
+                        foodNameList = foodList.map { food -> food.name }
+                    )
+                }
+            }
+        }
+    }
+
 
     override fun onSaveIngredient() {
         viewModelScope.launch {
@@ -45,8 +60,15 @@ class AddIngredientViewModel(
     ) {
         _state.update { currentState ->
             when (type) {
-                AddIngredientTextFieldType.INGREDIENT_NAME ->
-                    currentState.copy(name = value)
+                AddIngredientTextFieldType.INGREDIENT_NAME -> {
+                    val duplicateFood = currentState.foodNameList.any { food ->
+                        food.equals(
+                            other = value,
+                            ignoreCase = true
+                        )
+                    }
+                    currentState.copy(name = value, duplicateFood = duplicateFood)
+                }
 
                 AddIngredientTextFieldType.AMOUNT_IN_GRAMS ->
                     currentState.copy(weight = value.toDoubleOrNull() ?: 0.0)
@@ -80,7 +102,7 @@ class AddIngredientViewModel(
             }
         }
         val isButtonEnabled = with(receiver = state.value) {
-            name.isNotBlank() && weight > 0 && calories > 0 && fat != null && protein != null && carbs != null
+            name.isNotBlank() && weight > 0 && calories > 0 && fat != null && protein != null && carbs != null && !duplicateFood
         }
         _state.update { currentState ->
             currentState.copy(buttonEnabled = isButtonEnabled)
@@ -92,7 +114,7 @@ class AddIngredientViewModel(
 
     private fun calculateMacroPercentage() {
         _state.value.let { currentState ->
-            if(currentState.calories > 0) {
+            if (currentState.calories > 0) {
                 _state.update {
                     it.copy(
                         proteinPercentage = 0.0,
