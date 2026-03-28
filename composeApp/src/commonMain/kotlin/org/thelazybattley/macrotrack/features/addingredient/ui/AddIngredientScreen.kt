@@ -19,6 +19,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,7 +67,10 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.roundToInt
 
 @Composable
-fun AddIngredientScreen(modifier: Modifier = Modifier) {
+fun AddIngredientScreen(
+    modifier: Modifier = Modifier,
+    popBackStack: () -> Unit
+) {
     val viewModel = koinViewModel<AddIngredientViewModel>()
     val viewState by viewModel.state.collectAsState()
     Scaffold(
@@ -78,7 +82,9 @@ fun AddIngredientScreen(modifier: Modifier = Modifier) {
                 .padding(paddingValues = AppPadding),
             viewState = viewState,
             callbacks = viewModel
-        )
+        ) {
+            popBackStack()
+        }
     }
 }
 
@@ -86,17 +92,24 @@ fun AddIngredientScreen(modifier: Modifier = Modifier) {
 fun AddIngredientScreen(
     modifier: Modifier = Modifier,
     viewState: AddIngredientViewState,
-    callbacks: AddIngredientCallbacks
+    callbacks: AddIngredientCallbacks,
+    popBackStack: () -> Unit
 ) {
+    LaunchedEffect(key1 = viewState.ingredientSaved) {
+        if(viewState.ingredientSaved) {
+            popBackStack()
+        }
+    }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
-        TitleBar(modifier = Modifier.fillMaxWidth()) {
-
-        }
+        TitleBar(
+            modifier = Modifier.fillMaxWidth(),
+            onBackClicked = popBackStack
+        )
         Spacer(modifier = Modifier)
-        val textColor = if(viewState.duplicateFood) {
+        val textColor = if (viewState.duplicateFood) {
             colors.crimsonRed
         } else {
             colors.gray
@@ -427,7 +440,9 @@ private fun PreviewAddIngredientScreen() {
             modifier = Modifier.fillMaxSize().padding(all = 16.dp),
             viewState = AddIngredientViewState(),
             callbacks = AddIngredientCallbacks.default()
-        )
+        ) {
+
+        }
     }
 }
 

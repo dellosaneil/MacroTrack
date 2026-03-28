@@ -12,5 +12,6 @@ data class AddIngredientViewState(
     val carbsPercentage: Double = 0.0,
     val fatPercentage: Double = 0.0,
     val foodNameList: List<String> = emptyList(),
-    val duplicateFood: Boolean = false
+    val duplicateFood: Boolean = false,
+    val ingredientSaved: Boolean = false
 )

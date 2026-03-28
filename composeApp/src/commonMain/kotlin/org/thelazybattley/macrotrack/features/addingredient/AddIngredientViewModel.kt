@@ -49,7 +49,11 @@ class AddIngredientViewModel(
                         name = state.value.name,
                         weight = state.value.weight
                     )
-                )
+                ).also {
+                    _state.update { currentState ->
+                        currentState.copy(ingredientSaved = true)
+                    }
+                }
             }
         }
     }

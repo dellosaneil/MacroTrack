@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import org.thelazybattley.macrotrack.features.addingredient.ui.AddIngredientScreen
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
+import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
@@ -38,23 +39,27 @@ fun SplashScreenNavigationNavigation() {
                 }
             }
             composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
-                AddIngredientScreen(
-                    modifier = Modifier
-                )
-//                SplashScreen { destination ->
-//                    navController.navigate(
-//                        route = destination.route
-//                    ) {
-//                        popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
-//                            inclusive = true
-//                        }
-//                    }
-//                }
+                SplashScreen { destination ->
+                    navController.navigate(
+                        route = destination.route
+                    ) {
+                        popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                            inclusive = true
+                        }
+                    }
+                }
             }
             composable(route = MacroTrackDestination.ADD_MEAL.route) {
                 AddMealScreen(
                     modifier = Modifier
                 )
+            }
+            composable(route = MacroTrackDestination.ADD_INGREDIENT.route) {
+                AddIngredientScreen(
+                    modifier = Modifier
+                ) {
+                    navController.popBackStack()
+                }
             }
         }
     }
