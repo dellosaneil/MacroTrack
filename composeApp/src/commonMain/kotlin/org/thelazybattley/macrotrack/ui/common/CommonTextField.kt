@@ -53,10 +53,11 @@ fun CommonTextField(
             onValueChanged(newValue)
             value = newValue
         },
-        modifier = modifier.border(
-           border = BorderStroke(width = 1.dp, color = borderColor),
-            shape = RoundedCornerShape(size = 12.dp)
-        ),
+        modifier = modifier
+            .border(
+                border = BorderStroke(width = 1.dp, color = borderColor),
+                shape = RoundedCornerShape(size = 12.dp)
+            ),
         placeholder = {
             Text(
                 text = stringResource(resource = placeholder),

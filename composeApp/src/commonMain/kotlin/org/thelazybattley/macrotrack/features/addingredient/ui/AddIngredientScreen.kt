@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.addingredient.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -19,27 +21,33 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.amount_in_grams
+import macrotrack.composeapp.generated.resources.amount
 import macrotrack.composeapp.generated.resources.calories_kcal
 import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.carbs_g
 import macrotrack.composeapp.generated.resources.chicken_breast
 import macrotrack.composeapp.generated.resources.fat
 import macrotrack.composeapp.generated.resources.fat_g
+import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.ingredient_name
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.macros_per_serving
 import macrotrack.composeapp.generated.resources.new_ingredient
+import macrotrack.composeapp.generated.resources.one_hundred
 import macrotrack.composeapp.generated.resources.placeholder_calories
 import macrotrack.composeapp.generated.resources.placeholder_carbs
 import macrotrack.composeapp.generated.resources.placeholder_fats
-import macrotrack.composeapp.generated.resources.placeholder_grams
 import macrotrack.composeapp.generated.resources.placeholder_protein
 import macrotrack.composeapp.generated.resources.preview_per
 import macrotrack.composeapp.generated.resources.protein
@@ -89,28 +97,66 @@ fun AddIngredientScreen(
 
         }
         Spacer(modifier = Modifier)
-        Row(
+        AddIngredientTextField(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            title = Res.string.ingredient_name,
+            titleTextColor = colors.gray,
+            borderColor = colors.deepBlue,
+            placeholder = Res.string.chicken_breast
         ) {
-            AddIngredientTextField(
-                modifier = Modifier.weight(weight = 1f),
-                title = Res.string.ingredient_name,
-                titleTextColor = colors.gray,
-                borderColor = colors.deepBlue,
-                placeholder = Res.string.chicken_breast
+            callbacks.onTextFieldUpdated(
+                value = it,
+                type = AddIngredientTextFieldType.INGREDIENT_NAME
+            )
+        }
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = stringResource(resource = Res.string.amount),
+                color = colors.gray,
+                style = typography.medium11
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.INGREDIENT_NAME)
-            }
-            AddIngredientTextField(
-                modifier = Modifier.weight(weight = 1f),
-                title = Res.string.amount_in_grams,
-                titleTextColor = colors.gray,
-                borderColor = colors.deepBlue,
-                placeholder = Res.string.placeholder_grams
-            ) {
-                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.AMOUNT_IN_GRAMS)
+                val textFieldHeight = remember { mutableStateOf(0) }
+                val height = with(receiver = LocalDensity.current) {
+                    textFieldHeight.value.toDp()
+                }
+                CommonTextField(
+                    modifier = Modifier
+                        .weight(weight = 0.85f)
+                        .onSizeChanged { size ->
+                            textFieldHeight.value = size.height
+                        },
+                    placeholder = Res.string.one_hundred,
+                    borderColor = colors.deepBlue,
+                    onValueChanged = { value ->
+                        callbacks.onTextFieldUpdated(
+                            value = value,
+                            type = AddIngredientTextFieldType.AMOUNT_IN_GRAMS
+                        )
+                    },
+                )
+                Box(
+                    modifier = Modifier
+                        .border(
+                            width = 1.dp, color = colors.deepBlue,
+                            shape = RoundedCornerShape(size = 12.dp)
+                        )
+                        .height(height = height)
+                        .weight(weight = 0.15f),
+                ) {
+                    Text(
+                        text = stringResource(resource = Res.string.g),
+                        style = typography.bold12,
+                        color = colors.deepBlue,
+                        modifier = Modifier.align(alignment = Alignment.Center)
+                    )
+
+                }
+
             }
         }
 
@@ -122,31 +168,16 @@ fun AddIngredientScreen(
             color = colors.black
         )
 
-
-        Row(
+        AddIngredientTextField(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            title = Res.string.calories_kcal,
+            titleTextColor = colors.gray,
+            borderColor = colors.deepBlue,
+            placeholder = Res.string.placeholder_calories
         ) {
-            AddIngredientTextField(
-                modifier = Modifier.weight(weight = 1f),
-                title = Res.string.calories_kcal,
-                titleTextColor = colors.gray,
-                borderColor = colors.deepBlue,
-                placeholder = Res.string.placeholder_calories
-            ) {
-                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.CALORIES)
-            }
-            AddIngredientTextField(
-                modifier = Modifier.weight(weight = 1f),
-                title = Res.string.fat_g,
-                titleTextColor = colors.orange,
-                borderColor = colors.orange,
-                placeholder = Res.string.placeholder_fats
-            ) {
-                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.FATS)
-            }
+            callbacks.onTextFieldUpdated(value = it, type = AddIngredientTextFieldType.CALORIES)
         }
+
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -160,7 +191,7 @@ fun AddIngredientScreen(
                 borderColor = colors.deepBlue,
                 placeholder = Res.string.placeholder_protein
             ) {
-                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.PROTEIN)
+                callbacks.onTextFieldUpdated(value = it, type = AddIngredientTextFieldType.PROTEIN)
             }
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
@@ -169,7 +200,16 @@ fun AddIngredientScreen(
                 borderColor = colors.green,
                 placeholder = Res.string.placeholder_carbs
             ) {
-                callbacks.onTextFieldUpdated(value = it,type = AddIngredientTextFieldType.CARBS)
+                callbacks.onTextFieldUpdated(value = it, type = AddIngredientTextFieldType.CARBS)
+            }
+            AddIngredientTextField(
+                modifier = Modifier.weight(weight = 1f),
+                title = Res.string.fat_g,
+                titleTextColor = colors.orange,
+                borderColor = colors.orange,
+                placeholder = Res.string.placeholder_fats
+            ) {
+                callbacks.onTextFieldUpdated(value = it, type = AddIngredientTextFieldType.FATS)
             }
         }
 
@@ -212,11 +252,13 @@ private fun SaveIngredient(
 
 @Composable
 private fun AddIngredientTextField(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.height(height = 32.dp),
     title: StringResource,
     placeholder: StringResource,
     titleTextColor: Color,
     borderColor: Color,
+    isEnabled: Boolean = true,
+    onTextFieldSize: (IntSize) -> Unit = {},
     onValueChanged: (String) -> Unit
 ) {
     Column(
@@ -229,10 +271,15 @@ private fun AddIngredientTextField(
             style = typography.medium11
         )
         CommonTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onSizeChanged { size ->
+                    onTextFieldSize(size)
+                },
             placeholder = placeholder,
             borderColor = borderColor,
-            onValueChanged = onValueChanged
+            onValueChanged = onValueChanged,
+            isEnabled = isEnabled,
         )
     }
 }

@@ -97,7 +97,7 @@
     <string name="remaining_calories">Remaining: %1$d kcal</string>
     <string name="new_ingredient">New Ingredient</string>
     <string name="ingredient_name">Ingredient name</string>
-    <string name="amount_in_grams">Amount in grams</string>
+    <string name="amount">Amount</string>
     <string name="unit">Unit</string>
     <string name="macros_per_serving">Macros per serving</string>
     <string name="calories_kcal">Calories (kcal)</string>
@@ -106,11 +106,12 @@
     <string name="fat_g">Fats (g)</string>
     <string name="preview_per">PREVIEW · PER %1$dg</string>
     <string name="save_ingredient">Save Ingredient</string>
-    <string name="placeholder_grams">100 grams</string>
+    <string name="one_hundred">100</string>
     <string name="placeholder_calories">120kcal</string>
     <string name="placeholder_protein">21g</string>
     <string name="placeholder_fats">1g</string>
     <string name="placeholder_carbs">0g</string>
     <string name="chicken_breast">e.g. Chicken Breast</string>
+    <string name="g">g</string>
 
 </resources>
