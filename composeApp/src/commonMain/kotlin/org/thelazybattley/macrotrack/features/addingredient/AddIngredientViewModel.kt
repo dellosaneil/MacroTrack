@@ -107,14 +107,14 @@ class AddIngredientViewModel(
         _state.update { currentState ->
             currentState.copy(buttonEnabled = isButtonEnabled)
         }
-        if (type != AddIngredientTextFieldType.INGREDIENT_NAME) {
+        if (type != AddIngredientTextFieldType.INGREDIENT_NAME && type != AddIngredientTextFieldType.AMOUNT_IN_GRAMS) {
             calculateMacroPercentage()
         }
     }
 
     private fun calculateMacroPercentage() {
         _state.value.let { currentState ->
-            if (currentState.calories > 0) {
+            if (currentState.calories == 0) {
                 _state.update {
                     it.copy(
                         proteinPercentage = 0.0,
@@ -122,6 +122,7 @@ class AddIngredientViewModel(
                         fatPercentage = 0.0
                     )
                 }
+                return
             }
 
             val calFromProtein = (currentState.protein ?: 0.0) * 4
