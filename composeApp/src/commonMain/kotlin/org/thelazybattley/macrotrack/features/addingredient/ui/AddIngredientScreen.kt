@@ -1,12 +1,13 @@
 package org.thelazybattley.macrotrack.features.addingredient.ui
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,8 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -33,22 +33,17 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.amount
-import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.carbs_g
 import macrotrack.composeapp.generated.resources.chicken_breast
-import macrotrack.composeapp.generated.resources.fat
 import macrotrack.composeapp.generated.resources.fat_g
 import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.ingredient_name
-import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.macros_per_serving
 import macrotrack.composeapp.generated.resources.new_ingredient
 import macrotrack.composeapp.generated.resources.one_hundred
 import macrotrack.composeapp.generated.resources.placeholder_carbs
 import macrotrack.composeapp.generated.resources.placeholder_fats
 import macrotrack.composeapp.generated.resources.placeholder_protein
-import macrotrack.composeapp.generated.resources.preview_per
-import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.protein_g
 import macrotrack.composeapp.generated.resources.save_ingredient
 import org.jetbrains.compose.resources.StringResource
@@ -200,7 +195,21 @@ fun AddIngredientScreen(
             }
         }
 
-        PreviewMacros(modifier = Modifier.fillMaxWidth())
+        AddIngredientPreviewCalories(
+            modifier = Modifier.fillMaxWidth(),
+            calories = viewState.calories,
+            protein = viewState.protein ?: 0.0,
+            fats = viewState.fat ?: 0.0,
+            carbs = viewState.carbs ?: 0.0
+        )
+
+        MacroPercentageTracker(
+            modifier = Modifier.fillMaxWidth(),
+            proteinPercentage = viewState.proteinPercentage,
+            carbsPercentage = viewState.carbsPercentage,
+            fatsPercentage = viewState.fatPercentage
+        )
+
         Spacer(modifier = Modifier.weight(weight = 1f))
         SaveIngredient(
             modifier = Modifier.fillMaxWidth(),
@@ -208,6 +217,41 @@ fun AddIngredientScreen(
         ) {
             callbacks.onSaveIngredient()
         }
+    }
+}
+
+
+@Composable
+private fun MacroPercentageTracker(
+    modifier: Modifier = Modifier,
+    proteinPercentage: Double,
+    carbsPercentage: Double,
+    fatsPercentage: Double
+) {
+    Box(
+        modifier = modifier
+            .clip(shape = RoundedCornerShape(size = 8.dp))
+            .background(color = colors.offWhite)
+            .height(height = 6.dp)
+    ) {
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth(fraction = proteinPercentage.toFloat() + carbsPercentage.toFloat() + fatsPercentage.toFloat())
+                .fillMaxHeight()
+                .background(color = colors.orange)
+        )
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth(fraction = proteinPercentage.toFloat() + carbsPercentage.toFloat())
+                .fillMaxHeight()
+                .background(color = colors.green)
+        )
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth(fraction = proteinPercentage.toFloat())
+                .fillMaxHeight()
+                .background(color = colors.deepBlue)
+        )
     }
 }
 
@@ -267,75 +311,6 @@ private fun AddIngredientTextField(
             borderColor = borderColor,
             onValueChanged = onValueChanged,
             isEnabled = isEnabled,
-        )
-    }
-}
-
-@Composable
-private fun PreviewMacros(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = colors.iceBlue
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = colors.skyBlue
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(all = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-        ) {
-            Text(
-                text = stringResource(resource = Res.string.preview_per, 100),
-                style = typography.bold11,
-                color = colors.deepBlue
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                MacroDetail(
-                    modifier = Modifier,
-                    macro = Res.string.kcal_text,
-                    value = "31",
-                    textColor = colors.black
-                )
-                MacroDetail(
-                    modifier = Modifier,
-                    macro = Res.string.protein,
-                    value = "31",
-                    textColor = colors.blue
-                )
-                MacroDetail(
-                    modifier = Modifier,
-                    macro = Res.string.carbs,
-                    value = "31",
-                    textColor = colors.green
-                )
-                MacroDetail(
-                    modifier = Modifier,
-                    macro = Res.string.fat,
-                    value = "31",
-                    textColor = colors.orange
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MacroDetail(
-    modifier: Modifier = Modifier, macro: StringResource, value: String,
-    textColor: Color
-) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 4.dp)) {
-        Text(text = value, style = typography.bold16, color = textColor)
-        Text(
-            text = stringResource(resource = macro).lowercase(),
-            color = colors.mediumGray,
-            style = typography.regular10
         )
     }
 }

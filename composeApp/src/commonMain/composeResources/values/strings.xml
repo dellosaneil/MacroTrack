@@ -113,5 +113,10 @@
     <string name="placeholder_carbs">0g</string>
     <string name="chicken_breast">e.g. Chicken Breast</string>
     <string name="g">g</string>
+    <string name="calories_auto_calculated">Calories (auto-calculated)</string>
+    <string name="calories_formula">(%1$d x 4) + (%2$d x 4) + (%3$d x 9)</string>
+    <string name="protein_percent">Protein %1$d%</string>
+    <string name="fat_percent">Fat %1$d%</string>
+    <string name="carbs_percent">Carbs %1$d%</string>
 
 </resources>

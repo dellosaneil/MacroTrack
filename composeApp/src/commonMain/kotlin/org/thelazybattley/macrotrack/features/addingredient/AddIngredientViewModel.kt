@@ -23,7 +23,6 @@ class AddIngredientViewModel(
     override fun onSaveIngredient() {
         viewModelScope.launch {
             with(receiver = state.value) {
-
                 insertFoodUseCase(
                     food = Food(
                         macros = FoodMacros(
@@ -68,7 +67,6 @@ class AddIngredientViewModel(
                         carbs = currentState.carbs ?: 0.0,
                         fat = currentState.fat ?: 0.0
                     )
-
                 )
 
                 AddIngredientTextFieldType.CARBS -> currentState.copy(
@@ -86,6 +84,27 @@ class AddIngredientViewModel(
         }
         _state.update { currentState ->
             currentState.copy(buttonEnabled = isButtonEnabled)
+        }
+        if (type != AddIngredientTextFieldType.INGREDIENT_NAME) {
+            calculateMacroPercentage()
+        }
+    }
+
+    private fun calculateMacroPercentage() {
+        _state.value.let { currentState ->
+            val calFromProtein = (currentState.protein ?: 0.0) * 4
+            val calFromCarbs = (currentState.carbs ?: 0.0) * 4
+            val calFromFat = (currentState.fat ?: 0.0) * 9
+            val proteinPercent = calFromProtein / currentState.calories
+            val fatPercent = calFromFat / currentState.calories
+            val carbsPercent = calFromCarbs / currentState.calories
+            _state.update {
+                it.copy(
+                    proteinPercentage = proteinPercent,
+                    carbsPercentage = carbsPercent,
+                    fatPercentage = fatPercent
+                )
+            }
         }
     }
 }

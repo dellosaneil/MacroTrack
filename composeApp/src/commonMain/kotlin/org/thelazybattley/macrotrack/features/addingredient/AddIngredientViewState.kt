@@ -7,5 +7,8 @@ data class AddIngredientViewState(
     val calories: Int = 0,
     val weight: Double = 0.0,
     val name: String = "",
-    val buttonEnabled: Boolean = false
+    val buttonEnabled: Boolean = false,
+    val proteinPercentage: Double = 0.0,
+    val carbsPercentage: Double = 0.0,
+    val fatPercentage: Double = 0.0
 )
