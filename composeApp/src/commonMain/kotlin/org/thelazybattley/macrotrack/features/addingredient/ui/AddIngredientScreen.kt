@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -34,8 +35,10 @@ import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.amount
 import macrotrack.composeapp.generated.resources.carbs_g
+import macrotrack.composeapp.generated.resources.carbs_percent
 import macrotrack.composeapp.generated.resources.chicken_breast
 import macrotrack.composeapp.generated.resources.fat_g
+import macrotrack.composeapp.generated.resources.fat_percent
 import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.ingredient_name
 import macrotrack.composeapp.generated.resources.macros_per_serving
@@ -45,6 +48,7 @@ import macrotrack.composeapp.generated.resources.placeholder_carbs
 import macrotrack.composeapp.generated.resources.placeholder_fats
 import macrotrack.composeapp.generated.resources.placeholder_protein
 import macrotrack.composeapp.generated.resources.protein_g
+import macrotrack.composeapp.generated.resources.protein_percent
 import macrotrack.composeapp.generated.resources.save_ingredient
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -58,6 +62,7 @@ import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import kotlin.math.roundToInt
 
 @Composable
 fun AddIngredientScreen(modifier: Modifier = Modifier) {
@@ -228,29 +233,87 @@ private fun MacroPercentageTracker(
     carbsPercentage: Double,
     fatsPercentage: Double
 ) {
-    Box(
-        modifier = modifier
-            .clip(shape = RoundedCornerShape(size = 8.dp))
-            .background(color = colors.offWhite)
-            .height(height = 6.dp)
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth()
+                .clip(shape = RoundedCornerShape(size = 8.dp))
+                .background(color = colors.offWhite)
+                .height(height = 6.dp)
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth(fraction = proteinPercentage.toFloat() + carbsPercentage.toFloat() + fatsPercentage.toFloat())
+                    .fillMaxHeight()
+                    .background(color = colors.orange)
+            )
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth(fraction = proteinPercentage.toFloat() + carbsPercentage.toFloat())
+                    .fillMaxHeight()
+                    .background(color = colors.green)
+            )
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth(fraction = proteinPercentage.toFloat())
+                    .fillMaxHeight()
+                    .background(color = colors.deepBlue)
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(fraction = 0.8f)
+                .align(alignment = Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            MacroLegend(
+                macroType = MacroType.PROTEIN,
+                textRes = Res.string.protein_percent,
+                percentage = (proteinPercentage * 100).roundToInt()
+            )
+            MacroLegend(
+                macroType = MacroType.CARBS,
+                textRes = Res.string.carbs_percent,
+                percentage = (carbsPercentage * 100).roundToInt()
+            )
+            MacroLegend(
+                macroType = MacroType.FAT,
+                textRes = Res.string.fat_percent,
+                percentage = (fatsPercentage * 100).roundToInt()
+            )
+        }
+    }
+}
+
+@Composable
+private fun MacroLegend(
+    modifier: Modifier = Modifier,
+    macroType: MacroType,
+    textRes: StringResource,
+    percentage: Int,
+) {
+    val color = when (macroType) {
+        MacroType.PROTEIN -> colors.deepBlue
+        MacroType.CARBS -> colors.green
+        MacroType.FAT -> colors.orange
+    }
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
     ) {
         Spacer(
             modifier = Modifier
-                .fillMaxWidth(fraction = proteinPercentage.toFloat() + carbsPercentage.toFloat() + fatsPercentage.toFloat())
-                .fillMaxHeight()
-                .background(color = colors.orange)
+                .size(8.dp)
+                .background(color = color, shape = RoundedCornerShape(size = 2.dp))
         )
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth(fraction = proteinPercentage.toFloat() + carbsPercentage.toFloat())
-                .fillMaxHeight()
-                .background(color = colors.green)
-        )
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth(fraction = proteinPercentage.toFloat())
-                .fillMaxHeight()
-                .background(color = colors.deepBlue)
+        Text(
+            text = stringResource(resource = textRes, percentage),
+            style = typography.regular10,
+            color = colors.mediumGray
         )
     }
 }
@@ -349,4 +412,11 @@ private fun PreviewAddIngredientScreen() {
             callbacks = AddIngredientCallbacks.default()
         )
     }
+}
+
+
+private enum class MacroType {
+    PROTEIN,
+    CARBS,
+    FAT
 }

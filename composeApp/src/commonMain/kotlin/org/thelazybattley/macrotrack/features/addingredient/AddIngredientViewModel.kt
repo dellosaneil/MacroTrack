@@ -52,7 +52,7 @@ class AddIngredientViewModel(
                     currentState.copy(weight = value.toDoubleOrNull() ?: 0.0)
 
                 AddIngredientTextFieldType.FATS -> currentState.copy(
-                    fat = value.toDoubleOrNull() ?: currentState.fat,
+                    fat = value.toDoubleOrNull() ?: 0.0,
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = currentState.protein ?: 0.0,
                         carbs = currentState.carbs ?: 0.0,
@@ -61,7 +61,7 @@ class AddIngredientViewModel(
                 )
 
                 AddIngredientTextFieldType.PROTEIN -> currentState.copy(
-                    protein = value.toDoubleOrNull() ?: currentState.protein,
+                    protein = value.toDoubleOrNull() ?: 0.0,
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = value.toDoubleOrNull() ?: 0.0,
                         carbs = currentState.carbs ?: 0.0,
@@ -70,7 +70,7 @@ class AddIngredientViewModel(
                 )
 
                 AddIngredientTextFieldType.CARBS -> currentState.copy(
-                    carbs = value.toDoubleOrNull() ?: currentState.carbs,
+                    carbs = value.toDoubleOrNull() ?: 0.0,
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = currentState.protein ?: 0.0,
                         carbs = value.toDoubleOrNull() ?: 0.0,
@@ -92,6 +92,16 @@ class AddIngredientViewModel(
 
     private fun calculateMacroPercentage() {
         _state.value.let { currentState ->
+            if(currentState.calories > 0) {
+                _state.update {
+                    it.copy(
+                        proteinPercentage = 0.0,
+                        carbsPercentage = 0.0,
+                        fatPercentage = 0.0
+                    )
+                }
+            }
+
             val calFromProtein = (currentState.protein ?: 0.0) * 4
             val calFromCarbs = (currentState.carbs ?: 0.0) * 4
             val calFromFat = (currentState.fat ?: 0.0) * 9
