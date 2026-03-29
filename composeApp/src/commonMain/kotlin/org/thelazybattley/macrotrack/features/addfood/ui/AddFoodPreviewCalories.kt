@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.features.addingredient.ui
+package org.thelazybattley.macrotrack.features.addfood.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

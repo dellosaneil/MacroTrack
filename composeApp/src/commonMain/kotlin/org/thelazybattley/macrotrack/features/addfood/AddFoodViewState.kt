@@ -1,6 +1,6 @@
-package org.thelazybattley.macrotrack.features.addingredient
+package org.thelazybattley.macrotrack.features.addfood
 
-data class AddIngredientViewState(
+data class AddFoodViewState(
     val protein: Double? = null,
     val carbs: Double? = null,
     val fat: Double? = null,
@@ -13,5 +13,5 @@ data class AddIngredientViewState(
     val fatPercentage: Double = 0.0,
     val foodNameList: List<String> = emptyList(),
     val duplicateFood: Boolean = false,
-    val ingredientSaved: Boolean = false
+    val foodSaved: Boolean = false
 )

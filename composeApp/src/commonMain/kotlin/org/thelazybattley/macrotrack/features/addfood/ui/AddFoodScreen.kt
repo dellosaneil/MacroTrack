@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.features.addingredient.ui
+package org.thelazybattley.macrotrack.features.addfood.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,23 +41,23 @@ import macrotrack.composeapp.generated.resources.chicken_breast
 import macrotrack.composeapp.generated.resources.fat_g
 import macrotrack.composeapp.generated.resources.fat_percent
 import macrotrack.composeapp.generated.resources.g
-import macrotrack.composeapp.generated.resources.ingredient_name
+import macrotrack.composeapp.generated.resources.food_name
 import macrotrack.composeapp.generated.resources.macros_per_serving
-import macrotrack.composeapp.generated.resources.new_ingredient
+import macrotrack.composeapp.generated.resources.new_food
 import macrotrack.composeapp.generated.resources.one_hundred
 import macrotrack.composeapp.generated.resources.placeholder_carbs
 import macrotrack.composeapp.generated.resources.placeholder_fats
 import macrotrack.composeapp.generated.resources.placeholder_protein
 import macrotrack.composeapp.generated.resources.protein_g
 import macrotrack.composeapp.generated.resources.protein_percent
-import macrotrack.composeapp.generated.resources.save_ingredient
+import macrotrack.composeapp.generated.resources.save_food
 import macrotrack.composeapp.generated.resources.this_food_is_already_saved
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.thelazybattley.macrotrack.features.addingredient.AddIngredientCallbacks
-import org.thelazybattley.macrotrack.features.addingredient.AddIngredientViewModel
-import org.thelazybattley.macrotrack.features.addingredient.AddIngredientViewState
+import org.thelazybattley.macrotrack.features.addfood.AddFoodCallbacks
+import org.thelazybattley.macrotrack.features.addfood.AddFoodViewModel
+import org.thelazybattley.macrotrack.features.addfood.AddFoodViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
@@ -71,7 +71,7 @@ fun AddIngredientScreen(
     modifier: Modifier = Modifier,
     popBackStack: () -> Unit
 ) {
-    val viewModel = koinViewModel<AddIngredientViewModel>()
+    val viewModel = koinViewModel<AddFoodViewModel>()
     val viewState by viewModel.state.collectAsState()
     Scaffold(
         containerColor = colors.white,
@@ -91,12 +91,12 @@ fun AddIngredientScreen(
 @Composable
 fun AddIngredientScreen(
     modifier: Modifier = Modifier,
-    viewState: AddIngredientViewState,
-    callbacks: AddIngredientCallbacks,
+    viewState: AddFoodViewState,
+    callbacks: AddFoodCallbacks,
     popBackStack: () -> Unit
 ) {
-    LaunchedEffect(key1 = viewState.ingredientSaved) {
-        if(viewState.ingredientSaved) {
+    LaunchedEffect(key1 = viewState.foodSaved) {
+        if(viewState.foodSaved) {
             popBackStack()
         }
     }
@@ -116,7 +116,7 @@ fun AddIngredientScreen(
         }
         AddIngredientTextField(
             modifier = Modifier.fillMaxWidth(),
-            title = Res.string.ingredient_name,
+            title = Res.string.food_name,
             titleTextColor = textColor,
             borderColor = colors.deepBlue,
             placeholder = Res.string.chicken_breast,
@@ -124,7 +124,7 @@ fun AddIngredientScreen(
         ) {
             callbacks.onTextFieldUpdated(
                 value = it,
-                type = AddIngredientTextFieldType.INGREDIENT_NAME
+                type = AddFoodTextFieldType.FOOD_NAME
             )
         }
         if (viewState.duplicateFood) {
@@ -163,7 +163,7 @@ fun AddIngredientScreen(
                     onValueChanged = { value ->
                         callbacks.onTextFieldUpdated(
                             value = value,
-                            type = AddIngredientTextFieldType.AMOUNT_IN_GRAMS
+                            type = AddFoodTextFieldType.AMOUNT_IN_GRAMS
                         )
                     },
                 )
@@ -206,7 +206,7 @@ fun AddIngredientScreen(
                 borderColor = colors.deepBlue,
                 placeholder = Res.string.placeholder_protein
             ) {
-                callbacks.onTextFieldUpdated(value = it, type = AddIngredientTextFieldType.PROTEIN)
+                callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.PROTEIN)
             }
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
@@ -215,7 +215,7 @@ fun AddIngredientScreen(
                 borderColor = colors.green,
                 placeholder = Res.string.placeholder_carbs
             ) {
-                callbacks.onTextFieldUpdated(value = it, type = AddIngredientTextFieldType.CARBS)
+                callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.CARBS)
             }
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
@@ -224,7 +224,7 @@ fun AddIngredientScreen(
                 borderColor = colors.orange,
                 placeholder = Res.string.placeholder_fats
             ) {
-                callbacks.onTextFieldUpdated(value = it, type = AddIngredientTextFieldType.FATS)
+                callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.FATS)
             }
         }
 
@@ -248,7 +248,7 @@ fun AddIngredientScreen(
             modifier = Modifier.fillMaxWidth(),
             isEnabled = viewState.buttonEnabled
         ) {
-            callbacks.onSaveIngredient()
+            callbacks.onSaveFood()
         }
     }
 }
@@ -365,7 +365,7 @@ private fun SaveIngredient(
         shape = RoundedCornerShape(size = 8.dp)
     ) {
         Text(
-            text = stringResource(resource = Res.string.save_ingredient),
+            text = stringResource(resource = Res.string.save_food),
             style = typography.bold16,
             modifier = Modifier.padding(vertical = 8.dp)
         )
@@ -408,8 +408,8 @@ private fun AddIngredientTextField(
     }
 }
 
-enum class AddIngredientTextFieldType {
-    INGREDIENT_NAME,
+enum class AddFoodTextFieldType {
+    FOOD_NAME,
     AMOUNT_IN_GRAMS,
     FATS,
     PROTEIN,
@@ -424,7 +424,7 @@ private fun TitleBar(modifier: Modifier = Modifier, onBackClicked: () -> Unit) {
             modifier = Modifier.align(alignment = Alignment.CenterStart)
         )
         Text(
-            text = stringResource(resource = Res.string.new_ingredient),
+            text = stringResource(resource = Res.string.new_food),
             style = typography.bold16,
             color = colors.black,
             modifier = Modifier.align(alignment = Alignment.Center)
@@ -438,8 +438,8 @@ private fun PreviewAddIngredientScreen() {
     MacroTrackTheme {
         AddIngredientScreen(
             modifier = Modifier.fillMaxSize().padding(all = 16.dp),
-            viewState = AddIngredientViewState(),
-            callbacks = AddIngredientCallbacks.default()
+            viewState = AddFoodViewState(),
+            callbacks = AddFoodCallbacks.default()
         ) {
 
         }

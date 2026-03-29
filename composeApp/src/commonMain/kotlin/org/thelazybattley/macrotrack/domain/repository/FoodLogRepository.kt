@@ -7,8 +7,12 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 interface FoodLogRepository {
 
     suspend fun insertFoodLog(
-        recipeName: String, mealType: MealType,
-        percentageEaten: Int
+        foodName: String,
+        mealType: MealType,
+        calories: Int,
+        fat: Double,
+        carbs: Double,
+        protein: Double
     )
 
     suspend fun deleteFoodLog(id: Int)

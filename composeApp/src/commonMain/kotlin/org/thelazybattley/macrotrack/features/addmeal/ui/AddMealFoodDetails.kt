@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun AddMealFoodDetails(
     modifier: Modifier = Modifier,
-    food: Food
+    food: Food,
+    onFoodSelected: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -67,7 +69,10 @@ fun AddMealFoodDetails(
         Box(
             modifier = Modifier
                 .border(width = 1.dp, shape = CircleShape, color = colors.lightGray)
-                .size(size = 24.dp),
+                .size(size = 24.dp)
+                .clickable {
+                    onFoodSelected()
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -87,6 +92,8 @@ private fun PreviewAddMealFoodDetails() {
         AddMealFoodDetails(
             modifier = Modifier.fillMaxWidth(),
             food = dummyFood
-        )
+        ) {
+
+        }
     }
 }

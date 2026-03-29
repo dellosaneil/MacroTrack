@@ -24,14 +24,14 @@ import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetFoodByNameUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
-import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
-import org.thelazybattley.macrotrack.features.addingredient.AddIngredientViewModel
+import org.thelazybattley.macrotrack.features.addfood.AddFoodViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.home.HomeTabViewModel
@@ -67,7 +67,7 @@ val useCaseModule = module {
     factoryOf(::InsertUserDetailsUseCase)
     factoryOf(::GetUserDetailsUseCase)
     factoryOf(::DeleteFoodLogUseCase)
-    factoryOf(::GetAllFoodLogsUseCase)
+    factoryOf(::GetAllFoodLogUseCase)
     factoryOf(::InsertFoodLogUseCase)
     factoryOf(::CalculateCaloriesFromMacrosUseCase)
 }
@@ -78,7 +78,7 @@ val viewModelModule = module {
     viewModelOf(::HomeTabViewModel)
     viewModelOf(::AddMealViewModel)
     viewModelOf(::FoodLogViewModel)
-    viewModelOf(::AddIngredientViewModel)
+    viewModelOf(::AddFoodViewModel)
 }
 
 fun initKoin() {

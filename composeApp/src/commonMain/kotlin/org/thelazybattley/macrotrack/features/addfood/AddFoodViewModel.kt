@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.features.addingredient
+package org.thelazybattley.macrotrack.features.addfood
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,15 +11,15 @@ import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
-import org.thelazybattley.macrotrack.features.addingredient.ui.AddIngredientTextFieldType
+import org.thelazybattley.macrotrack.features.addfood.ui.AddFoodTextFieldType
 
-class AddIngredientViewModel(
+class AddFoodViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
     private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase,
     private val getAllFoodUseCase: GetAllFoodUseCase
-) : ViewModel(), AddIngredientCallbacks {
+) : ViewModel(), AddFoodCallbacks {
 
-    private val _state = MutableStateFlow(value = AddIngredientViewState())
+    private val _state = MutableStateFlow(value = AddFoodViewState())
     val state = _state.asStateFlow()
 
     init {
@@ -35,7 +35,7 @@ class AddIngredientViewModel(
     }
 
 
-    override fun onSaveIngredient() {
+    override fun onSaveFood() {
         viewModelScope.launch {
             with(receiver = state.value) {
                 insertFoodUseCase(
@@ -51,7 +51,7 @@ class AddIngredientViewModel(
                     )
                 ).also {
                     _state.update { currentState ->
-                        currentState.copy(ingredientSaved = true)
+                        currentState.copy(foodSaved = true)
                     }
                 }
             }
@@ -60,11 +60,11 @@ class AddIngredientViewModel(
 
     override fun onTextFieldUpdated(
         value: String,
-        type: AddIngredientTextFieldType
+        type: AddFoodTextFieldType
     ) {
         _state.update { currentState ->
             when (type) {
-                AddIngredientTextFieldType.INGREDIENT_NAME -> {
+                AddFoodTextFieldType.FOOD_NAME -> {
                     val duplicateFood = currentState.foodNameList.any { food ->
                         food.equals(
                             other = value,
@@ -74,10 +74,10 @@ class AddIngredientViewModel(
                     currentState.copy(name = value, duplicateFood = duplicateFood)
                 }
 
-                AddIngredientTextFieldType.AMOUNT_IN_GRAMS ->
+                AddFoodTextFieldType.AMOUNT_IN_GRAMS ->
                     currentState.copy(weight = value.toDoubleOrNull() ?: 0.0)
 
-                AddIngredientTextFieldType.FATS -> currentState.copy(
+                AddFoodTextFieldType.FATS -> currentState.copy(
                     fat = value.toDoubleOrNull() ?: 0.0,
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = currentState.protein ?: 0.0,
@@ -86,7 +86,7 @@ class AddIngredientViewModel(
                     )
                 )
 
-                AddIngredientTextFieldType.PROTEIN -> currentState.copy(
+                AddFoodTextFieldType.PROTEIN -> currentState.copy(
                     protein = value.toDoubleOrNull() ?: 0.0,
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = value.toDoubleOrNull() ?: 0.0,
@@ -95,7 +95,7 @@ class AddIngredientViewModel(
                     )
                 )
 
-                AddIngredientTextFieldType.CARBS -> currentState.copy(
+                AddFoodTextFieldType.CARBS -> currentState.copy(
                     carbs = value.toDoubleOrNull() ?: 0.0,
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = currentState.protein ?: 0.0,
@@ -111,7 +111,7 @@ class AddIngredientViewModel(
         _state.update { currentState ->
             currentState.copy(buttonEnabled = isButtonEnabled)
         }
-        if (type != AddIngredientTextFieldType.INGREDIENT_NAME && type != AddIngredientTextFieldType.AMOUNT_IN_GRAMS) {
+        if (type != AddFoodTextFieldType.FOOD_NAME && type != AddFoodTextFieldType.AMOUNT_IN_GRAMS) {
             calculateMacroPercentage()
         }
     }

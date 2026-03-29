@@ -8,13 +8,20 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 @Entity
 data class FoodLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val foodName: String,
     val mealType: MealType,
-    val recipeName: String,
-    val percentageEaten: Int
+    val calories: Int,
+    val protein: Double,
+    val carbs: Double,
+    val fat: Double
 )
 
 fun FoodLogEntity.toDomain() = FoodLog(
     mealType = mealType,
-    recipeName = recipeName,
-    percentageEaten = percentageEaten
+    id = id,
+    foodName = foodName,
+    calories = calories,
+    fat = fat,
+    protein = protein,
+    carbs = carbs
 )

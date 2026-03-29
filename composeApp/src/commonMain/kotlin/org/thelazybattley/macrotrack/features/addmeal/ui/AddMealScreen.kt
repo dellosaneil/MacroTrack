@@ -12,6 +12,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,14 +32,28 @@ import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
+import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun AddMealScreen(modifier: Modifier = Modifier) {
+fun AddMealScreen(
+    modifier: Modifier = Modifier,
+    onBackButtonPressed: () -> Unit,
+    onNavigate: (MacroTrackDestination) -> Unit
+) {
     val viewModel = koinViewModel<AddMealViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(key1 = Unit) {
+        viewModel.resetNavigateScreen()
+    }
+    LaunchedEffect(key1 = viewState.navigateDestination) {
+        viewState.navigateDestination?.let { destination ->
+            onNavigate(destination)
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = colors.white
@@ -48,7 +63,9 @@ fun AddMealScreen(modifier: Modifier = Modifier) {
                 .padding(paddingValues = innerPadding),
             viewState = viewState,
             callbacks = viewModel
-        )
+        ) {
+            onBackButtonPressed()
+        }
     }
 }
 
@@ -56,7 +73,8 @@ fun AddMealScreen(modifier: Modifier = Modifier) {
 private fun AddMealScreen(
     modifier: Modifier = Modifier,
     viewState: AddMealViewState,
-    callbacks: AddMealCallbacks
+    callbacks: AddMealCallbacks,
+    onBackButtonPressed: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -64,7 +82,10 @@ private fun AddMealScreen(
             .padding(paddingValues = AppPadding),
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
-        TitleBar(modifier = Modifier.fillMaxWidth())
+        TitleBar(modifier = Modifier.fillMaxWidth()) {
+            callbacks.onNavigateScreen(destination = MacroTrackDestination.ADD_FOOD)
+//            onBackButtonPressed()
+        }
         MacrosDetail(modifier = Modifier.fillMaxWidth())
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
@@ -89,7 +110,9 @@ private fun AddMealScreen(
                 AddMealFoodDetails(
                     modifier = Modifier.fillMaxWidth(),
                     food = food
-                )
+                ) {
+                    callbacks.onInsertFoodLog(food = food)
+                }
                 HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
             }
         }
@@ -98,12 +121,15 @@ private fun AddMealScreen(
 }
 
 @Composable
-private fun TitleBar(modifier: Modifier = Modifier) {
+private fun TitleBar(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Box(
         modifier = modifier,
     ) {
         CommonBackButton(modifier = Modifier.align(alignment = Alignment.CenterStart)) {
-
+            onClick()
         }
         Text(
             text = stringResource(resource = Res.string.add_lunch),
@@ -132,7 +158,9 @@ private fun PreviewAddMealScreen() {
                     )
                 ),
                 callbacks = AddMealCallbacks.default()
-            )
+            ) {
+
+            }
         }
     }
 }

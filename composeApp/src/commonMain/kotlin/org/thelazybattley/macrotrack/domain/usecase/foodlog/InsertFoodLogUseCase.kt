@@ -8,14 +8,20 @@ class InsertFoodLogUseCase(
 ) {
 
     suspend operator fun invoke(
-        recipeName: String,
+        foodName: String,
         mealType: MealType,
-        percentageEaten: Int
+        calories: Int,
+        fat: Double,
+        carbs: Double,
+        protein: Double
     ) {
         repository.insertFoodLog(
-            recipeName = recipeName,
+            foodName = foodName,
             mealType = mealType,
-            percentageEaten = percentageEaten
+            calories = calories,
+            fat = fat,
+            carbs = carbs,
+            protein = protein
         )
     }
 

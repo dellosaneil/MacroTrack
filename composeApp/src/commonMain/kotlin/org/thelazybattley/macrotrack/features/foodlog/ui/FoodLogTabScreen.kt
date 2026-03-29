@@ -6,28 +6,53 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_meal
 import macrotrack.composeapp.generated.resources.kcal
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
+import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
+import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
+
 @Composable
 fun FoodLogTabScreen(
     modifier: Modifier = Modifier,
+    onNavigate: (MacroTrackDestination) -> Unit
+) {
+    val viewModel = koinViewModel<FoodLogViewModel>()
+    val viewState by viewModel.state.collectAsStateWithLifecycle()
+    FoodLogTabScreen(
+        modifier = modifier,
+        viewState = viewState,
+        callbacks = viewModel,
+        onNavigate = onNavigate
+    )
+}
+
+@Composable
+private fun FoodLogTabScreen(
+    modifier: Modifier = Modifier,
+    viewState: FoodLogViewState,
+    callbacks: FoodLogCallbacks,
     onNavigate: (MacroTrackDestination) -> Unit
 ) {
     LazyColumn(
@@ -40,6 +65,9 @@ fun FoodLogTabScreen(
         item {
             FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = MealType.BREAKFAST)
         }
+        items(items = viewState.breakfastFood) {
+            Text(text = it.toString())
+        }
         item {
             AddMealButton(modifier = Modifier.fillMaxWidth()) {
                 onNavigate(MacroTrackDestination.ADD_MEAL)
@@ -49,6 +77,9 @@ fun FoodLogTabScreen(
 
         item {
             FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = MealType.LUNCH)
+        }
+        items(items = viewState.lunchFood) {
+            Text(text = it.toString())
         }
         item {
             AddMealButton(modifier = Modifier.fillMaxWidth()) {
@@ -60,6 +91,9 @@ fun FoodLogTabScreen(
         item {
             FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = MealType.DINNER)
         }
+        items(items = viewState.dinnerFood) {
+            Text(text = it.toString())
+        }
         item {
             AddMealButton(modifier = Modifier.fillMaxWidth()) {
 
@@ -69,6 +103,9 @@ fun FoodLogTabScreen(
 
         item {
             FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = MealType.SNACK)
+        }
+        items(items = viewState.snackFood) {
+            Text(text = it.toString())
         }
         item {
             AddMealButton(modifier = Modifier.fillMaxWidth()) {

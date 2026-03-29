@@ -21,7 +21,7 @@ enum class MacroTrackDestination(
     ONBOARDING(route = "onboarding"),
     MAIN(route = "main"),
     ADD_MEAL(route = "add_meal"),
-    ADD_INGREDIENT(route = "add_ingredient")
+    ADD_FOOD(route = "add_food")
 }
 
 enum class MacroTrackMainDestination(
