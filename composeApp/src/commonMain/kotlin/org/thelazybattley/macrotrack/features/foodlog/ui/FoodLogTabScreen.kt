@@ -62,7 +62,7 @@ private fun FoodLogTabScreen(
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
         stickyHeader {
-            FoodLogCaloriesEaten(
+            FoodLogTotalMacros(
                 modifier = Modifier.fillMaxWidth(),
                 calorieGoal = viewState.calorieGoal,
                 totalCalories = viewState.totalCalories
