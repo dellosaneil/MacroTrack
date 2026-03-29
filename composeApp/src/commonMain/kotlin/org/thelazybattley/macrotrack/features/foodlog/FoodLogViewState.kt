@@ -1,13 +1,28 @@
 package org.thelazybattley.macrotrack.features.foodlog
 
 import org.thelazybattley.macrotrack.domain.model.FoodLog
-import org.thelazybattley.macrotrack.domain.model.UserDetails
+import org.thelazybattley.macrotrack.domain.model.MealType
 
 data class FoodLogViewState(
-    val breakfastFood : List<FoodLog> = emptyList(),
-    val lunchFood : List<FoodLog> = emptyList(),
-    val dinnerFood : List<FoodLog> = emptyList(),
-    val snackFood : List<FoodLog> = emptyList(),
-    val allFood : List<FoodLog> = emptyList(),
-    val userDetails: UserDetails? = null
+    val breakfast: FoodLogFoodListByMealType = FoodLogFoodListByMealType(
+        mealType = MealType.BREAKFAST
+    ),
+    val lunch: FoodLogFoodListByMealType = FoodLogFoodListByMealType(
+        mealType = MealType.LUNCH
+    ),
+    val dinner: FoodLogFoodListByMealType = FoodLogFoodListByMealType(
+        mealType = MealType.DINNER
+    ),
+    val snack: FoodLogFoodListByMealType = FoodLogFoodListByMealType(
+        mealType = MealType.SNACK
+    ),
+    val allFood: List<FoodLog> = emptyList(),
+    val calorieGoal: Int = 0,
+    val totalCalories: Int = 0
+)
+
+data class FoodLogFoodListByMealType(
+    val foodList: List<FoodLog> = emptyList(),
+    val mealType: MealType,
+    val calories: Int = 0
 )

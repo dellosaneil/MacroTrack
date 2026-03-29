@@ -24,9 +24,9 @@ import macrotrack.composeapp.generated.resources.add_meal
 import macrotrack.composeapp.generated.resources.kcal
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
+import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
 import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
@@ -62,32 +62,32 @@ private fun FoodLogTabScreen(
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
         stickyHeader {
-            FoodLogCaloriesEaten()
+            FoodLogCaloriesEaten(
+                modifier = Modifier.fillMaxWidth(),
+                calorieGoal = viewState.calorieGoal,
+                totalCalories = viewState.totalCalories
+            )
         }
         loggedFoodByMealType(
-            foodList = viewState.breakfastFood,
-            mealType = MealType.BREAKFAST
+            foodList = viewState.breakfast
         ) {
             onNavigate(MacroTrackDestination.ADD_MEAL)
         }
 
         loggedFoodByMealType(
-            foodList = viewState.lunchFood,
-            mealType = MealType.LUNCH
+            foodList = viewState.lunch
         ) {
             onNavigate(MacroTrackDestination.ADD_MEAL)
         }
 
         loggedFoodByMealType(
-            foodList = viewState.dinnerFood,
-            mealType = MealType.DINNER
+            foodList = viewState.dinner
         ) {
             onNavigate(MacroTrackDestination.ADD_MEAL)
         }
 
         loggedFoodByMealType(
-            foodList = viewState.snackFood,
-            mealType = MealType.SNACK
+            foodList = viewState.snack
         ) {
             onNavigate(MacroTrackDestination.ADD_MEAL)
         }
@@ -95,14 +95,16 @@ private fun FoodLogTabScreen(
 }
 
 private fun LazyListScope.loggedFoodByMealType(
-    foodList: List<FoodLog>,
-    mealType: MealType,
+    foodList: FoodLogFoodListByMealType,
     onNavigate: () -> Unit
 ) {
     item {
-        FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = mealType)
+        FoodLogMeals(
+            modifier = Modifier.fillMaxWidth(), mealType = foodList.mealType,
+            totalCalories = foodList.calories
+        )
     }
-    items(items = foodList, key = { it.id }) {
+    items(items = foodList.foodList, key = { it.id }) {
         Text(text = it.toString())
     }
     item {
@@ -116,6 +118,7 @@ private fun LazyListScope.loggedFoodByMealType(
 private fun FoodLogMeals(
     modifier: Modifier = Modifier,
     mealType: MealType,
+    totalCalories: Int,
 ) {
     Row(
         modifier = modifier,
@@ -127,7 +130,7 @@ private fun FoodLogMeals(
             style = typography.bold14
         )
         Text(
-            text = stringResource(resource = Res.string.kcal, 333),
+            text = stringResource(resource = Res.string.kcal, totalCalories),
             style = typography.bold11,
             color = colors.deepBlue
         )

@@ -10,6 +10,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,7 +29,11 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun FoodLogCaloriesEaten(modifier: Modifier = Modifier) {
+fun FoodLogCaloriesEaten(
+    modifier: Modifier = Modifier,
+    calorieGoal: Int,
+    totalCalories: Int,
+) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -46,26 +55,31 @@ fun FoodLogCaloriesEaten(modifier: Modifier = Modifier) {
                     style = typography.regular11
                 )
                 Text(
-                    text = "660",
+                    text = totalCalories.toString(),
                     color = colors.black,
                     style = typography.bold12
                 )
             }
+            var progress by remember { mutableFloatStateOf(value = 0f) }
+            LaunchedEffect(key1 = totalCalories, key2 = calorieGoal) {
+                if (calorieGoal == 0) return@LaunchedEffect
+                progress = totalCalories.toFloat() / calorieGoal.toFloat()
+            }
             CommonLinearProgressBar(
                 modifier = Modifier.fillMaxWidth(),
-                progress = 0.5f
+                progress = progress
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = stringResource(resource = Res.string.eaten_calories, 660),
+                    text = stringResource(resource = Res.string.eaten_calories, totalCalories),
                     color = colors.mediumGray,
                     style = typography.regular10
                 )
                 Text(
-                    text = stringResource(resource = Res.string.remaining_calories, 1344),
+                    text = stringResource(resource = Res.string.remaining_calories, calorieGoal),
                     color = colors.mediumGray,
                     style = typography.regular10
                 )
@@ -78,6 +92,10 @@ fun FoodLogCaloriesEaten(modifier: Modifier = Modifier) {
 @Composable
 private fun PreviewFoodLogCaloriesEaten() {
     MacroTrackTheme {
-        FoodLogCaloriesEaten(modifier = Modifier.fillMaxWidth().padding(all = 16.dp))
+        FoodLogCaloriesEaten(
+            modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
+            totalCalories = 500,
+            calorieGoal = 1200
+        )
     }
 }
