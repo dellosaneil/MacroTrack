@@ -20,6 +20,7 @@ val RoyalBlue = Color(0xFF0D47A1)
 val BrightBlue = Color(0xFF1976D2)
 val IceBlue = Color(0xFFE3F2FD)
 val CrimsonRed = Color(0xFFBA1A1A)
+val LightRed = Color(0xFFFEF2F2)
 
 
 val DarkWhite = Color(0xFF1C1B1F)
@@ -42,3 +43,4 @@ val DarkBrightBlue = Color(0xFF2B2930)
 val DarkDeepBlueSplash = Color(0xFF1C1B1F)
 val DarkIceBlue = Color(0xFF381E72)
 val DarkCrimsonRed = Color(0xFFBA1A1A) // find Dark mode
+val DarkLightRed = Color(0xFFFEF2F2) // find dark mode

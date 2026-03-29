@@ -11,6 +11,10 @@ fun getMacroTrackTypography(): MacroTrackTypography {
     )
 
     return MacroTrackTypography(
+        bold9 = textStyle.copy(
+            fontWeight = FontWeight.Bold,
+            fontSize = 9.sp,
+        ),
         bold10 = textStyle.copy(
             fontWeight = FontWeight.Bold,
             fontSize = 10.sp,

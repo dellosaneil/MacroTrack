@@ -23,8 +23,8 @@ fun getCurrentDate() = run {
 fun MacroType.toColor(): Color {
     return when (this) {
         MacroType.PROTEIN -> colors.deepBlue
-        MacroType.CARBS -> colors.orange
-        MacroType.FAT -> colors.green
+        MacroType.CARBS -> colors.green
+        MacroType.FAT -> colors.orange
     }
 }
 

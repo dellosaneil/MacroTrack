@@ -25,44 +25,43 @@ class FoodLogViewModel(
     init {
         viewModelScope.launch {
             getAllFoodLogUseCase().collect { logs ->
+                val breakfastLogs = logs.filter { it.mealType == MealType.BREAKFAST }
+                val lunchLogs = logs.filter { it.mealType == MealType.LUNCH }
+                val dinnerLogs = logs.filter { it.mealType == MealType.DINNER }
+                val snackLogs = logs.filter { it.mealType == MealType.SNACK }
+                val breakfast = FoodLogFoodListByMealType(
+                    foodList = breakfastLogs,
+                    mealType = MealType.BREAKFAST,
+                    calories = breakfastLogs.sumOf { it.calories },
+                    protein = breakfastLogs.sumOf { it.protein },
+                    fat = breakfastLogs.sumOf { it.fat },
+                    carbs = breakfastLogs.sumOf { it.carbs }
+                )
+                val lunch = FoodLogFoodListByMealType(
+                    foodList = lunchLogs,
+                    mealType = MealType.LUNCH,
+                    calories = lunchLogs.sumOf { it.calories },
+                    protein = lunchLogs.sumOf { it.protein },
+                    fat = lunchLogs.sumOf { it.fat },
+                    carbs = lunchLogs.sumOf { it.carbs }
+                )
+                val dinner = FoodLogFoodListByMealType(
+                    foodList = dinnerLogs,
+                    mealType = MealType.DINNER,
+                    calories = dinnerLogs.sumOf { it.calories },
+                    protein = dinnerLogs.sumOf { it.protein },
+                    fat = dinnerLogs.sumOf { it.fat },
+                    carbs = dinnerLogs.sumOf { it.carbs }
+                )
+                val snack = FoodLogFoodListByMealType(
+                    foodList = snackLogs,
+                    mealType = MealType.SNACK,
+                    calories = snackLogs.sumOf { it.calories },
+                    protein = snackLogs.sumOf { it.protein },
+                    fat = snackLogs.sumOf { it.fat },
+                    carbs = snackLogs.sumOf { it.carbs }
+                )
                 _state.update { currentState ->
-                    val breakfastLogs = logs.filter { it.mealType == MealType.BREAKFAST }
-                    val lunchLogs = logs.filter { it.mealType == MealType.LUNCH }
-                    val dinnerLogs = logs.filter { it.mealType == MealType.DINNER }
-                    val snackLogs = logs.filter { it.mealType == MealType.SNACK }
-                    val breakfast = FoodLogFoodListByMealType(
-                        foodList = breakfastLogs,
-                        mealType = MealType.BREAKFAST,
-                        calories = breakfastLogs.sumOf { it.calories },
-                        protein = breakfastLogs.sumOf { it.protein },
-                        fat = breakfastLogs.sumOf { it.fat },
-                        carbs = breakfastLogs.sumOf { it.carbs }
-                    )
-                    val lunch = FoodLogFoodListByMealType(
-                        foodList = lunchLogs,
-                        mealType = MealType.LUNCH,
-                        calories = lunchLogs.sumOf { it.calories },
-                        protein = lunchLogs.sumOf { it.protein },
-                        fat = lunchLogs.sumOf { it.fat },
-                        carbs = lunchLogs.sumOf { it.carbs }
-                    )
-                    val dinner = FoodLogFoodListByMealType(
-                        foodList = dinnerLogs,
-                        mealType = MealType.DINNER,
-                        calories = dinnerLogs.sumOf { it.calories },
-                        protein = dinnerLogs.sumOf { it.protein },
-                        fat = dinnerLogs.sumOf { it.fat },
-                        carbs = dinnerLogs.sumOf { it.carbs }
-                    )
-                    val snack = FoodLogFoodListByMealType(
-                        foodList = snackLogs,
-                        mealType = MealType.SNACK,
-                        calories = snackLogs.sumOf { it.calories },
-                        protein = snackLogs.sumOf { it.protein },
-                        fat = snackLogs.sumOf { it.fat },
-                        carbs = snackLogs.sumOf { it.carbs }
-                    )
-
                     currentState.copy(
                         breakfast = breakfast,
                         lunch = lunch,
@@ -78,6 +77,10 @@ class FoodLogViewModel(
                 }
             }
         }
+        updateMacroGoals()
+    }
+
+    private fun updateMacroGoals() {
         viewModelScope.launch {
             getUserDetailsUseCase()?.let { user ->
                 val goalMacros = calculateMacrosGoalUseCase(
@@ -96,4 +99,5 @@ class FoodLogViewModel(
             }
         }
     }
+
 }

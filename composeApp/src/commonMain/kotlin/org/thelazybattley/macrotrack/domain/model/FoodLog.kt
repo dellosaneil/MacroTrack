@@ -25,3 +25,14 @@ fun FoodLog.toEntity() = FoodLogEntity(
 )
 
 
+val dummyFoodLog = FoodLog(
+    mealType = MealType.BREAKFAST,
+    calories = 123,
+    protein = 21.3,
+    carbs = 12.3,
+    fat = 12.3,
+    id = 1,
+    foodName = "Chicken Breast",
+    weight = 100.0
+)
+

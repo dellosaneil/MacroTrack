@@ -8,6 +8,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
 
 data class MacroTrackTypography(
+    val bold9: TextStyle,
     val bold10: TextStyle,
     val bold11: TextStyle,
     val bold12: TextStyle,
@@ -49,7 +50,8 @@ val lightMacroTrackColors = MacroTrackColors(
     deepBlueSplash = DeepBlue,
     whiteSplash = White,
     iceBlue = IceBlue,
-    crimsonRed = CrimsonRed
+    crimsonRed = CrimsonRed,
+    lightRed = LightRed
 )
 
 val darkMacroTrackColors = MacroTrackColors(
@@ -73,7 +75,8 @@ val darkMacroTrackColors = MacroTrackColors(
     deepBlueSplash = DarkDeepBlueSplash,
     whiteSplash = DarkBlack,
     iceBlue = DarkIceBlue,
-    crimsonRed = DarkCrimsonRed
+    crimsonRed = DarkCrimsonRed,
+    lightRed = DarkLightRed
 )
 
 

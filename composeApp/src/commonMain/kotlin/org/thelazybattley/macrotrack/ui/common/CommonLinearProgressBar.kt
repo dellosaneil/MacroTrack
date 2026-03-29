@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -20,7 +21,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 @Composable
 fun CommonLinearProgressBar(
     modifier: Modifier = Modifier,
-    progress: Float
+    progress: Float,
+    color: Color = colors.deepBlue
 ) {
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
@@ -38,7 +40,7 @@ fun CommonLinearProgressBar(
             modifier = Modifier
                 .fillMaxWidth(animatedProgress)
                 .fillMaxHeight()
-                .background(color = colors.deepBlue, shape = RoundedCornerShape(8.dp))
+                .background(color = color, shape = RoundedCornerShape(8.dp))
         )
     }
 }
