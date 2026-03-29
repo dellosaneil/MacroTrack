@@ -58,7 +58,9 @@ fun MainScreenNavigation(
                 }
             }
             composable(route = MacroTrackMainDestination.LOG.route) {
-                FoodLogTabScreen()
+                FoodLogTabScreen { destination ->
+                    onNavigate(destination)
+                }
             }
             composable(route = MacroTrackMainDestination.STEPS.route) {
                 Text("steps")

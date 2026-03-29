@@ -20,12 +20,16 @@ import macrotrack.composeapp.generated.resources.add_meal
 import macrotrack.composeapp.generated.resources.kcal
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun FoodLogTabScreen(modifier: Modifier = Modifier) {
+fun FoodLogTabScreen(
+    modifier: Modifier = Modifier,
+    onNavigate: (MacroTrackDestination) -> Unit
+) {
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
@@ -38,7 +42,7 @@ fun FoodLogTabScreen(modifier: Modifier = Modifier) {
         }
         item {
             AddMealButton(modifier = Modifier.fillMaxWidth()) {
-
+                onNavigate(MacroTrackDestination.ADD_MEAL)
             }
         }
 
@@ -49,6 +53,7 @@ fun FoodLogTabScreen(modifier: Modifier = Modifier) {
         item {
             AddMealButton(modifier = Modifier.fillMaxWidth()) {
 
+                onNavigate(MacroTrackDestination.ADD_MEAL)
             }
         }
 
@@ -58,6 +63,7 @@ fun FoodLogTabScreen(modifier: Modifier = Modifier) {
         item {
             AddMealButton(modifier = Modifier.fillMaxWidth()) {
 
+                onNavigate(MacroTrackDestination.ADD_MEAL)
             }
         }
 
@@ -66,7 +72,7 @@ fun FoodLogTabScreen(modifier: Modifier = Modifier) {
         }
         item {
             AddMealButton(modifier = Modifier.fillMaxWidth()) {
-
+                onNavigate(MacroTrackDestination.ADD_MEAL)
             }
         }
     }
@@ -124,6 +130,8 @@ private fun PreviewFoodLogTabScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(all = 16.dp)
-        )
+        ) {
+
+        }
     }
 }
