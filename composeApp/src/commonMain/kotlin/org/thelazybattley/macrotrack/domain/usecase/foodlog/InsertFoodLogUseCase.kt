@@ -13,7 +13,8 @@ class InsertFoodLogUseCase(
         calories: Int,
         fat: Double,
         carbs: Double,
-        protein: Double
+        protein: Double,
+        weight: Double
     ) {
         repository.insertFoodLog(
             foodName = foodName,
@@ -21,7 +22,8 @@ class InsertFoodLogUseCase(
             calories = calories,
             fat = fat,
             carbs = carbs,
-            protein = protein
+            protein = protein,
+            weight = weight
         )
     }
 

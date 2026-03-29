@@ -58,7 +58,8 @@ class AddMealViewModel(
                 fat = food.macros.fat,
                 calories = food.macros.calories,
                 protein = food.macros.protein,
-                mealType = state.value.selectedMealType
+                mealType = state.value.selectedMealType,
+                weight = food.weight
             )
         }
     }

@@ -9,7 +9,8 @@ data class FoodLog(
     val carbs: Double,
     val fat: Double,
     val id: Int,
-    val foodName: String
+    val foodName: String,
+    val weight: Double
 )
 
 fun FoodLog.toEntity() = FoodLogEntity(
@@ -19,7 +20,8 @@ fun FoodLog.toEntity() = FoodLogEntity(
     protein = protein,
     carbs = carbs,
     fat = fat,
-    foodName = foodName
+    foodName = foodName,
+    weight = weight
 )
 
 

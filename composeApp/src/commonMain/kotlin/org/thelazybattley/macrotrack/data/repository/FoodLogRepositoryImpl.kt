@@ -16,7 +16,8 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
         calories: Int,
         fat: Double,
         carbs: Double,
-        protein: Double
+        protein: Double,
+        weight: Double
     ) = dao.insertFoodLog(
         foodLogEntity = FoodLogEntity(
             foodName = foodName,
@@ -24,7 +25,8 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
             calories = calories,
             fat = fat,
             carbs = carbs,
-            protein = protein
+            protein = protein,
+            weight = weight,
         )
     )
 

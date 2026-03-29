@@ -12,7 +12,8 @@ interface FoodLogRepository {
         calories: Int,
         fat: Double,
         carbs: Double,
-        protein: Double
+        protein: Double,
+        weight: Double
     )
 
     suspend fun deleteFoodLog(id: Int)

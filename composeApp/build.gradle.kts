@@ -54,6 +54,7 @@ kotlin {
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.clock)
 
         }
         commonTest.dependencies {

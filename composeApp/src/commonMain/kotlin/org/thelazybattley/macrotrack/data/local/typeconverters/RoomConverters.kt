@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.data.local.typeconverters
 
 import androidx.room.TypeConverter
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.domain.model.Ingredient
@@ -24,5 +25,15 @@ class RoomConverters {
     @TypeConverter
     fun toIngredientList(value: String): List<Ingredient> {
         return Json.decodeFromString(value)
+    }
+
+    @TypeConverter
+    fun fromLocalDate(date: LocalDate?): String? {
+        return date?.toString()
+    }
+
+    @TypeConverter
+    fun toLocalDate(value: String?): LocalDate? {
+        return value?.let { LocalDate.parse(it) }
     }
 }
