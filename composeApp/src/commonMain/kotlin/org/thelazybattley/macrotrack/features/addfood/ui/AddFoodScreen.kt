@@ -40,8 +40,8 @@ import macrotrack.composeapp.generated.resources.carbs_percent
 import macrotrack.composeapp.generated.resources.chicken_breast
 import macrotrack.composeapp.generated.resources.fat_g
 import macrotrack.composeapp.generated.resources.fat_percent
-import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.food_name
+import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.macros_per_serving
 import macrotrack.composeapp.generated.resources.new_food
 import macrotrack.composeapp.generated.resources.one_hundred
@@ -55,6 +55,7 @@ import macrotrack.composeapp.generated.resources.this_food_is_already_saved
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.features.addfood.AddFoodCallbacks
 import org.thelazybattley.macrotrack.features.addfood.AddFoodViewModel
 import org.thelazybattley.macrotrack.features.addfood.AddFoodViewState
@@ -446,9 +447,3 @@ private fun PreviewAddIngredientScreen() {
     }
 }
 
-
-private enum class MacroType {
-    PROTEIN,
-    CARBS,
-    FAT
-}

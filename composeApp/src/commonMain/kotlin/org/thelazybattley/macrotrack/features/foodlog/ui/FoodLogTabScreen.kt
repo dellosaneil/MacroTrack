@@ -64,8 +64,7 @@ private fun FoodLogTabScreen(
         stickyHeader {
             FoodLogTotalMacros(
                 modifier = Modifier.fillMaxWidth(),
-                calorieGoal = viewState.calorieGoal,
-                totalCalories = viewState.totalCalories
+                viewState = viewState
             )
         }
         loggedFoodByMealType(

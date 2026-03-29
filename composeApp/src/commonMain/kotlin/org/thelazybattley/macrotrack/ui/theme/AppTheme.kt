@@ -8,6 +8,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
 
 data class MacroTrackTypography(
+    val bold10: TextStyle,
     val bold11: TextStyle,
     val bold12: TextStyle,
     val bold13: TextStyle,
