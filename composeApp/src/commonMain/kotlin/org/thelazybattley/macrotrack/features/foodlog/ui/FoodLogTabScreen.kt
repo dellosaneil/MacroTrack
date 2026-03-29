@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -23,6 +24,7 @@ import macrotrack.composeapp.generated.resources.add_meal
 import macrotrack.composeapp.generated.resources.kcal
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
@@ -62,55 +64,50 @@ private fun FoodLogTabScreen(
         stickyHeader {
             FoodLogCaloriesEaten()
         }
-        item {
-            FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = MealType.BREAKFAST)
-        }
-        items(items = viewState.breakfastFood) {
-            Text(text = it.toString())
-        }
-        item {
-            AddMealButton(modifier = Modifier.fillMaxWidth()) {
-                onNavigate(MacroTrackDestination.ADD_MEAL)
-            }
+        loggedFoodByMealType(
+            foodList = viewState.breakfastFood,
+            mealType = MealType.BREAKFAST
+        ) {
+            onNavigate(MacroTrackDestination.ADD_MEAL)
         }
 
-
-        item {
-            FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = MealType.LUNCH)
-        }
-        items(items = viewState.lunchFood) {
-            Text(text = it.toString())
-        }
-        item {
-            AddMealButton(modifier = Modifier.fillMaxWidth()) {
-
-                onNavigate(MacroTrackDestination.ADD_MEAL)
-            }
+        loggedFoodByMealType(
+            foodList = viewState.lunchFood,
+            mealType = MealType.LUNCH
+        ) {
+            onNavigate(MacroTrackDestination.ADD_MEAL)
         }
 
-        item {
-            FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = MealType.DINNER)
-        }
-        items(items = viewState.dinnerFood) {
-            Text(text = it.toString())
-        }
-        item {
-            AddMealButton(modifier = Modifier.fillMaxWidth()) {
-
-                onNavigate(MacroTrackDestination.ADD_MEAL)
-            }
+        loggedFoodByMealType(
+            foodList = viewState.dinnerFood,
+            mealType = MealType.DINNER
+        ) {
+            onNavigate(MacroTrackDestination.ADD_MEAL)
         }
 
-        item {
-            FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = MealType.SNACK)
+        loggedFoodByMealType(
+            foodList = viewState.snackFood,
+            mealType = MealType.SNACK
+        ) {
+            onNavigate(MacroTrackDestination.ADD_MEAL)
         }
-        items(items = viewState.snackFood) {
-            Text(text = it.toString())
-        }
-        item {
-            AddMealButton(modifier = Modifier.fillMaxWidth()) {
-                onNavigate(MacroTrackDestination.ADD_MEAL)
-            }
+    }
+}
+
+private fun LazyListScope.loggedFoodByMealType(
+    foodList: List<FoodLog>,
+    mealType: MealType,
+    onNavigate: () -> Unit
+) {
+    item {
+        FoodLogMeals(modifier = Modifier.fillMaxWidth(), mealType = mealType)
+    }
+    items(items = foodList, key = { it.id }) {
+        Text(text = it.toString())
+    }
+    item {
+        AddMealButton(modifier = Modifier.fillMaxWidth()) {
+            onNavigate()
         }
     }
 }
@@ -118,7 +115,7 @@ private fun FoodLogTabScreen(
 @Composable
 private fun FoodLogMeals(
     modifier: Modifier = Modifier,
-    mealType: MealType
+    mealType: MealType,
 ) {
     Row(
         modifier = modifier,

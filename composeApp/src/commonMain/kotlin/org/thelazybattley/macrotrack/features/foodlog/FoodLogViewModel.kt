@@ -8,9 +8,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 
 class FoodLogViewModel(
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
+    private val getUserDetailsUseCase: GetUserDetailsUseCase
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -32,6 +34,11 @@ class FoodLogViewModel(
                         snackFood = snackLogs
                     )
                 }
+            }
+            _state.update { currentState ->
+                currentState.copy(
+                    userDetails = getUserDetailsUseCase()
+                )
             }
         }
     }
