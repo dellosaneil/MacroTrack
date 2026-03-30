@@ -48,7 +48,7 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -57,14 +57,14 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun FoodLogTabScreen(
     modifier: Modifier = Modifier,
-    onNavigate: (MacroTrackDestination, MealType) -> Unit
+    onNavigate: (AppDestinations.Root, MealType) -> Unit
 ) {
     val viewModel = koinViewModel<FoodLogViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1= viewState.navigateMealTypeParameter) {
         if(viewState.navigateMealTypeParameter != null) {
-            onNavigate(MacroTrackDestination.ADD_MEAL, viewState.navigateMealTypeParameter!!)
+            onNavigate(AppDestinations.Root.AddMeal, viewState.navigateMealTypeParameter!!)
             viewModel.resetNavigateMealTypeParameter()
         }
     }

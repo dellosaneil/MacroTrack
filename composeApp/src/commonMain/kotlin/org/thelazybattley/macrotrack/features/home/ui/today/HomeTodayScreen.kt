@@ -56,7 +56,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.features.home.HomeTabCallbacks
 import org.thelazybattley.macrotrack.features.home.HomeTabViewState
 import org.thelazybattley.macrotrack.ui.common.CommonLinearProgressBar
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -67,7 +67,7 @@ fun HomeTodayScreen(
     modifier: Modifier = Modifier,
     viewState: HomeTabViewState,
     callbacks: HomeTabCallbacks,
-    onNavigate: (MacroTrackDestination) -> Unit
+    onNavigate: (AppDestinations.Root) -> Unit
 ) {
     LaunchedEffect(key1 = viewState.isNavigationTriggered) {
         if (viewState.isNavigationTriggered) {
@@ -127,7 +127,7 @@ fun HomeTodayScreen(
         }
         item {
             LoggedMealsCard(modifier = Modifier.fillMaxWidth()) {
-                callbacks.onNavigation(destination = MacroTrackDestination.ADD_MEAL)
+                callbacks.onNavigation(destination = AppDestinations.Root.AddMeal)
             }
         }
     }

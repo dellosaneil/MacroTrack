@@ -16,15 +16,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackMainDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
 fun MacroBottomNavBar(
     modifier: Modifier = Modifier,
-    selectedDestination: MacroTrackMainDestination?,
-    onDestinationClicked: (MacroTrackMainDestination) -> Unit
+    selectedDestination: AppDestinations.BottomNavigation?,
+    onDestinationClicked: (AppDestinations.BottomNavigation) -> Unit
 ) {
     Column {
         HorizontalDivider(
@@ -35,8 +35,11 @@ fun MacroBottomNavBar(
             modifier = modifier,
             containerColor = colors.white
         ) {
-            MacroTrackMainDestination.entries.forEachIndexed { index, destination ->
-                val isSelected = selectedDestination?.ordinal == index
+
+            AppDestinations.BottomNavigation.entries.forEach { destination ->
+                val isSelected = selectedDestination?.route?.let {
+                    destination.route == it
+                } ?: false
                 val color = if (isSelected) {
                     colors.deepBlue
                 } else {
@@ -76,7 +79,7 @@ fun MacroBottomNavBar(
 private fun PreviewMacroBottomNavBar() {
     MacroBottomNavBar(
         modifier = Modifier.fillMaxWidth(),
-        selectedDestination = MacroTrackMainDestination.HOME
+        selectedDestination = AppDestinations.BottomNavigation.Home
     ) {
 
     }

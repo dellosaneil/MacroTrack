@@ -32,7 +32,7 @@ import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -41,7 +41,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 fun AddMealScreen(
     modifier: Modifier = Modifier,
     onBackButtonPressed: () -> Unit,
-    onNavigate: (MacroTrackDestination) -> Unit
+    onNavigate: (AppDestinations.Root) -> Unit
 ) {
     val viewModel = koinViewModel<AddMealViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -98,7 +98,7 @@ private fun AddMealScreen(
         AddMealCreateFood(
             modifier = Modifier.fillMaxWidth()
         ) {
-            callbacks.onNavigateScreen(destination = MacroTrackDestination.ADD_FOOD)
+            callbacks.onNavigateScreen(destination = AppDestinations.Root.AddFood)
         }
         LazyColumn {
             item {

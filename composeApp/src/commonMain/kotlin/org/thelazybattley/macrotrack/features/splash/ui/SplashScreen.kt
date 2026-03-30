@@ -32,7 +32,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.splash.SplashViewModel
 import org.thelazybattley.macrotrack.features.splash.SplashViewState
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -40,7 +40,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun SplashScreen(
     modifier: Modifier = Modifier,
-    onNavigation: (MacroTrackDestination) -> Unit
+    onNavigation: (AppDestinations.Root) -> Unit
 ) {
     val viewModel = koinViewModel<SplashViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -57,7 +57,7 @@ fun SplashScreen(
 fun SplashScreen(
     modifier: Modifier = Modifier,
     viewState: SplashViewState,
-    onNavigation: (MacroTrackDestination) -> Unit
+    onNavigation: (AppDestinations.Root) -> Unit
 ) {
     val gradient = Brush.linearGradient(
         colors = listOf(colors.royalBlue, colors.deepBlueSplash, colors.brightBlue),

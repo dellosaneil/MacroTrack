@@ -5,14 +5,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import org.thelazybattley.macrotrack.features.addfood.ui.AddIngredientScreen
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
@@ -22,34 +24,41 @@ fun SplashScreenNavigationNavigation() {
     MacroTrackTheme {
         NavHost(
             navController = navController,
-            startDestination = MacroTrackDestination.SPLASH_SCREEN.route
+            startDestination = AppDestinations.Root.Splash.route
         ) {
-            composable(route = MacroTrackDestination.ONBOARDING.route) {
+            composable(route = AppDestinations.Root.Onboarding.route) {
                 OnboardingScreen(
                     modifier = Modifier
                 ) {
-                    navController.navigate(route = MacroTrackDestination.MAIN.route)
+                    navController.navigate(route = AppDestinations.Root.MainScreen.route)
                 }
             }
-            composable(route = MacroTrackDestination.MAIN.route) {
+            composable(route = AppDestinations.Root.MainScreen.route) {
                 MainScreenNavigation(
                     modifier = Modifier
                 ) { destination ->
                     navController.navigate(route = destination.route)
                 }
             }
-            composable(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+            composable(route = AppDestinations.Root.Splash.route) {
                 SplashScreen { destination ->
                     navController.navigate(
                         route = destination.route
                     ) {
-                        popUpTo(route = MacroTrackDestination.SPLASH_SCREEN.route) {
+                        popUpTo(route = AppDestinations.Root.Splash.route) {
                             inclusive = true
                         }
                     }
                 }
             }
-            composable(route = MacroTrackDestination.ADD_MEAL.route) {
+            composable(
+                route = AppDestinations.Root.AddMeal.route,
+                arguments = listOf(
+                    navArgument(name = "mealType") {
+                        type = NavType.StringType
+                    }
+                )
+            ) {
                 AddMealScreen(
                     modifier = Modifier,
                     onBackButtonPressed = {
@@ -59,7 +68,7 @@ fun SplashScreenNavigationNavigation() {
                     navController.navigate(route = destination.route)
                 }
             }
-            composable(route = MacroTrackDestination.ADD_FOOD.route) {
+            composable(route = AppDestinations.Root.AddFood.route) {
                 AddIngredientScreen(
                     modifier = Modifier
                 ) {

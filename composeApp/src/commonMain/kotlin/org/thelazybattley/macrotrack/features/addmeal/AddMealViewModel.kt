@@ -12,7 +12,7 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.FoodFilter
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
@@ -68,7 +68,7 @@ class AddMealViewModel(
         }
     }
 
-    override fun onNavigateScreen(destination: MacroTrackDestination) {
+    override fun onNavigateScreen(destination: AppDestinations.Root) {
         _state.update { currentState ->
             currentState.copy(
                 navigateDestination = destination

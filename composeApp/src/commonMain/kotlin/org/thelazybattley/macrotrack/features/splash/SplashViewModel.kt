@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 class SplashViewModel(private val getUserDetailsUseCase: GetUserDetailsUseCase) : ViewModel() {
 
@@ -18,9 +18,9 @@ class SplashViewModel(private val getUserDetailsUseCase: GetUserDetailsUseCase) 
         viewModelScope.launch {
             getUserDetailsUseCase().also { user ->
                 val destination = if (user == null) {
-                    MacroTrackDestination.ONBOARDING
+                    AppDestinations.Root.Onboarding
                 } else {
-                    MacroTrackDestination.MAIN
+                    AppDestinations.Root.MainScreen
                 }
                 _state.update { currentState ->
                     currentState.copy(

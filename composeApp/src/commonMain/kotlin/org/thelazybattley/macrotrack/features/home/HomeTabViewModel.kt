@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 class HomeTabViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
@@ -17,7 +17,7 @@ class HomeTabViewModel(
     private val _state = MutableStateFlow(value = HomeTabViewState())
     val state = _state
 
-    override fun onNavigation(destination: MacroTrackDestination) {
+    override fun onNavigation(destination: AppDestinations.Root) {
         _state.update { currentState ->
             currentState.copy(
                 isNavigationTriggered = true,

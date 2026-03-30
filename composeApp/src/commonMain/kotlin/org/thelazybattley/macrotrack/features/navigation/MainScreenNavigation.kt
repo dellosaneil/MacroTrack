@@ -15,22 +15,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.thelazybattley.macrotrack.features.foodlog.ui.FoodLogTabScreen
 import org.thelazybattley.macrotrack.features.home.ui.HomeTabScreen
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
-import org.thelazybattley.macrotrack.ui.navigation.MacroTrackMainDestination
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
 @Composable
 fun MainScreenNavigation(
     modifier: Modifier = Modifier,
-    onNavigate: (MacroTrackDestination) -> Unit
+    onNavigate: (AppDestinations.Root) -> Unit
 ) {
     val navController = rememberNavController()
-    var currentDestination by remember { mutableStateOf(MacroTrackMainDestination.HOME) }
+    var currentDestination: AppDestinations.BottomNavigation by remember { mutableStateOf(value = AppDestinations.BottomNavigation.Home) }
     LaunchedEffect(key1 = Unit) {
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            currentDestination = MacroTrackMainDestination.entries.find { macroDestination ->
+            currentDestination = AppDestinations.BottomNavigation.entries.find { macroDestination ->
                 destination.route == macroDestination.route
-            } ?: MacroTrackMainDestination.HOME
+            } ?: AppDestinations.BottomNavigation.Home
         }
     }
 
@@ -50,25 +49,25 @@ fun MainScreenNavigation(
                 .padding(paddingValues = innerPadding)
                 .padding(paddingValues = AppPadding),
             navController = navController,
-            startDestination = MacroTrackMainDestination.HOME.route
+            startDestination = AppDestinations.BottomNavigation.Home.route
         ) {
-            composable(route = MacroTrackMainDestination.HOME.route) {
+            composable(route = AppDestinations.BottomNavigation.Home.route) {
                 HomeTabScreen { destination ->
                     onNavigate(destination)
                 }
             }
-            composable(route = MacroTrackMainDestination.LOG.route) {
-                FoodLogTabScreen { destination , _ ->
+            composable(route = AppDestinations.BottomNavigation.Log.route) {
+                FoodLogTabScreen { destination, _ ->
                     onNavigate(destination)
                 }
             }
-            composable(route = MacroTrackMainDestination.STEPS.route) {
+            composable(route = AppDestinations.BottomNavigation.Steps.route) {
                 Text("steps")
             }
-            composable(route = MacroTrackMainDestination.PROGRESS.route) {
+            composable(route = AppDestinations.BottomNavigation.Progress.route) {
                 Text("progress")
             }
-            composable(route = MacroTrackMainDestination.PROFILE.route) {
+            composable(route = AppDestinations.BottomNavigation.Profile.route) {
                 Text("profile")
             }
         }
