@@ -173,7 +173,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                 )
                 Spacer(modifier = Modifier.weight(weight = 1f))
                 Text(
-                    text = stringResource(resource = Res.string.kcal, food.calories.toInt()),
+                    text = stringResource(resource = Res.string.kcal, food.calories),
                     style = typography.bold13,
                     color = colors.black
                 )

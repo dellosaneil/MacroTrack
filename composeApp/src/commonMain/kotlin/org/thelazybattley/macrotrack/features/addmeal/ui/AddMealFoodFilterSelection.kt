@@ -1,7 +1,7 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
@@ -35,13 +36,17 @@ fun AddMealFoodFilterSelection(
     viewState: AddMealViewState
 ) {
     Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+        modifier = modifier
+            .background(
+                color = colors.offWhite,
+                shape = RoundedCornerShape(size = 12.dp)
+            )
+            .padding(all = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         FoodFilter.entries.forEach { foodFilter ->
             FoodFilterChip(
-                modifier = Modifier,
+                modifier = Modifier.weight(weight = 1f),
                 foodFilter = foodFilter,
                 isSelected = foodFilter == viewState.selectedFoodFilter,
             ) {
@@ -72,7 +77,7 @@ private fun FoodFilterChip(
     Card(
         modifier = modifier
             .clip(
-                shape = RoundedCornerShape(size = 12.dp)
+                shape = RoundedCornerShape(size = 8.dp)
             )
             .clickable {
                 onSelected()
@@ -87,6 +92,8 @@ private fun FoodFilterChip(
             style = typography.bold11,
             modifier = Modifier
                 .padding(all = 8.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center
         )
     }
 }

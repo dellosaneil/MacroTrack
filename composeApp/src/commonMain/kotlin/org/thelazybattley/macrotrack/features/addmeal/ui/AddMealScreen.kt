@@ -86,7 +86,6 @@ private fun AddMealScreen(
             callbacks.onNavigateScreen(destination = MacroTrackDestination.ADD_FOOD)
 //            onBackButtonPressed()
         }
-        MacrosDetail(modifier = Modifier.fillMaxWidth())
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
             placeholder = Res.string.search_food,
