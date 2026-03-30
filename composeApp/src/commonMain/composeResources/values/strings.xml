@@ -121,5 +121,8 @@
     <string name="this_food_is_already_saved">This food is already saved. You can edit it instead of adding a new one.</string>
     <string name="value_remaining">%1$d remaining</string>
     <string name="value_gram">%1$d g</string>
+    <string name="p_value_gram">P %1$dg</string>
+    <string name="c_value_gram">C %1$dg</string>
+    <string name="f_value_gram">F %1$dg</string>
 
 </resources>

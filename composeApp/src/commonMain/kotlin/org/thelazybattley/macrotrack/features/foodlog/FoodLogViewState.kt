@@ -29,8 +29,5 @@ data class FoodLogFoodListByMealType(
     val calories: Int = 0,
     val protein: Double = 0.0,
     val carbs: Double = 0.0,
-    val fat: Double = 0.0,
-    val proteinPercent: Double = 0.0,
-    val carbsPercent: Double = 0.0,
-    val fatPercent: Double = 0.0,
+    val fat: Double = 0.0
 )
