@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.domain.usecase.foodlog
 
+import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
 
@@ -14,7 +15,8 @@ class InsertFoodLogUseCase(
         fat: Double,
         carbs: Double,
         protein: Double,
-        weight: Double
+        weight: Double,
+        dominantMacro: MacroType
     ) {
         repository.insertFoodLog(
             foodName = foodName,
@@ -23,7 +25,8 @@ class InsertFoodLogUseCase(
             fat = fat,
             carbs = carbs,
             protein = protein,
-            weight = weight
+            weight = weight,
+            dominantMacro = dominantMacro
         )
     }
 

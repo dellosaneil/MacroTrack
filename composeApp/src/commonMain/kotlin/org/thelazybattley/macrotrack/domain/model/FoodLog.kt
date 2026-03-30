@@ -10,7 +10,8 @@ data class FoodLog(
     val fat: Double,
     val id: Int,
     val foodName: String,
-    val weight: Double
+    val weight: Double,
+    val dominantMacro: MacroType
 )
 
 fun FoodLog.toEntity() = FoodLogEntity(
@@ -21,7 +22,8 @@ fun FoodLog.toEntity() = FoodLogEntity(
     carbs = carbs,
     fat = fat,
     foodName = foodName,
-    weight = weight
+    weight = weight,
+    dominantMacro = dominantMacro.name
 )
 
 
@@ -33,6 +35,7 @@ val dummyFoodLog = FoodLog(
     fat = 12.3,
     id = 1,
     foodName = "Chicken Breast",
-    weight = 100.0
+    weight = 100.0,
+    dominantMacro = MacroType.PROTEIN
 )
 

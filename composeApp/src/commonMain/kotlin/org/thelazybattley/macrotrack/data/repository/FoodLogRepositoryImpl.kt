@@ -6,6 +6,7 @@ import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.toDomain
 import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
 
@@ -17,7 +18,8 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
         fat: Double,
         carbs: Double,
         protein: Double,
-        weight: Double
+        weight: Double,
+        dominantMacro: MacroType
     ) = dao.insertFoodLog(
         foodLogEntity = FoodLogEntity(
             foodName = foodName,
@@ -27,6 +29,7 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
             carbs = carbs,
             protein = protein,
             weight = weight,
+            dominantMacro = dominantMacro.name
         )
     )
 

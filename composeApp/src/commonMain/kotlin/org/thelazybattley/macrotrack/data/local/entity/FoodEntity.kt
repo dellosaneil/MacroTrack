@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
+import org.thelazybattley.macrotrack.domain.model.MacroType
 
 @Entity
 @Serializable
@@ -14,7 +15,8 @@ data class FoodEntity(
     val carbs: Double,
     val fat: Double,
     val calories: Int,
-    val weight: Double
+    val weight: Double,
+    val dominantMacro: String
 )
 
 fun FoodEntity.toFood() = Food(
@@ -25,5 +27,6 @@ fun FoodEntity.toFood() = Food(
         calories = calories
     ),
     name = name,
-    weight = weight
+    weight = weight,
+    dominantMacro = MacroType.valueOf(value = dominantMacro)
 )

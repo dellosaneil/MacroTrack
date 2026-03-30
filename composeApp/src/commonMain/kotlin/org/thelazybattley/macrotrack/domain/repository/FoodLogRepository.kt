@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 
 interface FoodLogRepository {
@@ -13,7 +14,8 @@ interface FoodLogRepository {
         fat: Double,
         carbs: Double,
         protein: Double,
-        weight: Double
+        weight: Double,
+        dominantMacro: MacroType
     )
 
     suspend fun deleteFoodLog(id: Int)

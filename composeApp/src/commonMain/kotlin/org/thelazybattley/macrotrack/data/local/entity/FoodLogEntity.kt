@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 
 @Entity
@@ -18,6 +19,7 @@ data class FoodLogEntity(
     val carbs: Double,
     val fat: Double,
     val weight: Double,
+    val dominantMacro: String
 )
 
 fun FoodLogEntity.toDomain() = FoodLog(
@@ -28,5 +30,6 @@ fun FoodLogEntity.toDomain() = FoodLog(
     fat = fat,
     protein = protein,
     carbs = carbs,
-    weight = weight
+    weight = weight,
+    dominantMacro = MacroType.valueOf(value = dominantMacro)
 )

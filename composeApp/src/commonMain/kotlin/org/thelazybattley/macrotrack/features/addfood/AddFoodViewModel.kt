@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
+import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
@@ -38,6 +39,14 @@ class AddFoodViewModel(
     override fun onSaveFood() {
         viewModelScope.launch {
             with(receiver = state.value) {
+                val dominantMacro = listOf(
+                    MacroType.PROTEIN to proteinPercentage,
+                    MacroType.CARBS to carbsPercentage,
+                    MacroType.FAT to fatPercentage
+                ).maxByOrNull {
+                    it.second
+                }?.first ?: MacroType.PROTEIN
+
                 insertFoodUseCase(
                     food = Food(
                         macros = FoodMacros(
@@ -47,7 +56,8 @@ class AddFoodViewModel(
                             fat = fat!!
                         ),
                         name = state.value.name,
-                        weight = state.value.weight
+                        weight = state.value.weight,
+                        dominantMacro = dominantMacro
                     )
                 ).also {
                     _state.update { currentState ->

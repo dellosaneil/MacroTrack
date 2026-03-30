@@ -22,6 +22,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -147,8 +150,18 @@ private fun LazyListScope.loggedFoodByMealType(
 
 @Composable
 private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
+    val color = food.dominantMacro.toColor()
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .clip(shape = CardDefaults.shape)
+            .drawWithContent {
+                drawContent()
+                drawRect(
+                    color = color,
+                    topLeft = Offset(x = 0f, y = 0f),
+                    size = size.copy(width = 10.dp.toPx())
+                )
+            },
         colors = CardDefaults.cardColors(
             containerColor = colors.offWhite
         )
@@ -156,7 +169,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 8.dp),
+                .padding(vertical = 12.dp, horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
             Text(
@@ -240,7 +253,8 @@ private fun FoodLogMeals(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = stringResource(resource = mealType.title),

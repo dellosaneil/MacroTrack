@@ -5,6 +5,6 @@ import org.thelazybattley.macrotrack.domain.repository.FoodRepository
 
 class InsertFoodUseCase(private val repository: FoodRepository) {
     suspend operator fun invoke(food: Food) {
-        repository.insertFood(food)
+        repository.insertFood(food = food)
     }
 }
