@@ -126,17 +126,14 @@ fun HomeTodayScreen(
             )
         }
         item {
-            LoggedMealsCard(modifier = Modifier.fillMaxWidth()) {
-                callbacks.onNavigation(destination = AppDestinations.Root.AddMeal)
-            }
+            LoggedMealsCard(modifier = Modifier.fillMaxWidth())
         }
     }
 }
 
 @Composable
 private fun LoggedMealsCard(
-    modifier: Modifier,
-    addMealTriggered: () -> Unit
+    modifier: Modifier
 ) {
     Text(
         text = stringResource(resource = Res.string.meals_logged_today),

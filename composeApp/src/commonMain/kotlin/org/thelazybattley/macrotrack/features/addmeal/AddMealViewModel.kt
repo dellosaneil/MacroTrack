@@ -25,7 +25,11 @@ class AddMealViewModel(
     val mealType: String? = savedStateHandle["mealType"]
 
     init {
-        println("Test: $mealType")
+        _state.update { currentState ->
+            currentState.copy(
+                selectedMealType = MealType.valueOf(mealType ?: "")
+            )
+        }
         viewModelScope.launch {
             getAllFoodUseCase().collect { foodList ->
                 _state.update { currentState ->

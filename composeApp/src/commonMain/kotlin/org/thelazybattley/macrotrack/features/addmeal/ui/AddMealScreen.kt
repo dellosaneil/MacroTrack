@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
@@ -20,11 +21,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.add_breakfast
+import macrotrack.composeapp.generated.resources.add_dinner
 import macrotrack.composeapp.generated.resources.add_lunch
+import macrotrack.composeapp.generated.resources.add_snack
 import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_food
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
@@ -54,7 +59,17 @@ fun AddMealScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = colors.white
+        containerColor = colors.white,
+        topBar = {
+            TitleBar(
+                modifier = Modifier.fillMaxWidth()
+                    .statusBarsPadding().padding(paddingValues = AppPadding),
+                mealType = viewState.selectedMealType
+
+            ) {
+                onBackButtonPressed()
+            }
+        }
     ) { innerPadding ->
         AddMealScreen(
             modifier = modifier
@@ -80,9 +95,6 @@ private fun AddMealScreen(
             .padding(paddingValues = AppPadding),
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
-        TitleBar(modifier = Modifier.fillMaxWidth()) {
-            onBackButtonPressed()
-        }
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
             placeholder = Res.string.search_food,
@@ -124,6 +136,7 @@ private fun AddMealScreen(
 @Composable
 private fun TitleBar(
     modifier: Modifier = Modifier,
+    mealType: MealType,
     onClick: () -> Unit
 ) {
     Box(
@@ -132,8 +145,14 @@ private fun TitleBar(
         CommonBackButton(modifier = Modifier.align(alignment = Alignment.CenterStart)) {
             onClick()
         }
+        val textRes = when(mealType) {
+            MealType.BREAKFAST -> Res.string.add_breakfast
+            MealType.LUNCH -> Res.string.add_lunch
+            MealType.DINNER -> Res.string.add_dinner
+            MealType.SNACK -> Res.string.add_snack
+        }
         Text(
-            text = stringResource(resource = Res.string.add_lunch),
+            text = stringResource(resource = textRes),
             style = typography.bold16,
             color = colors.black,
             modifier = Modifier.align(alignment = Alignment.Center)

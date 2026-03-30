@@ -57,14 +57,18 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun FoodLogTabScreen(
     modifier: Modifier = Modifier,
-    onNavigate: (AppDestinations.Root, MealType) -> Unit
+    onNavigate: (String) -> Unit
 ) {
     val viewModel = koinViewModel<FoodLogViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(key1= viewState.navigateMealTypeParameter) {
-        if(viewState.navigateMealTypeParameter != null) {
-            onNavigate(AppDestinations.Root.AddMeal, viewState.navigateMealTypeParameter!!)
+    LaunchedEffect(key1 = viewState.navigateMealTypeParameter) {
+        if (viewState.navigateMealTypeParameter != null) {
+            onNavigate(
+                AppDestinations.Root.AddMeal.createRoute(
+                    mealType = viewState.navigateMealTypeParameter?.name ?: ""
+                )
+            )
             viewModel.resetNavigateMealTypeParameter()
         }
     }

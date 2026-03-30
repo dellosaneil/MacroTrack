@@ -21,7 +21,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 @Composable
 fun MainScreenNavigation(
     modifier: Modifier = Modifier,
-    onNavigate: (AppDestinations.Root) -> Unit
+    onNavigate: (String) -> Unit
 ) {
     val navController = rememberNavController()
     var currentDestination: AppDestinations.BottomNavigation by remember { mutableStateOf(value = AppDestinations.BottomNavigation.Home) }
@@ -53,12 +53,12 @@ fun MainScreenNavigation(
         ) {
             composable(route = AppDestinations.BottomNavigation.Home.route) {
                 HomeTabScreen { destination ->
-                    onNavigate(destination)
+                    onNavigate(destination.route)
                 }
             }
             composable(route = AppDestinations.BottomNavigation.Log.route) {
-                FoodLogTabScreen { destination, _ ->
-                    onNavigate(destination)
+                FoodLogTabScreen {
+                    onNavigate(it)
                 }
             }
             composable(route = AppDestinations.BottomNavigation.Steps.route) {

@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import org.thelazybattley.macrotrack.features.navigation.SplashScreenNavigationNavigation
+import org.thelazybattley.macrotrack.features.navigation.AppBottomNav
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MacroTrackTheme() {
-                SplashScreenNavigationNavigation()
+                AppBottomNav()
             }
         }
     }

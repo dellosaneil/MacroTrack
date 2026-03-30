@@ -15,11 +15,12 @@ import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
 @Preview(showBackground = true)
-fun SplashScreenNavigationNavigation() {
+fun AppBottomNav() {
     val navController = rememberNavController()
     MacroTrackTheme {
         NavHost(
@@ -37,7 +38,7 @@ fun SplashScreenNavigationNavigation() {
                 MainScreenNavigation(
                     modifier = Modifier
                 ) { destination ->
-                    navController.navigate(route = destination.route)
+                    navController.navigate(route = destination)
                 }
             }
             composable(route = AppDestinations.Root.Splash.route) {
@@ -52,9 +53,9 @@ fun SplashScreenNavigationNavigation() {
                 }
             }
             composable(
-                route = AppDestinations.Root.AddMeal.route,
+                route = AppDestinations.Root.AddMeal.routeWithArgs!!,
                 arguments = listOf(
-                    navArgument(name = "mealType") {
+                    navArgument(name = MEAL_TYPE) {
                         type = NavType.StringType
                     }
                 )
