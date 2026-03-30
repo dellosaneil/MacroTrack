@@ -124,5 +124,7 @@
     <string name="p_value_gram">P %1$dg</string>
     <string name="c_value_gram">C %1$dg</string>
     <string name="f_value_gram">F %1$dg</string>
+    <string name="create_new_food">Create new food</string>
+    <string name="cant_find_it_add_custom_macros">Can't find it? Add custom macros</string>
 
 </resources>

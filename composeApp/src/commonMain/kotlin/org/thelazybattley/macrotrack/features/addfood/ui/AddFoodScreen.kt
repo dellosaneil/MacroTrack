@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -55,6 +56,7 @@ import macrotrack.composeapp.generated.resources.this_food_is_already_saved
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.toColor
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.features.addfood.AddFoodCallbacks
 import org.thelazybattley.macrotrack.features.addfood.AddFoodViewModel
@@ -74,8 +76,22 @@ fun AddIngredientScreen(
 ) {
     val viewModel = koinViewModel<AddFoodViewModel>()
     val viewState by viewModel.state.collectAsState()
+    LaunchedEffect(key1 = viewState.foodSaved) {
+        if (viewState.foodSaved) {
+            popBackStack()
+        }
+    }
     Scaffold(
         containerColor = colors.white,
+        topBar = {
+            TitleBar(
+                modifier = Modifier
+                    .padding(paddingValues = AppPadding)
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
+                onBackClicked = popBackStack
+            )
+        }
     ) { innerPadding ->
         AddIngredientScreen(
             modifier = modifier
@@ -83,9 +99,7 @@ fun AddIngredientScreen(
                 .padding(paddingValues = AppPadding),
             viewState = viewState,
             callbacks = viewModel
-        ) {
-            popBackStack()
-        }
+        )
     }
 }
 
@@ -94,21 +108,11 @@ fun AddIngredientScreen(
     modifier: Modifier = Modifier,
     viewState: AddFoodViewState,
     callbacks: AddFoodCallbacks,
-    popBackStack: () -> Unit
 ) {
-    LaunchedEffect(key1 = viewState.foodSaved) {
-        if(viewState.foodSaved) {
-            popBackStack()
-        }
-    }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
-        TitleBar(
-            modifier = Modifier.fillMaxWidth(),
-            onBackClicked = popBackStack
-        )
         Spacer(modifier = Modifier)
         val textColor = if (viewState.duplicateFood) {
             colors.crimsonRed
@@ -203,8 +207,8 @@ fun AddIngredientScreen(
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
                 title = Res.string.protein_g,
-                titleTextColor = colors.gray,
-                borderColor = colors.deepBlue,
+                titleTextColor = MacroType.PROTEIN.toColor(),
+                borderColor = MacroType.PROTEIN.toColor(),
                 placeholder = Res.string.placeholder_protein
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.PROTEIN)
@@ -212,8 +216,8 @@ fun AddIngredientScreen(
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
                 title = Res.string.carbs_g,
-                titleTextColor = colors.green,
-                borderColor = colors.green,
+                titleTextColor = MacroType.CARBS.toColor(),
+                borderColor = MacroType.CARBS.toColor(),
                 placeholder = Res.string.placeholder_carbs
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.CARBS)
@@ -221,8 +225,8 @@ fun AddIngredientScreen(
             AddIngredientTextField(
                 modifier = Modifier.weight(weight = 1f),
                 title = Res.string.fat_g,
-                titleTextColor = colors.orange,
-                borderColor = colors.orange,
+                titleTextColor = MacroType.FAT.toColor(),
+                borderColor = MacroType.FAT.toColor(),
                 placeholder = Res.string.placeholder_fats
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.FATS)
@@ -441,9 +445,7 @@ private fun PreviewAddIngredientScreen() {
             modifier = Modifier.fillMaxSize().padding(all = 16.dp),
             viewState = AddFoodViewState(),
             callbacks = AddFoodCallbacks.default()
-        ) {
-
-        }
+        )
     }
 }
 

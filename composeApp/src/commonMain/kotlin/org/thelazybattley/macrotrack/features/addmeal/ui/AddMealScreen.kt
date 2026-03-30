@@ -45,12 +45,10 @@ fun AddMealScreen(
 ) {
     val viewModel = koinViewModel<AddMealViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-    LaunchedEffect(key1 = Unit) {
-        viewModel.resetNavigateScreen()
-    }
     LaunchedEffect(key1 = viewState.navigateDestination) {
         viewState.navigateDestination?.let { destination ->
             onNavigate(destination)
+            viewModel.resetNavigateScreen()
         }
     }
 
@@ -83,8 +81,7 @@ private fun AddMealScreen(
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
         TitleBar(modifier = Modifier.fillMaxWidth()) {
-            callbacks.onNavigateScreen(destination = MacroTrackDestination.ADD_FOOD)
-//            onBackButtonPressed()
+            onBackButtonPressed()
         }
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
@@ -98,6 +95,11 @@ private fun AddMealScreen(
             callbacks = callbacks,
             viewState = viewState
         )
+        AddMealCreateFood(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            callbacks.onNavigateScreen(destination = MacroTrackDestination.ADD_FOOD)
+        }
         LazyColumn {
             item {
                 HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
