@@ -76,9 +76,7 @@ fun AddMealScreen(
                 .padding(paddingValues = innerPadding),
             viewState = viewState,
             callbacks = viewModel
-        ) {
-            onBackButtonPressed()
-        }
+        )
     }
 }
 
@@ -86,8 +84,7 @@ fun AddMealScreen(
 private fun AddMealScreen(
     modifier: Modifier = Modifier,
     viewState: AddMealViewState,
-    callbacks: AddMealCallbacks,
-    onBackButtonPressed: () -> Unit
+    callbacks: AddMealCallbacks
 ) {
     Column(
         modifier = modifier
@@ -178,9 +175,7 @@ private fun PreviewAddMealScreen() {
                     )
                 ),
                 callbacks = AddMealCallbacks.default()
-            ) {
-
-            }
+            )
         }
     }
 }

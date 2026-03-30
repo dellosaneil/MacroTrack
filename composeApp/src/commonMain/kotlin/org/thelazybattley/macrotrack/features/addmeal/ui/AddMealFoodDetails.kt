@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
@@ -68,7 +69,8 @@ fun AddMealFoodDetails(
         )
         Box(
             modifier = Modifier
-                .border(width = 1.dp, shape = CircleShape, color = colors.lightGray)
+                .clip(shape = CircleShape)
+                .border(width = 1.dp, color = colors.lightGray, shape = CircleShape)
                 .size(size = 24.dp)
                 .clickable {
                     onFoodSelected()
@@ -79,7 +81,6 @@ fun AddMealFoodDetails(
                 text = stringResource(resource = Res.string.plus),
                 style = typography.regular18,
                 color = colors.gray,
-                modifier = Modifier
             )
         }
     }
