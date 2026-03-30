@@ -18,6 +18,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,15 +57,22 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun FoodLogTabScreen(
     modifier: Modifier = Modifier,
-    onNavigate: (MacroTrackDestination) -> Unit
+    onNavigate: (MacroTrackDestination, MealType) -> Unit
 ) {
     val viewModel = koinViewModel<FoodLogViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1= viewState.navigateMealTypeParameter) {
+        if(viewState.navigateMealTypeParameter != null) {
+            onNavigate(MacroTrackDestination.ADD_MEAL, viewState.navigateMealTypeParameter!!)
+            viewModel.resetNavigateMealTypeParameter()
+        }
+    }
+
     FoodLogTabScreen(
         modifier = modifier,
         viewState = viewState,
-        callbacks = viewModel,
-        onNavigate = onNavigate
+        callbacks = viewModel
     )
 }
 
@@ -72,8 +80,7 @@ fun FoodLogTabScreen(
 private fun FoodLogTabScreen(
     modifier: Modifier = Modifier,
     viewState: FoodLogViewState,
-    callbacks: FoodLogCallbacks,
-    onNavigate: (MacroTrackDestination) -> Unit
+    callbacks: FoodLogCallbacks
 ) {
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
@@ -88,22 +95,22 @@ private fun FoodLogTabScreen(
         loggedFoodByMealType(
             foodList = viewState.breakfast
         ) {
-            onNavigate(MacroTrackDestination.ADD_MEAL)
+            callbacks.onNavigate(mealType = MealType.BREAKFAST)
         }
         loggedFoodByMealType(
             foodList = viewState.lunch
         ) {
-            onNavigate(MacroTrackDestination.ADD_MEAL)
+            callbacks.onNavigate(mealType = MealType.LUNCH)
         }
         loggedFoodByMealType(
             foodList = viewState.dinner
         ) {
-            onNavigate(MacroTrackDestination.ADD_MEAL)
+            callbacks.onNavigate(mealType = MealType.DINNER)
         }
         loggedFoodByMealType(
             foodList = viewState.snack
         ) {
-            onNavigate(MacroTrackDestination.ADD_MEAL)
+            callbacks.onNavigate(mealType = MealType.SNACK)
         }
     }
 }
@@ -285,8 +292,6 @@ private fun PreviewFoodLogTabScreen() {
                 )
             ),
             callbacks = FoodLogCallbacks.default()
-        ) {
-
-        }
+        )
     }
 }

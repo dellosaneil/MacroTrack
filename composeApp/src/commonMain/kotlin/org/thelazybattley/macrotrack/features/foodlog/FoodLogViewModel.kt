@@ -100,4 +100,20 @@ class FoodLogViewModel(
         }
     }
 
+    override fun onNavigate(mealType: MealType) {
+        _state.update { currentState ->
+            currentState.copy(
+                navigateMealTypeParameter = mealType
+            )
+        }
+    }
+
+    override fun resetNavigateMealTypeParameter() {
+        _state.update { currentState ->
+            currentState.copy(
+                navigateMealTypeParameter = null
+            )
+        }
+    }
+
 }

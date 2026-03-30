@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.addmeal
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,13 +16,16 @@ import org.thelazybattley.macrotrack.ui.navigation.MacroTrackDestination
 
 class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
-    private val insertFoodLogUseCase: InsertFoodLogUseCase
+    private val insertFoodLogUseCase: InsertFoodLogUseCase,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks {
 
     private val _state = MutableStateFlow(value = AddMealViewState())
     val state = _state.asStateFlow()
+    val mealType: String? = savedStateHandle["mealType"]
 
     init {
+        println("Test: $mealType")
         viewModelScope.launch {
             getAllFoodUseCase().collect { foodList ->
                 _state.update { currentState ->

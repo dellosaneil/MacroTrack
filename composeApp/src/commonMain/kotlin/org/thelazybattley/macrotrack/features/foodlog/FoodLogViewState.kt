@@ -20,7 +20,8 @@ data class FoodLogViewState(
     ),
     val allFood: List<FoodLog> = emptyList(),
     val macroGoals: MacroGoals? = null,
-    val totalFoodMacros: FoodMacros? = null
+    val totalFoodMacros: FoodMacros? = null,
+    val navigateMealTypeParameter : MealType? = null
 )
 
 data class FoodLogFoodListByMealType(
