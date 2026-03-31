@@ -126,7 +126,8 @@ private fun MacrosDetails(
         )
         CommonLinearProgressBar(
             modifier = Modifier.weight(weight = 1f),
-            progress = progress
+            progress = progress,
+            color = macroType.toColor()
         )
         Text(
             text = stringResource(resource = Res.string.value_gram, total.toInt()),
