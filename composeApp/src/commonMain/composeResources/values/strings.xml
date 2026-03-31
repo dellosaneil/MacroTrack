@@ -86,7 +86,7 @@
     <string name="search_food">Search food</string>
     <string name="search_favourites">Search favourites</string>
     <string name="w_p_c_f">%1$dg · P %2$dg · C %3$dg · F %4$dg</string>
-    <string name="plus">+</string>
+    <string name="plus_text">+</string>
     <string name="minus">-</string>
     <string name="add_breakfast">Add Breakfast</string>
     <string name="add_lunch">Add Lunch</string>
@@ -127,5 +127,6 @@
     <string name="create_new_food">Create new food</string>
     <string name="cant_find_it_add_custom_macros">Can't find it? Add custom macros</string>
     <string name="stripe_dominant_macro">STRIPE = DOMINANT MACRO</string>
+    <string name="kcal_per_gram">%1$d kcal/%2$dg</string>
 
 </resources>

@@ -125,7 +125,10 @@ private fun AddMealScreen(
         }
         LazyColumn {
             item {
-                HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+                HorizontalDivider(
+                    thickness = 1.dp, color = colors.lightGray,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
             }
             items(
                 items = viewState.filteredFoodList,
@@ -137,7 +140,10 @@ private fun AddMealScreen(
                 ) {
                     callbacks.onInsertFoodLog(food = food)
                 }
-                HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+                HorizontalDivider(
+                    thickness = 1.dp, color = colors.lightGray,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
         }
     }

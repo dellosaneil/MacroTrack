@@ -27,7 +27,7 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.cant_find_it_add_custom_macros
 import macrotrack.composeapp.generated.resources.create_new_food
 import macrotrack.composeapp.generated.resources.ic_chevron_left
-import macrotrack.composeapp.generated.resources.plus
+import macrotrack.composeapp.generated.resources.plus_text
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -62,7 +62,7 @@ fun AddMealCreateFood(
                     .background(color = colors.deepBlue)
             ) {
                 Text(
-                    text = stringResource(resource = Res.string.plus),
+                    text = stringResource(resource = Res.string.plus_text),
                     color = colors.white,
                     style = typography.regular18,
                     textAlign = TextAlign.Center,
