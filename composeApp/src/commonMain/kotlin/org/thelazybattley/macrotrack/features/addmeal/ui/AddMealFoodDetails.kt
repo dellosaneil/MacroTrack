@@ -91,7 +91,7 @@ fun AddMealFoodDetails(
 private fun PreviewAddMealFoodDetails() {
     MacroTrackTheme {
         AddMealFoodDetails(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
             food = dummyFood
         ) {
 
