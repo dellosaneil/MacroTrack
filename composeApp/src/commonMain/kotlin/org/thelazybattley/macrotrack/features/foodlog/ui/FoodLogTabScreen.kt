@@ -26,25 +26,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_meal
-import macrotrack.composeapp.generated.resources.c_value_gram
-import macrotrack.composeapp.generated.resources.f_value_gram
 import macrotrack.composeapp.generated.resources.kcal
-import macrotrack.composeapp.generated.resources.p_value_gram
 import macrotrack.composeapp.generated.resources.value_gram
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.buildMacroNutrientText
 import org.thelazybattley.macrotrack.core.toColor
 import org.thelazybattley.macrotrack.domain.model.FoodLog
-import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFoodLog
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
@@ -188,7 +181,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                 )
                 Spacer(modifier = Modifier.width(width = 12.dp))
                 Text(
-                    text = macroNutrientDetails(
+                    text = buildMacroNutrientText(
                         protein = food.protein.toInt(),
                         fat = food.fat.toInt(),
                         carbs = food.carbs.toInt()
@@ -206,44 +199,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
     }
 }
 
-@Composable
-private fun macroNutrientDetails(
-    protein: Int,
-    fat: Int,
-    carbs: Int
-): AnnotatedString {
-    return buildAnnotatedString {
-        withStyle(
-            style = SpanStyle(
-                color = MacroType.PROTEIN.toColor()
-            )
-        ) {
-            append(text = stringResource(resource = Res.string.p_value_gram, protein))
 
-        }
-        withStyle(style = SpanStyle(color = colors.black)) {
-            append("\t·\t")
-        }
-        withStyle(
-            style = SpanStyle(
-                color = MacroType.FAT.toColor()
-            )
-        ) {
-            append(text = stringResource(resource = Res.string.f_value_gram, fat))
-
-        }
-        withStyle(style = SpanStyle(color = colors.black)) {
-            append("\t·\t")
-        }
-        withStyle(
-            style = SpanStyle(
-                color = MacroType.CARBS.toColor()
-            )
-        ) {
-            append(text = stringResource(resource = Res.string.c_value_gram, carbs))
-        }
-    }
-}
 
 @Composable
 private fun FoodLogMeals(

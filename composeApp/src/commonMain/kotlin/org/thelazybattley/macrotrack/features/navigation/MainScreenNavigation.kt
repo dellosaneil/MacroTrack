@@ -57,8 +57,8 @@ fun MainScreenNavigation(
                 }
             }
             composable(route = AppDestinations.BottomNavigation.Log.route) {
-                FoodLogTabScreen {
-                    onNavigate(it)
+                FoodLogTabScreen { route ->
+                    onNavigate(route)
                 }
             }
             composable(route = AppDestinations.BottomNavigation.Steps.route) {

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -47,6 +48,7 @@ fun CommonTextField(
     ),
     isEnabled: Boolean = true,
     isError: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onValueChanged: (String) -> Unit,
 ) {
     var value by remember { mutableStateOf(value = "") }
@@ -89,6 +91,7 @@ fun CommonTextField(
         },
         enabled = isEnabled,
         isError = isError,
+        keyboardOptions = keyboardOptions
     )
 }
 

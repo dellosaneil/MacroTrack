@@ -73,7 +73,7 @@ fun FoodLogTotalMacros(
                     style = typography.regular10
                 )
                 Text(
-                    text = stringResource(resource = Res.string.value_remaining, goalCalories),
+                    text = stringResource(resource = Res.string.value_remaining, goalCalories - totalCalories),
                     color = colors.deepBlue,
                     style = typography.bold11
                 )

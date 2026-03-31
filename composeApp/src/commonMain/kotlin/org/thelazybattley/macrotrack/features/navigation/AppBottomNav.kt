@@ -1,8 +1,12 @@
 package org.thelazybattley.macrotrack.features.navigation
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
@@ -22,10 +26,18 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 @Preview(showBackground = true)
 fun AppBottomNav() {
     val navController = rememberNavController()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     MacroTrackTheme {
         NavHost(
             navController = navController,
-            startDestination = AppDestinations.Root.Splash.route
+            startDestination = AppDestinations.Root.Splash.route,
+            modifier = Modifier.pointerInput(Unit) {
+                detectTapGestures {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                }
+            }
         ) {
             composable(route = AppDestinations.Root.Onboarding.route) {
                 OnboardingScreen(
@@ -77,6 +89,7 @@ fun AppBottomNav() {
                 }
             }
         }
+
     }
 }
 

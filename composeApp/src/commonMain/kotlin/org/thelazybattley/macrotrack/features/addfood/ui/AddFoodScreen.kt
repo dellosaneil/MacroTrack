@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -31,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -171,6 +173,9 @@ fun AddIngredientScreen(
                             type = AddFoodTextFieldType.AMOUNT_IN_GRAMS
                         )
                     },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    )
                 )
                 Box(
                     modifier = Modifier
@@ -209,7 +214,10 @@ fun AddIngredientScreen(
                 title = Res.string.protein_g,
                 titleTextColor = MacroType.PROTEIN.toColor(),
                 borderColor = MacroType.PROTEIN.toColor(),
-                placeholder = Res.string.placeholder_protein
+                placeholder = Res.string.placeholder_protein,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal
+                )
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.PROTEIN)
             }
@@ -218,7 +226,10 @@ fun AddIngredientScreen(
                 title = Res.string.carbs_g,
                 titleTextColor = MacroType.CARBS.toColor(),
                 borderColor = MacroType.CARBS.toColor(),
-                placeholder = Res.string.placeholder_carbs
+                placeholder = Res.string.placeholder_carbs,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal
+                )
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.CARBS)
             }
@@ -227,7 +238,10 @@ fun AddIngredientScreen(
                 title = Res.string.fat_g,
                 titleTextColor = MacroType.FAT.toColor(),
                 borderColor = MacroType.FAT.toColor(),
-                placeholder = Res.string.placeholder_fats
+                placeholder = Res.string.placeholder_fats,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal
+                )
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.FATS)
             }
@@ -387,6 +401,7 @@ private fun AddIngredientTextField(
     isEnabled: Boolean = true,
     onTextFieldSize: (IntSize) -> Unit = {},
     isError: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onValueChanged: (String) -> Unit
 ) {
     Column(
@@ -409,6 +424,7 @@ private fun AddIngredientTextField(
             onValueChanged = onValueChanged,
             isEnabled = isEnabled,
             isError = isError,
+            keyboardOptions = keyboardOptions
         )
     }
 }
