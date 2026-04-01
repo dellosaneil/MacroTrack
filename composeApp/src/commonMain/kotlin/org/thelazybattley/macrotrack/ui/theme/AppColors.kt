@@ -31,7 +31,7 @@ val DeepNavy = Color.Transparent
 val White55 = Color(0x8CFFFFFF)
 
 
-val DarkWhite = Color(0xFFE8EAF0)
+val DarkWhite = Color(0xFF1C1B1F)
 val DarkBlue = Color(0xFFD0BCFF)
 val DarkLightBlue = Color(0xFF2B2930)
 val DarkBlack = Color(0xFFE6E1E5)
