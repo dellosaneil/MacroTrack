@@ -16,9 +16,9 @@ interface FoodLogRepository {
         protein: Double,
         weight: Double,
         dominantMacro: MacroType
-    )
+    ) : Long
 
-    suspend fun deleteFoodLog(id: Int)
+    suspend fun deleteFoodLog(id: Long)
 
     fun getAllFoodLogs(): Flow<List<FoodLog>>
 }

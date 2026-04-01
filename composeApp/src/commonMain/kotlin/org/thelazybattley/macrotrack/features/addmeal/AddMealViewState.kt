@@ -12,5 +12,6 @@ data class AddMealViewState(
     val searchQuery: String = "",
     val completeFoodList: List<Food> = emptyList(),
     val navigateDestination: AppDestinations.Root? = null,
-    val addedFoodName: String = ""
+    val latestLoggedFoodName: String = "",
+    val latestLoggedId: Long  = 0
 )

@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.FoodFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
@@ -17,6 +18,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val insertFoodLogUseCase: InsertFoodLogUseCase,
+    private val deleteFoodLogUseCase: DeleteFoodLogUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks {
 
@@ -60,7 +62,7 @@ class AddMealViewModel(
 
     override fun onInsertFoodLog(food: Food) {
         viewModelScope.launch {
-            insertFoodLogUseCase(
+            val id = insertFoodLogUseCase(
                 foodName = food.name,
                 carbs = food.macros.carbs,
                 fat = food.macros.fat,
@@ -72,7 +74,8 @@ class AddMealViewModel(
             )
             _state.update { currentState ->
                 currentState.copy(
-                    addedFoodName = food.name
+                    latestLoggedFoodName = food.name,
+                    latestLoggedId = id
                 )
             }
         }
@@ -91,6 +94,20 @@ class AddMealViewModel(
             currentState.copy(
                 navigateDestination = null
             )
+        }
+    }
+
+    override fun onRevertLog() {
+        println("Test: ${state.value}")
+        if (state.value.latestLoggedId == 0L || state.value.latestLoggedFoodName.isEmpty()) return
+        viewModelScope.launch {
+            deleteFoodLogUseCase(id = state.value.latestLoggedId)
+            _state.update { currentState ->
+                currentState.copy(
+                    latestLoggedFoodName = "",
+                    latestLoggedId = 0
+                )
+            }
         }
     }
 }

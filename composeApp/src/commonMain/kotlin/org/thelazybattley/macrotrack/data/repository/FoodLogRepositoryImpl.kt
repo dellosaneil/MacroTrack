@@ -34,7 +34,7 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
     )
 
     override suspend fun deleteFoodLog(
-        id: Int
+        id: Long
     ) = dao.deleteFoodLog(id = id)
 
     override fun getAllFoodLogs(): Flow<List<FoodLog>> {

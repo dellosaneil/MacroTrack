@@ -17,17 +17,14 @@ class InsertFoodLogUseCase(
         protein: Double,
         weight: Double,
         dominantMacro: MacroType
-    ) {
-        repository.insertFoodLog(
-            foodName = foodName,
-            mealType = mealType,
-            calories = calories,
-            fat = fat,
-            carbs = carbs,
-            protein = protein,
-            weight = weight,
-            dominantMacro = dominantMacro
-        )
-    }
-
+    ) = repository.insertFoodLog(
+        foodName = foodName,
+        mealType = mealType,
+        calories = calories,
+        fat = fat,
+        carbs = carbs,
+        protein = protein,
+        weight = weight,
+        dominantMacro = dominantMacro
+    )
 }

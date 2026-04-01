@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,9 +80,12 @@ fun AddMealScreen(
     }
 
     val snackBarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(key1 = viewState.addedFoodName) {
-        if(viewState.addedFoodName.isNotEmpty()) {
-            snackBarHostState.showSnackbar(message = viewState.addedFoodName)
+    LaunchedEffect(key1 = viewState.latestLoggedFoodName) {
+        if(viewState.latestLoggedFoodName.isEmpty()) {
+            snackBarHostState.currentSnackbarData?.dismiss()
+        }
+        if(viewState.latestLoggedFoodName.isNotEmpty()) {
+            snackBarHostState.showSnackbar(message = viewState.latestLoggedFoodName)
         }
     }
     Scaffold(
@@ -113,7 +117,9 @@ fun AddMealScreen(
                             paddingValues = AppPadding
                         ),
                         foodName = snackBarData.visuals.message
-                    )
+                    ) {
+                        viewModel.onRevertLog()
+                    }
                 }
             }
         }
@@ -259,7 +265,8 @@ private fun TitleBar(
 @Composable
 private fun MealAddedSnackBar(
     modifier: Modifier = Modifier,
-    foodName: String
+    foodName: String,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = modifier,
@@ -301,6 +308,9 @@ private fun MealAddedSnackBar(
                     .clip(shape = RoundedCornerShape(size = 8.dp))
                     .background(color = colors.lightGreen)
                     .padding(all = 4.dp)
+                    .clickable {
+                        onClick()
+                    }
 
             )
         }
@@ -316,7 +326,9 @@ private fun PreviewMealAddedSnackBar() {
             .fillMaxWidth()
             .padding(all = 8.dp),
         foodName = "Chicken"
-    )
+    ) {
+
+    }
 }
 
 @Preview(showBackground = true)

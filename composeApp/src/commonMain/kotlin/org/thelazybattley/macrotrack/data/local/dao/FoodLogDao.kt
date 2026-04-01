@@ -10,10 +10,10 @@ import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 interface FoodLogDao {
 
     @Insert
-    suspend fun insertFoodLog(foodLogEntity: FoodLogEntity)
+    suspend fun insertFoodLog(foodLogEntity: FoodLogEntity) : Long
 
     @Query("DELETE FROM foodlogentity WHERE id = :id")
-    suspend fun deleteFoodLog(id: Int)
+    suspend fun deleteFoodLog(id: Long)
 
     @Query(value = "SELECT * FROM FoodLogEntity")
     fun getAllFoodLogs(): Flow<List<FoodLogEntity>>

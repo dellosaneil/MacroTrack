@@ -17,6 +17,8 @@ interface AddMealCallbacks {
 
     fun resetNavigateScreen()
 
+    fun onRevertLog()
+
 
     companion object {
         fun default() = object : AddMealCallbacks {
@@ -36,6 +38,10 @@ interface AddMealCallbacks {
                 TODO("Not yet implemented")
             }
             override fun resetNavigateScreen() {
+                TODO("Not yet implemented")
+            }
+
+            override fun onRevertLog() {
                 TODO("Not yet implemented")
             }
 
