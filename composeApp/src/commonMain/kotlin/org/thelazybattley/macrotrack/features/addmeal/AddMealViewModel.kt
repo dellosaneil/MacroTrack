@@ -73,10 +73,19 @@ class AddMealViewModel(
                 dominantMacro = food.dominantMacro
             )
             _state.update { currentState ->
+                val updatedList =
+                    currentState.loggedMeals.loggedMeals.toMutableList()
+                updatedList.add(element = food)
                 currentState.copy(
-                    latestLoggedFoodName = food.name,
-                    latestLoggedId = id,
-                    selectedFoods = currentState.selectedFoods + food
+                    loggedMeals = currentState.loggedMeals.copy(
+                        name = food.name,
+                        id = id,
+                        loggedMeals = updatedList,
+                        totalCalories = updatedList.sumOf { it.macros.calories },
+                        totalProtein = updatedList.sumOf { it.macros.protein }.toInt(),
+                        totalFat = updatedList.sumOf { it.macros.fat }.toInt(),
+                        totalCarbs = updatedList.sumOf { it.macros.carbs }.toInt()
+                    ),
                 )
             }
         }
@@ -99,16 +108,23 @@ class AddMealViewModel(
     }
 
     override fun onRevertLog() {
-        if (state.value.latestLoggedId == 0L || state.value.latestLoggedFoodName.isEmpty()) return
+        if (state.value.loggedMeals.id == 0L || state.value.loggedMeals.name.isEmpty()) return
         viewModelScope.launch {
-            deleteFoodLogUseCase(id = state.value.latestLoggedId)
+            deleteFoodLogUseCase(id = state.value.loggedMeals.id)
             _state.update { currentState ->
+                val updatedList =
+                    currentState.loggedMeals.loggedMeals.toMutableList()
+                updatedList.remove(element = currentState.loggedMeals.loggedMeals.last())
                 currentState.copy(
-                    latestLoggedFoodName = "",
-                    latestLoggedId = 0,
-                    selectedFoods = currentState.selectedFoods.filter { food ->
-                        food.name != state.value.latestLoggedFoodName
-                    }
+                    loggedMeals = currentState.loggedMeals.copy(
+                        name = "",
+                        id = 0L,
+                        loggedMeals = updatedList,
+                        totalCalories = updatedList.sumOf { it.macros.calories },
+                        totalProtein = updatedList.sumOf { it.macros.protein }.toInt(),
+                        totalFat = updatedList.sumOf { it.macros.fat }.toInt(),
+                        totalCarbs = updatedList.sumOf { it.macros.carbs }.toInt()
+                    )
                 )
             }
         }

@@ -27,9 +27,11 @@ val FreshGreen = Color(0xFF1D9E75)
 val MossGreen = Color(0xFF1D6B3A)
 val LightAqua = Color(0xFFE6F7F2)
 val ClassicGray = Color(0xFF888888)
+val DeepNavy = Color.Transparent
+val White55 = Color(0x8CFFFFFF)
 
 
-val DarkWhite = Color(0xFF1C1B1F)
+val DarkWhite = Color(0xFFE8EAF0)
 val DarkBlue = Color(0xFFD0BCFF)
 val DarkLightBlue = Color(0xFF2B2930)
 val DarkBlack = Color(0xFFE6E1E5)
@@ -56,3 +58,5 @@ val DarkFreshGreen = Color(0xFF1D9E75)
 val DarkMossGreen = Color(0xFF4DB896)
 val DarkLightAqua = Color(0xFF0F2A1E)
 val DarkClassicGray = Color(0xFF4A5160)
+val DarkDeepNavy = Color(0xFF1E3A5F)
+val DarkWhite55 = Color(0x66FFFFFF)

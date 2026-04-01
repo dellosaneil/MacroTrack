@@ -88,5 +88,4 @@ private fun PreviewAddMealSelectedFood() {
             food = dummyFood
         )
     }
-
 }

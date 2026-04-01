@@ -30,5 +30,7 @@ data class MacroTrackColors(
     val freshGreen: Color,
     val mossGreen: Color,
     val lightAqua: Color,
-    val classicGray: Color
+    val classicGray: Color,
+    val deepNavy: Color,
+    val white55: Color
 )

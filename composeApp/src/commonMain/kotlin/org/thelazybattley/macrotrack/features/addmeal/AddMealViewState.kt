@@ -12,7 +12,15 @@ data class AddMealViewState(
     val searchQuery: String = "",
     val completeFoodList: List<Food> = emptyList(),
     val navigateDestination: AppDestinations.Root? = null,
-    val latestLoggedFoodName: String = "",
-    val latestLoggedId: Long  = 0,
-    val selectedFoods: List<Food> = emptyList()
+    val loggedMeals : AddMealLoggedFood = AddMealLoggedFood()
+)
+
+data class AddMealLoggedFood(
+    val name: String = "",
+    val id: Long = 0L,
+    val totalCarbs: Int = 0,
+    val totalFat: Int = 0,
+    val totalProtein: Int = 0,
+    val totalCalories: Int = 0,
+    val loggedMeals: List<Food> = emptyList()
 )

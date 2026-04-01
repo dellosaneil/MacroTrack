@@ -80,12 +80,12 @@ fun AddMealScreen(
     }
 
     val snackBarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(key1 = viewState.latestLoggedFoodName) {
-        if (viewState.latestLoggedFoodName.isEmpty()) {
+    LaunchedEffect(key1 = viewState.loggedMeals.name) {
+        if (viewState.loggedMeals.name.isEmpty()) {
             snackBarHostState.currentSnackbarData?.dismiss()
         }
-        if (viewState.latestLoggedFoodName.isNotEmpty()) {
-            snackBarHostState.showSnackbar(message = viewState.latestLoggedFoodName)
+        if (viewState.loggedMeals.name.isNotEmpty()) {
+            snackBarHostState.showSnackbar(message = viewState.loggedMeals.name)
         }
     }
     Scaffold(
@@ -102,25 +102,12 @@ fun AddMealScreen(
                 onBackButtonPressed()
             }
         },
-        snackbarHost = {
-            Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-            ) {
-                SnackbarHost(
-                    hostState = snackBarHostState,
-                    modifier = Modifier.align(alignment = Alignment.TopCenter)
-                ) { snackBarData ->
-                    MealAddedSnackBar(
-                        modifier = Modifier.padding(
-                            paddingValues = AppPadding
-                        ),
-                        foodName = snackBarData.visuals.message
-                    ) {
-                        viewModel.onRevertLog()
-                    }
-                }
+        bottomBar = {
+            if (viewState.loggedMeals.loggedMeals.isNotEmpty()) {
+                AddMealSummary(
+                    modifier = Modifier.fillMaxWidth().padding(paddingValues = AppPadding),
+                    loggedFood = viewState.loggedMeals
+                )
             }
         }
     ) { innerPadding ->
@@ -130,6 +117,20 @@ fun AddMealScreen(
             viewState = viewState,
             callbacks = viewModel,
         )
+    }
+    SnackbarHost(
+        hostState = snackBarHostState,
+        modifier = Modifier
+            .statusBarsPadding()
+    ) { snackBarData ->
+        MealAddedSnackBar(
+            modifier = Modifier.padding(
+                paddingValues = AppPadding
+            ),
+            foodName = snackBarData.visuals.message
+        ) {
+            viewModel.onRevertLog()
+        }
     }
 }
 
@@ -168,7 +169,7 @@ private fun AddMealScreen(
                 items = viewState.filteredFoodList,
                 key = { food -> food.name }
             ) { food ->
-                if (viewState.selectedFoods.contains(element = food)) {
+                if (viewState.loggedMeals.loggedMeals.contains(element = food)) {
                     AddMealSelectedFood(
                         modifier = Modifier.fillMaxWidth(),
                         food = food
@@ -312,10 +313,10 @@ private fun MealAddedSnackBar(
                 text = stringResource(resource = Res.string.undo),
                 style = typography.bold12,
                 modifier = Modifier
+                    .clip(shape = RoundedCornerShape(size = 8.dp))
                     .clickable {
                         onClick()
                     }
-                    .clip(shape = RoundedCornerShape(size = 8.dp))
                     .background(color = colors.lightGreen)
                     .padding(all = 4.dp)
             )

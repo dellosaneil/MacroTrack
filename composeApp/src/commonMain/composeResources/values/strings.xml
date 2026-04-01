@@ -132,4 +132,8 @@
     <string name="undo">Undo</string>
     <string name ="value_gram_value_kcal">%1$dg · %2$d kcal</string>
 
+    <plurals name="items">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
 </resources>
