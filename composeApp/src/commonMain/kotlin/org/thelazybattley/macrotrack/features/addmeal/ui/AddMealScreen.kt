@@ -169,17 +169,35 @@ private fun AddMealScreen(
                 items = viewState.filteredFoodList,
                 key = { food -> food.name }
             ) { food ->
-                if (viewState.loggedMeals.loggedMeals.contains(element = food)) {
-                    AddMealSelectedFood(
-                        modifier = Modifier.fillMaxWidth(),
-                        food = food
-                    )
-                } else {
-                    AddMealFoodDetails(
-                        modifier = Modifier.fillMaxWidth(),
-                        food = food
-                    ) {
-                        callbacks.onInsertFoodLog(food = food)
+                when {
+                    viewState.highlightedFood == food -> {
+                        AddMealCustomWeight(
+                            modifier = Modifier.fillMaxWidth(),
+                            food = food,
+                            onCloseButtonClick = {
+                                callbacks.closeHighlightedFood()
+                            }
+                        )
+                    }
+
+                    viewState.loggedMeals.loggedMeals.contains(element = food) -> {
+                        AddMealSelectedFood(
+                            modifier = Modifier.fillMaxWidth(),
+                            food = food
+                        )
+                    }
+
+                    else -> {
+                        AddMealFoodDetails(
+                            modifier = Modifier.fillMaxWidth(),
+                            food = food,
+                            onAddButtonClicked = {
+                                callbacks.onInsertFoodLog(food = food)
+                            },
+                            onFoodHighlighted = {
+                                callbacks.highlightedFood(food = food)
+                            }
+                        )
                     }
                 }
                 HorizontalDivider(

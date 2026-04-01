@@ -129,4 +129,20 @@ class AddMealViewModel(
             }
         }
     }
+
+    override fun highlightedFood(food: Food) {
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedFood = food
+            )
+        }
+    }
+
+    override fun closeHighlightedFood() {
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedFood = null
+            )
+        }
+    }
 }

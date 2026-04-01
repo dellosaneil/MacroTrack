@@ -37,11 +37,15 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 fun AddMealFoodDetails(
     modifier: Modifier = Modifier,
     food: Food,
-    onClick: () -> Unit
+    onAddButtonClicked: () -> Unit,
+    onFoodHighlighted: () -> Unit
 ) {
     val color = food.dominantMacro.toColor()
     Box(
         modifier = modifier
+            .clickable {
+                onFoodHighlighted()
+            }
             .drawWithContent {
                 drawRoundRect(
                     color = color,
@@ -101,7 +105,7 @@ fun AddMealFoodDetails(
                     .clip(shape = CircleShape)
                     .size(size = 28.dp)
                     .clickable {
-                        onClick()
+                        onAddButtonClicked()
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -122,7 +126,10 @@ private fun PreviewAddMealFoodDetails() {
     MacroTrackTheme {
         AddMealFoodDetails(
             modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
-            food = dummyFood
+            food = dummyFood,
+            onAddButtonClicked =  {
+
+            }
         ) {
 
         }

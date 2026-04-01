@@ -19,6 +19,9 @@ interface AddMealCallbacks {
 
     fun onRevertLog()
 
+    fun highlightedFood(food: Food)
+
+    fun closeHighlightedFood()
 
     companion object {
         fun default() = object : AddMealCallbacks {
@@ -42,6 +45,14 @@ interface AddMealCallbacks {
             }
 
             override fun onRevertLog() {
+                TODO("Not yet implemented")
+            }
+
+            override fun highlightedFood(food: Food) {
+                TODO("Not yet implemented")
+            }
+
+            override fun closeHighlightedFood() {
                 TODO("Not yet implemented")
             }
 
