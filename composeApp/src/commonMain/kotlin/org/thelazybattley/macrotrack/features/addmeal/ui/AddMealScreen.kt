@@ -81,10 +81,10 @@ fun AddMealScreen(
 
     val snackBarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = viewState.latestLoggedFoodName) {
-        if(viewState.latestLoggedFoodName.isEmpty()) {
+        if (viewState.latestLoggedFoodName.isEmpty()) {
             snackBarHostState.currentSnackbarData?.dismiss()
         }
-        if(viewState.latestLoggedFoodName.isNotEmpty()) {
+        if (viewState.latestLoggedFoodName.isNotEmpty()) {
             snackBarHostState.showSnackbar(message = viewState.latestLoggedFoodName)
         }
     }
@@ -168,11 +168,18 @@ private fun AddMealScreen(
                 items = viewState.filteredFoodList,
                 key = { food -> food.name }
             ) { food ->
-                AddMealFoodDetails(
-                    modifier = Modifier.fillMaxWidth(),
-                    food = food
-                ) {
-                    callbacks.onInsertFoodLog(food = food)
+                if (viewState.selectedFoods.contains(element = food)) {
+                    AddMealSelectedFood(
+                        modifier = Modifier.fillMaxWidth(),
+                        food = food
+                    )
+                } else {
+                    AddMealFoodDetails(
+                        modifier = Modifier.fillMaxWidth(),
+                        food = food
+                    ) {
+                        callbacks.onInsertFoodLog(food = food)
+                    }
                 }
                 HorizontalDivider(
                     thickness = 1.dp, color = colors.lightGray,
@@ -305,13 +312,12 @@ private fun MealAddedSnackBar(
                 text = stringResource(resource = Res.string.undo),
                 style = typography.bold12,
                 modifier = Modifier
-                    .clip(shape = RoundedCornerShape(size = 8.dp))
-                    .background(color = colors.lightGreen)
-                    .padding(all = 4.dp)
                     .clickable {
                         onClick()
                     }
-
+                    .clip(shape = RoundedCornerShape(size = 8.dp))
+                    .background(color = colors.lightGreen)
+                    .padding(all = 4.dp)
             )
         }
     }

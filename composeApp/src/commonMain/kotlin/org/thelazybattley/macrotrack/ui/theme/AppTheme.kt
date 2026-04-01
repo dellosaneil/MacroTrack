@@ -56,7 +56,8 @@ val lightMacroTrackColors = MacroTrackColors(
     lightGreen = LightGreen,
     freshGreen = FreshGreen,
     mossGreen = MossGreen,
-    lightAqua = LightAqua
+    lightAqua = LightAqua,
+    classicGray = ClassicGray
 )
 
 val darkMacroTrackColors = MacroTrackColors(
@@ -86,7 +87,8 @@ val darkMacroTrackColors = MacroTrackColors(
     lightGreen = DarkLightGreen,
     freshGreen = DarkFreshGreen,
     mossGreen = DarkMossGreen,
-    lightAqua = DarkLightAqua
+    lightAqua = DarkLightAqua,
+    classicGray = DarkClassicGray
 )
 
 

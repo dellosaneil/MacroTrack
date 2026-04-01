@@ -75,7 +75,8 @@ class AddMealViewModel(
             _state.update { currentState ->
                 currentState.copy(
                     latestLoggedFoodName = food.name,
-                    latestLoggedId = id
+                    latestLoggedId = id,
+                    selectedFoods = currentState.selectedFoods + food
                 )
             }
         }
@@ -98,14 +99,16 @@ class AddMealViewModel(
     }
 
     override fun onRevertLog() {
-        println("Test: ${state.value}")
         if (state.value.latestLoggedId == 0L || state.value.latestLoggedFoodName.isEmpty()) return
         viewModelScope.launch {
             deleteFoodLogUseCase(id = state.value.latestLoggedId)
             _state.update { currentState ->
                 currentState.copy(
                     latestLoggedFoodName = "",
-                    latestLoggedId = 0
+                    latestLoggedId = 0,
+                    selectedFoods = currentState.selectedFoods.filter { food ->
+                        food.name != state.value.latestLoggedFoodName
+                    }
                 )
             }
         }
