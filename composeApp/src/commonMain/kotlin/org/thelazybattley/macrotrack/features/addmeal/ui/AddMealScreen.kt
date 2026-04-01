@@ -18,11 +18,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,9 +38,13 @@ import macrotrack.composeapp.generated.resources.add_breakfast
 import macrotrack.composeapp.generated.resources.add_dinner
 import macrotrack.composeapp.generated.resources.add_lunch
 import macrotrack.composeapp.generated.resources.add_snack
+import macrotrack.composeapp.generated.resources.ic_checkmark
 import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_food
 import macrotrack.composeapp.generated.resources.stripe_dominant_macro
+import macrotrack.composeapp.generated.resources.undo
+import macrotrack.composeapp.generated.resources.value_added
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.text
@@ -70,17 +78,43 @@ fun AddMealScreen(
         }
     }
 
+    val snackBarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(key1 = viewState.addedFoodName) {
+        if(viewState.addedFoodName.isNotEmpty()) {
+            snackBarHostState.showSnackbar(message = viewState.addedFoodName)
+        }
+    }
     Scaffold(
         modifier = modifier,
         containerColor = colors.white,
         topBar = {
             TitleBar(
-                modifier = Modifier.fillMaxWidth()
-                    .statusBarsPadding().padding(paddingValues = AppPadding),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(paddingValues = AppPadding),
                 mealType = viewState.selectedMealType
-
             ) {
                 onBackButtonPressed()
+            }
+        },
+        snackbarHost = {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+            ) {
+                SnackbarHost(
+                    hostState = snackBarHostState,
+                    modifier = Modifier.align(alignment = Alignment.TopCenter)
+                ) { snackBarData ->
+                    MealAddedSnackBar(
+                        modifier = Modifier.padding(
+                            paddingValues = AppPadding
+                        ),
+                        foodName = snackBarData.visuals.message
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -88,7 +122,7 @@ fun AddMealScreen(
             modifier = modifier
                 .padding(paddingValues = innerPadding),
             viewState = viewState,
-            callbacks = viewModel
+            callbacks = viewModel,
         )
     }
 }
@@ -124,12 +158,6 @@ private fun AddMealScreen(
             callbacks.onNavigateScreen(destination = AppDestinations.Root.AddFood)
         }
         LazyColumn {
-            item {
-                HorizontalDivider(
-                    thickness = 1.dp, color = colors.lightGray,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
             items(
                 items = viewState.filteredFoodList,
                 key = { food -> food.name }
@@ -228,6 +256,69 @@ private fun TitleBar(
 }
 
 
+@Composable
+private fun MealAddedSnackBar(
+    modifier: Modifier = Modifier,
+    foodName: String
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = colors.lightAqua,
+            contentColor = colors.mossGreen
+        ),
+        shape = RoundedCornerShape(size = 8.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = colors.lightGreen
+        )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(all = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(space = 16.dp)
+        ) {
+            Box(
+                modifier = Modifier.clip(shape = RoundedCornerShape(size = 10.dp))
+                    .background(color = colors.freshGreen)
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_checkmark),
+                    contentDescription = null,
+                    modifier = Modifier.padding(all = 8.dp),
+                    tint = colors.white
+                )
+            }
+            Text(
+                text = stringResource(resource = Res.string.value_added, foodName),
+                style = typography.bold12,
+            )
+            Spacer(modifier = Modifier.weight(weight = 1f))
+            Text(
+                text = stringResource(resource = Res.string.undo),
+                style = typography.bold12,
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(size = 8.dp))
+                    .background(color = colors.lightGreen)
+                    .padding(all = 4.dp)
+
+            )
+        }
+    }
+
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewMealAddedSnackBar() {
+    MealAddedSnackBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(all = 8.dp),
+        foodName = "Chicken"
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun PreviewAddMealScreen() {
@@ -244,7 +335,7 @@ private fun PreviewAddMealScreen() {
                         dummyFood.copy(name = "Rice 3")
                     )
                 ),
-                callbacks = AddMealCallbacks.default()
+                callbacks = AddMealCallbacks.default(),
             )
         }
     }

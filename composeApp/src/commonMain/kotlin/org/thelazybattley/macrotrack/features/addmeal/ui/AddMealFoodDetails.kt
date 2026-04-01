@@ -54,7 +54,7 @@ fun AddMealFoodDetails(
     ) {
         Row(
             modifier = Modifier
-                .padding(all = 8.dp),
+                .padding(all = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {

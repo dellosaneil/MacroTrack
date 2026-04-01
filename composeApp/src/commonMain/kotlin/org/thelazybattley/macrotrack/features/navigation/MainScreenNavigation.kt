@@ -40,6 +40,7 @@ fun MainScreenNavigation(
             MacroBottomNavBar(
                 selectedDestination = currentDestination,
             ) { destination ->
+                if(currentDestination.route == destination.route) return@MacroBottomNavBar
                 navController.navigate(route = destination.route)
             }
         }

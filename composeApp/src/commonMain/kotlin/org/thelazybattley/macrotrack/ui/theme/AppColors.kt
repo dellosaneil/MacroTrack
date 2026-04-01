@@ -22,6 +22,10 @@ val IceBlue = Color(0xFFE3F2FD)
 val CrimsonRed = Color(0xFFBA1A1A)
 val LightRed = Color(0xFFFEF2F2)
 val PaleBlue = Color(0xFFE8F1FD)
+val LightGreen = Color(0xFFA7E9CF)
+val FreshGreen = Color(0xFF1D9E75)
+val MossGreen = Color(0xFF1D6B3A)
+val LightAqua = Color(0xFFE6F7F2)
 
 
 val DarkWhite = Color(0xFF1C1B1F)
@@ -43,6 +47,10 @@ val DarkRoyalBlue = Color(0xFF0D0C10)
 val DarkBrightBlue = Color(0xFF2B2930)
 val DarkDeepBlueSplash = Color(0xFF1C1B1F)
 val DarkIceBlue = Color(0xFF381E72)
-val DarkCrimsonRed = Color(0xFFBA1A1A) // find Dark mode
-val DarkLightRed = Color(0xFFFEF2F2) // find dark mode
+val DarkCrimsonRed = Color(0xFFFFB4AB)
+val DarkLightRed = Color(0xFF410002)
 val DarkPaleBlue = Color(0xFF1A2B45)
+val DarkLightGreen = Color(0xFF1D5E42)
+val DarkFreshGreen = Color(0xFF1D9E75)
+val DarkMossGreen = Color(0xFF4DB896)
+val DarkLightAqua = Color(0xFF0F2A1E)

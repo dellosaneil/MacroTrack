@@ -70,6 +70,11 @@ class AddMealViewModel(
                 weight = food.weight,
                 dominantMacro = food.dominantMacro
             )
+            _state.update { currentState ->
+                currentState.copy(
+                    addedFoodName = food.name
+                )
+            }
         }
     }
 
