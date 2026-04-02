@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -36,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.add_to_value
 import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.kcal_per_gram
@@ -50,6 +53,7 @@ import org.thelazybattley.macrotrack.core.text
 import org.thelazybattley.macrotrack.core.toColor
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.MacroType
+import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -61,8 +65,11 @@ fun AddMealCustomWeight(
     modifier: Modifier = Modifier,
     food: Food,
     calories: Int,
+    originalWeight: Double,
+    mealType: MealType,
     onCloseButtonClick: () -> Unit,
-    onPortionSizeUpdated: (Double) -> Unit
+    onPortionSizeUpdated: (Double) -> Unit,
+    onAddMealClick: () -> Unit
 ) {
     Card(
         modifier = modifier,
@@ -99,7 +106,7 @@ fun AddMealCustomWeight(
                 text = stringResource(
                     resource = Res.string.kcal_per_gram,
                     calories,
-                    food.weight
+                    originalWeight
                 ),
                 style = typography.regular11,
                 color = colors.deepBlue
@@ -119,13 +126,16 @@ fun AddMealCustomWeight(
                     textFieldHeight.value.toDp()
                 }
                 CommonTextField(
-                    modifier = Modifier.weight(weight = 0.85f).onSizeChanged { size ->
-                        textFieldHeight.value = size.height
-                    },
+                    modifier = Modifier
+                        .weight(weight = 0.85f)
+                        .onSizeChanged { size ->
+                            textFieldHeight.value = size.height
+                        },
                     placeholder = Res.string.one_hundred,
                     borderColor = colors.deepBlue, keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
-                    )
+                    ),
+                    initialValue = food.weight.toInt().toString()
                 ) { value ->
                     onPortionSizeUpdated(value.toDoubleOrNull() ?: 0.0)
                 }
@@ -201,8 +211,22 @@ fun AddMealCustomWeight(
             )
         }
         Spacer(modifier = Modifier.height(height = 16.dp))
-
-
+        Button(
+            onClick = onAddMealClick,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colors.deepBlue,
+                contentColor = colors.white
+            ),
+            shape = RoundedCornerShape(size = 12.dp)
+        ) {
+            val mealTypeText = stringResource(resource = mealType.title)
+            Text(
+                text = stringResource(resource = Res.string.add_to_value, mealTypeText),
+                style = typography.bold15
+            )
+        }
+        Spacer(modifier = Modifier.height(height = 16.dp))
     }
 }
 
@@ -246,7 +270,12 @@ private fun PreviewAddMealCustomWeight() {
             onPortionSizeUpdated = {
 
             },
-            calories = 93
+            calories = 93,
+            onAddMealClick = {
+
+            },
+            originalWeight = 100.0,
+            mealType = MealType.BREAKFAST
         )
     }
 }

@@ -180,7 +180,12 @@ private fun AddMealScreen(
                             },
                             onPortionSizeUpdated = {
                                 callbacks.onPortionSizeChanged(portionSize = it)
-                            }
+                            },
+                            onAddMealClick = {
+                                callbacks.onAddHighlightedFood()
+                            },
+                            originalWeight = food.weight,
+                            mealType = viewState.selectedMealType
                         )
                     }
 

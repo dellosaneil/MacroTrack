@@ -63,32 +63,7 @@ class AddMealViewModel(
 
     override fun onInsertFoodLog(food: Food) {
         viewModelScope.launch {
-            val id = insertFoodLogUseCase(
-                foodName = food.name,
-                carbs = food.macros.carbs,
-                fat = food.macros.fat,
-                calories = food.macros.calories,
-                protein = food.macros.protein,
-                mealType = state.value.selectedMealType,
-                weight = food.weight,
-                dominantMacro = food.dominantMacro
-            )
-            _state.update { currentState ->
-                val updatedList =
-                    currentState.loggedMeals.loggedMeals.toMutableList()
-                updatedList.add(element = food)
-                currentState.copy(
-                    loggedMeals = currentState.loggedMeals.copy(
-                        name = food.name,
-                        id = id,
-                        loggedMeals = updatedList,
-                        totalCalories = updatedList.sumOf { it.macros.calories },
-                        totalProtein = updatedList.sumOf { it.macros.protein }.toInt(),
-                        totalFat = updatedList.sumOf { it.macros.fat }.toInt(),
-                        totalCarbs = updatedList.sumOf { it.macros.carbs }.toInt()
-                    ),
-                )
-            }
+            insertFoodLog(food = food)
         }
     }
 
@@ -153,23 +128,67 @@ class AddMealViewModel(
                 calculateMacros(portionSize = portionSize) ?: return@update currentState
             currentState.copy(
                 highlightedFood = currentState.highlightedFood?.copy(
-                    macros = updatedMacros
+                    macros = updatedMacros,
+                    weight = portionSize
                 )
             )
         }
     }
 
-    private fun calculateMacros(portionSize: Double): FoodMacros? {
-        state.value.highlightedFood?.let { food ->
-            val originalMacros = state.value.completeFoodList.find {it.name == food.name}?.macros ?: return null
-            val originalWeight = food.weight
-            val weightQuotient = portionSize / originalWeight
-            return FoodMacros(
-                calories = (originalMacros.calories * weightQuotient).toInt(),
-                protein = originalMacros.protein * weightQuotient,
-                fat = originalMacros.fat * weightQuotient,
-                carbs = originalMacros.carbs * weightQuotient
+    override fun onAddHighlightedFood() {
+        if(_state.value.highlightedFood == null) {
+            return
+        }
+        viewModelScope.launch {
+            insertFoodLog(food = _state.value.highlightedFood!!)
+        }
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedFood = null
             )
-        } ?:  return null
+        }
+    }
+
+    private suspend fun insertFoodLog(food: Food) {
+        val id = insertFoodLogUseCase(
+            foodName = food.name,
+            carbs = food.macros.carbs,
+            fat = food.macros.fat,
+            calories = food.macros.calories,
+            protein = food.macros.protein,
+            mealType = state.value.selectedMealType,
+            weight = food.weight,
+            dominantMacro = food.dominantMacro
+        )
+        _state.update { currentState ->
+            val updatedList =
+                currentState.loggedMeals.loggedMeals.toMutableList()
+            updatedList.add(element = food)
+            currentState.copy(
+                loggedMeals = currentState.loggedMeals.copy(
+                    name = food.name,
+                    id = id,
+                    loggedMeals = updatedList,
+                    totalCalories = updatedList.sumOf { it.macros.calories },
+                    totalProtein = updatedList.sumOf { it.macros.protein }.toInt(),
+                    totalFat = updatedList.sumOf { it.macros.fat }.toInt(),
+                    totalCarbs = updatedList.sumOf { it.macros.carbs }.toInt()
+                ),
+            )
+        }
+    }
+
+    private fun calculateMacros(portionSize: Double): FoodMacros? {
+        return state.value.highlightedFood?.let { food ->
+            val originalFood = state.value.completeFoodList.find {it.name == food.name} ?: return null
+            val originalWeight = originalFood.weight
+            val weightQuotient = portionSize / originalWeight
+            FoodMacros(
+                calories = (originalFood.macros.calories * weightQuotient).toInt(),
+                protein = originalFood.macros.protein * weightQuotient,
+                fat = originalFood.macros.fat * weightQuotient,
+                carbs = originalFood.macros.carbs * weightQuotient
+            )
+        }
     }
 }

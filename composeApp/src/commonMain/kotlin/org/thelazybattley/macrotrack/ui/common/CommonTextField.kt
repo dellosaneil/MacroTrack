@@ -49,9 +49,10 @@ fun CommonTextField(
     isEnabled: Boolean = true,
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    initialValue: String = "",
     onValueChanged: (String) -> Unit,
 ) {
-    var value by remember { mutableStateOf(value = "") }
+    var value by remember { mutableStateOf(value = initialValue) }
     val updatedBorderColor = if(isError) {
         colors.crimsonRed
     } else {
