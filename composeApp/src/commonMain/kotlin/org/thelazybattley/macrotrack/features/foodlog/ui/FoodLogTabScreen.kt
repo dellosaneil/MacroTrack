@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -82,37 +83,46 @@ private fun FoodLogTabScreen(
     viewState: FoodLogViewState,
     callbacks: FoodLogCallbacks
 ) {
-    LazyColumn(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+        verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
-        stickyHeader {
+        Surface(
+            shadowElevation = 4.dp,
+            shape = RoundedCornerShape(size = 16.dp),
+        ) {
             FoodLogTotalMacros(
                 modifier = Modifier.fillMaxWidth(),
                 viewState = viewState
             )
         }
-        loggedFoodByMealType(
-            foodList = viewState.breakfast
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
-            callbacks.onNavigate(mealType = MealType.BREAKFAST)
-        }
-        loggedFoodByMealType(
-            foodList = viewState.lunch
-        ) {
-            callbacks.onNavigate(mealType = MealType.LUNCH)
-        }
-        loggedFoodByMealType(
-            foodList = viewState.dinner
-        ) {
-            callbacks.onNavigate(mealType = MealType.DINNER)
-        }
-        loggedFoodByMealType(
-            foodList = viewState.snack
-        ) {
-            callbacks.onNavigate(mealType = MealType.SNACK)
+            loggedFoodByMealType(
+                foodList = viewState.breakfast
+            ) {
+                callbacks.onNavigate(mealType = MealType.BREAKFAST)
+            }
+            loggedFoodByMealType(
+                foodList = viewState.lunch
+            ) {
+                callbacks.onNavigate(mealType = MealType.LUNCH)
+            }
+            loggedFoodByMealType(
+                foodList = viewState.dinner
+            ) {
+                callbacks.onNavigate(mealType = MealType.DINNER)
+            }
+            loggedFoodByMealType(
+                foodList = viewState.snack
+            ) {
+                callbacks.onNavigate(mealType = MealType.SNACK)
+            }
         }
     }
+
 }
 
 private fun LazyListScope.loggedFoodByMealType(
@@ -198,7 +208,6 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
         }
     }
 }
-
 
 
 @Composable
