@@ -23,6 +23,8 @@ interface AddMealCallbacks {
 
     fun closeHighlightedFood()
 
+    fun onPortionSizeChanged(portionSize: Double)
+
     companion object {
         fun default() = object : AddMealCallbacks {
             override fun onMealTypeSelected(mealType: MealType) {
@@ -53,6 +55,10 @@ interface AddMealCallbacks {
             }
 
             override fun closeHighlightedFood() {
+                TODO("Not yet implemented")
+            }
+
+            override fun onPortionSizeChanged(portionSize: Double) {
                 TODO("Not yet implemented")
             }
 

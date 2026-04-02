@@ -170,12 +170,16 @@ private fun AddMealScreen(
                 key = { food -> food.name }
             ) { food ->
                 when {
-                    viewState.highlightedFood == food -> {
+                    viewState.highlightedFood?.name == food.name -> {
                         AddMealCustomWeight(
                             modifier = Modifier.fillMaxWidth(),
-                            food = food,
+                            food = viewState.highlightedFood,
+                            calories = food.macros.calories,
                             onCloseButtonClick = {
                                 callbacks.closeHighlightedFood()
+                            },
+                            onPortionSizeUpdated = {
+                                callbacks.onPortionSizeChanged(portionSize = it)
                             }
                         )
                     }

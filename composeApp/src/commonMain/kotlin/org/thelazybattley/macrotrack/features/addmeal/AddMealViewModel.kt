@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
+import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
@@ -144,5 +145,31 @@ class AddMealViewModel(
                 highlightedFood = null
             )
         }
+    }
+
+    override fun onPortionSizeChanged(portionSize: Double) {
+        _state.update { currentState ->
+            val updatedMacros =
+                calculateMacros(portionSize = portionSize) ?: return@update currentState
+            currentState.copy(
+                highlightedFood = currentState.highlightedFood?.copy(
+                    macros = updatedMacros
+                )
+            )
+        }
+    }
+
+    private fun calculateMacros(portionSize: Double): FoodMacros? {
+        state.value.highlightedFood?.let { food ->
+            val originalMacros = state.value.completeFoodList.find {it.name == food.name}?.macros ?: return null
+            val originalWeight = food.weight
+            val weightQuotient = portionSize / originalWeight
+            return FoodMacros(
+                calories = (originalMacros.calories * weightQuotient).toInt(),
+                protein = originalMacros.protein * weightQuotient,
+                fat = originalMacros.fat * weightQuotient,
+                carbs = originalMacros.carbs * weightQuotient
+            )
+        } ?:  return null
     }
 }
