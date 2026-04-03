@@ -10,7 +10,7 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 
 @Entity
 data class FoodLogEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val date: LocalDate = getCurrentDate(),
     val foodName: String,
     val mealType: MealType,

@@ -9,13 +9,15 @@ import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 
 class FoodLogViewModel(
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
-    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase
+    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    private val deleteFoodLogUseCase: DeleteFoodLogUseCase
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -113,6 +115,12 @@ class FoodLogViewModel(
             currentState.copy(
                 navigateMealTypeParameter = null
             )
+        }
+    }
+
+    override fun onDeleteFoodLog(id: Long) {
+        viewModelScope.launch {
+            deleteFoodLogUseCase(id = id)
         }
     }
 

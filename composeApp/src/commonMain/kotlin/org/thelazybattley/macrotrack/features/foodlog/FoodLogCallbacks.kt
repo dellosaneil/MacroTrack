@@ -6,6 +6,7 @@ interface FoodLogCallbacks {
 
     fun onNavigate(mealType: MealType)
     fun resetNavigateMealTypeParameter()
+    fun onDeleteFoodLog(id: Long)
 
 
     companion object {
@@ -18,7 +19,9 @@ interface FoodLogCallbacks {
                 TODO("Not yet implemented")
             }
 
+            override fun onDeleteFoodLog(id: Long) {
+                TODO("Not yet implemented")
+            }
         }
     }
-
 }
