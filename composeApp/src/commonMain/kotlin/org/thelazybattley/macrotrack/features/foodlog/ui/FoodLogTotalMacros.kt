@@ -107,8 +107,10 @@ private fun MacrosDetails(
 ) {
     var progress by remember { mutableFloatStateOf(value = 0f) }
     LaunchedEffect(key1 = total, key2 = goal) {
-        if (total == 0.0) return@LaunchedEffect
         progress = (total / goal).toFloat()
+        if(progress.isNaN()) {
+            progress = 0f
+        }
     }
 
     Row(
