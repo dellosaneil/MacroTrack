@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
-import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
@@ -20,6 +20,7 @@ class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val insertFoodLogUseCase: InsertFoodLogUseCase,
     private val deleteFoodLogUseCase: DeleteFoodLogUseCase,
+    private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks {
 
@@ -124,11 +125,16 @@ class AddMealViewModel(
 
     override fun onPortionSizeChanged(portionSize: Double) {
         _state.update { currentState ->
-            val updatedMacros =
-                calculateMacros(portionSize = portionSize) ?: return@update currentState
+            val originalFood =
+                currentState.completeFoodList
+                    .find { it.name == currentState.highlightedFood?.name }
+                    ?: return@update currentState
             currentState.copy(
                 highlightedFood = currentState.highlightedFood?.copy(
-                    macros = updatedMacros,
+                    macros = calculateAdjustMacrosUseCase(
+                        portionSize = portionSize,
+                        originalFood = originalFood
+                    ),
                     weight = portionSize
                 )
             )
@@ -136,7 +142,7 @@ class AddMealViewModel(
     }
 
     override fun onAddHighlightedFood() {
-        if(_state.value.highlightedFood == null) {
+        if (_state.value.highlightedFood == null) {
             return
         }
         viewModelScope.launch {
@@ -174,20 +180,6 @@ class AddMealViewModel(
                     totalFat = updatedList.sumOf { it.macros.fat }.toInt(),
                     totalCarbs = updatedList.sumOf { it.macros.carbs }.toInt()
                 ),
-            )
-        }
-    }
-
-    private fun calculateMacros(portionSize: Double): FoodMacros? {
-        return state.value.highlightedFood?.let { food ->
-            val originalFood = state.value.completeFoodList.find {it.name == food.name} ?: return null
-            val originalWeight = originalFood.weight
-            val weightQuotient = portionSize / originalWeight
-            FoodMacros(
-                calories = (originalFood.macros.calories * weightQuotient).toInt(),
-                protein = originalFood.macros.protein * weightQuotient,
-                fat = originalFood.macros.fat * weightQuotient,
-                carbs = originalFood.macros.carbs * weightQuotient
             )
         }
     }
