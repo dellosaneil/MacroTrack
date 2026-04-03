@@ -4,8 +4,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -21,6 +26,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.done
 import macrotrack.composeapp.generated.resources.items
 import macrotrack.composeapp.generated.resources.kcal
 import macrotrack.composeapp.generated.resources.value_gram
@@ -37,7 +43,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun AddMealSummary(
     modifier: Modifier = Modifier,
-    loggedFood: AddMealLoggedFood
+    loggedFood: AddMealLoggedFood,
+    onDoneClicked: () -> Unit
 ) {
     Card(
         modifier = modifier,
@@ -86,6 +93,22 @@ fun AddMealSummary(
                 style = typography.bold12,
                 textAlign = TextAlign.Center
             )
+
+            Spacer(modifier = Modifier.weight(weight = 1f))
+            Button(
+                onClick = onDoneClicked,
+                shape = RoundedCornerShape(size = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.white,
+                    contentColor = colors.deepBlue
+                ),
+                modifier = Modifier.height(height = 28.dp)
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.done),
+                    style = typography.bold12,
+                )
+            }
         }
     }
 }
@@ -117,7 +140,9 @@ private fun PreviewAddMealSummary() {
                 totalProtein = 12,
                 totalCalories = 330,
                 loggedMeals = listOf(dummyFood, dummyFood)
-            )
-        )
+            ),
+        ) {
+
+        }
     }
 }

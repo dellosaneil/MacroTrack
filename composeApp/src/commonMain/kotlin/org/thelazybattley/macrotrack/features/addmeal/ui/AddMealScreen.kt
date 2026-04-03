@@ -106,7 +106,10 @@ fun AddMealScreen(
             if (viewState.loggedMeals.loggedMeals.isNotEmpty()) {
                 AddMealSummary(
                     modifier = Modifier.fillMaxWidth().padding(paddingValues = AppPadding),
-                    loggedFood = viewState.loggedMeals
+                    loggedFood = viewState.loggedMeals,
+                    onDoneClicked = {
+                        onBackButtonPressed()
+                    }
                 )
             }
         }

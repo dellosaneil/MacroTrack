@@ -123,5 +123,4 @@ class FoodLogViewModel(
             deleteFoodLogUseCase(id = id)
         }
     }
-
 }
