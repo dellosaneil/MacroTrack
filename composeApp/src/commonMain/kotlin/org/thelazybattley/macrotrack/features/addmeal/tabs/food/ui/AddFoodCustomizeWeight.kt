@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -55,6 +53,7 @@ import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFood
+import org.thelazybattley.macrotrack.ui.common.CommonButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -211,20 +210,14 @@ fun AddFoodCustomizeWeight(
             )
         }
         Spacer(modifier = Modifier.height(height = 16.dp))
-        Button(
-            onClick = onAddMealClick,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.deepBlue,
-                contentColor = colors.white
-            ),
-            shape = RoundedCornerShape(size = 12.dp)
-        ) {
-            val mealTypeText = stringResource(resource = mealType.title)
-            Text(
-                text = stringResource(resource = Res.string.add_to_value, mealTypeText),
-                style = typography.bold15
+        CommonButton(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            buttonText = stringResource(
+                resource = Res.string.add_to_value,
+                stringResource(resource = mealType.title)
             )
+        ) {
+            onAddMealClick()
         }
         Spacer(modifier = Modifier.height(height = 16.dp))
     }

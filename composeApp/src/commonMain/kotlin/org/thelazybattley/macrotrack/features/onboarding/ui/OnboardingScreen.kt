@@ -1,7 +1,6 @@
 package org.thelazybattley.macrotrack.features.onboarding.ui
 
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -16,9 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +46,7 @@ import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
+import org.thelazybattley.macrotrack.ui.common.CommonButton
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -169,33 +166,17 @@ fun OnboardingScreen(
         }
 
         Spacer(modifier = Modifier.weight(weight = 1f))
-        Button(
-            modifier = Modifier.fillMaxWidth().height(height = 46.dp),
-            onClick = {
-                callbacks.onContinueClicked()
-            },
-            shape = RoundedCornerShape(size = 14.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.blue,
-                disabledContainerColor = colors.skyBlue,
-                contentColor = colors.white,
-                disabledContentColor = colors.babyBlue,
-            ),
-            border = BorderStroke(
-                width = 1.dp,
-                color = colors.lightGray
-            ),
-            enabled = isButtonEnabled(viewState = viewState)
+        val stringResource = if (viewState.currentStep == OnboardingStep.SUMMARY) {
+            Res.string.lets_go
+        } else {
+            Res.string.continue_text
+        }
+        CommonButton(
+            modifier = Modifier,
+            isEnabled = isButtonEnabled(viewState = viewState),
+            buttonText = stringResource(resource = stringResource)
         ) {
-            val text = if (viewState.currentStep == OnboardingStep.SUMMARY) {
-                Res.string.lets_go
-            } else {
-                Res.string.continue_text
-            }
-            Text(
-                text = stringResource(resource = text),
-                style = typography.bold15
-            )
+            callbacks.onContinueClicked()
         }
         Spacer(modifier = Modifier.height(height = 16.dp))
     }

@@ -139,6 +139,7 @@
     <string name="ingredients_added">Ingredients Added</string>
     <string name="search_ingredient">Search ingredient</string>
     <string name="save_recipe">Save Recipe</string>
+    <string name="add_ingredient">Add ingredient</string>
 
 
     <plurals name="items">

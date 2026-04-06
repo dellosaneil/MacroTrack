@@ -84,6 +84,9 @@ private fun CreateRecipeScreen(
             fatsPercentage = 0.34
         )
         CreateRecipeAddedIngredients(modifier = Modifier.fillMaxWidth())
+        CreateRecipeAddIngredients(modifier = Modifier.fillMaxWidth().weight(weight = 1f))
+
+
     }
 }
 

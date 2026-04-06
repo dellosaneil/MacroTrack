@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +55,7 @@ import org.thelazybattley.macrotrack.features.createfood.CreateFoodCallbacks
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewModel
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
+import org.thelazybattley.macrotrack.ui.common.CommonButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.common.CommonTopBar
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -257,41 +256,12 @@ fun AddIngredientScreen(
         )
 
         Spacer(modifier = Modifier.weight(weight = 1f))
-        SaveIngredient(
-            modifier = Modifier.fillMaxWidth(),
+        CommonButton(
+            buttonText = stringResource(resource = Res.string.save_food),
             isEnabled = viewState.buttonEnabled
         ) {
             callbacks.onSaveFood()
         }
-    }
-}
-
-
-
-
-@Composable
-private fun SaveIngredient(
-    modifier: Modifier = Modifier,
-    isEnabled: Boolean,
-    onButtonClicked: () -> Unit
-) {
-    Button(
-        modifier = modifier,
-        onClick = onButtonClicked,
-        colors = ButtonDefaults.buttonColors(
-            disabledContainerColor = colors.skyBlue,
-            disabledContentColor = colors.babyBlue,
-            containerColor = colors.deepBlue,
-            contentColor = colors.white
-        ),
-        enabled = isEnabled,
-        shape = RoundedCornerShape(size = 8.dp)
-    ) {
-        Text(
-            text = stringResource(resource = Res.string.save_food),
-            style = typography.bold16,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
     }
 }
 
