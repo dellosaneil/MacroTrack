@@ -34,7 +34,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun AddMealFoodDetails(
+fun AddMealItemCard(
     modifier: Modifier = Modifier,
     food: Food,
     onAddButtonClicked: () -> Unit,
@@ -122,9 +122,9 @@ fun AddMealFoodDetails(
 
 @Preview(showBackground = true, backgroundColor = 0xffffffff)
 @Composable
-private fun PreviewAddMealFoodDetails() {
+private fun PreviewAddMealItemCard() {
     MacroTrackTheme {
-        AddMealFoodDetails(
+        AddMealItemCard(
             modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
             food = dummyFood,
             onAddButtonClicked =  {

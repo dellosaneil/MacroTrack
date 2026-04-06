@@ -13,7 +13,8 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
-import org.thelazybattley.macrotrack.features.addmeal.ui.FoodFilter
+import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
+import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 class AddMealViewModel(
@@ -22,7 +23,7 @@ class AddMealViewModel(
     private val deleteFoodLogUseCase: DeleteFoodLogUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     savedStateHandle: SavedStateHandle
-) : ViewModel(), AddMealCallbacks {
+) : ViewModel(), AddMealCallbacks, AddFoodCallbacks {
 
     private val _state = MutableStateFlow(value = AddMealViewState())
     val state = _state.asStateFlow()
@@ -46,25 +47,11 @@ class AddMealViewModel(
         }
     }
 
-    override fun onMealTypeSelected(mealType: MealType) {
+    override fun onMealFilterSelected(mealFilter: MealFilter) {
         _state.update { currentState ->
             currentState.copy(
-                selectedMealType = mealType
+                selectedMealFilter = mealFilter
             )
-        }
-    }
-
-    override fun onFoodFilterSelected(foodFilter: FoodFilter) {
-        _state.update { currentState ->
-            currentState.copy(
-                selectedFoodFilter = foodFilter
-            )
-        }
-    }
-
-    override fun onInsertFoodLog(food: Food) {
-        viewModelScope.launch {
-            insertFoodLog(food = food)
         }
     }
 
@@ -107,54 +94,6 @@ class AddMealViewModel(
         }
     }
 
-    override fun highlightedFood(food: Food) {
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedFood = food
-            )
-        }
-    }
-
-    override fun closeHighlightedFood() {
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedFood = null
-            )
-        }
-    }
-
-    override fun onPortionSizeChanged(portionSize: Double) {
-        _state.update { currentState ->
-            val originalFood =
-                currentState.completeFoodList
-                    .find { it.name == currentState.highlightedFood?.name }
-                    ?: return@update currentState
-            currentState.copy(
-                highlightedFood = currentState.highlightedFood?.copy(
-                    macros = calculateAdjustMacrosUseCase(
-                        portionSize = portionSize,
-                        originalFood = originalFood
-                    ),
-                    weight = portionSize
-                )
-            )
-        }
-    }
-
-    override fun onAddHighlightedFood() {
-        if (_state.value.highlightedFood == null) {
-            return
-        }
-        viewModelScope.launch {
-            insertFoodLog(food = _state.value.highlightedFood!!)
-        }
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedFood = null
-            )
-        }
-    }
-
     private suspend fun insertFoodLog(food: Food) {
         val id = insertFoodLogUseCase(
             foodName = food.name,
@@ -180,6 +119,60 @@ class AddMealViewModel(
                     totalFat = updatedList.sumOf { it.macros.fat }.toInt(),
                     totalCarbs = updatedList.sumOf { it.macros.carbs }.toInt()
                 ),
+            )
+        }
+    }
+
+    override fun insertFood(food: Food) {
+        viewModelScope.launch {
+            insertFoodLog(food = food)
+        }
+    }
+
+    override fun customizeFoodWeight(name: String) {
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedFood = currentState.completeFoodList.find { it.name == name }
+            )
+        }
+    }
+
+    override fun closeCustomizeFoodWeight() {
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedFood = null
+            )
+        }
+    }
+
+    override fun updateWeight(portionSize: Double) {
+        _state.update { currentState ->
+            val originalFood =
+                currentState.completeFoodList
+                    .find { it.name == currentState.highlightedFood?.name }
+                    ?: return@update currentState
+            currentState.copy(
+                highlightedFood = currentState.highlightedFood?.copy(
+                    macros = calculateAdjustMacrosUseCase(
+                        portionSize = portionSize,
+                        originalFood = originalFood
+                    ),
+                    weight = portionSize
+                )
+            )
+        }
+    }
+
+    override fun addCustomizedFood() {
+        if (_state.value.highlightedFood == null) {
+            return
+        }
+        viewModelScope.launch {
+            insertFoodLog(food = _state.value.highlightedFood!!)
+        }
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedFood = null
             )
         }
     }

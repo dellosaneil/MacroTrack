@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.features.addmeal.ui
+package org.thelazybattley.macrotrack.features.addmeal.tabs.food.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,7 +61,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun AddMealCustomWeight(
+fun AddFoodCustomizeWeight(
     modifier: Modifier = Modifier,
     food: Food,
     calories: Int,
@@ -259,9 +259,9 @@ private fun macroDetails(
 
 @Preview(showBackground = true)
 @Composable
-private fun PreviewAddMealCustomWeight() {
+private fun PreviewAddFoodCustomizeWeight() {
     MacroTrackTheme {
-        AddMealCustomWeight(
+        AddFoodCustomizeWeight(
             modifier = Modifier.fillMaxWidth().padding(all = 12.dp),
             food = dummyFood,
             onCloseButtonClick = {

@@ -11,14 +11,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -42,20 +38,18 @@ import macrotrack.composeapp.generated.resources.add_snack
 import macrotrack.composeapp.generated.resources.ic_checkmark
 import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_food
-import macrotrack.composeapp.generated.resources.stripe_dominant_macro
 import macrotrack.composeapp.generated.resources.undo
 import macrotrack.composeapp.generated.resources.value_added
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.thelazybattley.macrotrack.core.text
-import org.thelazybattley.macrotrack.core.toColor
-import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
-import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
+import org.thelazybattley.macrotrack.features.addmeal.tabs.AddMealLegend
+import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
+import org.thelazybattley.macrotrack.features.addmeal.tabs.food.ui.AddFoodTabScreen
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
@@ -92,14 +86,16 @@ fun AddMealScreen(
         modifier = modifier,
         containerColor = colors.white,
         topBar = {
-            TitleBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(paddingValues = AppPadding),
-                mealType = viewState.selectedMealType
-            ) {
-                onBackButtonPressed()
+            Column {
+                TitleBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(paddingValues = AppPadding),
+                    mealType = viewState.selectedMealType
+                ) {
+                    onBackButtonPressed()
+                }
             }
         },
         bottomBar = {
@@ -115,10 +111,10 @@ fun AddMealScreen(
         }
     ) { innerPadding ->
         AddMealScreen(
-            modifier = modifier
-                .padding(paddingValues = innerPadding),
+            modifier = Modifier.padding(paddingValues = innerPadding),
             viewState = viewState,
-            callbacks = viewModel,
+            addMealCallbacks = viewModel,
+            addFoodCallbacks = viewModel
         )
     }
     SnackbarHost(
@@ -141,12 +137,13 @@ fun AddMealScreen(
 private fun AddMealScreen(
     modifier: Modifier = Modifier,
     viewState: AddMealViewState,
-    callbacks: AddMealCallbacks
+    addMealCallbacks: AddMealCallbacks,
+    addFoodCallbacks: AddFoodCallbacks
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(paddingValues = AppPadding),
+            .padding(paddingValues = AppPadding)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
         CommonTextField(
@@ -156,118 +153,22 @@ private fun AddMealScreen(
         ) {
 
         }
-        AddMealFoodFilterSelection(
+        AddMealFilter(
             modifier = Modifier.fillMaxWidth(),
-            callbacks = callbacks,
-            viewState = viewState
+            viewState = viewState,
+            onFilterSelected = { filter ->
+                addMealCallbacks.onMealFilterSelected(mealFilter = filter)
+            }
         )
-        DominantMacroLegend(modifier = Modifier.fillMaxWidth())
-        AddMealCreateFood(
+        AddMealLegend(modifier = Modifier.fillMaxWidth())
+        AddMealCreateButton(
             modifier = Modifier.fillMaxWidth()
         ) {
-            callbacks.onNavigateScreen(destination = AppDestinations.Root.AddFood)
+            addMealCallbacks.onNavigateScreen(destination = AppDestinations.Root.AddFood)
         }
-        LazyColumn {
-            items(
-                items = viewState.filteredFoodList,
-                key = { food -> food.name }
-            ) { food ->
-                when {
-                    viewState.highlightedFood?.name == food.name -> {
-                        AddMealCustomWeight(
-                            modifier = Modifier.fillMaxWidth(),
-                            food = viewState.highlightedFood,
-                            calories = food.macros.calories,
-                            onCloseButtonClick = {
-                                callbacks.closeHighlightedFood()
-                            },
-                            onPortionSizeUpdated = {
-                                callbacks.onPortionSizeChanged(portionSize = it)
-                            },
-                            onAddMealClick = {
-                                callbacks.onAddHighlightedFood()
-                            },
-                            originalWeight = food.weight,
-                            mealType = viewState.selectedMealType
-                        )
-                    }
-
-                    viewState.loggedMeals.loggedMeals.contains(element = food) -> {
-                        AddMealSelectedFood(
-                            modifier = Modifier.fillMaxWidth(),
-                            food = food
-                        )
-                    }
-
-                    else -> {
-                        AddMealFoodDetails(
-                            modifier = Modifier.fillMaxWidth(),
-                            food = food,
-                            onAddButtonClicked = {
-                                callbacks.onInsertFoodLog(food = food)
-                            },
-                            onFoodHighlighted = {
-                                callbacks.highlightedFood(food = food)
-                            }
-                        )
-                    }
-                }
-                HorizontalDivider(
-                    thickness = 1.dp, color = colors.lightGray,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DominantMacroLegend(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = colors.offWhite
-        ),
-        border = BorderStroke(width = 1.dp, color = colors.lightGray)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-        ) {
-            Text(
-                text = stringResource(resource = Res.string.stripe_dominant_macro),
-                style = typography.bold14,
-                color = colors.gray
-            )
-            Row(
-                modifier = Modifier, horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                DominantMacroItem(modifier = Modifier, macroType = MacroType.PROTEIN)
-                DominantMacroItem(modifier = Modifier, macroType = MacroType.CARBS)
-                DominantMacroItem(modifier = Modifier, macroType = MacroType.FAT)
-            }
-        }
-
-    }
-}
-
-@Composable
-private fun DominantMacroItem(modifier: Modifier = Modifier, macroType: MacroType) {
-    Row(
-        modifier = modifier, horizontalArrangement = Arrangement.spacedBy(space = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Spacer(
-            modifier = Modifier
-                .clip(shape = RoundedCornerShape(size = 3.dp))
-                .size(size = 10.dp)
-                .background(color = macroType.toColor())
-        )
-        Text(
-            text = stringResource(resource = macroType.text()),
-            style = typography.regular13,
-            color = macroType.toColor()
+        AddFoodTabScreen(
+            viewState = viewState,
+            addFoodCallbacks = addFoodCallbacks
         )
     }
 }
@@ -377,14 +278,9 @@ private fun PreviewAddMealScreen() {
         ) {
             AddMealScreen(
                 modifier = Modifier.padding(it),
-                viewState = AddMealViewState(
-                    filteredFoodList = listOf(
-                        dummyFood.copy(name = "Rice 1"),
-                        dummyFood.copy(name = "Rice 2"),
-                        dummyFood.copy(name = "Rice 3")
-                    )
-                ),
-                callbacks = AddMealCallbacks.default(),
+                viewState = AddMealViewState(),
+                addMealCallbacks = AddMealCallbacks.default(),
+                addFoodCallbacks = AddFoodCallbacks.default()
             )
         }
     }

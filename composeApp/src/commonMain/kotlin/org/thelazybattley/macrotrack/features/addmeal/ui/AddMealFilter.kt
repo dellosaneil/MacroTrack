@@ -23,17 +23,16 @@ import macrotrack.composeapp.generated.resources.foods
 import macrotrack.composeapp.generated.resources.recipes
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun AddMealFoodFilterSelection(
+fun AddMealFilter(
     modifier: Modifier = Modifier,
-    callbacks: AddMealCallbacks,
-    viewState: AddMealViewState
+    viewState: AddMealViewState,
+    onFilterSelected: (MealFilter) -> Unit,
 ) {
     Row(
         modifier = modifier
@@ -44,13 +43,13 @@ fun AddMealFoodFilterSelection(
             .padding(all = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FoodFilter.entries.forEach { foodFilter ->
+        MealFilter.entries.forEach { foodFilter ->
             FoodFilterChip(
                 modifier = Modifier.weight(weight = 1f),
-                foodFilter = foodFilter,
-                isSelected = foodFilter == viewState.selectedFoodFilter,
+                mealFilter = foodFilter,
+                isSelected = foodFilter == viewState.selectedMealFilter,
             ) {
-                callbacks.onFoodFilterSelected(foodFilter = foodFilter)
+                onFilterSelected(foodFilter)
             }
         }
     }
@@ -59,7 +58,7 @@ fun AddMealFoodFilterSelection(
 @Composable
 private fun FoodFilterChip(
     modifier: Modifier = Modifier,
-    foodFilter: FoodFilter,
+    mealFilter: MealFilter,
     isSelected: Boolean,
     onSelected: () -> Unit
 ) {
@@ -88,7 +87,7 @@ private fun FoodFilterChip(
         ),
     ) {
         Text(
-            text = stringResource(resource = foodFilter.text),
+            text = stringResource(resource = mealFilter.text),
             style = typography.bold11,
             modifier = Modifier
                 .padding(all = 8.dp)
@@ -103,17 +102,17 @@ private fun FoodFilterChip(
     backgroundColor = 0xffffffff
 )
 @Composable
-private fun PreviewAddMealFoodFilterSelection() {
+private fun PreviewAddMealFilter() {
     MacroTrackTheme {
-        AddMealFoodFilterSelection(
+        AddMealFilter(
             modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
-            callbacks = AddMealCallbacks.default(),
-            viewState = AddMealViewState()
+            viewState = AddMealViewState(),
+            onFilterSelected = {}
         )
     }
 }
 
-enum class FoodFilter(
+enum class MealFilter(
     val text: StringResource
 ) {
     ALL(text = Res.string.all),
