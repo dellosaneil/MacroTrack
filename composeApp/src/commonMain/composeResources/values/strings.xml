@@ -135,6 +135,11 @@
     <string name ="value_gram_value_kcal">%1$dg · %2$d kcal</string>
     <string name="portion_size">Portion size</string>
     <string name="add_to_value">Add to %1$s</string>
+    <string name="create_recipe">Create Recipe</string>
+    <string name="ingredients_added">Ingredients Added</string>
+    <string name="search_ingredient">Search ingredient</string>
+    <string name="save_recipe">Save Recipe</string>
+
 
     <plurals name="items">
         <item quantity="one">%1$d item</item>

@@ -51,8 +51,8 @@ import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.ui.AddFoodTabScreen
 import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.ui.AddRecipeScreen
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
-import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
+import org.thelazybattley.macrotrack.ui.common.CommonTopBar
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -86,17 +86,20 @@ fun AddMealScreen(
         modifier = modifier,
         containerColor = colors.white,
         topBar = {
-            Column {
-                TitleBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(paddingValues = AppPadding),
-                    mealType = viewState.selectedMealType
-                ) {
-                    onBackButtonPressed()
-                }
+            val textRes = when (viewState.selectedMealType) {
+                MealType.BREAKFAST -> Res.string.add_breakfast
+                MealType.LUNCH -> Res.string.add_lunch
+                MealType.DINNER -> Res.string.add_dinner
+                MealType.SNACK -> Res.string.add_snack
             }
+            CommonTopBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(paddingValues = AppPadding),
+                stringResource = textRes,
+                onClick = onBackButtonPressed
+            )
         },
         bottomBar = {
             if (viewState.loggedMeals.loggedMeals.isNotEmpty()) {
@@ -165,7 +168,11 @@ private fun AddMealScreen(
             modifier = Modifier.fillMaxWidth(),
             mealFilter = viewState.selectedMealFilter
         ) {
-            addMealCallbacks.onNavigateScreen(destination = AppDestinations.Root.CreateFood)
+            val destination = when (viewState.selectedMealFilter) {
+                MealFilter.FOODS -> AppDestinations.Root.CreateFood
+                MealFilter.RECIPES -> AppDestinations.Root.CreateRecipe
+            }
+            addMealCallbacks.onNavigateScreen(destination = destination)
         }
         when (viewState.selectedMealFilter) {
             MealFilter.FOODS -> {
@@ -175,40 +182,13 @@ private fun AddMealScreen(
                     addFoodCallbacks = addFoodCallbacks
                 )
             }
+
             MealFilter.RECIPES -> {
                 AddRecipeScreen(modifier = Modifier.fillMaxSize())
             }
         }
     }
 }
-
-@Composable
-private fun TitleBar(
-    modifier: Modifier = Modifier,
-    mealType: MealType,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier,
-    ) {
-        CommonBackButton(modifier = Modifier.align(alignment = Alignment.CenterStart)) {
-            onClick()
-        }
-        val textRes = when (mealType) {
-            MealType.BREAKFAST -> Res.string.add_breakfast
-            MealType.LUNCH -> Res.string.add_lunch
-            MealType.DINNER -> Res.string.add_dinner
-            MealType.SNACK -> Res.string.add_snack
-        }
-        Text(
-            text = stringResource(resource = textRes),
-            style = typography.bold16,
-            color = colors.black,
-            modifier = Modifier.align(alignment = Alignment.Center)
-        )
-    }
-}
-
 
 @Composable
 private fun MealAddedSnackBar(

@@ -58,10 +58,10 @@ fun AddFoodTabScreen(
                     AddMealItemCard(
                         modifier = Modifier.fillMaxWidth(),
                         food = food,
-                        onAddButtonClicked = {
+                        onButtonClicked = {
                             addFoodCallbacks.insertFood(food = food)
                         },
-                        onFoodHighlighted = {
+                        onMealClicked = {
                             addFoodCallbacks.customizeFoodWeight(name = food.name)
                         }
                     )

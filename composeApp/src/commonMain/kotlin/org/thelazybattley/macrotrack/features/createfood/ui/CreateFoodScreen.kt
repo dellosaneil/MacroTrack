@@ -1,18 +1,15 @@
 package org.thelazybattley.macrotrack.features.createfood.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,7 +25,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -39,10 +35,8 @@ import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.amount
 import macrotrack.composeapp.generated.resources.carbs_g
-import macrotrack.composeapp.generated.resources.carbs_percent
 import macrotrack.composeapp.generated.resources.chicken_breast
 import macrotrack.composeapp.generated.resources.fat_g
-import macrotrack.composeapp.generated.resources.fat_percent
 import macrotrack.composeapp.generated.resources.food_name
 import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.macros_per_serving
@@ -52,7 +46,6 @@ import macrotrack.composeapp.generated.resources.placeholder_carbs
 import macrotrack.composeapp.generated.resources.placeholder_fats
 import macrotrack.composeapp.generated.resources.placeholder_protein
 import macrotrack.composeapp.generated.resources.protein_g
-import macrotrack.composeapp.generated.resources.protein_percent
 import macrotrack.composeapp.generated.resources.save_food
 import macrotrack.composeapp.generated.resources.this_food_is_already_saved
 import org.jetbrains.compose.resources.StringResource
@@ -64,12 +57,11 @@ import org.thelazybattley.macrotrack.features.createfood.CreateFoodCallbacks
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewModel
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
-import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
+import org.thelazybattley.macrotrack.ui.common.CommonTopBar
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
-import kotlin.math.roundToInt
 
 @Composable
 fun AddIngredientScreen(
@@ -86,13 +78,15 @@ fun AddIngredientScreen(
     Scaffold(
         containerColor = colors.white,
         topBar = {
-            TitleBar(
+            CommonTopBar(
                 modifier = Modifier
                     .padding(paddingValues = AppPadding)
                     .fillMaxWidth()
                     .statusBarsPadding(),
-                onBackClicked = popBackStack
-            )
+                stringResource = Res.string.new_food
+            ) {
+                popBackStack()
+            }
         }
     ) { innerPadding ->
         AddIngredientScreen(
@@ -255,7 +249,7 @@ fun AddIngredientScreen(
             carbs = viewState.carbs ?: 0.0
         )
 
-        MacroPercentageTracker(
+        CreateFoodMacroTracker(
             modifier = Modifier.fillMaxWidth(),
             proteinPercentage = viewState.proteinPercentage,
             carbsPercentage = viewState.carbsPercentage,
@@ -273,97 +267,7 @@ fun AddIngredientScreen(
 }
 
 
-@Composable
-private fun MacroPercentageTracker(
-    modifier: Modifier = Modifier,
-    proteinPercentage: Double,
-    carbsPercentage: Double,
-    fatsPercentage: Double
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-    ) {
-        Box(
-            modifier = Modifier.fillMaxWidth()
-                .clip(shape = RoundedCornerShape(size = 8.dp))
-                .background(color = colors.offWhite)
-                .height(height = 6.dp)
-        ) {
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth(fraction = proteinPercentage.toFloat() + carbsPercentage.toFloat() + fatsPercentage.toFloat())
-                    .fillMaxHeight()
-                    .background(color = colors.orange)
-            )
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth(fraction = proteinPercentage.toFloat() + carbsPercentage.toFloat())
-                    .fillMaxHeight()
-                    .background(color = colors.green)
-            )
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth(fraction = proteinPercentage.toFloat())
-                    .fillMaxHeight()
-                    .background(color = colors.deepBlue)
-            )
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(fraction = 0.8f)
-                .align(alignment = Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            MacroLegend(
-                macroType = MacroType.PROTEIN,
-                textRes = Res.string.protein_percent,
-                percentage = (proteinPercentage * 100).roundToInt()
-            )
-            MacroLegend(
-                macroType = MacroType.CARBS,
-                textRes = Res.string.carbs_percent,
-                percentage = (carbsPercentage * 100).roundToInt()
-            )
-            MacroLegend(
-                macroType = MacroType.FAT,
-                textRes = Res.string.fat_percent,
-                percentage = (fatsPercentage * 100).roundToInt()
-            )
-        }
-    }
-}
-
-@Composable
-private fun MacroLegend(
-    modifier: Modifier = Modifier,
-    macroType: MacroType,
-    textRes: StringResource,
-    percentage: Int,
-) {
-    val color = when (macroType) {
-        MacroType.PROTEIN -> colors.deepBlue
-        MacroType.CARBS -> colors.green
-        MacroType.FAT -> colors.orange
-    }
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
-    ) {
-        Spacer(
-            modifier = Modifier
-                .size(8.dp)
-                .background(color = color, shape = RoundedCornerShape(size = 2.dp))
-        )
-        Text(
-            text = stringResource(resource = textRes, percentage),
-            style = typography.regular10,
-            color = colors.mediumGray
-        )
-    }
-}
 
 @Composable
 private fun SaveIngredient(
@@ -435,22 +339,6 @@ enum class AddFoodTextFieldType {
     FATS,
     PROTEIN,
     CARBS
-}
-
-@Composable
-private fun TitleBar(modifier: Modifier = Modifier, onBackClicked: () -> Unit) {
-    Box(modifier = modifier) {
-        CommonBackButton(
-            onButtonClicked = onBackClicked,
-            modifier = Modifier.align(alignment = Alignment.CenterStart)
-        )
-        Text(
-            text = stringResource(resource = Res.string.new_food),
-            style = typography.bold16,
-            color = colors.black,
-            modifier = Modifier.align(alignment = Alignment.Center)
-        )
-    }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xffffffff)

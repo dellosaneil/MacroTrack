@@ -37,14 +37,16 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 fun AddMealItemCard(
     modifier: Modifier = Modifier,
     food: Food,
-    onAddButtonClicked: () -> Unit,
-    onFoodHighlighted: () -> Unit
+    onButtonClicked: (() -> Unit)? = null,
+    onMealClicked: (() -> Unit)? = null,
 ) {
     val color = food.dominantMacro.toColor()
     Box(
         modifier = modifier
-            .clickable {
-                onFoodHighlighted()
+            .clickable(enabled = onMealClicked != null) {
+                if (onMealClicked != null) {
+                    onMealClicked()
+                }
             }
             .drawWithContent {
                 drawRoundRect(
@@ -95,25 +97,27 @@ fun AddMealItemCard(
                     )
                 }
             }
-            Box(
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = colors.lightGray,
-                        shape = CircleShape
+            if (onButtonClicked != null) {
+                Box(
+                    modifier = Modifier
+                        .border(
+                            width = 1.dp,
+                            color = colors.lightGray,
+                            shape = CircleShape
+                        )
+                        .clip(shape = CircleShape)
+                        .size(size = 28.dp)
+                        .clickable {
+                            onButtonClicked()
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(resource = Res.string.plus_text),
+                        color = colors.deepBlue,
+                        style = typography.regular18,
                     )
-                    .clip(shape = CircleShape)
-                    .size(size = 28.dp)
-                    .clickable {
-                        onAddButtonClicked()
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(resource = Res.string.plus_text),
-                    color = colors.deepBlue,
-                    style = typography.regular18,
-                )
+                }
             }
         }
     }
@@ -127,7 +131,7 @@ private fun PreviewAddMealItemCard() {
         AddMealItemCard(
             modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
             food = dummyFood,
-            onAddButtonClicked =  {
+            onButtonClicked = {
 
             }
         ) {
