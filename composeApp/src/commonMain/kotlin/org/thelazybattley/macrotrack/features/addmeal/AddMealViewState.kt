@@ -7,7 +7,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 data class AddMealViewState(
     val selectedMealType: MealType = MealType.BREAKFAST,
-    val selectedMealFilter: MealFilter = MealFilter.ALL,
+    val selectedMealFilter: MealFilter = MealFilter.FOODS,
     val filteredFoodList: List<Food> = emptyList(),
     val searchQuery: String = "",
     val completeFoodList: List<Food> = emptyList(),

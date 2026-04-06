@@ -47,9 +47,9 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
-import org.thelazybattley.macrotrack.features.addmeal.tabs.AddMealLegend
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.ui.AddFoodTabScreen
+import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.ui.AddRecipeScreen
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
@@ -162,14 +162,23 @@ private fun AddMealScreen(
         )
         AddMealLegend(modifier = Modifier.fillMaxWidth())
         AddMealCreateButton(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            mealFilter = viewState.selectedMealFilter
         ) {
-            addMealCallbacks.onNavigateScreen(destination = AppDestinations.Root.AddFood)
+            addMealCallbacks.onNavigateScreen(destination = AppDestinations.Root.CreateFood)
         }
-        AddFoodTabScreen(
-            viewState = viewState,
-            addFoodCallbacks = addFoodCallbacks
-        )
+        when (viewState.selectedMealFilter) {
+            MealFilter.FOODS -> {
+                AddFoodTabScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    viewState = viewState,
+                    addFoodCallbacks = addFoodCallbacks
+                )
+            }
+            MealFilter.RECIPES -> {
+                AddRecipeScreen(modifier = Modifier.fillMaxSize())
+            }
+        }
     }
 }
 

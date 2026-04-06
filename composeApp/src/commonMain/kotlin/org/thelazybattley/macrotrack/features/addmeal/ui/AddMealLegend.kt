@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.features.addmeal.tabs
+package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

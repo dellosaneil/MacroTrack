@@ -17,8 +17,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.all
-import macrotrack.composeapp.generated.resources.favourites
 import macrotrack.composeapp.generated.resources.foods
 import macrotrack.composeapp.generated.resources.recipes
 import org.jetbrains.compose.resources.StringResource
@@ -115,8 +113,6 @@ private fun PreviewAddMealFilter() {
 enum class MealFilter(
     val text: StringResource
 ) {
-    ALL(text = Res.string.all),
-    RECIPES(text = Res.string.recipes),
     FOODS(text = Res.string.foods),
-    FAVOURITES(text = Res.string.favourites)
+    RECIPES(text = Res.string.recipes)
 }

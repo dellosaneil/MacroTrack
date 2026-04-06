@@ -1,15 +1,15 @@
-package org.thelazybattley.macrotrack.features.addfood
+package org.thelazybattley.macrotrack.features.createfood
 
-import org.thelazybattley.macrotrack.features.addfood.ui.AddFoodTextFieldType
+import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
 
-interface AddFoodCallbacks {
+interface CreateFoodCallbacks {
 
     fun onSaveFood()
 
     fun onTextFieldUpdated(value: String, type: AddFoodTextFieldType)
 
     companion object {
-        fun default() = object : AddFoodCallbacks {
+        fun default() = object : CreateFoodCallbacks {
             override fun onSaveFood() {
                 TODO("Not yet implemented")
             }

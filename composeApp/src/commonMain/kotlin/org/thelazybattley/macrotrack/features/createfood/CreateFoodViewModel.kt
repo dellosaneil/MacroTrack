@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.features.addfood
+package org.thelazybattley.macrotrack.features.createfood
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,15 +12,15 @@ import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
-import org.thelazybattley.macrotrack.features.addfood.ui.AddFoodTextFieldType
+import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
 
-class AddFoodViewModel(
+class CreateFoodViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
     private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase,
     private val getAllFoodUseCase: GetAllFoodUseCase
-) : ViewModel(), AddFoodCallbacks {
+) : ViewModel(), CreateFoodCallbacks {
 
-    private val _state = MutableStateFlow(value = AddFoodViewState())
+    private val _state = MutableStateFlow(value = CreateFoodViewState())
     val state = _state.asStateFlow()
 
     init {

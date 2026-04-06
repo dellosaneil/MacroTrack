@@ -1,6 +1,6 @@
-package org.thelazybattley.macrotrack.features.addfood
+package org.thelazybattley.macrotrack.features.createfood
 
-data class AddFoodViewState(
+data class CreateFoodViewState(
     val protein: Double? = null,
     val carbs: Double? = null,
     val fat: Double? = null,

@@ -64,7 +64,8 @@ sealed class AppDestinations {
             }
         }
 
-        object AddFood : Root(route = "add_food")
+        object CreateFood : Root(route = "create_food")
+        object CreateRecipe : Root(route = "create_recipe")
         object MainScreen : Root(route = "main")
     }
 

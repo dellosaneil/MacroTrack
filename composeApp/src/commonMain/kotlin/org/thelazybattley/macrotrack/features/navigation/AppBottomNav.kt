@@ -14,8 +14,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import org.thelazybattley.macrotrack.features.addfood.ui.AddIngredientScreen
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
+import org.thelazybattley.macrotrack.features.createfood.ui.AddIngredientScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
@@ -81,7 +81,14 @@ fun AppBottomNav() {
                     navController.navigate(route = destination.route)
                 }
             }
-            composable(route = AppDestinations.Root.AddFood.route) {
+            composable(route = AppDestinations.Root.CreateFood.route) {
+                AddIngredientScreen(
+                    modifier = Modifier
+                ) {
+                    navController.popBackStack()
+                }
+            }
+            composable(route = AppDestinations.Root.CreateRecipe.route) {
                 AddIngredientScreen(
                     modifier = Modifier
                 ) {
@@ -89,7 +96,6 @@ fun AppBottomNav() {
                 }
             }
         }
-
     }
 }
 

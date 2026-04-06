@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.features.addfood.ui
+package org.thelazybattley.macrotrack.features.createfood.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -60,9 +60,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.toColor
 import org.thelazybattley.macrotrack.domain.model.MacroType
-import org.thelazybattley.macrotrack.features.addfood.AddFoodCallbacks
-import org.thelazybattley.macrotrack.features.addfood.AddFoodViewModel
-import org.thelazybattley.macrotrack.features.addfood.AddFoodViewState
+import org.thelazybattley.macrotrack.features.createfood.CreateFoodCallbacks
+import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewModel
+import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBackButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
@@ -76,7 +76,7 @@ fun AddIngredientScreen(
     modifier: Modifier = Modifier,
     popBackStack: () -> Unit
 ) {
-    val viewModel = koinViewModel<AddFoodViewModel>()
+    val viewModel = koinViewModel<CreateFoodViewModel>()
     val viewState by viewModel.state.collectAsState()
     LaunchedEffect(key1 = viewState.foodSaved) {
         if (viewState.foodSaved) {
@@ -108,8 +108,8 @@ fun AddIngredientScreen(
 @Composable
 fun AddIngredientScreen(
     modifier: Modifier = Modifier,
-    viewState: AddFoodViewState,
-    callbacks: AddFoodCallbacks,
+    viewState: CreateFoodViewState,
+    callbacks: CreateFoodCallbacks,
 ) {
     Column(
         modifier = modifier,
@@ -459,8 +459,8 @@ private fun PreviewAddIngredientScreen() {
     MacroTrackTheme {
         AddIngredientScreen(
             modifier = Modifier.fillMaxSize().padding(all = 16.dp),
-            viewState = AddFoodViewState(),
-            callbacks = AddFoodCallbacks.default()
+            viewState = CreateFoodViewState(),
+            callbacks = CreateFoodCallbacks.default()
         )
     }
 }

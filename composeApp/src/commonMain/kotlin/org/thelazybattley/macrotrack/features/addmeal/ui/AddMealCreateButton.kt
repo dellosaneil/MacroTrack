@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.cant_find_it_add_custom_macros
 import macrotrack.composeapp.generated.resources.create_new_food
+import macrotrack.composeapp.generated.resources.create_new_recipe
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.plus_text
 import org.jetbrains.compose.resources.painterResource
@@ -37,6 +38,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun AddMealCreateButton(
     modifier: Modifier = Modifier,
+    mealFilter: MealFilter,
     onClick: () -> Unit
 ) {
     Card(
@@ -71,8 +73,13 @@ fun AddMealCreateButton(
                 )
             }
             Column {
+                val textResource = when(mealFilter) {
+                    MealFilter.FOODS -> Res.string.create_new_food
+                    MealFilter.RECIPES -> Res.string.create_new_recipe
+                }
+
                 Text(
-                    text = stringResource(resource = Res.string.create_new_food),
+                    text = stringResource(resource = textResource),
                     color = colors.deepBlue,
                     style = typography.bold14
                 )
@@ -98,9 +105,11 @@ fun AddMealCreateButton(
 private fun PreviewAddMealCreateButton() {
     MacroTrackTheme {
         AddMealCreateButton(
-            modifier = Modifier.fillMaxWidth().padding(all = 16.dp)
-        ) {
+            modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
+            mealFilter = MealFilter.FOODS,
+            {
 
-        }
+            },
+        )
     }
 }
