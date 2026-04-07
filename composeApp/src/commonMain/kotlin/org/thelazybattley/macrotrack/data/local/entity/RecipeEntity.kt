@@ -4,16 +4,19 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.thelazybattley.macrotrack.domain.model.Ingredient
+import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.Recipe
 
 @Entity
 @Serializable
 data class RecipeEntity(
     @PrimaryKey val name: String,
-    val ingredients: List<Ingredient>
+    val ingredients: List<Ingredient>,
+    val dominantMacro: String
 )
 
 fun RecipeEntity.toDomain() = Recipe(
     name = name,
-    ingredients = ingredients
+    ingredients = ingredients,
+    dominantMacro = MacroType.valueOf(value = dominantMacro)
 )

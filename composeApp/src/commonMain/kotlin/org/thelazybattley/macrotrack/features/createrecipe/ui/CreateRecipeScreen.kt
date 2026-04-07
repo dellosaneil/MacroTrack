@@ -44,7 +44,7 @@ fun CreateRecipeScreen(
 
 
     LaunchedEffect(key1 = viewState.recipeSaved) {
-        if(viewState.recipeSaved) {
+        if (viewState.recipeSaved) {
             onBackButtonPressed()
             return@LaunchedEffect
         }
@@ -107,11 +107,13 @@ private fun CreateRecipeScreen(
             callbacks = callbacks
         )
         Spacer(modifier = Modifier.height(8.dp))
-        CommonButton(
-            buttonText = stringResource(resource = Res.string.save_recipe),
-            isEnabled = viewState.buttonEnabled
-        ) {
-            callbacks.onSaveRecipe()
+        if (viewState.highlightedIngredient == null) {
+            CommonButton(
+                buttonText = stringResource(resource = Res.string.save_recipe),
+                isEnabled = viewState.buttonEnabled
+            ) {
+                callbacks.onSaveRecipe()
+            }
         }
     }
 }

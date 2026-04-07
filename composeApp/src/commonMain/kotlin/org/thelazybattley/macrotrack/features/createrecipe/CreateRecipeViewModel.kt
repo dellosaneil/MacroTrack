@@ -145,14 +145,20 @@ class CreateRecipeViewModel(
     override fun onSaveRecipe() {
         val currentState = _state.value
         viewModelScope.launch {
+            val dominantMacro = listOf(
+                MacroType.PROTEIN to currentState.macros.proteinPercentage,
+                MacroType.FAT to currentState.macros.fatPercentage,
+                MacroType.CARBS to currentState.macros.carbsPercentage
+            ).maxBy { it.second }.first
             val recipe = Recipe(
                 name = currentState.recipeName,
                 ingredients = currentState.selectedIngredients.map { food ->
                     Ingredient(name = food.name, weight = food.weight)
-                }
+                },
+                dominantMacro = dominantMacro
             )
             insertRecipeUseCase(
-                 recipe = recipe
+                recipe = recipe
             )
             _state.update { currentState ->
                 currentState.copy(

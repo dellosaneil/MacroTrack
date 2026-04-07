@@ -4,12 +4,14 @@ import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 
 data class Recipe(
     val name: String,
-    val ingredients: List<Ingredient>
+    val ingredients: List<Ingredient>,
+    val dominantMacro: MacroType
 )
 
 fun Recipe.toEntity() = RecipeEntity(
     name = name,
-    ingredients = ingredients
+    ingredients = ingredients,
+    dominantMacro = dominantMacro.name
 )
 
 
