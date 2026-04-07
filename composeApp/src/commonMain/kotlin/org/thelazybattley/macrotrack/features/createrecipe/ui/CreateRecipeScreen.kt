@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -41,6 +42,13 @@ fun CreateRecipeScreen(
     val viewModel = koinViewModel<CreateRecipeViewModel>()
     val viewState by viewModel.state.collectAsState()
 
+
+    LaunchedEffect(key1 = viewState.recipeSaved) {
+        if(viewState.recipeSaved) {
+            onBackButtonPressed()
+            return@LaunchedEffect
+        }
+    }
     Scaffold(
         containerColor = colors.white,
         modifier = modifier.fillMaxSize(),
@@ -100,9 +108,10 @@ private fun CreateRecipeScreen(
         )
         Spacer(modifier = Modifier.height(8.dp))
         CommonButton(
-            buttonText = stringResource(resource = Res.string.save_recipe)
+            buttonText = stringResource(resource = Res.string.save_recipe),
+            isEnabled = viewState.buttonEnabled
         ) {
-
+            callbacks.onSaveRecipe()
         }
     }
 }

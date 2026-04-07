@@ -9,7 +9,9 @@ data class CreateRecipeViewState(
     val ingredients: List<Food> = emptyList(),
     val filteredIngredients: List<Food> = emptyList(),
     val macros: CreateRecipeMacros = CreateRecipeMacros(),
-    val highlightedIngredient: Food? = null
+    val highlightedIngredient: Food? = null,
+    val buttonEnabled: Boolean = false,
+    val recipeSaved: Boolean = false
 )
 
 data class CreateRecipeMacros(

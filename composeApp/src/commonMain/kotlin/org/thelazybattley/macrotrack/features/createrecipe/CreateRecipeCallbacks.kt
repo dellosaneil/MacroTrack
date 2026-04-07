@@ -16,6 +16,8 @@ interface CreateRecipeCallbacks {
 
     fun updateWeight(portionSize: Double)
 
+    fun onSaveRecipe()
+
     companion object {
         fun default() = object : CreateRecipeCallbacks {
             override fun onSearchKeyword(keyword: String) {
@@ -39,6 +41,10 @@ interface CreateRecipeCallbacks {
             }
 
             override fun updateWeight(portionSize: Double) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onSaveRecipe() {
                 TODO("Not yet implemented")
             }
         }

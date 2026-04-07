@@ -7,17 +7,21 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
+import org.thelazybattley.macrotrack.domain.model.Ingredient
 import org.thelazybattley.macrotrack.domain.model.MacroType
+import org.thelazybattley.macrotrack.domain.model.Recipe
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
 
 class CreateRecipeViewModel(
     private val getAllRecipeUseCase: GetAllRecipeUseCase,
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
-    private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase
+    private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
+    private val insertRecipeUseCase: InsertRecipeUseCase
 ) : ViewModel(), CreateRecipeCallbacks {
 
     private val _state = MutableStateFlow(value = CreateRecipeViewState())
@@ -65,6 +69,7 @@ class CreateRecipeViewModel(
             val totalCalories = updatedIngredients.sumOf { it.macros.calories }
             currentState.copy(
                 selectedIngredients = updatedIngredients,
+                buttonEnabled = true,
                 macros = CreateRecipeMacros(
                     protein = totalProtein,
                     carbs = totalCarbs,
@@ -134,6 +139,26 @@ class CreateRecipeViewModel(
                     weight = portionSize
                 )
             )
+        }
+    }
+
+    override fun onSaveRecipe() {
+        val currentState = _state.value
+        viewModelScope.launch {
+            val recipe = Recipe(
+                name = currentState.recipeName,
+                ingredients = currentState.selectedIngredients.map { food ->
+                    Ingredient(name = food.name, weight = food.weight)
+                }
+            )
+            insertRecipeUseCase(
+                 recipe = recipe
+            )
+            _state.update { currentState ->
+                currentState.copy(
+                    recipeSaved = true
+                )
+            }
         }
     }
 }
