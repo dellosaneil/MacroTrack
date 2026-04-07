@@ -71,7 +71,8 @@ class CreateRecipeViewModel(
                 selectedIngredients = updatedIngredients,
                 buttonEnabled = isButtonEnabled(
                     selectedIngredients = updatedIngredients,
-                    recipeName = currentState.recipeName
+                    recipeName = currentState.recipeName,
+                    isRecipeNameTaken = currentState.isRecipeNameTaken
                 ),
                 macros = CreateRecipeMacros(
                     protein = totalProtein,
@@ -118,6 +119,11 @@ class CreateRecipeViewModel(
         val currentState = _state.value
         if (currentState.highlightedIngredient == null) return
         onAddIngredient(food = currentState.highlightedIngredient)
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedIngredient = null
+            )
+        }
     }
 
     override fun updateWeight(portionSize: Double) {
@@ -167,20 +173,25 @@ class CreateRecipeViewModel(
     override fun inputRecipeName(name: String) {
         _state.update { currentState ->
             val isRecipeNameTaken =
-                currentState.savedRecipesName.contains(name) || currentState.ingredients.map { it.name }
-                    .contains(name)
+                currentState.savedRecipesName.plus(currentState.ingredients.map { it.name })
+                    .any { it.equals(other = name, ignoreCase = true) }
             currentState.copy(
                 recipeName = name,
                 isRecipeNameTaken = isRecipeNameTaken,
                 buttonEnabled = isButtonEnabled(
                     selectedIngredients = currentState.selectedIngredients,
-                    recipeName = name
+                    recipeName = name,
+                    isRecipeNameTaken = isRecipeNameTaken
                 )
             )
         }
     }
 
-    private fun isButtonEnabled(selectedIngredients: List<Food>, recipeName: String): Boolean {
-        return selectedIngredients.isNotEmpty() && recipeName.isNotEmpty()
+    private fun isButtonEnabled(
+        selectedIngredients: List<Food>,
+        recipeName: String,
+        isRecipeNameTaken: Boolean
+    ): Boolean {
+        return selectedIngredients.isNotEmpty() && recipeName.isNotEmpty() && !isRecipeNameTaken
     }
 }

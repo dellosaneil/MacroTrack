@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,7 +20,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.create_new_recipe
+import macrotrack.composeapp.generated.resources.grilled_chicken_breast
 import macrotrack.composeapp.generated.resources.save_recipe
+import macrotrack.composeapp.generated.resources.this_food_is_already_saved
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.createfood.ui.AddIngredientPreviewCalories
@@ -30,9 +33,11 @@ import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewModel
 import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonButton
+import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.common.CommonTopBar
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
 fun CreateRecipeScreen(
@@ -41,7 +46,6 @@ fun CreateRecipeScreen(
 ) {
     val viewModel = koinViewModel<CreateRecipeViewModel>()
     val viewState by viewModel.state.collectAsState()
-
 
     LaunchedEffect(key1 = viewState.recipeSaved) {
         if (viewState.recipeSaved) {
@@ -78,6 +82,21 @@ private fun CreateRecipeScreen(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
+        CommonTextField(
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = Res.string.grilled_chicken_breast,
+            borderColor = colors.deepBlue,
+            isError = viewState.isRecipeNameTaken
+        ) { name ->
+            callbacks.inputRecipeName(name = name)
+        }
+        if (viewState.isRecipeNameTaken) {
+            Text(
+                text = stringResource(resource = Res.string.this_food_is_already_saved),
+                style = typography.regular10,
+                color = colors.crimsonRed
+            )
+        }
         Surface(
             shadowElevation = 4.dp,
             shape = RoundedCornerShape(size = 16.dp),
@@ -106,8 +125,8 @@ private fun CreateRecipeScreen(
             viewState = viewState,
             callbacks = callbacks
         )
-        Spacer(modifier = Modifier.height(8.dp))
         if (viewState.highlightedIngredient == null) {
+            Spacer(modifier = Modifier.height(8.dp))
             CommonButton(
                 buttonText = stringResource(resource = Res.string.save_recipe),
                 isEnabled = viewState.buttonEnabled

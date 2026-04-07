@@ -140,6 +140,7 @@
     <string name="search_ingredient">Search ingredient</string>
     <string name="save_recipe">Save Recipe</string>
     <string name="add_ingredient">Add ingredient</string>
+    <string name="grilled_chicken_breast">e.g. Grilled Chicken Breast</string>
 
 
     <plurals name="items">
