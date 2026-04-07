@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 
@@ -31,10 +32,30 @@ class CreateRecipeViewModel(
             getAllFoodUseCase().collect { foods ->
                 _state.update { currentState ->
                     currentState.copy(
-                        ingredients = foods
+                        ingredients = foods,
+                        filteredIngredients = foods
                     )
                 }
             }
+        }
+    }
+
+    override fun onSearchKeyword(keyword: String) {
+        _state.update { currentState ->
+            val filteredIngredients = currentState.ingredients.filter { food ->
+                food.name.contains(other = keyword, ignoreCase = true)
+            }
+            currentState.copy(
+                filteredIngredients = filteredIngredients
+            )
+        }
+    }
+
+    override fun onAddIngredient(food: Food) {
+        _state.update { currentState ->
+            currentState.copy(
+                selectedIngredients = currentState.selectedIngredients.plus(element = food)
+            )
         }
     }
 }

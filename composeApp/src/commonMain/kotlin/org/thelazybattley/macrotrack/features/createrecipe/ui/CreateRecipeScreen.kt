@@ -2,8 +2,10 @@ package org.thelazybattley.macrotrack.features.createrecipe.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
@@ -16,6 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.create_new_recipe
+import macrotrack.composeapp.generated.resources.save_recipe
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.createfood.ui.AddIngredientPreviewCalories
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodMacroTracker
@@ -23,6 +27,7 @@ import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeCallbacks
 import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewModel
 import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
+import org.thelazybattley.macrotrack.ui.common.CommonButton
 import org.thelazybattley.macrotrack.ui.common.CommonTopBar
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -83,10 +88,26 @@ private fun CreateRecipeScreen(
             carbsPercentage = 0.33,
             fatsPercentage = 0.34
         )
-        CreateRecipeAddedIngredients(modifier = Modifier.fillMaxWidth())
-        CreateRecipeAddIngredients(modifier = Modifier.fillMaxWidth().weight(weight = 1f))
+        CreateRecipeAddedIngredients(
+            modifier = Modifier.fillMaxWidth(),
+            selectedIngredients = viewState.selectedIngredients
+        )
+        CreateRecipeAddIngredients(
+            modifier = Modifier.fillMaxWidth().weight(weight = 1f),
+            filteredIngredients = viewState.filteredIngredients,
+            onSearchKeyword = { keyword ->
+                callbacks.onSearchKeyword(keyword = keyword)
+            },
+            onAddIngredient = { food ->
+                callbacks.onAddIngredient(food = food)
+            }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        CommonButton(
+            buttonText = stringResource(resource = Res.string.save_recipe)
+        ) {
 
-
+        }
     }
 }
 

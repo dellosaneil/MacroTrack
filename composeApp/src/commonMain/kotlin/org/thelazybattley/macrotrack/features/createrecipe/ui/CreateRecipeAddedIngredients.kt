@@ -3,9 +3,10 @@ package org.thelazybattley.macrotrack.features.createrecipe.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ingredients_added
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -24,6 +26,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun CreateRecipeAddedIngredients(
     modifier: Modifier = Modifier,
+    selectedIngredients: List<Food>
 ) {
     Column(
         modifier = modifier,
@@ -34,11 +37,11 @@ fun CreateRecipeAddedIngredients(
             style = typography.bold11,
             color = colors.charcoalGray
         )
-        LazyColumn(modifier = Modifier.height(240.dp)) {
-            items(count = 10) {
+        LazyColumn(modifier = Modifier.heightIn(max = 240.dp)) {
+            items(items = selectedIngredients, key = { it.name }) { food ->
                 AddMealItemCard(
                     modifier = Modifier.fillMaxWidth(),
-                    food = dummyFood,
+                    food = food,
                 )
                 HorizontalDivider(
                     thickness = 1.dp, color = colors.lightGray,
@@ -56,6 +59,10 @@ private fun PreviewCreateRecipeAddedIngredients() {
         CreateRecipeAddedIngredients(
             modifier = Modifier.fillMaxWidth()
                 .padding(all = 12.dp),
+            selectedIngredients = listOf(
+                dummyFood,
+                dummyFood.copy(name = "123"),
+            )
         )
     }
 }
