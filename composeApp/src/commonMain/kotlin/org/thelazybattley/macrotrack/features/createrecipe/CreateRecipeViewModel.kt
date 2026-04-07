@@ -7,12 +7,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
+import org.thelazybattley.macrotrack.domain.model.MacroType
+import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 
 class CreateRecipeViewModel(
     private val getAllRecipeUseCase: GetAllRecipeUseCase,
-    private val getAllFoodUseCase: GetAllFoodUseCase
+    private val getAllFoodUseCase: GetAllFoodUseCase,
+    private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase
 ) : ViewModel(), CreateRecipeCallbacks {
 
     private val _state = MutableStateFlow(value = CreateRecipeViewState())
@@ -53,8 +56,35 @@ class CreateRecipeViewModel(
 
     override fun onAddIngredient(food: Food) {
         _state.update { currentState ->
+            val updatedIngredients = currentState.selectedIngredients.plus(element = food)
+            val totalProtein = updatedIngredients.sumOf { it.macros.protein }
+            val totalFat = updatedIngredients.sumOf { it.macros.fat }
+            val totalCarbs = updatedIngredients.sumOf { it.macros.carbs }
+            val totalCalories = updatedIngredients.sumOf { it.macros.calories }
             currentState.copy(
-                selectedIngredients = currentState.selectedIngredients.plus(element = food)
+                selectedIngredients = updatedIngredients,
+                macros = CreateRecipeMacros(
+                    protein = totalProtein,
+                    carbs = totalCarbs,
+                    fat = totalFat,
+                    calories = totalCalories,
+                    proteinPercentage = calculateMacroPercentageUseCase(
+                        totalCalories = totalCalories,
+                        macroValue = totalProtein,
+                        macroType = MacroType.PROTEIN
+                    ),
+                    fatPercentage = calculateMacroPercentageUseCase(
+                        totalCalories = totalCalories,
+                        macroValue = totalFat,
+                        macroType = MacroType.FAT
+                    ),
+                    carbsPercentage = calculateMacroPercentageUseCase(
+                        totalCalories = totalCalories,
+                        macroValue = totalCarbs,
+                        macroType = MacroType.CARBS
+                    )
+
+                )
             )
         }
     }

@@ -8,6 +8,7 @@ class CalculateMacroPercentageUseCase {
         macroValue: Double,
         macroType: MacroType
     ): Double {
+        if(totalCalories == 0 ) return 0.0
         return (macroType.calories * macroValue) / totalCalories
     }
 }

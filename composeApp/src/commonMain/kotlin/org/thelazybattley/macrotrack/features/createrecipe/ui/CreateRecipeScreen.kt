@@ -24,6 +24,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.createfood.ui.AddIngredientPreviewCalories
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodMacroTracker
 import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeCallbacks
+import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeMacros
 import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewModel
 import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewState
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
@@ -75,18 +76,18 @@ private fun CreateRecipeScreen(
         ) {
             AddIngredientPreviewCalories(
                 modifier = Modifier.fillMaxWidth(),
-                calories = 90,
-                fats = 2.0,
-                protein = 4.0,
-                carbs = 14.0
+                calories = viewState.macros.calories,
+                fats = viewState.macros.fat,
+                protein = viewState.macros.protein,
+                carbs = viewState.macros.carbs
             )
         }
 
         CreateFoodMacroTracker(
             modifier = Modifier.fillMaxWidth(),
-            proteinPercentage = 0.33,
-            carbsPercentage = 0.33,
-            fatsPercentage = 0.34
+            proteinPercentage = viewState.macros.proteinPercentage,
+            carbsPercentage = viewState.macros.carbsPercentage,
+            fatsPercentage = viewState.macros.fatPercentage
         )
         CreateRecipeAddedIngredients(
             modifier = Modifier.fillMaxWidth(),
@@ -117,7 +118,17 @@ private fun PreviewCreateRecipeScreen() {
     MacroTrackTheme {
         CreateRecipeScreen(
             modifier = Modifier.padding(paddingValues = AppPadding),
-            viewState = CreateRecipeViewState(),
+            viewState = CreateRecipeViewState(
+                macros = CreateRecipeMacros(
+                    protein = 3.0,
+                    carbsPercentage = 3.0,
+                    fat = 3.0,
+                    proteinPercentage = 0.3,
+                    fatPercentage = 0.3,
+                    carbs = 0.4,
+                    calories = 9
+                )
+            ),
             callbacks = CreateRecipeCallbacks.default()
         )
     }
