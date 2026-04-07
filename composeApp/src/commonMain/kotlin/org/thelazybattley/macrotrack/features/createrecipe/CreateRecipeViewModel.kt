@@ -69,7 +69,10 @@ class CreateRecipeViewModel(
             val totalCalories = updatedIngredients.sumOf { it.macros.calories }
             currentState.copy(
                 selectedIngredients = updatedIngredients,
-                buttonEnabled = true,
+                buttonEnabled = isButtonEnabled(
+                    selectedIngredients = updatedIngredients,
+                    recipeName = currentState.recipeName
+                ),
                 macros = CreateRecipeMacros(
                     protein = totalProtein,
                     carbs = totalCarbs,
@@ -90,7 +93,6 @@ class CreateRecipeViewModel(
                         macroValue = totalCarbs,
                         macroType = MacroType.CARBS
                     )
-
                 )
             )
         }
@@ -113,15 +115,9 @@ class CreateRecipeViewModel(
     }
 
     override fun addCustomizedIngredient() {
-        _state.update { currentState ->
-            if (currentState.highlightedIngredient == null) {
-                return@update currentState
-            }
-            currentState.copy(
-                selectedIngredients = currentState.selectedIngredients.plus(element = currentState.highlightedIngredient),
-                highlightedIngredient = null
-            )
-        }
+        val currentState = _state.value
+        if (currentState.highlightedIngredient == null) return
+        onAddIngredient(food = currentState.highlightedIngredient)
     }
 
     override fun updateWeight(portionSize: Double) {
@@ -166,5 +162,25 @@ class CreateRecipeViewModel(
                 )
             }
         }
+    }
+
+    override fun inputRecipeName(name: String) {
+        _state.update { currentState ->
+            val isRecipeNameTaken =
+                currentState.savedRecipesName.contains(name) || currentState.ingredients.map { it.name }
+                    .contains(name)
+            currentState.copy(
+                recipeName = name,
+                isRecipeNameTaken = isRecipeNameTaken,
+                buttonEnabled = isButtonEnabled(
+                    selectedIngredients = currentState.selectedIngredients,
+                    recipeName = name
+                )
+            )
+        }
+    }
+
+    private fun isButtonEnabled(selectedIngredients: List<Food>, recipeName: String): Boolean {
+        return selectedIngredients.isNotEmpty() && recipeName.isNotEmpty()
     }
 }
