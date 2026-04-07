@@ -9,6 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.add_to_value
+import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
@@ -43,7 +46,10 @@ fun AddFoodTabScreen(
                             addFoodCallbacks.addCustomizedFood()
                         },
                         originalWeight = food.weight,
-                        mealType = viewState.selectedMealType
+                        buttonText = stringResource(
+                            resource = Res.string.add_to_value,
+                            viewState.selectedMealType.title
+                        )
                     )
                 }
 

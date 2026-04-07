@@ -36,7 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.add_to_value
 import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.kcal_per_gram
@@ -51,7 +50,6 @@ import org.thelazybattley.macrotrack.core.text
 import org.thelazybattley.macrotrack.core.toColor
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.MacroType
-import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.ui.common.CommonButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
@@ -65,7 +63,7 @@ fun AddFoodCustomizeWeight(
     food: Food,
     calories: Int,
     originalWeight: Double,
-    mealType: MealType,
+    buttonText: String,
     onCloseButtonClick: () -> Unit,
     onPortionSizeUpdated: (Double) -> Unit,
     onAddMealClick: () -> Unit
@@ -212,10 +210,7 @@ fun AddFoodCustomizeWeight(
         Spacer(modifier = Modifier.height(height = 16.dp))
         CommonButton(
             modifier = Modifier.padding(horizontal = 12.dp),
-            buttonText = stringResource(
-                resource = Res.string.add_to_value,
-                stringResource(resource = mealType.title)
-            )
+            buttonText = buttonText
         ) {
             onAddMealClick()
         }
@@ -268,7 +263,7 @@ private fun PreviewAddFoodCustomizeWeight() {
 
             },
             originalWeight = 100.0,
-            mealType = MealType.BREAKFAST
+            buttonText = "Add to Breakfast"
         )
     }
 }

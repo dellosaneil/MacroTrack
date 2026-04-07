@@ -18,7 +18,6 @@ import macrotrack.composeapp.generated.resources.add_ingredient
 import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_ingredient
 import org.jetbrains.compose.resources.stringResource
-import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.ui.AddFoodCustomizeWeight
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealSelectedItem
@@ -75,12 +74,11 @@ fun CreateRecipeAddIngredients(
                                 callbacks.addCustomizedIngredient()
                             },
                             originalWeight = food.weight,
-//                            mealType = viewState.selectedMealType,
-                            mealType = MealType.BREAKFAST
+                            buttonText = stringResource(resource = Res.string.add_ingredient)
                         )
                     }
 
-                    viewState.selectedIngredients.contains(element = food) -> {
+                    viewState.selectedIngredients.find { it.name == food.name } != null -> {
                         AddMealSelectedItem(
                             modifier = Modifier.fillMaxWidth(),
                             food = food
