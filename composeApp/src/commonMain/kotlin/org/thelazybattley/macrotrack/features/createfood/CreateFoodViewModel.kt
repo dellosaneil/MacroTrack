@@ -10,6 +10,7 @@ import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosUseCase
+import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
@@ -17,7 +18,8 @@ import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
 class CreateFoodViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
     private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase,
-    private val getAllFoodUseCase: GetAllFoodUseCase
+    private val getAllFoodUseCase: GetAllFoodUseCase,
+    private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase
 ) : ViewModel(), CreateFoodCallbacks {
 
     private val _state = MutableStateFlow(value = CreateFoodViewState())
@@ -127,31 +129,31 @@ class CreateFoodViewModel(
     }
 
     private fun calculateMacroPercentage() {
-        _state.value.let { currentState ->
-            if (currentState.calories == 0) {
-                _state.update {
-                    it.copy(
-                        proteinPercentage = 0.0,
-                        carbsPercentage = 0.0,
-                        fatPercentage = 0.0
-                    )
-                }
-                return
-            }
-
-            val calFromProtein = (currentState.protein ?: 0.0) * 4
-            val calFromCarbs = (currentState.carbs ?: 0.0) * 4
-            val calFromFat = (currentState.fat ?: 0.0) * 9
-            val proteinPercent = calFromProtein / currentState.calories
-            val fatPercent = calFromFat / currentState.calories
-            val carbsPercent = calFromCarbs / currentState.calories
-            _state.update {
-                it.copy(
-                    proteinPercentage = proteinPercent,
-                    carbsPercentage = carbsPercent,
-                    fatPercentage = fatPercent
+        _state.update { updatedState ->
+            if (updatedState.calories == 0) {
+                return@update updatedState.copy(
+                    proteinPercentage = 0.0,
+                    carbsPercentage = 0.0,
+                    fatPercentage = 0.0
                 )
             }
+            updatedState.copy(
+                proteinPercentage = calculateMacroPercentageUseCase(
+                    totalCalories = updatedState.calories,
+                    macroValue = updatedState.protein ?: 0.0,
+                    macroType = MacroType.PROTEIN
+                ),
+                carbsPercentage = calculateMacroPercentageUseCase(
+                    totalCalories = updatedState.calories,
+                    macroValue = updatedState.carbs ?: 0.0,
+                    macroType = MacroType.CARBS
+                ),
+                fatPercentage = calculateMacroPercentageUseCase(
+                    totalCalories = updatedState.calories,
+                    macroValue = updatedState.fat ?: 0.0,
+                    macroType = MacroType.FAT
+                ),
+            )
         }
     }
 }
