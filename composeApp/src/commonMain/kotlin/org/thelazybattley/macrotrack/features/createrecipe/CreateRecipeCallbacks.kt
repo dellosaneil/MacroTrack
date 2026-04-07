@@ -8,6 +8,14 @@ interface CreateRecipeCallbacks {
 
     fun onAddIngredient(food: Food)
 
+    fun customizeIngredientWeight(name: String)
+
+    fun closeCustomWeight()
+
+    fun addCustomizedIngredient()
+
+    fun updateWeight(portionSize: Double)
+
     companion object {
         fun default() = object : CreateRecipeCallbacks {
             override fun onSearchKeyword(keyword: String) {
@@ -15,6 +23,22 @@ interface CreateRecipeCallbacks {
             }
 
             override fun onAddIngredient(food: Food) {
+                TODO("Not yet implemented")
+            }
+
+            override fun customizeIngredientWeight(name: String) {
+                TODO("Not yet implemented")
+            }
+
+            override fun closeCustomWeight() {
+                TODO("Not yet implemented")
+            }
+
+            override fun addCustomizedIngredient() {
+                TODO("Not yet implemented")
+            }
+
+            override fun updateWeight(portionSize: Double) {
                 TODO("Not yet implemented")
             }
         }

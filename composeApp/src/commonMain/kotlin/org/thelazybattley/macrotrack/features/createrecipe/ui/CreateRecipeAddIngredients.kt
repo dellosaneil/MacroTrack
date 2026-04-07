@@ -18,9 +18,12 @@ import macrotrack.composeapp.generated.resources.add_ingredient
 import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_ingredient
 import org.jetbrains.compose.resources.stringResource
-import org.thelazybattley.macrotrack.domain.model.Food
-import org.thelazybattley.macrotrack.domain.model.dummyFood
+import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.features.addmeal.tabs.food.ui.AddFoodCustomizeWeight
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
+import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealSelectedItem
+import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeCallbacks
+import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewState
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -29,9 +32,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun CreateRecipeAddIngredients(
     modifier: Modifier = Modifier,
-    filteredIngredients: List<Food>,
-    onSearchKeyword: (String) -> Unit,
-    onAddIngredient: (Food) -> Unit
+    viewState: CreateRecipeViewState,
+    callbacks: CreateRecipeCallbacks
 ) {
     Column(
         modifier = modifier,
@@ -47,24 +49,57 @@ fun CreateRecipeAddIngredients(
             modifier = Modifier.fillMaxWidth(),
             placeholder = Res.string.search_ingredient,
             prefixIcon = Res.drawable.ic_search,
-            onValueChanged = {
-                onSearchKeyword(it)
+            onValueChanged = { keyword ->
+                callbacks.onSearchKeyword(keyword)
             },
             borderColor = colors.deepBlue
         )
         LazyColumn {
             items(
-                items = filteredIngredients,
+                items = viewState.filteredIngredients,
                 key = { it.name }
             ) { food ->
-                AddMealItemCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    food = food,
-                    onButtonClicked = {
-                        onAddIngredient(food)
-                    },
-                    onMealClicked = {}
-                )
+                when {
+                    viewState.highlightedIngredient?.name == food.name -> {
+                        AddFoodCustomizeWeight(
+                            modifier = Modifier.fillMaxWidth(),
+                            food = viewState.highlightedIngredient,
+                            calories = food.macros.calories,
+                            onCloseButtonClick = {
+                                callbacks.closeCustomWeight()
+                            },
+                            onPortionSizeUpdated = { weight ->
+                                callbacks.updateWeight(portionSize = weight)
+                            },
+                            onAddMealClick = {
+                                callbacks.addCustomizedIngredient()
+                            },
+                            originalWeight = food.weight,
+//                            mealType = viewState.selectedMealType,
+                            mealType = MealType.BREAKFAST
+                        )
+                    }
+
+                    viewState.selectedIngredients.contains(element = food) -> {
+                        AddMealSelectedItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            food = food
+                        )
+                    }
+
+                    else -> {
+                        AddMealItemCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            food = food,
+                            onButtonClicked = {
+                                callbacks.onAddIngredient(food = food)
+                            },
+                            onMealClicked = {
+                                callbacks.customizeIngredientWeight(name = food.name)
+                            }
+                        )
+                    }
+                }
                 HorizontalDivider(
                     thickness = 1.dp, color = colors.lightGray,
                     modifier = Modifier.padding(vertical = 2.dp)
@@ -80,9 +115,8 @@ private fun Preview() {
     MacroTrackTheme {
         CreateRecipeAddIngredients(
             modifier = Modifier.fillMaxWidth(),
-            filteredIngredients = listOf(dummyFood, dummyFood.copy(name = "a")),
-            onSearchKeyword = {},
-            onAddIngredient = {}
+            viewState = CreateRecipeViewState(),
+            callbacks = CreateRecipeCallbacks.default()
         )
     }
 }

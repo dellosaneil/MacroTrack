@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.MacroType
+import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
@@ -15,7 +16,8 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 class CreateRecipeViewModel(
     private val getAllRecipeUseCase: GetAllRecipeUseCase,
     private val getAllFoodUseCase: GetAllFoodUseCase,
-    private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase
+    private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
+    private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase
 ) : ViewModel(), CreateRecipeCallbacks {
 
     private val _state = MutableStateFlow(value = CreateRecipeViewState())
@@ -84,6 +86,52 @@ class CreateRecipeViewModel(
                         macroType = MacroType.CARBS
                     )
 
+                )
+            )
+        }
+    }
+
+    override fun customizeIngredientWeight(name: String) {
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedIngredient = currentState.ingredients.firstOrNull { it.name == name }
+            )
+        }
+    }
+
+    override fun closeCustomWeight() {
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedIngredient = null
+            )
+        }
+    }
+
+    override fun addCustomizedIngredient() {
+        _state.update { currentState ->
+            if (currentState.highlightedIngredient == null) {
+                return@update currentState
+            }
+            currentState.copy(
+                selectedIngredients = currentState.selectedIngredients.plus(element = currentState.highlightedIngredient),
+                highlightedIngredient = null
+            )
+        }
+    }
+
+    override fun updateWeight(portionSize: Double) {
+        _state.update { currentState ->
+            val originalFood =
+                currentState.ingredients
+                    .find { it.name == currentState.highlightedIngredient?.name }
+                    ?: return@update currentState
+            currentState.copy(
+                highlightedIngredient = currentState.highlightedIngredient?.copy(
+                    macros = calculateAdjustMacrosUseCase(
+                        portionSize = portionSize,
+                        originalFood = originalFood
+                    ),
+                    weight = portionSize
                 )
             )
         }

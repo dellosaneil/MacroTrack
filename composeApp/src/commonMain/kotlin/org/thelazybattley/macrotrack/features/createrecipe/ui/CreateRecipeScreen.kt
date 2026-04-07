@@ -95,13 +95,8 @@ private fun CreateRecipeScreen(
         )
         CreateRecipeAddIngredients(
             modifier = Modifier.fillMaxWidth().weight(weight = 1f),
-            filteredIngredients = viewState.filteredIngredients,
-            onSearchKeyword = { keyword ->
-                callbacks.onSearchKeyword(keyword = keyword)
-            },
-            onAddIngredient = { food ->
-                callbacks.onAddIngredient(food = food)
-            }
+            viewState = viewState,
+            callbacks = callbacks
         )
         Spacer(modifier = Modifier.height(8.dp))
         CommonButton(
