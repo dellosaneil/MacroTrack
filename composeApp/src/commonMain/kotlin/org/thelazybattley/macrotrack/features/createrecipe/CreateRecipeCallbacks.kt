@@ -20,6 +20,8 @@ interface CreateRecipeCallbacks {
 
     fun inputRecipeName(name: String)
 
+    fun removeIngredient(food: Food)
+
     companion object {
         fun default() = object : CreateRecipeCallbacks {
             override fun onSearchKeyword(keyword: String) {
@@ -51,6 +53,10 @@ interface CreateRecipeCallbacks {
             }
 
             override fun inputRecipeName(name: String) {
+                TODO("Not yet implemented")
+            }
+
+            override fun removeIngredient(food: Food) {
                 TODO("Not yet implemented")
             }
         }

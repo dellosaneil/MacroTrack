@@ -1,16 +1,13 @@
 package org.thelazybattley.macrotrack.features.foodlog.ui
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -19,13 +16,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxDefaults
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,10 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_meal
-import macrotrack.composeapp.generated.resources.ic_trash
 import macrotrack.composeapp.generated.resources.kcal
 import macrotrack.composeapp.generated.resources.value_gram
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.buildMacroNutrientText
@@ -55,6 +45,7 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
+import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDismissBox
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -162,38 +153,11 @@ private fun LazyListScope.loggedFoodByMealType(
         )
     }
     items(items = foodList.foodList, key = { it.id }) { food ->
-        val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
-            initialValue = SwipeToDismissBoxValue.Settled,
-            positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold,
-            confirmValueChange = { value ->
-                if (value == SwipeToDismissBoxValue.EndToStart) {
-                    onDeleteFoodLog(food.id)
-                }
-                value != SwipeToDismissBoxValue.StartToEnd
+        CommonSwipeToDismissBox(
+            modifier = Modifier,
+            onSwipeToDismiss = {
+                onDeleteFoodLog(food.id)
             }
-        )
-        SwipeToDismissBox(
-            state = swipeToDismissBoxState,
-            backgroundContent = {
-                when (swipeToDismissBoxState.dismissDirection) {
-                    SwipeToDismissBoxValue.StartToEnd -> {}
-                    SwipeToDismissBoxValue.EndToStart -> {
-                        Icon(
-                            painter = painterResource(resource = Res.drawable.ic_trash),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(color = colors.lightRed)
-                                .wrapContentSize(align = Alignment.CenterEnd)
-                                .padding(12.dp),
-                            tint = colors.crimsonRed
-                        )
-                    }
-
-                    SwipeToDismissBoxValue.Settled -> {}
-                }
-            },
-            enableDismissFromStartToEnd = false,
         ) {
             FoodLogItem(
                 modifier = Modifier.fillMaxWidth(),

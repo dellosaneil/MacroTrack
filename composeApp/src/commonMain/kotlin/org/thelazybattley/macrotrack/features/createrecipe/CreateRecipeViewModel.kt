@@ -61,42 +61,8 @@ class CreateRecipeViewModel(
     }
 
     override fun onAddIngredient(food: Food) {
-        _state.update { currentState ->
-            val updatedIngredients = currentState.selectedIngredients.plus(element = food)
-            val totalProtein = updatedIngredients.sumOf { it.macros.protein }
-            val totalFat = updatedIngredients.sumOf { it.macros.fat }
-            val totalCarbs = updatedIngredients.sumOf { it.macros.carbs }
-            val totalCalories = updatedIngredients.sumOf { it.macros.calories }
-            currentState.copy(
-                selectedIngredients = updatedIngredients,
-                buttonEnabled = isButtonEnabled(
-                    selectedIngredients = updatedIngredients,
-                    recipeName = currentState.recipeName,
-                    isRecipeNameTaken = currentState.isRecipeNameTaken
-                ),
-                macros = CreateRecipeMacros(
-                    protein = totalProtein,
-                    carbs = totalCarbs,
-                    fat = totalFat,
-                    calories = totalCalories,
-                    proteinPercentage = calculateMacroPercentageUseCase(
-                        totalCalories = totalCalories,
-                        macroValue = totalProtein,
-                        macroType = MacroType.PROTEIN
-                    ),
-                    fatPercentage = calculateMacroPercentageUseCase(
-                        totalCalories = totalCalories,
-                        macroValue = totalFat,
-                        macroType = MacroType.FAT
-                    ),
-                    carbsPercentage = calculateMacroPercentageUseCase(
-                        totalCalories = totalCalories,
-                        macroValue = totalCarbs,
-                        macroType = MacroType.CARBS
-                    )
-                )
-            )
-        }
+        val updatedIngredients = _state.value.selectedIngredients.plus(element = food)
+        updateIngredients(updatedIngredients = updatedIngredients)
     }
 
     override fun customizeIngredientWeight(name: String) {
@@ -182,6 +148,49 @@ class CreateRecipeViewModel(
                     selectedIngredients = currentState.selectedIngredients,
                     recipeName = name,
                     isRecipeNameTaken = isRecipeNameTaken
+                )
+            )
+        }
+    }
+
+    override fun removeIngredient(food: Food) {
+        val updatedIngredients = _state.value.selectedIngredients.minus(element = food)
+        updateIngredients(updatedIngredients = updatedIngredients)
+    }
+
+    private fun updateIngredients(updatedIngredients: List<Food>) {
+        _state.update { currentState ->
+            val totalProtein = updatedIngredients.sumOf { it.macros.protein }
+            val totalFat = updatedIngredients.sumOf { it.macros.fat }
+            val totalCarbs = updatedIngredients.sumOf { it.macros.carbs }
+            val totalCalories = updatedIngredients.sumOf { it.macros.calories }
+            currentState.copy(
+                selectedIngredients = updatedIngredients,
+                buttonEnabled = isButtonEnabled(
+                    selectedIngredients = updatedIngredients,
+                    recipeName = currentState.recipeName,
+                    isRecipeNameTaken = currentState.isRecipeNameTaken
+                ),
+                macros = CreateRecipeMacros(
+                    protein = totalProtein,
+                    carbs = totalCarbs,
+                    fat = totalFat,
+                    calories = totalCalories,
+                    proteinPercentage = calculateMacroPercentageUseCase(
+                        totalCalories = totalCalories,
+                        macroValue = totalProtein,
+                        macroType = MacroType.PROTEIN
+                    ),
+                    fatPercentage = calculateMacroPercentageUseCase(
+                        totalCalories = totalCalories,
+                        macroValue = totalFat,
+                        macroType = MacroType.FAT
+                    ),
+                    carbsPercentage = calculateMacroPercentageUseCase(
+                        totalCalories = totalCalories,
+                        macroValue = totalCarbs,
+                        macroType = MacroType.CARBS
+                    )
                 )
             )
         }

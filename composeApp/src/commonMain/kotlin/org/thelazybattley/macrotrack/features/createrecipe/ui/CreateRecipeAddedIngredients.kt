@@ -19,6 +19,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
+import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDismissBox
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -26,7 +27,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun CreateRecipeAddedIngredients(
     modifier: Modifier = Modifier,
-    selectedIngredients: List<Food>
+    selectedIngredients: List<Food>,
+    removeIngredient: (Food) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -39,10 +41,18 @@ fun CreateRecipeAddedIngredients(
         )
         LazyColumn(modifier = Modifier.heightIn(max = 240.dp)) {
             items(items = selectedIngredients, key = { it.name }) { food ->
-                AddMealItemCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    food = food,
-                )
+                CommonSwipeToDismissBox(
+                    modifier = Modifier,
+                    onSwipeToDismiss = {
+                        removeIngredient(food)
+                    }
+                ) {
+                    AddMealItemCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        food = food,
+                    )
+                }
+
                 HorizontalDivider(
                     thickness = 1.dp, color = colors.lightGray,
                     modifier = Modifier.padding(vertical = 2.dp)
@@ -63,6 +73,8 @@ private fun PreviewCreateRecipeAddedIngredients() {
                 dummyFood,
                 dummyFood.copy(name = "123"),
             )
-        )
+        ) {
+
+        }
     }
 }

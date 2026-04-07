@@ -119,7 +119,9 @@ private fun CreateRecipeScreen(
         CreateRecipeAddedIngredients(
             modifier = Modifier.fillMaxWidth(),
             selectedIngredients = viewState.selectedIngredients
-        )
+        ) { food ->
+            callbacks.removeIngredient(food = food)
+        }
         CreateRecipeAddIngredients(
             modifier = Modifier.fillMaxWidth().weight(weight = 1f),
             viewState = viewState,
