@@ -49,7 +49,8 @@ import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.ui.AddFoodTabScreen
-import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.ui.AddRecipeScreen
+import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.AddRecipeCallbacks
+import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.ui.AddRecipeTabScreen
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.common.CommonTopBar
@@ -117,7 +118,8 @@ fun AddMealScreen(
             modifier = Modifier.padding(paddingValues = innerPadding),
             viewState = viewState,
             addMealCallbacks = viewModel,
-            addFoodCallbacks = viewModel
+            addFoodCallbacks = viewModel,
+            addRecipeCallbacks = viewModel
         )
     }
     SnackbarHost(
@@ -141,7 +143,8 @@ private fun AddMealScreen(
     modifier: Modifier = Modifier,
     viewState: AddMealViewState,
     addMealCallbacks: AddMealCallbacks,
-    addFoodCallbacks: AddFoodCallbacks
+    addFoodCallbacks: AddFoodCallbacks,
+    addRecipeCallbacks: AddRecipeCallbacks
 ) {
     Column(
         modifier = modifier
@@ -184,7 +187,11 @@ private fun AddMealScreen(
             }
 
             MealFilter.RECIPES -> {
-                AddRecipeScreen(modifier = Modifier.fillMaxSize())
+                AddRecipeTabScreen(
+                    modifier = Modifier.fillMaxSize(),
+                    viewState = viewState,
+                    callbacks = addRecipeCallbacks
+                )
             }
         }
     }
@@ -269,7 +276,8 @@ private fun PreviewAddMealScreen() {
                 modifier = Modifier.padding(it),
                 viewState = AddMealViewState(),
                 addMealCallbacks = AddMealCallbacks.default(),
-                addFoodCallbacks = AddFoodCallbacks.default()
+                addFoodCallbacks = AddFoodCallbacks.default(),
+                addRecipeCallbacks = AddRecipeCallbacks.default()
             )
         }
     }

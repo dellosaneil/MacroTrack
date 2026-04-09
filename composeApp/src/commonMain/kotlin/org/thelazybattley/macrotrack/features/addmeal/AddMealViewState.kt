@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.addmeal
 
 import org.thelazybattley.macrotrack.domain.model.Food
+import org.thelazybattley.macrotrack.domain.model.Ingredient
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
@@ -12,8 +13,10 @@ data class AddMealViewState(
     val searchQuery: String = "",
     val completeFoodList: List<Food> = emptyList(),
     val navigateDestination: AppDestinations.Root? = null,
-    val loggedMeals : AddMealLoggedFood = AddMealLoggedFood(),
-    val highlightedFood: Food? = null
+    val loggedMeals: AddMealLoggedFood = AddMealLoggedFood(),
+    val highlightedFood: Food? = null,
+    val recipeList: List<RecipeMeal> = emptyList(),
+    val filteredRecipeList: List<RecipeMeal> = emptyList()
 )
 
 data class AddMealLoggedFood(
@@ -24,4 +27,11 @@ data class AddMealLoggedFood(
     val totalProtein: Int = 0,
     val totalCalories: Int = 0,
     val loggedMeals: List<Food> = emptyList()
+)
+
+data class RecipeMeal(
+    val name: String,
+    val food: Food,
+    val ingredients: List<Ingredient>,
+    val percentage: Double,
 )

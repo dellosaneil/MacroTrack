@@ -8,12 +8,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
+import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.Recipe
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
+import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.AddRecipeCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
@@ -22,8 +26,9 @@ class AddMealViewModel(
     private val insertFoodLogUseCase: InsertFoodLogUseCase,
     private val deleteFoodLogUseCase: DeleteFoodLogUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
+    private val getAllRecipeUseCase: GetAllRecipeUseCase,
     savedStateHandle: SavedStateHandle
-) : ViewModel(), AddMealCallbacks, AddFoodCallbacks {
+) : ViewModel(), AddMealCallbacks, AddFoodCallbacks, AddRecipeCallbacks {
 
     private val _state = MutableStateFlow(value = AddMealViewState())
     val state = _state.asStateFlow()
@@ -41,6 +46,18 @@ class AddMealViewModel(
                     currentState.copy(
                         completeFoodList = foodList,
                         filteredFoodList = foodList
+                    )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            getAllRecipeUseCase().collect { recipes ->
+                _state.update { currentState ->
+                    val recipeMealList = recipeToRecipeMeal(recipes = recipes)
+                    currentState.copy(
+                        filteredRecipeList = recipeMealList,
+                        recipeList = recipeMealList
                     )
                 }
             }
@@ -175,5 +192,55 @@ class AddMealViewModel(
                 highlightedFood = null
             )
         }
+    }
+
+    override fun insertRecipe(name: String, percentage: Double) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onRecipeSelected(name: String) {
+        TODO("Not yet implemented")
+    }
+
+    private fun recipeToRecipeMeal(recipes: List<Recipe>): List<RecipeMeal> {
+        val currentState = _state.value
+        val recipeMealList = recipes.map { recipe ->
+            val foodList = mutableListOf<Food>()
+            recipe.ingredients.map { ingredient ->
+                val ingredientAsFood =
+                    currentState.completeFoodList.find { it.name == ingredient.name }
+                        ?: return@map null
+                val foodMacros = calculateAdjustMacrosUseCase(
+                    portionSize = ingredient.weight,
+                    originalFood = ingredientAsFood
+                )
+                foodList.add(
+                    element = Food(
+                        macros = foodMacros,
+                        name = ingredient.name,
+                        weight = ingredient.weight,
+                        dominantMacro = ingredientAsFood.dominantMacro
+                    )
+                )
+            }
+            val food = Food(
+                macros = FoodMacros(
+                    protein = foodList.sumOf { it.macros.protein },
+                    carbs = foodList.sumOf { it.macros.carbs},
+                    fat = foodList.sumOf{it.macros.fat},
+                    calories = foodList.sumOf { it.macros.calories }
+                ),
+                name = recipe.name,
+                weight = 0.0,
+                dominantMacro = recipe.dominantMacro
+            )
+            RecipeMeal(
+                food = food,
+                ingredients = recipe.ingredients,
+                percentage = 1.0,
+                name = recipe.name
+            )
+        }
+        return recipeMealList
     }
 }
