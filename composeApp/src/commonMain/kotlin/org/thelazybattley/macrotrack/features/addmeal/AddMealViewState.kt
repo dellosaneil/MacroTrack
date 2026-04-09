@@ -16,7 +16,8 @@ data class AddMealViewState(
     val loggedMeals: AddMealLoggedFood = AddMealLoggedFood(),
     val highlightedFood: Food? = null,
     val recipeList: List<RecipeMeal> = emptyList(),
-    val filteredRecipeList: List<RecipeMeal> = emptyList()
+    val filteredRecipeList: List<RecipeMeal> = emptyList(),
+    val highlightedRecipe: RecipeMeal? = null
 )
 
 data class AddMealLoggedFood(

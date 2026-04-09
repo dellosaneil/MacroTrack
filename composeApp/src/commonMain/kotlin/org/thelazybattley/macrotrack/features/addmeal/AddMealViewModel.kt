@@ -194,12 +194,79 @@ class AddMealViewModel(
         }
     }
 
+    override fun onPercentageEatenValue(value: Double) {
+        _state.update { currentState ->
+            if (currentState.highlightedRecipe == null) return@update currentState
+            val recipeMeal =
+                currentState.recipeList.find { it.name == currentState.highlightedRecipe.name }
+                    ?: return@update currentState
+            currentState.copy(
+                highlightedRecipe = recipeMeal.copy(
+                    food = recipeMeal.food.copy(
+                        macros = recipeMeal.food.macros.copy(
+                            protein = recipeMeal.food.macros.protein * value / 100,
+                            carbs = recipeMeal.food.macros.carbs * value / 100,
+                            fat = recipeMeal.food.macros.fat * value / 100,
+                            calories = (recipeMeal.food.macros.calories * value / 100).toInt(),
+                        )
+                    ),
+                    percentage = value
+                )
+            )
+        }
+    }
+
+    override fun insertSelectedRecipe() {
+        viewModelScope.launch {
+            if (state.value.highlightedRecipe == null) return@launch
+            insertFoodLog(food = state.value.highlightedRecipe!!.food)
+        }
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedRecipe = null,
+            )
+        }
+    }
+
     override fun insertRecipe(name: String, percentage: Double) {
-        TODO("Not yet implemented")
+        val recipe = _state.value.recipeList.find { it.name == name } ?: return
+        viewModelScope.launch {
+            val food = Food(
+                macros = FoodMacros(
+                    protein = recipe.food.macros.protein * percentage,
+                    carbs = recipe.food.macros.carbs * percentage,
+                    fat = recipe.food.macros.fat * percentage,
+                    calories = (recipe.food.macros.calories * percentage).toInt()
+                ),
+                name = recipe.food.name,
+                weight = 0.0,
+                dominantMacro = recipe.food.dominantMacro
+            )
+            insertFoodLog(food = food)
+        }
+        viewModelScope.launch {
+            _state.update { currentState ->
+                currentState.copy(
+                    highlightedRecipe = null
+                )
+            }
+        }
     }
 
     override fun onRecipeSelected(name: String) {
-        TODO("Not yet implemented")
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedRecipe = currentState.recipeList.find { it.name == name }
+            )
+        }
+    }
+
+    override fun closeSelectedRecipe() {
+        _state.update { currentState ->
+            currentState.copy(
+                highlightedRecipe = null
+            )
+        }
     }
 
     private fun recipeToRecipeMeal(recipes: List<Recipe>): List<RecipeMeal> {
@@ -226,8 +293,8 @@ class AddMealViewModel(
             val food = Food(
                 macros = FoodMacros(
                     protein = foodList.sumOf { it.macros.protein },
-                    carbs = foodList.sumOf { it.macros.carbs},
-                    fat = foodList.sumOf{it.macros.fat},
+                    carbs = foodList.sumOf { it.macros.carbs },
+                    fat = foodList.sumOf { it.macros.fat },
                     calories = foodList.sumOf { it.macros.calories }
                 ),
                 name = recipe.name,

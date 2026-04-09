@@ -129,6 +129,7 @@
     <string name="cant_find_it_add_custom_macros">Can't find it? Add custom macros</string>
     <string name="stripe_dominant_macro">STRIPE = DOMINANT MACRO</string>
     <string name="kcal_per_gram">%1$d kcal/%2$dg</string>
+    <string name="kcal_per_serving">%1$d kcal/serving</string>
     <string name="value_added">%1$s added</string>
     <string name="undo">Undo</string>
     <string name="done">Done</string>
@@ -141,6 +142,7 @@
     <string name="save_recipe">Save Recipe</string>
     <string name="add_ingredient">Add ingredient</string>
     <string name="grilled_chicken_breast">e.g. Grilled Chicken Breast</string>
+    <string name="percentage_eaten">Percentage Eaten</string>
 
 
     <plurals name="items">

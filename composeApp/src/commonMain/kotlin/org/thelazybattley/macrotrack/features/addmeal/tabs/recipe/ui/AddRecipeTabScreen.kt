@@ -9,6 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.add_to_value
+import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.AddRecipeCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
@@ -25,22 +28,41 @@ fun AddRecipeTabScreen(
     LazyColumn(modifier = modifier) {
         items(items = viewState.filteredRecipeList, key = { it.name }) { recipe ->
             when {
+                viewState.highlightedRecipe?.name == recipe.name -> {
+                    val food = viewState.highlightedRecipe.food
+                    AddRecipeInputPercentageEaten(
+                        modifier = Modifier.fillMaxWidth(),
+                        food = food,
+                        onCloseButtonClick = {
+                            callbacks.closeSelectedRecipe()
+                        },
+                        onPercentageEatenValue = { weight ->
+                            callbacks.onPercentageEatenValue(value = weight)
+                        },
+                        onAddMealClick = {
+                            callbacks.insertSelectedRecipe()
+                        },
+                        buttonText = stringResource(
+                            resource = Res.string.add_to_value,
+                            stringResource(resource = viewState.selectedMealType.title)
+                        )
+                    )
+                }
                 viewState.loggedMeals.loggedMeals.any { it.name == recipe.food.name } -> {
                     AddMealSelectedItem(
                         modifier = Modifier.fillMaxWidth(),
                         food = recipe.food
                     )
                 }
-
                 else -> {
                     AddMealItemCard(
                         modifier = Modifier.fillMaxWidth(),
                         food = recipe.food,
                         onButtonClicked = {
-//                            addFoodCallbacks.insertFood(food = food)
+                            callbacks.insertRecipe(name = recipe.name, percentage = 1.0)
                         },
                         onMealClicked = {
-//                            addFoodCallbacks.customizeFoodWeight(name = food.name)
+                            callbacks.onRecipeSelected(name = recipe.name)
                         }
                     )
                 }

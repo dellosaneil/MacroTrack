@@ -48,7 +48,7 @@ fun AddFoodTabScreen(
                         originalWeight = food.weight,
                         buttonText = stringResource(
                             resource = Res.string.add_to_value,
-                            viewState.selectedMealType.title
+                            stringResource(resource = viewState.selectedMealType.title)
                         )
                     )
                 }

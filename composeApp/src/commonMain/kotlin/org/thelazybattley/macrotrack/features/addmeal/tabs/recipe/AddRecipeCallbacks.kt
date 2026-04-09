@@ -6,6 +6,15 @@ interface AddRecipeCallbacks {
 
     fun onRecipeSelected(name: String)
 
+    fun closeSelectedRecipe()
+
+    fun addCustomizedFood()
+
+    fun onPercentageEatenValue(value: Double)
+
+    fun insertSelectedRecipe()
+
+
 
     companion object {
         fun default() = object : AddRecipeCallbacks {
@@ -14,6 +23,22 @@ interface AddRecipeCallbacks {
             }
 
             override fun onRecipeSelected(name: String) {
+                TODO("Not yet implemented")
+            }
+
+            override fun closeSelectedRecipe() {
+                TODO("Not yet implemented")
+            }
+
+            override fun addCustomizedFood() {
+                TODO("Not yet implemented")
+            }
+
+            override fun onPercentageEatenValue(value: Double) {
+                TODO("Not yet implemented")
+            }
+
+            override fun insertSelectedRecipe() {
                 TODO("Not yet implemented")
             }
 
