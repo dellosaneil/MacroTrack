@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.ui.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_food
 import org.jetbrains.compose.resources.DrawableResource
@@ -34,18 +36,21 @@ fun CommonTextField(
     placeholder: StringResource,
     textValue: String,
     prefixIcon: DrawableResource? = null,
-    borderColor: Color = Color.Transparent,
+    borderColor: Color = colors.deepBlue,
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
-        focusedContainerColor = colors.offWhite,
-        unfocusedContainerColor = colors.offWhite,
+        focusedContainerColor = colors.white,
+        unfocusedContainerColor = colors.white,
         unfocusedIndicatorColor = Color.Transparent,
         focusedIndicatorColor = Color.Transparent,
         errorContainerColor = colors.whiteSmoke,
         errorIndicatorColor = Color.Transparent,
+        cursorColor = colors.deepBlue,
+        disabledContainerColor = colors.iceMist,
     ),
     isEnabled: Boolean = true,
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    clearActionAllowed: Boolean = true,
     onValueChanged: (String) -> Unit,
 ) {
     val updatedBorderColor = if (isError) {
@@ -86,7 +91,18 @@ fun CommonTextField(
         },
         enabled = isEnabled,
         isError = isError,
-        keyboardOptions = keyboardOptions
+        keyboardOptions = keyboardOptions,
+        suffix = {
+            if (isEnabled && textValue.isNotEmpty() && clearActionAllowed) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_close),
+                    contentDescription = null,
+                    modifier = Modifier.size(size = 16.dp).clickable {
+                        onValueChanged("")
+                    }
+                )
+            }
+        }
     )
 }
 

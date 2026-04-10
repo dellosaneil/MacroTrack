@@ -29,6 +29,7 @@ val LightAqua = Color(0xFFE6F7F2)
 val ClassicGray = Color(0xFF888888)
 val DeepNavy = Color.Transparent
 val White55 = Color(0x8CFFFFFF)
+val IceMist = Color(0xFFF5F6FA)
 
 
 val DarkWhite = Color(0xFF1C1B1F)
@@ -60,3 +61,4 @@ val DarkLightAqua = Color(0xFF0F2A1E)
 val DarkClassicGray = Color(0xFF4A5160)
 val DarkDeepNavy = Color(0xFF1E3A5F)
 val DarkWhite55 = Color(0x66FFFFFF)
+val DarkIceMist = Color(0xFF1A1D26)

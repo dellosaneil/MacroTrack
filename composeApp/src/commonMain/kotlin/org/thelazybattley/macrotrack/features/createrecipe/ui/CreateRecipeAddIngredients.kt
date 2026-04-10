@@ -48,7 +48,7 @@ fun CreateRecipeAddIngredients(
             style = typography.regular10,
             color = colors.mediumGray
         )
-        var textValue by rememberSaveable { mutableStateOf(value = "100") }
+        var textValue by rememberSaveable { mutableStateOf(value = "") }
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
             placeholder = Res.string.search_ingredient,
@@ -57,8 +57,7 @@ fun CreateRecipeAddIngredients(
                 textValue = keyword
                 callbacks.onSearchKeyword(keyword)
             },
-            textValue = textValue,
-            borderColor = colors.deepBlue
+            textValue = textValue
         )
         LazyColumn {
             items(
