@@ -13,16 +13,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -91,71 +91,75 @@ private fun FoodLogTabScreen(
     callbacks: FoodLogCallbacks
 ) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(space = 12.dp)
+        modifier = modifier
+            .verticalScroll(state = rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         FoodLogTotalMacros(
             modifier = Modifier.fillMaxWidth(),
             viewState = viewState
         )
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
-        ) {
-            loggedFoodByMealType(
-                foodList = viewState.breakfast,
-                onDeleteFoodLog = { id ->
-                    callbacks.onDeleteFoodLog(id = id)
-                }
-            ) {
+        LoggedFoodMealType(
+            foodList = viewState.breakfast,
+            onDeleteFoodLog = { id ->
+                callbacks.onDeleteFoodLog(id = id)
+            },
+            onNavigate = {
                 callbacks.onNavigate(mealType = MealType.BREAKFAST)
             }
-            loggedFoodByMealType(
-                foodList = viewState.lunch,
-                onDeleteFoodLog = { id ->
-                    callbacks.onDeleteFoodLog(id = id)
-                }
-            ) {
+        )
+
+        LoggedFoodMealType(
+            foodList = viewState.lunch,
+            onDeleteFoodLog = { id ->
+                callbacks.onDeleteFoodLog(id = id)
+            },
+            onNavigate = {
                 callbacks.onNavigate(mealType = MealType.LUNCH)
             }
-            loggedFoodByMealType(
-                foodList = viewState.dinner,
-                onDeleteFoodLog = { id ->
-                    callbacks.onDeleteFoodLog(id = id)
-                }
-            ) {
+        )
+
+        LoggedFoodMealType(
+            foodList = viewState.dinner,
+            onDeleteFoodLog = { id ->
+                callbacks.onDeleteFoodLog(id = id)
+            },
+            onNavigate = {
                 callbacks.onNavigate(mealType = MealType.DINNER)
             }
-            loggedFoodByMealType(
-                foodList = viewState.snack,
-                onDeleteFoodLog = { id ->
-                    callbacks.onDeleteFoodLog(id = id)
-                }
-            ) {
+        )
+
+        LoggedFoodMealType(
+            foodList = viewState.snack,
+            onDeleteFoodLog = { id ->
+                callbacks.onDeleteFoodLog(id = id)
+            },
+            onNavigate = {
                 callbacks.onNavigate(mealType = MealType.SNACK)
             }
-        }
-    }
+        )
 
+    }
 }
 
-private fun LazyListScope.loggedFoodByMealType(
+
+@Composable
+private fun LoggedFoodMealType(
+    modifier: Modifier = Modifier,
     foodList: FoodLogFoodListByMealType,
     onDeleteFoodLog: (Long) -> Unit,
     onNavigate: () -> Unit
 ) {
-    item {
-        Spacer(modifier = Modifier)
-    }
-    item {
+    Column(
+        modifier = modifier,
+    ) {
         FoodLogMealType(
             modifier = Modifier.fillMaxWidth(), mealType = foodList.mealType,
             totalCalories = foodList.calories,
             onNavigate = onNavigate
         )
-    }
-    if (foodList.foodList.isEmpty()) {
-        item {
+        Spacer(modifier = Modifier.height(height = 4.dp))
+        if (foodList.foodList.isEmpty()) {
             val mealTypeText = stringResource(resource = foodList.mealType.title)
             Text(
                 text = stringResource(resource = Res.string.nothing_logged_for_value, mealTypeText),
@@ -170,22 +174,34 @@ private fun LazyListScope.loggedFoodByMealType(
                 textAlign = TextAlign.Center
             )
         }
-    }
-    itemsIndexed(items = foodList.foodList, key = { _, food -> food.id }) { index, food ->
-        CommonSwipeToDismissBox(
-            modifier = Modifier,
-            onSwipeToDismiss = {
-                onDeleteFoodLog(food.id)
-            }
+        Column(
+            modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = colors.lightGray,
+                    shape = RoundedCornerShape(size = 12.dp)
+                )
+                .padding(all = 8.dp)
         ) {
-            FoodLogItem(
-                modifier = Modifier.fillMaxWidth(),
-                food = food
-            )
+            foodList.foodList.forEachIndexed { index, food ->
+                key(food.id) {
+                    CommonSwipeToDismissBox(
+                        modifier = Modifier,
+                        onSwipeToDismiss = {
+                            onDeleteFoodLog(food.id)
+                        }
+                    ) {
+                        FoodLogItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            food = food
+                        )
+                    }
+                }
+                if (index == foodList.foodList.lastIndex) return@forEachIndexed
+                Spacer(modifier = Modifier.height(height = 8.dp))
+                HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+            }
         }
-        if (index == foodList.foodList.lastIndex) return@itemsIndexed
-        Spacer(modifier = Modifier.height(height = 8.dp))
-        HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
     }
 }
 
@@ -194,7 +210,6 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
     val color = food.dominantMacro.toColor()
     Box(
         modifier = modifier
-            .background(color = colors.white)
             .clip(shape = CardDefaults.shape)
             .drawWithContent {
                 val height = size.height - 8.dp.toPx()
