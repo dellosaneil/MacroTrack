@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,55 +46,63 @@ fun FoodLogTotalMacros(
     modifier: Modifier = Modifier,
     viewState: FoodLogViewState
 ) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = colors.offWhite
-        ),
-        shape = RoundedCornerShape(size = 16.dp)
+    Surface(
+        shadowElevation = 4.dp,
+        shape = RoundedCornerShape(size = 16.dp),
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp),
-            modifier = Modifier.fillMaxWidth().padding(all = 16.dp)
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(
+                containerColor = colors.white
+            ),
+            shape = RoundedCornerShape(size = 16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                verticalArrangement = Arrangement.spacedBy(space = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(all = 16.dp)
             ) {
-                val totalCalories = viewState.totalFoodMacros?.calories ?: 0
-                val goalCalories = viewState.macroGoals?.calories ?: 0
-                Text(
-                    text = getCalorieText(
-                        calories = totalCalories,
-                        valueTextColor = colors.black,
-                        labelTextColor = colors.mediumGray,
-                        kcalText = stringResource(resource = Res.string.kcal_text)
-                    ),
-                    style = typography.regular10
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val totalCalories = viewState.totalFoodMacros?.calories ?: 0
+                    val goalCalories = viewState.macroGoals?.calories ?: 0
+                    Text(
+                        text = getCalorieText(
+                            calories = totalCalories,
+                            valueTextColor = colors.black,
+                            labelTextColor = colors.mediumGray,
+                            kcalText = stringResource(resource = Res.string.kcal_text)
+                        ),
+                        style = typography.regular10
+                    )
+                    Text(
+                        text = stringResource(
+                            resource = Res.string.value_remaining,
+                            goalCalories - totalCalories
+                        ),
+                        color = colors.deepBlue,
+                        style = typography.bold11
+                    )
+                }
+                MacrosDetails(
+                    modifier = Modifier.fillMaxWidth(),
+                    macroType = MacroType.PROTEIN,
+                    goal = viewState.macroGoals?.protein ?: 0,
+                    total = viewState.totalFoodMacros?.protein ?: 0.0
                 )
-                Text(
-                    text = stringResource(resource = Res.string.value_remaining, goalCalories - totalCalories),
-                    color = colors.deepBlue,
-                    style = typography.bold11
+                MacrosDetails(
+                    modifier = Modifier.fillMaxWidth(), macroType = MacroType.CARBS,
+                    goal = viewState.macroGoals?.carbs ?: 0,
+                    total = viewState.totalFoodMacros?.carbs ?: 0.0
+                )
+                MacrosDetails(
+                    modifier = Modifier.fillMaxWidth(), macroType = MacroType.FAT,
+                    goal = viewState.macroGoals?.fat ?: 0,
+                    total = viewState.totalFoodMacros?.fat ?: 0.0
                 )
             }
-            MacrosDetails(
-                modifier = Modifier.fillMaxWidth(),
-                macroType = MacroType.PROTEIN,
-                goal = viewState.macroGoals?.protein ?: 0,
-                total = viewState.totalFoodMacros?.protein ?: 0.0
-            )
-            MacrosDetails(
-                modifier = Modifier.fillMaxWidth(), macroType = MacroType.CARBS,
-                goal = viewState.macroGoals?.carbs ?: 0,
-                total = viewState.totalFoodMacros?.carbs ?: 0.0
-            )
-            MacrosDetails(
-                modifier = Modifier.fillMaxWidth(), macroType = MacroType.FAT,
-                goal = viewState.macroGoals?.fat ?: 0,
-                total = viewState.totalFoodMacros?.fat ?: 0.0
-            )
         }
     }
 }
@@ -108,7 +117,7 @@ private fun MacrosDetails(
     var progress by remember { mutableFloatStateOf(value = 0f) }
     LaunchedEffect(key1 = total, key2 = goal) {
         progress = (total / goal).toFloat()
-        if(progress.isNaN()) {
+        if (progress.isNaN()) {
             progress = 0f
         }
     }
@@ -131,8 +140,9 @@ private fun MacrosDetails(
             progress = progress,
             color = macroType.toColor()
         )
+        val remaining = (goal - total).toInt()
         Text(
-            text = stringResource(resource = Res.string.value_gram, total.toInt()),
+            text = stringResource(resource = Res.string.value_gram, remaining),
             style = typography.bold10,
             color = macroType.toColor()
         )

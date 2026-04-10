@@ -16,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,15 +87,10 @@ private fun FoodLogTabScreen(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
-        Surface(
-            shadowElevation = 4.dp,
-            shape = RoundedCornerShape(size = 16.dp),
-        ) {
-            FoodLogTotalMacros(
-                modifier = Modifier.fillMaxWidth(),
-                viewState = viewState
-            )
-        }
+        FoodLogTotalMacros(
+            modifier = Modifier.fillMaxWidth(),
+            viewState = viewState
+        )
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
