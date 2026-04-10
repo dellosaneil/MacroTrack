@@ -98,7 +98,7 @@ fun AddRecipeInputPercentageEaten(
                 borderColor = colors.deepBlue, keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
                 ),
-                initialValue = food.weight.toInt().toString()
+                initialValue = "100"
             ) { value ->
                 onPercentageEatenValue(value.toDoubleOrNull() ?: 0.0)
             }

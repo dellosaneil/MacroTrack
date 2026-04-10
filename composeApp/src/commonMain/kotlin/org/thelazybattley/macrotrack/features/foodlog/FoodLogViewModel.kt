@@ -6,18 +6,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
-import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetFoodLogByDateUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 
 class FoodLogViewModel(
-    private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
-    private val deleteFoodLogUseCase: DeleteFoodLogUseCase
+    private val deleteFoodLogUseCase: DeleteFoodLogUseCase,
+    private val getFoodLogByDateUseCase: GetFoodLogByDateUseCase
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -26,7 +27,7 @@ class FoodLogViewModel(
 
     init {
         viewModelScope.launch {
-            getAllFoodLogUseCase().collect { logs ->
+            getFoodLogByDateUseCase(localDate = getCurrentDate()).collect { logs ->
                 val breakfastLogs = logs.filter { it.mealType == MealType.BREAKFAST }
                 val lunchLogs = logs.filter { it.mealType == MealType.LUNCH }
                 val dinnerLogs = logs.filter { it.mealType == MealType.DINNER }

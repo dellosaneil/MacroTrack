@@ -183,7 +183,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                 drawRect(
                     color = color,
                     topLeft = Offset(x = 0f, y = 0f),
-                    size = size.copy(width = 10.dp.toPx())
+                    size = size.copy(width = 6.dp.toPx())
                 )
             },
         colors = CardDefaults.cardColors(
@@ -193,7 +193,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 16.dp),
+                .padding(vertical = 12.dp, horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
             Text(
@@ -206,12 +206,6 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = stringResource(resource = Res.string.value_gram, food.weight.toInt()),
-                    style = typography.bold11,
-                    color = colors.mediumGray
-                )
-                Spacer(modifier = Modifier.width(width = 12.dp))
-                Text(
                     text = buildMacroNutrientText(
                         protein = food.protein.toInt(),
                         fat = food.fat.toInt(),
@@ -219,6 +213,17 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                     ),
                     style = typography.bold10
                 )
+                if (food.weight != 0.0) {
+                    Spacer(modifier = Modifier.width(width = 12.dp))
+                    Text(
+                        text = stringResource(
+                            resource = Res.string.value_gram,
+                            food.weight.toInt()
+                        ),
+                        style = typography.bold11,
+                        color = colors.mediumGray
+                    )
+                }
                 Spacer(modifier = Modifier.weight(weight = 1f))
                 Text(
                     text = stringResource(resource = Res.string.kcal, food.calories),
@@ -289,7 +294,9 @@ private fun PreviewFoodLogTabScreen() {
                 breakfast = FoodLogFoodListByMealType(
                     mealType = MealType.BREAKFAST,
                     foodList = listOf(
-                        dummyFoodLog,
+                        dummyFoodLog.copy(
+                            weight = 0.0
+                        ),
                         dummyFoodLog.copy(id = 2),
                         dummyFoodLog.copy(id = 3),
                     )

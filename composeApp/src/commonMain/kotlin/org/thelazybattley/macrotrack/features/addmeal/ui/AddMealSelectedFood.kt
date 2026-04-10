@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_checkmark
+import macrotrack.composeapp.generated.resources.kcal
 import macrotrack.composeapp.generated.resources.value_gram_value_kcal
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -57,12 +58,18 @@ fun AddMealSelectedItem(
                 style = typography.bold12,
                 color = colors.mediumGray
             )
-            Text(
-                text = stringResource(
+
+            val text = if (food.weight == 0.0) {
+                stringResource(resource = Res.string.kcal, food.macros.calories)
+            } else {
+                stringResource(
                     resource = Res.string.value_gram_value_kcal,
                     food.weight,
                     food.macros.calories
-                ),
+                )
+            }
+            Text(
+                text = text,
                 style = typography.bold10,
                 color = colors.freshGreen
             )
