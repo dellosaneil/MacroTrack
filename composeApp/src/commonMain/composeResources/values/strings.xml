@@ -80,6 +80,7 @@
     <string name="kcal_text">kcal</string>
     <string name="all">All</string>
     <string name="recipes">Recipes</string>
+    <string name="recipe">Recipe</string>
     <string name="foods">Foods</string>
     <string name="favourites">Favourites</string>
     <string name="search_recipes">Search recipes</string>
@@ -143,6 +144,7 @@
     <string name="add_ingredient">Add ingredient</string>
     <string name="grilled_chicken_breast">e.g. Grilled Chicken Breast</string>
     <string name="percentage_eaten">Percentage Eaten</string>
+    <string name="sign_add">+ Add</string>
 
 
     <plurals name="items">

@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.features.navigation
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -49,7 +50,7 @@ fun AppBottomNav() {
             }
             composable(route = AppDestinations.Root.MainScreen.route) {
                 MainScreenNavigation(
-                    modifier = Modifier
+                    modifier = Modifier.fillMaxSize()
                 ) { destination ->
                     navController.navigate(route = destination)
                 }

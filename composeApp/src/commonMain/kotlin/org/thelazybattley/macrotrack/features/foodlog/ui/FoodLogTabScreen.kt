@@ -1,10 +1,14 @@
 package org.thelazybattley.macrotrack.features.foodlog.ui
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -12,9 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,14 +25,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.add_meal
 import macrotrack.composeapp.generated.resources.kcal
+import macrotrack.composeapp.generated.resources.recipe
+import macrotrack.composeapp.generated.resources.sign_add
 import macrotrack.composeapp.generated.resources.value_gram
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -44,6 +46,7 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
+import org.thelazybattley.macrotrack.ui.common.CommonSurface
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDismissBox
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -84,7 +87,7 @@ private fun FoodLogTabScreen(
     callbacks: FoodLogCallbacks
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
         FoodLogTotalMacros(
@@ -141,9 +144,10 @@ private fun LazyListScope.loggedFoodByMealType(
         Spacer(modifier = Modifier)
     }
     item {
-        FoodLogMeals(
+        FoodLogMealType(
             modifier = Modifier.fillMaxWidth(), mealType = foodList.mealType,
-            totalCalories = foodList.calories
+            totalCalories = foodList.calories,
+            onNavigate = onNavigate
         )
     }
     items(items = foodList.foodList, key = { it.id }) { food ->
@@ -159,42 +163,57 @@ private fun LazyListScope.loggedFoodByMealType(
             )
         }
     }
-    item {
-        AddMealButton(modifier = Modifier.fillMaxWidth()) {
-            onNavigate()
-        }
-    }
 }
 
 @Composable
 private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
     val color = food.dominantMacro.toColor()
-    Card(
+    Box(
         modifier = modifier
+            .background(color = colors.white)
             .clip(shape = CardDefaults.shape)
             .drawWithContent {
+                val height = size.height - 8.dp.toPx()
                 drawContent()
-                drawRect(
+                drawRoundRect(
                     color = color,
-                    topLeft = Offset(x = 0f, y = 0f),
-                    size = size.copy(width = 6.dp.toPx())
+                    topLeft = Offset(x = 2.dp.toPx(), y = 4.dp.toPx()),
+                    size = size.copy(width = 4.dp.toPx(), height = height),
+                    cornerRadius = CornerRadius(x = 8.dp.toPx(), y = 8.dp.toPx())
                 )
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = colors.offWhite
-        )
+            }
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 12.dp),
+                .fillMaxWidth().padding(
+                    top = 4.dp, bottom = 4.dp,
+                    start = 8.dp
+                ),
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
-            Text(
-                text = food.foodName,
-                style = typography.bold13,
-                color = colors.black
-            )
+            Row(
+                modifier = Modifier,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+            ) {
+                Text(
+                    text = food.foodName,
+                    style = typography.bold13,
+                    color = colors.black
+                )
+                if (food.weight == 0.0) {
+                    Box(modifier = Modifier.background(color = colors.paleBlue,
+                        shape = RoundedCornerShape(size = 4.dp))) {
+                        Text(
+                            text = stringResource(resource = Res.string.recipe),
+                            style = typography.bold10,
+                            color = colors.deepBlue,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -221,7 +240,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                 Spacer(modifier = Modifier.weight(weight = 1f))
                 Text(
                     text = stringResource(resource = Res.string.kcal, food.calories),
-                    style = typography.bold13,
+                    style = typography.bold12,
                     color = colors.black
                 )
             }
@@ -231,48 +250,54 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
 
 
 @Composable
-private fun FoodLogMeals(
+private fun FoodLogMealType(
     modifier: Modifier = Modifier,
     mealType: MealType,
     totalCalories: Int,
+    onNavigate: () -> Unit,
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = stringResource(resource = mealType.title),
             color = colors.black,
-            style = typography.bold14
+            style = typography.bold12
         )
+        Spacer(modifier = Modifier.weight(weight = 1f))
         Text(
             text = stringResource(resource = Res.string.kcal, totalCalories),
             style = typography.bold11,
-            color = colors.deepBlue
+            color = colors.gray
         )
-    }
-}
-
-@Composable
-private fun AddMealButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Button(
-        modifier = modifier,
-        onClick = onClick,
-        shape = RoundedCornerShape(size = 12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent
-        ),
-        border = BorderStroke(
-            width = 1.dp,
-            color = colors.skyBlue
-        )
-    ) {
-        Text(
-            text = stringResource(resource = Res.string.add_meal),
-            style = typography.bold13,
-            color = colors.deepBlue
-        )
+        CommonSurface(
+            shape = RoundedCornerShape(size = 6.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .clickable {
+                        onNavigate()
+                    }
+                    .border(
+                        width = 1.dp,
+                        color = colors.skyBlue,
+                        shape = RoundedCornerShape(size = 6.dp)
+                    )
+                    .background(color = colors.paleBlue),
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.sign_add),
+                    style = typography.bold11,
+                    color = colors.deepBlue,
+                    modifier = Modifier.padding(
+                        horizontal = 10.dp,
+                        vertical = 5.dp
+                    )
+                )
+            }
+        }
     }
 }
 
@@ -282,7 +307,7 @@ private fun PreviewFoodLogTabScreen() {
     MacroTrackTheme {
         FoodLogTabScreen(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(all = 16.dp),
             viewState = FoodLogViewState(
                 breakfast = FoodLogFoodListByMealType(
