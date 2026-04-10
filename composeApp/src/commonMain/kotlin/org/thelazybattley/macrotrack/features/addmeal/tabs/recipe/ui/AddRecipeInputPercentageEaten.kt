@@ -105,9 +105,9 @@ fun AddRecipeInputPercentageEaten(
                 ),
                 textValue = textValue
             ) { value ->
+                textValue = value
                 val percentage = value.toDoubleOrNull() ?: 0.0
                 onPercentageEatenValue(percentage)
-                textValue = percentage.toString()
             }
         }
         Row(
