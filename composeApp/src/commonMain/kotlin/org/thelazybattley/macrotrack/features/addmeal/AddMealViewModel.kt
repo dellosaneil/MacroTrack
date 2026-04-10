@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
@@ -41,25 +42,16 @@ class AddMealViewModel(
             )
         }
         viewModelScope.launch {
-            getAllFoodUseCase().collect { foodList ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        completeFoodList = foodList,
-                        filteredFoodList = foodList
-                    )
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            getAllRecipeUseCase().collect { recipes ->
-                _state.update { currentState ->
-                    val recipeMealList = recipeToRecipeMeal(recipes = recipes)
-                    currentState.copy(
-                        filteredRecipeList = recipeMealList,
-                        recipeList = recipeMealList
-                    )
-                }
+            val foodList = getAllFoodUseCase().first()
+            val recipeList = getAllRecipeUseCase().first()
+            _state.update { currentState ->
+                val recipeMealList = recipeToRecipeMeal(recipes = recipeList)
+                currentState.copy(
+                    completeFoodList = foodList,
+                    filteredFoodList = foodList,
+                    filteredRecipeList = recipeMealList,
+                    recipeList = recipeMealList
+                )
             }
         }
     }
