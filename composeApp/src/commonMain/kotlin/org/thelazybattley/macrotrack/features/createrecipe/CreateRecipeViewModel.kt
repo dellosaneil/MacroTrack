@@ -17,6 +17,7 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseC
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.UpdateRecipeUseCase
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
 
 class CreateRecipeViewModel(
@@ -25,6 +26,7 @@ class CreateRecipeViewModel(
     private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val insertRecipeUseCase: InsertRecipeUseCase,
+    private val updateRecipeUseCase: UpdateRecipeUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), CreateRecipeCallbacks {
 
@@ -64,7 +66,8 @@ class CreateRecipeViewModel(
                 _state.update { currentState ->
                     currentState.copy(
                         recipeName = recipeName,
-                        isUpdating = true
+                        isUpdating = true,
+                        buttonEnabled = true
                     )
                 }
             }
@@ -147,9 +150,16 @@ class CreateRecipeViewModel(
                 },
                 dominantMacro = dominantMacro
             )
-            insertRecipeUseCase(
-                recipe = recipe
-            )
+            if(currentState.isUpdating) {
+                updateRecipeUseCase(
+                    recipe = recipe
+                )
+            } else {
+                insertRecipeUseCase(
+                    recipe = recipe
+                )
+            }
+
             _state.update { currentState ->
                 currentState.copy(
                     recipeSaved = true
@@ -223,6 +233,6 @@ class CreateRecipeViewModel(
         recipeName: String,
         isRecipeNameTaken: Boolean
     ): Boolean {
-        return (selectedIngredients.isNotEmpty() && recipeName.isNotEmpty() && !isRecipeNameTaken) || _state.value.isUpdating
+        return (selectedIngredients.isNotEmpty() && recipeName.isNotEmpty() && !isRecipeNameTaken) ||( _state.value.isUpdating && selectedIngredients.isNotEmpty())
     }
 }

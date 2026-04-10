@@ -137,8 +137,13 @@ private fun CreateRecipeScreen(
         )
         if (viewState.highlightedIngredient == null) {
             Spacer(modifier = Modifier.height(8.dp))
+            val buttonResource = if(viewState.isUpdating) {
+                Res.string.update_recipe
+            } else {
+                Res.string.save_recipe
+            }
             CommonButton(
-                buttonText = stringResource(resource = Res.string.save_recipe),
+                buttonText = stringResource(resource = buttonResource),
                 isEnabled = viewState.buttonEnabled
             ) {
                 callbacks.onSaveRecipe()

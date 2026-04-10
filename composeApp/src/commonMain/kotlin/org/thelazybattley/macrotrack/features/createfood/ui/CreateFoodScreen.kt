@@ -168,6 +168,7 @@ fun AddIngredientScreen(
                             value = value,
                             type = AddFoodTextFieldType.AMOUNT_IN_GRAMS
                         )
+                        textValue = value
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
@@ -300,7 +301,10 @@ private fun AddIngredientTextField(
                 },
             placeholder = placeholder,
             borderColor = borderColor,
-            onValueChanged = onValueChanged,
+            onValueChanged = { value ->
+                onValueChanged(value)
+                textValue = value
+            },
             isEnabled = isEnabled,
             isError = isError,
             keyboardOptions = keyboardOptions,
