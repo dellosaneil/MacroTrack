@@ -19,8 +19,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -122,6 +125,7 @@ fun AddFoodCustomizeWeight(
                 val height = with(receiver = LocalDensity.current) {
                     textFieldHeight.value.toDp()
                 }
+                var textValue by rememberSaveable { mutableStateOf(value = food.weight.toInt().toString()) }
                 CommonTextField(
                     modifier = Modifier
                         .weight(weight = 0.85f)
@@ -132,8 +136,9 @@ fun AddFoodCustomizeWeight(
                     borderColor = colors.deepBlue, keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
                     ),
-                    textValue = food.weight.toInt().toString()
+                    textValue = textValue
                 ) { value ->
+                    textValue = value
                     onPortionSizeUpdated(value.toDoubleOrNull() ?: 0.0)
                 }
                 Box(
