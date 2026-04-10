@@ -146,6 +146,7 @@
     <string name="grilled_chicken_breast">e.g. Grilled Chicken Breast</string>
     <string name="percentage_eaten">Percentage Eaten</string>
     <string name="sign_add">+ Add</string>
+    <string name="nothing_logged_for_value">Nothing logged for %1$s</string>
 
 
     <plurals name="items">

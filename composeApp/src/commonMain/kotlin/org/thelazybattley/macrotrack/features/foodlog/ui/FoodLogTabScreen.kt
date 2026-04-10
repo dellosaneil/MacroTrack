@@ -10,13 +10,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,11 +29,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.kcal
+import macrotrack.composeapp.generated.resources.nothing_logged_for_value
 import macrotrack.composeapp.generated.resources.recipe
 import macrotrack.composeapp.generated.resources.sign_add
 import macrotrack.composeapp.generated.resources.value_gram
@@ -150,7 +154,24 @@ private fun LazyListScope.loggedFoodByMealType(
             onNavigate = onNavigate
         )
     }
-    items(items = foodList.foodList, key = { it.id }) { food ->
+    if (foodList.foodList.isEmpty()) {
+        item {
+            val mealTypeText = stringResource(resource = foodList.mealType.title)
+            Text(
+                text = stringResource(resource = Res.string.nothing_logged_for_value, mealTypeText),
+                style = typography.regular11,
+                color = colors.mediumGray,
+                modifier = Modifier.fillMaxWidth()
+                    .border(
+                        width = 1.dp, color = colors.mediumGray,
+                        shape = RoundedCornerShape(size = 8.dp)
+                    )
+                    .padding(all = 12.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+    itemsIndexed(items = foodList.foodList, key = { _, food -> food.id }) { index, food ->
         CommonSwipeToDismissBox(
             modifier = Modifier,
             onSwipeToDismiss = {
@@ -162,6 +183,9 @@ private fun LazyListScope.loggedFoodByMealType(
                 food = food
             )
         }
+        if (index == foodList.foodList.lastIndex) return@itemsIndexed
+        Spacer(modifier = Modifier.height(height = 8.dp))
+        HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
     }
 }
 
@@ -202,8 +226,12 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                     color = colors.black
                 )
                 if (food.weight == 0.0) {
-                    Box(modifier = Modifier.background(color = colors.paleBlue,
-                        shape = RoundedCornerShape(size = 4.dp))) {
+                    Box(
+                        modifier = Modifier.background(
+                            color = colors.paleBlue,
+                            shape = RoundedCornerShape(size = 4.dp)
+                        )
+                    ) {
                         Text(
                             text = stringResource(resource = Res.string.recipe),
                             style = typography.bold10,
@@ -267,11 +295,13 @@ private fun FoodLogMealType(
             style = typography.bold12
         )
         Spacer(modifier = Modifier.weight(weight = 1f))
-        Text(
-            text = stringResource(resource = Res.string.kcal, totalCalories),
-            style = typography.bold11,
-            color = colors.gray
-        )
+        if (totalCalories > 0) {
+            Text(
+                text = stringResource(resource = Res.string.kcal, totalCalories),
+                style = typography.bold11,
+                color = colors.gray
+            )
+        }
         CommonSurface(
             shape = RoundedCornerShape(size = 6.dp)
         ) {

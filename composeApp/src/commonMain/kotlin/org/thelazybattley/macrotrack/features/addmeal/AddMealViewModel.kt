@@ -45,7 +45,8 @@ class AddMealViewModel(
             val foodList = getAllFoodUseCase().first()
             val recipeList = getAllRecipeUseCase().first()
             _state.update { currentState ->
-                val recipeMealList = recipeToRecipeMeal(recipes = recipeList)
+                val recipeMealList =
+                    recipeToRecipeMeal(recipes = recipeList, completeFoodList = foodList)
                 currentState.copy(
                     completeFoodList = foodList,
                     filteredFoodList = foodList,
@@ -261,13 +262,15 @@ class AddMealViewModel(
         }
     }
 
-    private fun recipeToRecipeMeal(recipes: List<Recipe>): List<RecipeMeal> {
-        val currentState = _state.value
+    private fun recipeToRecipeMeal(
+        recipes: List<Recipe>,
+        completeFoodList: List<Food>
+    ): List<RecipeMeal> {
         val recipeMealList = recipes.map { recipe ->
             val foodList = mutableListOf<Food>()
             recipe.ingredients.map { ingredient ->
                 val ingredientAsFood =
-                    currentState.completeFoodList.find { it.name == ingredient.name }
+                    completeFoodList.find { it.name == ingredient.name }
                         ?: return@map null
                 val foodMacros = calculateAdjustMacrosUseCase(
                     portionSize = ingredient.weight,
