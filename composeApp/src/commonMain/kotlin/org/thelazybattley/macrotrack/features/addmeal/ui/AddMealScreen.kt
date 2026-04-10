@@ -63,13 +63,13 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 fun AddMealScreen(
     modifier: Modifier = Modifier,
     onBackButtonPressed: () -> Unit,
-    onNavigate: (AppDestinations.Root) -> Unit
+    onNavigate: (String) -> Unit
 ) {
     val viewModel = koinViewModel<AddMealViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-    LaunchedEffect(key1 = viewState.navigateDestination) {
-        viewState.navigateDestination?.let { destination ->
-            onNavigate(destination)
+    LaunchedEffect(key1 = viewState.destinationRoute) {
+        viewState.destinationRoute?.let { route ->
+            onNavigate(route)
             viewModel.resetNavigateScreen()
         }
     }
@@ -171,11 +171,11 @@ private fun AddMealScreen(
             modifier = Modifier.fillMaxWidth(),
             mealFilter = viewState.selectedMealFilter
         ) {
-            val destination = when (viewState.selectedMealFilter) {
-                MealFilter.FOODS -> AppDestinations.Root.CreateFood
-                MealFilter.RECIPES -> AppDestinations.Root.CreateRecipe
+            val route = when (viewState.selectedMealFilter) {
+                MealFilter.FOODS -> AppDestinations.Root.CreateFood.route
+                MealFilter.RECIPES -> AppDestinations.Root.CreateRecipe.createRoute(recipeName = "")
             }
-            addMealCallbacks.onNavigateScreen(destination = destination)
+            addMealCallbacks.onNavigateScreen(route = route)
         }
         when (viewState.selectedMealFilter) {
             MealFilter.FOODS -> {

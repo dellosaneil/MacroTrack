@@ -1,13 +1,12 @@
 package org.thelazybattley.macrotrack.features.addmeal
 
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
-import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 interface AddMealCallbacks {
 
     fun onMealFilterSelected(mealFilter: MealFilter)
 
-    fun onNavigateScreen(destination: AppDestinations.Root)
+    fun onNavigateScreen(route: String)
 
     fun resetNavigateScreen()
 
@@ -22,7 +21,7 @@ interface AddMealCallbacks {
                 TODO("Not yet implemented")
             }
 
-            override fun onNavigateScreen(destination: AppDestinations.Root) {
+            override fun onNavigateScreen(route: String) {
                 TODO("Not yet implemented")
             }
 

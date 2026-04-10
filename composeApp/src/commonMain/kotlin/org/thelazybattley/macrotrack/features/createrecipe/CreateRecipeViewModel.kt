@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.createrecipe
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,19 +16,23 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseC
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
 
 class CreateRecipeViewModel(
     private val getAllRecipeUseCase: GetAllRecipeUseCase,
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
-    private val insertRecipeUseCase: InsertRecipeUseCase
+    private val insertRecipeUseCase: InsertRecipeUseCase,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel(), CreateRecipeCallbacks {
 
     private val _state = MutableStateFlow(value = CreateRecipeViewState())
     val state = _state.asStateFlow()
 
     init {
+        val recipeName: String? = savedStateHandle[RECIPE_NAME]
+
         viewModelScope.launch {
             getAllRecipeUseCase().collect { recipes ->
                 _state.update { currentState ->

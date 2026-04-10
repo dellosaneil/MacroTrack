@@ -14,7 +14,7 @@ interface AddRecipeCallbacks {
 
     fun insertSelectedRecipe()
 
-
+    fun updateRecipe(name: String)
 
     companion object {
         fun default() = object : AddRecipeCallbacks {
@@ -39,6 +39,10 @@ interface AddRecipeCallbacks {
             }
 
             override fun insertSelectedRecipe() {
+                TODO("Not yet implemented")
+            }
+
+            override fun updateRecipe(name: String) {
                 TODO("Not yet implemented")
             }
 

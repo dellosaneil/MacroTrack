@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,15 +41,24 @@ fun AddMealItemCard(
     food: Food,
     onButtonClicked: (() -> Unit)? = null,
     onMealClicked: (() -> Unit)? = null,
+    onLongPress: (() -> Unit)? = null
 ) {
     val color = food.dominantMacro.toColor()
     Box(
         modifier = modifier
-            .clickable(enabled = onMealClicked != null) {
-                if (onMealClicked != null) {
-                    onMealClicked()
-                }
-            }
+            .combinedClickable(
+                onClick = {
+                    if (onMealClicked != null) {
+                        onMealClicked()
+                    }
+                },
+                onLongClick = {
+                    if (onLongPress != null) {
+                        onLongPress()
+                    }
+                },
+                enabled = onLongPress != null || onMealClicked != null
+            )
             .drawWithContent {
                 drawRoundRect(
                     color = color,

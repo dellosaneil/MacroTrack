@@ -4,14 +4,13 @@ import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.Ingredient
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
-import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 data class AddMealViewState(
     val selectedMealType: MealType = MealType.BREAKFAST,
     val selectedMealFilter: MealFilter = MealFilter.FOODS,
     val filteredFoodList: List<Food> = emptyList(),
     val completeFoodList: List<Food> = emptyList(),
-    val navigateDestination: AppDestinations.Root? = null,
+    val destinationRoute: String? = null,
     val loggedMeals: AddMealLoggedFood = AddMealLoggedFood(),
     val highlightedFood: Food? = null,
     val recipeList: List<RecipeMeal> = emptyList(),

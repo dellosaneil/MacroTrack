@@ -72,10 +72,10 @@ class AddMealViewModel(
         }
     }
 
-    override fun onNavigateScreen(destination: AppDestinations.Root) {
+    override fun onNavigateScreen(route: String) {
         _state.update { currentState ->
             currentState.copy(
-                navigateDestination = destination
+                destinationRoute = route
             )
         }
     }
@@ -83,7 +83,7 @@ class AddMealViewModel(
     override fun resetNavigateScreen() {
         _state.update { currentState ->
             currentState.copy(
-                navigateDestination = null
+                destinationRoute = null
             )
         }
     }
@@ -326,6 +326,14 @@ class AddMealViewModel(
                         ignoreCase = true
                     )
                 }
+            )
+        }
+    }
+
+    override fun updateRecipe(name: String) {
+        _state.update { currentState ->
+            currentState.copy(
+                destinationRoute = AppDestinations.Root.CreateRecipe.createRoute(recipeName = name)
             )
         }
     }

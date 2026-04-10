@@ -22,6 +22,7 @@ import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
@@ -79,8 +80,8 @@ fun AppBottomNav() {
                     onBackButtonPressed = {
                         navController.popBackStack()
                     }
-                ) { destination ->
-                    navController.navigate(route = destination.route)
+                ) { route ->
+                    navController.navigate(route = route)
                 }
             }
             composable(route = AppDestinations.Root.CreateFood.route) {
@@ -90,7 +91,14 @@ fun AppBottomNav() {
                     navController.popBackStack()
                 }
             }
-            composable(route = AppDestinations.Root.CreateRecipe.route) {
+            composable(
+                route = AppDestinations.Root.CreateRecipe.routeWithArgs!!,
+                arguments = listOf(
+                    navArgument(name = RECIPE_NAME) {
+                        type = NavType.StringType
+                    }
+                )
+            ) {
                 CreateRecipeScreen(
                     modifier = Modifier
                 ) {

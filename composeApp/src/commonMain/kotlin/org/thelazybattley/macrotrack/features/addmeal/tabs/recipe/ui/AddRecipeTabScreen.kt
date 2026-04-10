@@ -12,7 +12,10 @@ import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_to_value
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.domain.model.dummyFood
+import org.thelazybattley.macrotrack.features.addmeal.AddMealLoggedFood
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
+import org.thelazybattley.macrotrack.features.addmeal.RecipeMeal
 import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.AddRecipeCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealSelectedItem
@@ -48,12 +51,14 @@ fun AddRecipeTabScreen(
                         )
                     )
                 }
+
                 viewState.loggedMeals.loggedMeals.any { it.name == recipe.food.name } -> {
                     AddMealSelectedItem(
                         modifier = Modifier.fillMaxWidth(),
                         food = recipe.food
                     )
                 }
+
                 else -> {
                     AddMealItemCard(
                         modifier = Modifier.fillMaxWidth(),
@@ -63,6 +68,9 @@ fun AddRecipeTabScreen(
                         },
                         onMealClicked = {
                             callbacks.onRecipeSelected(name = recipe.name)
+                        },
+                        onLongPress = {
+                            callbacks.updateRecipe(name = recipe.name)
                         }
                     )
                 }
@@ -83,7 +91,35 @@ private fun PreviewAddRecipeTabScreen() {
         AddRecipeTabScreen(
             modifier = Modifier.fillMaxWidth().padding(all = 12.dp),
             callbacks = AddRecipeCallbacks.default(),
-            viewState = AddMealViewState()
+            viewState = AddMealViewState(
+                filteredRecipeList = listOf(
+                    RecipeMeal(
+                        name = "Food 1",
+                        food = dummyFood,
+                        ingredients = listOf(),
+                        percentage = 1.0
+                    ), RecipeMeal(
+                        name = "Food 2",
+                        food = dummyFood,
+                        ingredients = listOf(),
+                        percentage = 1.0
+                    ), RecipeMeal(
+                        name = "Food 3",
+                        food = dummyFood.copy(name = "Food"),
+                        ingredients = listOf(),
+                        percentage = 1.0
+                    )
+                ),
+                loggedMeals = AddMealLoggedFood(
+                    loggedMeals = listOf(dummyFood)
+                ),
+                highlightedRecipe = RecipeMeal(
+                    name = "Food 1",
+                    food = dummyFood.copy(name = "Food"),
+                    ingredients = listOf(),
+                    percentage = 1.0
+                )
+            )
         )
     }
 }
