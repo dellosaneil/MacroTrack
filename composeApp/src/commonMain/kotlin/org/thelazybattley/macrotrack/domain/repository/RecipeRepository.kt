@@ -11,5 +11,7 @@ interface RecipeRepository {
 
     suspend fun getRecipeByName(name: String): Flow<List<Recipe>>
 
+    suspend fun updateRecipe(recipe: Recipe)
+
 
 }

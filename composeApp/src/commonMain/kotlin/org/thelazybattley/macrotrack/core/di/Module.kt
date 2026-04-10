@@ -32,6 +32,7 @@ import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.UpdateRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
@@ -77,6 +78,7 @@ val useCaseModule = module {
     factoryOf(::CalculateAdjustMacrosUseCase)
     factoryOf(::CalculateMacroPercentageUseCase)
     factoryOf(::GetFoodLogByDateUseCase)
+    factoryOf(::UpdateRecipeUseCase)
 }
 
 val viewModelModule = module {

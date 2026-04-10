@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 
@@ -18,5 +19,8 @@ interface RecipeDao {
 
     @Query("SELECT * FROM recipeentity WHERE name = :name")
     fun getRecipeByName(name: String): Flow<List<RecipeEntity>>
+
+    @Update
+    suspend fun updateRecipe(recipe: RecipeEntity)
 
 }
