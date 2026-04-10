@@ -13,10 +13,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +32,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 fun CommonTextField(
     modifier: Modifier = Modifier,
     placeholder: StringResource,
+    textValue: String,
     prefixIcon: DrawableResource? = null,
     borderColor: Color = Color.Transparent,
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
@@ -44,26 +41,23 @@ fun CommonTextField(
         unfocusedIndicatorColor = Color.Transparent,
         focusedIndicatorColor = Color.Transparent,
         errorContainerColor = colors.whiteSmoke,
-        errorIndicatorColor = Color.Transparent
+        errorIndicatorColor = Color.Transparent,
     ),
     isEnabled: Boolean = true,
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    initialValue: String = "",
     onValueChanged: (String) -> Unit,
 ) {
-    var value by remember { mutableStateOf(value = initialValue) }
-    val updatedBorderColor = if(isError) {
+    val updatedBorderColor = if (isError) {
         colors.crimsonRed
     } else {
         borderColor
     }
 
     TextField(
-        value = value,
+        value = textValue,
         onValueChange = { newValue ->
             onValueChanged(newValue)
-            value = newValue
         },
         modifier = modifier
             .border(
@@ -103,7 +97,8 @@ private fun PreviewCommonTextField() {
         CommonTextField(
             modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
             placeholder = Res.string.search_food,
-            prefixIcon = Res.drawable.ic_search
+            prefixIcon = Res.drawable.ic_search,
+            textValue = "",
         ) {
 
         }

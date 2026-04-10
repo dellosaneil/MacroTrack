@@ -23,6 +23,7 @@ import macrotrack.composeapp.generated.resources.create_new_recipe
 import macrotrack.composeapp.generated.resources.grilled_chicken_breast
 import macrotrack.composeapp.generated.resources.save_recipe
 import macrotrack.composeapp.generated.resources.this_food_is_already_saved
+import macrotrack.composeapp.generated.resources.update_recipe
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.createfood.ui.AddIngredientPreviewCalories
@@ -57,8 +58,13 @@ fun CreateRecipeScreen(
         containerColor = colors.white,
         modifier = modifier.fillMaxSize(),
         topBar = {
+            val stringResource = if(viewState.isUpdating) {
+                Res.string.update_recipe
+            } else {
+                Res.string.create_new_recipe
+            }
             CommonTopBar(
-                stringResource = Res.string.create_new_recipe
+                stringResource = stringResource
             ) {
                 onBackButtonPressed()
             }
@@ -86,7 +92,9 @@ private fun CreateRecipeScreen(
             modifier = Modifier.fillMaxWidth(),
             placeholder = Res.string.grilled_chicken_breast,
             borderColor = colors.deepBlue,
-            isError = viewState.isRecipeNameTaken
+            isError = viewState.isRecipeNameTaken,
+            textValue = viewState.recipeName,
+            isEnabled = !viewState.isUpdating
         ) { name ->
             callbacks.inputRecipeName(name = name)
         }

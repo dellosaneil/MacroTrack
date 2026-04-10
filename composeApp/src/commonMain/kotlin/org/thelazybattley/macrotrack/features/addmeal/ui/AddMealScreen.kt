@@ -155,7 +155,8 @@ private fun AddMealScreen(
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
             placeholder = Res.string.search_food,
-            prefixIcon = Res.drawable.ic_search
+            prefixIcon = Res.drawable.ic_search,
+            textValue = viewState.searchQuery
         ) { query ->
             addMealCallbacks.onSearchQuery(query = query)
         }

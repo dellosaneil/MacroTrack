@@ -9,6 +9,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,13 +48,16 @@ fun CreateRecipeAddIngredients(
             style = typography.regular10,
             color = colors.mediumGray
         )
+        var textValue by rememberSaveable { mutableStateOf(value = "100") }
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
             placeholder = Res.string.search_ingredient,
             prefixIcon = Res.drawable.ic_search,
             onValueChanged = { keyword ->
+                textValue = keyword
                 callbacks.onSearchKeyword(keyword)
             },
+            textValue = textValue,
             borderColor = colors.deepBlue
         )
         LazyColumn {

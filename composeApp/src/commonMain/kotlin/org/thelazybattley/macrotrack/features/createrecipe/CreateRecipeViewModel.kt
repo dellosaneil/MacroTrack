@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
@@ -24,7 +25,7 @@ class CreateRecipeViewModel(
     private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val insertRecipeUseCase: InsertRecipeUseCase,
-    private val savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel(), CreateRecipeCallbacks {
 
     private val _state = MutableStateFlow(value = CreateRecipeViewState())
@@ -32,22 +33,38 @@ class CreateRecipeViewModel(
 
     init {
         val recipeName: String? = savedStateHandle[RECIPE_NAME]
-
         viewModelScope.launch {
-            getAllRecipeUseCase().collect { recipes ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        savedRecipesName = recipes.map { it.name }
+            val recipes = getAllRecipeUseCase().first()
+            val foodList = getAllFoodUseCase().first()
+            _state.update { currentState ->
+                currentState.copy(
+                    savedRecipesName = recipes.map { it.name },
+                    ingredients = foodList,
+                    filteredIngredients = foodList
+                )
+            }
+            if (recipeName != null) {
+                val recipe = recipes.find { it.name == recipeName } ?: return@launch
+                val ingredientAsFood = recipe.ingredients.map { ingredient ->
+                    foodList.find { food -> food.name == ingredient.name } ?: return@launch
+                }
+                ingredientAsFood.forEach { food ->
+                    val ingredientWeight = recipe.ingredients.find { it.name == food.name }?.weight ?: return@launch
+                    val updatedMacros = calculateAdjustMacrosUseCase(
+                        originalFood = food,
+                        portionSize = ingredientWeight
+                    )
+                    onAddIngredient(
+                        food = food.copy(
+                            macros = updatedMacros,
+                            weight = ingredientWeight
+                        )
                     )
                 }
-            }
-        }
-        viewModelScope.launch {
-            getAllFoodUseCase().collect { foods ->
                 _state.update { currentState ->
                     currentState.copy(
-                        ingredients = foods,
-                        filteredIngredients = foods
+                        recipeName = recipeName,
+                        isUpdating = true
                     )
                 }
             }
@@ -206,6 +223,6 @@ class CreateRecipeViewModel(
         recipeName: String,
         isRecipeNameTaken: Boolean
     ): Boolean {
-        return selectedIngredients.isNotEmpty() && recipeName.isNotEmpty() && !isRecipeNameTaken
+        return (selectedIngredients.isNotEmpty() && recipeName.isNotEmpty() && !isRecipeNameTaken) || _state.value.isUpdating
     }
 }

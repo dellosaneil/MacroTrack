@@ -4,6 +4,7 @@ import org.thelazybattley.macrotrack.domain.model.Food
 
 data class CreateRecipeViewState(
     val recipeName: String = "",
+    val isUpdating: Boolean = false,
     val isRecipeNameTaken: Boolean = false,
     val savedRecipesName: List<String> = emptyList(),
     val selectedIngredients: List<Food> = emptyList(),

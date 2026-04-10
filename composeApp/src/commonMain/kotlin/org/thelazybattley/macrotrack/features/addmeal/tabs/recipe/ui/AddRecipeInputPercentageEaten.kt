@@ -17,6 +17,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -92,15 +96,18 @@ fun AddRecipeInputPercentageEaten(
                 style = typography.regular10,
                 color = colors.gray
             )
+            var textValue by rememberSaveable { mutableStateOf(value = "100") }
             CommonTextField(
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = Res.string.one_hundred,
                 borderColor = colors.deepBlue, keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
                 ),
-                initialValue = "100"
+                textValue = textValue
             ) { value ->
-                onPercentageEatenValue(value.toDoubleOrNull() ?: 0.0)
+                val percentage = value.toDoubleOrNull() ?: 0.0
+                onPercentageEatenValue(percentage)
+                textValue = percentage.toString()
             }
         }
         Row(

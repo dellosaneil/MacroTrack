@@ -21,6 +21,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -152,6 +154,7 @@ fun AddIngredientScreen(
                 val height = with(receiver = LocalDensity.current) {
                     textFieldHeight.value.toDp()
                 }
+                var textValue by rememberSaveable { mutableStateOf(value = "100") }
                 CommonTextField(
                     modifier = Modifier
                         .weight(weight = 0.85f)
@@ -168,7 +171,8 @@ fun AddIngredientScreen(
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
-                    )
+                    ),
+                    textValue = textValue
                 )
                 Box(
                     modifier = Modifier
@@ -287,6 +291,7 @@ private fun AddIngredientTextField(
             color = titleTextColor,
             style = typography.medium11
         )
+        var textValue by rememberSaveable { mutableStateOf(value = "") }
         CommonTextField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -298,7 +303,8 @@ private fun AddIngredientTextField(
             onValueChanged = onValueChanged,
             isEnabled = isEnabled,
             isError = isError,
-            keyboardOptions = keyboardOptions
+            keyboardOptions = keyboardOptions,
+            textValue = textValue
         )
     }
 }

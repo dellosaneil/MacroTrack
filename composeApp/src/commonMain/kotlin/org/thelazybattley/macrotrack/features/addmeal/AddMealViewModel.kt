@@ -325,7 +325,8 @@ class AddMealViewModel(
                         other = query,
                         ignoreCase = true
                     )
-                }
+                },
+                searchQuery = query
             )
         }
     }

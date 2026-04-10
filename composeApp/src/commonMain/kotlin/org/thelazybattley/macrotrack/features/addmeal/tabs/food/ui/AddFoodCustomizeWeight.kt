@@ -132,7 +132,7 @@ fun AddFoodCustomizeWeight(
                     borderColor = colors.deepBlue, keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
                     ),
-                    initialValue = food.weight.toInt().toString()
+                    textValue = food.weight.toInt().toString()
                 ) { value ->
                     onPortionSizeUpdated(value.toDoubleOrNull() ?: 0.0)
                 }
