@@ -119,7 +119,7 @@ fun MacroTrackTheme(
     content: @Composable () -> Unit,
 ) {
     val colors = if (darkTheme) {
-        darkMacroTrackColors
+        lightMacroTrackColors
     } else {
         lightMacroTrackColors
     }

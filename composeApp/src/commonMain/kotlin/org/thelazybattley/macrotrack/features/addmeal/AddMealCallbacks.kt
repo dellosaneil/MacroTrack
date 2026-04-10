@@ -13,6 +13,8 @@ interface AddMealCallbacks {
 
     fun onRevertLog()
 
+    fun onSearchQuery(query: String)
+
     companion object {
         fun default() = object : AddMealCallbacks {
 
@@ -29,6 +31,10 @@ interface AddMealCallbacks {
             }
 
             override fun onRevertLog() {
+                TODO("Not yet implemented")
+            }
+
+            override fun onSearchQuery(query: String) {
                 TODO("Not yet implemented")
             }
         }

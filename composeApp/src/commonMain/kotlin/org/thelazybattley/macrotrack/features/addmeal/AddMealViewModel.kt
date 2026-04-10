@@ -310,4 +310,23 @@ class AddMealViewModel(
         }
         return recipeMealList
     }
+
+    override fun onSearchQuery(query: String) {
+        _state.update { currentState ->
+            currentState.copy(
+                filteredFoodList = currentState.completeFoodList.filter { food ->
+                    food.name.contains(
+                        other = query,
+                        ignoreCase = true
+                    )
+                },
+                filteredRecipeList = currentState.recipeList.filter { recipe ->
+                    recipe.name.contains(
+                        other = query,
+                        ignoreCase = true
+                    )
+                }
+            )
+        }
+    }
 }

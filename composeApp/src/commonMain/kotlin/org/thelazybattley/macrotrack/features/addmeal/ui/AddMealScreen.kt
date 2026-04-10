@@ -156,8 +156,8 @@ private fun AddMealScreen(
             modifier = Modifier.fillMaxWidth(),
             placeholder = Res.string.search_food,
             prefixIcon = Res.drawable.ic_search
-        ) {
-
+        ) { query ->
+            addMealCallbacks.onSearchQuery(query = query)
         }
         AddMealFilter(
             modifier = Modifier.fillMaxWidth(),

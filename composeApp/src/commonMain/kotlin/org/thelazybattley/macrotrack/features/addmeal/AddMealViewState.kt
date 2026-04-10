@@ -10,7 +10,6 @@ data class AddMealViewState(
     val selectedMealType: MealType = MealType.BREAKFAST,
     val selectedMealFilter: MealFilter = MealFilter.FOODS,
     val filteredFoodList: List<Food> = emptyList(),
-    val searchQuery: String = "",
     val completeFoodList: List<Food> = emptyList(),
     val navigateDestination: AppDestinations.Root? = null,
     val loggedMeals: AddMealLoggedFood = AddMealLoggedFood(),
