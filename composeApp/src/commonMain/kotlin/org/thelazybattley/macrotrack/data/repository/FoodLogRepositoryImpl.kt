@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.toDomain
@@ -39,6 +40,14 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
 
     override fun getAllFoodLogs(): Flow<List<FoodLog>> {
         return dao.getAllFoodLogs().map { flow ->
+            flow.map { entity ->
+                entity.toDomain()
+            }
+        }
+    }
+
+    override fun getFoodLogByDate(localDate: LocalDate): Flow<List<FoodLog>> {
+        return dao.getFoodLogByDate(date = localDate).map { flow ->
             flow.map { entity ->
                 entity.toDomain()
             }

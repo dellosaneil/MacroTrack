@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 
 @Dao
@@ -17,5 +18,8 @@ interface FoodLogDao {
 
     @Query(value = "SELECT * FROM FoodLogEntity")
     fun getAllFoodLogs(): Flow<List<FoodLogEntity>>
+
+    @Query(value ="SELECT * FROM FoodLogEntity WHERE date = :date")
+    fun getFoodLogByDate(date: LocalDate): Flow<List<FoodLogEntity>>
 
 }
