@@ -209,7 +209,6 @@ private fun LoggedFoodMealType(
                     ) {
                         FoodLogItem(
                             modifier = Modifier
-                                .height(height = 89.dp)
                                 .background(color = colors.white)
                                 .padding(horizontal = 12.dp)
                                 .fillMaxWidth(),
@@ -245,9 +244,9 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
             modifier = Modifier
                 .fillMaxWidth().padding(
                     top = 4.dp, bottom = 4.dp,
-                    start = 8.dp
+                    start = 12.dp
                 ),
-            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
             Row(
                 modifier = Modifier,
@@ -256,7 +255,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
             ) {
                 Text(
                     text = food.foodName,
-                    style = typography.bold13,
+                    style = typography.bold15,
                     color = colors.black
                 )
                 if (food.weight == 0.0) {
@@ -286,7 +285,7 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                         fat = food.fat.toInt(),
                         carbs = food.carbs.toInt()
                     ),
-                    style = typography.bold10
+                    style = typography.bold12
                 )
                 if (food.weight != 0.0) {
                     Spacer(modifier = Modifier.width(width = 12.dp))
