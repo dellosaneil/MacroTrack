@@ -51,7 +51,7 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
 import org.thelazybattley.macrotrack.ui.common.CommonSurface
-import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDismissBox
+import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -191,24 +191,25 @@ private fun LoggedFoodMealType(
                     color = colors.lightGray,
                     shape = RoundedCornerShape(size = 12.dp)
                 )
-                .padding(all = 8.dp)
+                .padding(horizontal = 8.dp)
         ) {
             foodList.foodList.forEachIndexed { index, food ->
                 key(food.id) {
-                    CommonSwipeToDismissBox(
+                    CommonSwipeToDelete(
                         modifier = Modifier,
-                        onSwipeToDismiss = {
+                        onDelete = {
                             onDeleteFoodLog(food.id)
                         }
                     ) {
                         FoodLogItem(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .background(color = colors.white)
+                                .fillMaxWidth(),
                             food = food
                         )
                     }
                 }
                 if (index == foodList.foodList.lastIndex) return@forEachIndexed
-                Spacer(modifier = Modifier.height(height = 8.dp))
                 HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
             }
         }

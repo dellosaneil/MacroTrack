@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.createrecipe.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +20,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
-import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDismissBox
+import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -41,14 +42,16 @@ fun CreateRecipeAddedIngredients(
         )
         LazyColumn(modifier = Modifier.heightIn(max = 240.dp)) {
             items(items = selectedIngredients, key = { it.name }) { food ->
-                CommonSwipeToDismissBox(
+                CommonSwipeToDelete(
                     modifier = Modifier,
-                    onSwipeToDismiss = {
+                    onDelete = {
                         removeIngredient(food)
                     }
                 ) {
                     AddMealItemCard(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .background(color = colors.white)
+                            .fillMaxWidth(),
                         food = food,
                     )
                 }
