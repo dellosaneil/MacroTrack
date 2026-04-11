@@ -12,8 +12,8 @@ import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_to_value
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
-import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealSelectedItem
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -23,7 +23,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 fun AddFoodTabScreen(
     modifier: Modifier = Modifier,
     viewState: AddMealViewState,
-    addFoodCallbacks: AddFoodCallbacks
+    callbacks: AddMealCallbacks.FoodCallbacks
 ) {
     LazyColumn(modifier = modifier) {
         items(
@@ -37,13 +37,13 @@ fun AddFoodTabScreen(
                         food = viewState.highlightedFood,
                         calories = food.macros.calories,
                         onCloseButtonClick = {
-                            addFoodCallbacks.closeCustomizeFoodWeight()
+                            callbacks.closeCustomizeFoodWeight()
                         },
                         onPortionSizeUpdated = { weight ->
-                            addFoodCallbacks.updateWeight(portionSize = weight)
+                            callbacks.updateWeight(portionSize = weight)
                         },
                         onAddMealClick = {
-                            addFoodCallbacks.addCustomizedFood()
+                            callbacks.addCustomizedFood()
                         },
                         originalWeight = food.weight,
                         buttonText = stringResource(
@@ -65,10 +65,10 @@ fun AddFoodTabScreen(
                         modifier = Modifier.fillMaxWidth(),
                         food = food,
                         onButtonClicked = {
-                            addFoodCallbacks.insertFood(food = food)
+                            callbacks.insertFood(food = food)
                         },
                         onMealClicked = {
-                            addFoodCallbacks.customizeFoodWeight(name = food.name)
+                            callbacks.customizeFoodWeight(name = food.name)
                         }
                     )
                 }
@@ -88,7 +88,7 @@ private fun PreviewAddFoodTabScreen() {
     MacroTrackTheme {
         AddFoodTabScreen(
             modifier = Modifier,
-            addFoodCallbacks = AddFoodCallbacks.default(),
+            callbacks = AddMealCallbacks.defaultFoodCallbacks(),
             viewState = AddMealViewState()
         )
     }

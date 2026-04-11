@@ -71,9 +71,10 @@ fun CommonSwipeToDelete(
             tint = colors.crimsonRed
         )
         Box(
-            modifier = Modifier.onGloballyPositioned {
-                contentHeight = it.size.height.toFloat()
-            }
+            modifier = Modifier
+                .onGloballyPositioned {
+                    contentHeight = it.size.height.toFloat()
+                }
                 .offset { IntOffset(x = offsetX.roundToInt(), y = 0) }
                 .pointerInput(key1 = Unit) {
                     detectHorizontalDragGestures(

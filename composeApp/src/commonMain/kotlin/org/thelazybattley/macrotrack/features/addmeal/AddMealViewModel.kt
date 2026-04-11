@@ -18,8 +18,6 @@ import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
-import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
-import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.AddRecipeCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
@@ -30,7 +28,8 @@ class AddMealViewModel(
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val getAllRecipeUseCase: GetAllRecipeUseCase,
     savedStateHandle: SavedStateHandle
-) : ViewModel(), AddMealCallbacks, AddFoodCallbacks, AddRecipeCallbacks {
+) : ViewModel(), AddMealCallbacks.MainScreenCallbacks, AddMealCallbacks.FoodCallbacks,
+    AddMealCallbacks.RecipeCallbacks {
 
     private val _state = MutableStateFlow(value = AddMealViewState())
     val state = _state.asStateFlow()

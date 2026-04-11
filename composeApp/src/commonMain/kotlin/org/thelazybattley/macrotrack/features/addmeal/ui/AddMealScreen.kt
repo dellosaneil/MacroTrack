@@ -47,9 +47,7 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
-import org.thelazybattley.macrotrack.features.addmeal.tabs.food.AddFoodCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.tabs.food.ui.AddFoodTabScreen
-import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.AddRecipeCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.ui.AddRecipeTabScreen
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
@@ -117,9 +115,9 @@ fun AddMealScreen(
         AddMealScreen(
             modifier = Modifier.padding(paddingValues = innerPadding),
             viewState = viewState,
-            addMealCallbacks = viewModel,
-            addFoodCallbacks = viewModel,
-            addRecipeCallbacks = viewModel
+            mainCallbacks = viewModel,
+            recipeCallbacks = viewModel,
+            foodCallbacks = viewModel
         )
     }
     SnackbarHost(
@@ -142,9 +140,9 @@ fun AddMealScreen(
 private fun AddMealScreen(
     modifier: Modifier = Modifier,
     viewState: AddMealViewState,
-    addMealCallbacks: AddMealCallbacks,
-    addFoodCallbacks: AddFoodCallbacks,
-    addRecipeCallbacks: AddRecipeCallbacks
+    mainCallbacks: AddMealCallbacks.MainScreenCallbacks,
+    foodCallbacks: AddMealCallbacks.FoodCallbacks,
+    recipeCallbacks: AddMealCallbacks.RecipeCallbacks
 ) {
     Column(
         modifier = modifier
@@ -158,13 +156,13 @@ private fun AddMealScreen(
             prefixIcon = Res.drawable.ic_search,
             textValue = viewState.searchQuery
         ) { query ->
-            addMealCallbacks.onSearchQuery(query = query)
+            mainCallbacks.onSearchQuery(query = query)
         }
         AddMealFilter(
             modifier = Modifier.fillMaxWidth(),
             viewState = viewState,
             onFilterSelected = { filter ->
-                addMealCallbacks.onMealFilterSelected(mealFilter = filter)
+                mainCallbacks.onMealFilterSelected(mealFilter = filter)
             }
         )
         AddMealLegend(modifier = Modifier.fillMaxWidth())
@@ -176,14 +174,14 @@ private fun AddMealScreen(
                 MealFilter.FOODS -> AppDestinations.Root.CreateFood.route
                 MealFilter.RECIPES -> AppDestinations.Root.CreateRecipe.createRoute(recipeName = "")
             }
-            addMealCallbacks.onNavigateScreen(route = route)
+            mainCallbacks.onNavigateScreen(route = route)
         }
         when (viewState.selectedMealFilter) {
             MealFilter.FOODS -> {
                 AddFoodTabScreen(
                     modifier = Modifier.fillMaxSize(),
                     viewState = viewState,
-                    addFoodCallbacks = addFoodCallbacks
+                    callbacks = foodCallbacks
                 )
             }
 
@@ -191,7 +189,7 @@ private fun AddMealScreen(
                 AddRecipeTabScreen(
                     modifier = Modifier.fillMaxSize(),
                     viewState = viewState,
-                    callbacks = addRecipeCallbacks
+                    callbacks = recipeCallbacks
                 )
             }
         }
@@ -276,9 +274,9 @@ private fun PreviewAddMealScreen() {
             AddMealScreen(
                 modifier = Modifier.padding(it),
                 viewState = AddMealViewState(),
-                addMealCallbacks = AddMealCallbacks.default(),
-                addFoodCallbacks = AddFoodCallbacks.default(),
-                addRecipeCallbacks = AddRecipeCallbacks.default()
+                mainCallbacks = AddMealCallbacks.defaultMainScreenCallbacks(),
+                foodCallbacks = AddMealCallbacks.defaultFoodCallbacks(),
+                recipeCallbacks = AddMealCallbacks.defaultRecipeCallbacks()
             )
         }
     }

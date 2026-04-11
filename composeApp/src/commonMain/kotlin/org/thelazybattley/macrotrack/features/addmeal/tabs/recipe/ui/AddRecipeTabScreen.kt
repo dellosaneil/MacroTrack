@@ -13,10 +13,10 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_to_value
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.dummyFood
+import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealLoggedFood
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.addmeal.RecipeMeal
-import org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.AddRecipeCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealSelectedItem
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -25,7 +25,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 @Composable
 fun AddRecipeTabScreen(
     modifier: Modifier = Modifier,
-    callbacks: AddRecipeCallbacks,
+    callbacks: AddMealCallbacks.RecipeCallbacks,
     viewState: AddMealViewState,
 ) {
     LazyColumn(modifier = modifier) {
@@ -90,7 +90,7 @@ private fun PreviewAddRecipeTabScreen() {
     MacroTrackTheme {
         AddRecipeTabScreen(
             modifier = Modifier.fillMaxWidth().padding(all = 12.dp),
-            callbacks = AddRecipeCallbacks.default(),
+            callbacks = AddMealCallbacks.defaultRecipeCallbacks(),
             viewState = AddMealViewState(
                 filteredRecipeList = listOf(
                     RecipeMeal(
