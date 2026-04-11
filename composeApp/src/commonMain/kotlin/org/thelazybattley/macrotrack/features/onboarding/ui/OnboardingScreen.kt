@@ -90,7 +90,7 @@ fun OnboardingScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     Column(
         modifier = modifier.fillMaxSize()
-            .pointerInput(Unit) {
+            .pointerInput(key1 = Unit) {
                 detectTapGestures {
                     focusManager.clearFocus()
                     keyboardController?.hide()

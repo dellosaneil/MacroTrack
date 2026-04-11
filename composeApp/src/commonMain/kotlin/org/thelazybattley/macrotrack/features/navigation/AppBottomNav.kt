@@ -35,7 +35,7 @@ fun AppBottomNav() {
         NavHost(
             navController = navController,
             startDestination = AppDestinations.Root.Splash.route,
-            modifier = Modifier.pointerInput(Unit) {
+            modifier = Modifier.pointerInput(key1 = Unit) {
                 detectTapGestures {
                     focusManager.clearFocus()
                     keyboardController?.hide()

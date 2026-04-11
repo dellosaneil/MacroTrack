@@ -1,5 +1,8 @@
 package org.thelazybattley.macrotrack.domain.model
 
+import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.core.getCurrentDate
+
 data class FoodLog(
     val mealType: MealType,
     val calories: Int,
@@ -9,7 +12,8 @@ data class FoodLog(
     val id: Long,
     val foodName: String,
     val weight: Double,
-    val dominantMacro: MacroType
+    val dominantMacro: MacroType,
+    val date: LocalDate
 )
 
 val dummyFoodLog = FoodLog(
@@ -21,6 +25,7 @@ val dummyFoodLog = FoodLog(
     id = 1,
     foodName = "Chicken Breast",
     weight = 100.0,
-    dominantMacro = MacroType.PROTEIN
+    dominantMacro = MacroType.PROTEIN,
+    date = getCurrentDate()
 )
 

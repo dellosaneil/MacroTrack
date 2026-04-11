@@ -31,5 +31,6 @@ fun FoodLogEntity.toDomain() = FoodLog(
     protein = protein,
     carbs = carbs,
     weight = weight,
-    dominantMacro = MacroType.valueOf(value = dominantMacro)
+    dominantMacro = MacroType.valueOf(value = dominantMacro),
+    date = date
 )

@@ -95,6 +95,15 @@ private fun FoodLogTabScreen(
             .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
+        if (viewState.availableDates.isNotEmpty()) {
+            FoodLogDateChips(
+                modifier = Modifier.fillMaxWidth(),
+                dates = viewState.availableDates,
+                dateSelected = viewState.selectedDate,
+            ) { date ->
+                callbacks.onDateFilterSelected(date = date)
+            }
+        }
         FoodLogTotalMacros(
             modifier = Modifier.fillMaxWidth(),
             viewState = viewState
@@ -138,7 +147,6 @@ private fun FoodLogTabScreen(
                 callbacks.onNavigate(mealType = MealType.SNACK)
             }
         )
-
     }
 }
 
@@ -173,6 +181,7 @@ private fun LoggedFoodMealType(
                     .padding(all = 12.dp),
                 textAlign = TextAlign.Center
             )
+            return@Column
         }
         Column(
             modifier = Modifier
