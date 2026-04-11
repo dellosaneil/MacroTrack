@@ -42,6 +42,7 @@ import macrotrack.composeapp.generated.resources.value_gram
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.buildMacroNutrientText
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toColor
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
@@ -114,6 +115,7 @@ private fun FoodLogTabScreen(
             onDeleteFoodLog = { id ->
                 callbacks.onDeleteFoodLog(id = id)
             },
+            isToday = viewState.selectedDate == getCurrentDate(),
             onNavigate = {
                 callbacks.onNavigate(mealType = MealType.BREAKFAST)
             }
@@ -124,6 +126,7 @@ private fun FoodLogTabScreen(
             onDeleteFoodLog = { id ->
                 callbacks.onDeleteFoodLog(id = id)
             },
+            isToday = viewState.selectedDate == getCurrentDate(),
             onNavigate = {
                 callbacks.onNavigate(mealType = MealType.LUNCH)
             }
@@ -134,6 +137,7 @@ private fun FoodLogTabScreen(
             onDeleteFoodLog = { id ->
                 callbacks.onDeleteFoodLog(id = id)
             },
+            isToday = viewState.selectedDate == getCurrentDate(),
             onNavigate = {
                 callbacks.onNavigate(mealType = MealType.DINNER)
             }
@@ -144,6 +148,7 @@ private fun FoodLogTabScreen(
             onDeleteFoodLog = { id ->
                 callbacks.onDeleteFoodLog(id = id)
             },
+            isToday = viewState.selectedDate == getCurrentDate(),
             onNavigate = {
                 callbacks.onNavigate(mealType = MealType.SNACK)
             }
@@ -155,6 +160,7 @@ private fun FoodLogTabScreen(
 @Composable
 private fun LoggedFoodMealType(
     modifier: Modifier = Modifier,
+    isToday: Boolean,
     foodList: FoodLogFoodListByMealType,
     onDeleteFoodLog: (Long) -> Unit,
     onNavigate: () -> Unit
@@ -165,7 +171,8 @@ private fun LoggedFoodMealType(
         FoodLogMealType(
             modifier = Modifier.fillMaxWidth(), mealType = foodList.mealType,
             totalCalories = foodList.calories,
-            onNavigate = onNavigate
+            onNavigate = onNavigate,
+            isToday = isToday,
         )
         Spacer(modifier = Modifier.height(height = 4.dp))
         if (foodList.foodList.isEmpty()) {
@@ -308,6 +315,7 @@ private fun FoodLogMealType(
     modifier: Modifier = Modifier,
     mealType: MealType,
     totalCalories: Int,
+    isToday: Boolean,
     onNavigate: () -> Unit,
 ) {
     Row(
@@ -328,30 +336,32 @@ private fun FoodLogMealType(
                 color = colors.gray
             )
         }
-        CommonSurface(
-            shape = RoundedCornerShape(size = 6.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .clickable {
-                        onNavigate()
-                    }
-                    .border(
-                        width = 1.dp,
-                        color = colors.skyBlue,
-                        shape = RoundedCornerShape(size = 6.dp)
-                    )
-                    .background(color = colors.paleBlue),
+        if (isToday) {
+            CommonSurface(
+                shape = RoundedCornerShape(size = 6.dp)
             ) {
-                Text(
-                    text = stringResource(resource = Res.string.sign_add),
-                    style = typography.bold11,
-                    color = colors.deepBlue,
-                    modifier = Modifier.padding(
-                        horizontal = 10.dp,
-                        vertical = 5.dp
+                Box(
+                    modifier = Modifier
+                        .clickable {
+                            onNavigate()
+                        }
+                        .border(
+                            width = 1.dp,
+                            color = colors.skyBlue,
+                            shape = RoundedCornerShape(size = 6.dp)
+                        )
+                        .background(color = colors.paleBlue),
+                ) {
+                    Text(
+                        text = stringResource(resource = Res.string.sign_add),
+                        style = typography.bold11,
+                        color = colors.deepBlue,
+                        modifier = Modifier.padding(
+                            horizontal = 10.dp,
+                            vertical = 5.dp
+                        )
                     )
-                )
+                }
             }
         }
     }
