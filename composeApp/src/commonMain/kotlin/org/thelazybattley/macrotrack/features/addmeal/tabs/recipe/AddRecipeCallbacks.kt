@@ -16,6 +16,8 @@ interface AddRecipeCallbacks {
 
     fun updateRecipe(name: String)
 
+    fun deleteRecipe(name: String)
+
     companion object {
         fun default() = object : AddRecipeCallbacks {
             override fun insertRecipe(name: String, percentage: Double) {
@@ -43,6 +45,10 @@ interface AddRecipeCallbacks {
             }
 
             override fun updateRecipe(name: String) {
+                TODO("Not yet implemented")
+            }
+
+            override fun deleteRecipe(name: String) {
                 TODO("Not yet implemented")
             }
 

@@ -198,7 +198,6 @@ private fun LoggedFoodMealType(
                     color = colors.lightGray,
                     shape = RoundedCornerShape(size = 12.dp)
                 )
-                .padding(horizontal = 8.dp)
         ) {
             foodList.foodList.forEachIndexed { index, food ->
                 key(food.id) {
@@ -210,7 +209,9 @@ private fun LoggedFoodMealType(
                     ) {
                         FoodLogItem(
                             modifier = Modifier
+                                .height(height = 89.dp)
                                 .background(color = colors.white)
+                                .padding(horizontal = 12.dp)
                                 .fillMaxWidth(),
                             food = food
                         )

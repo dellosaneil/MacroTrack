@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -39,6 +42,14 @@ fun CommonSwipeToDelete(
 ) {
     var offsetX by remember { mutableFloatStateOf(value = 0f) }
     var iconWidth by remember { mutableFloatStateOf(value = 0f) }
+    var contentHeight by remember { mutableFloatStateOf(value = 0f) }
+    var iconHeightDp by remember { mutableStateOf(value = 0.dp) }
+    val localDensity = LocalDensity.current
+    LaunchedEffect(key1 = contentHeight) {
+        with(receiver = localDensity) {
+            iconHeightDp = contentHeight.toDp()
+        }
+    }
     Box(
         modifier = modifier
             .clipToBounds()
@@ -47,19 +58,22 @@ fun CommonSwipeToDelete(
             painter = painterResource(resource = Res.drawable.ic_trash),
             contentDescription = null,
             modifier = Modifier
+                .background(color = colors.lightRed)
                 .align(alignment = Alignment.CenterEnd)
+                .height(height = iconHeightDp)
                 .onGloballyPositioned {
                     iconWidth = it.size.width.toFloat()
                 }
                 .clickable(enabled = offsetX == -iconWidth) {
                     onDelete()
                 }
-                .background(color = colors.lightRed)
                 .padding(12.dp),
             tint = colors.crimsonRed
         )
         Box(
-            modifier = Modifier
+            modifier = Modifier.onGloballyPositioned {
+                contentHeight = it.size.height.toFloat()
+            }
                 .offset { IntOffset(x = offsetX.roundToInt(), y = 0) }
                 .pointerInput(key1 = Unit) {
                     detectHorizontalDragGestures(
@@ -89,11 +103,16 @@ private fun PreviewCommonSwipeToDelete() {
     MacroTrackTheme {
         CommonSwipeToDelete(
             modifier = Modifier.statusBarsPadding(),
-            onDelete = {},
+            onDelete = {
+
+            },
         ) {
             Spacer(
                 modifier = Modifier
-                    .background(color = colors.deepBlue).height(height = 32.dp).fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+                    .background(color = colors.deepBlue)
+                    .height(height = 98.dp)
+                    .fillMaxWidth()
             )
         }
     }

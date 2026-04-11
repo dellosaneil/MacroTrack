@@ -333,4 +333,8 @@ class AddMealViewModel(
             )
         }
     }
+
+    override fun deleteRecipe(name: String) {
+        TODO("Not yet implemented")
+    }
 }
