@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.addmeal.tabs.recipe.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +20,7 @@ import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.addmeal.RecipeMeal
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealItemCard
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealSelectedItem
+import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
@@ -60,19 +62,27 @@ fun AddRecipeTabScreen(
                 }
 
                 else -> {
-                    AddMealItemCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        food = recipe.food,
-                        onButtonClicked = {
-                            callbacks.insertRecipe(name = recipe.name, percentage = 1.0)
-                        },
-                        onMealClicked = {
-                            callbacks.onRecipeSelected(name = recipe.name)
-                        },
-                        onLongPress = {
-                            callbacks.updateRecipe(name = recipe.name)
+                    CommonSwipeToDelete(
+                        modifier = Modifier,
+                        onDelete = {
+                            callbacks.deleteRecipe(name = recipe.name)
                         }
-                    )
+                    ) {
+                        AddMealItemCard(
+                            modifier = Modifier
+                                .background(color = colors.white).fillMaxWidth(),
+                            food = recipe.food,
+                            onButtonClicked = {
+                                callbacks.insertRecipe(name = recipe.name, percentage = 1.0)
+                            },
+                            onMealClicked = {
+                                callbacks.onRecipeSelected(name = recipe.name)
+                            },
+                            onLongPress = {
+                                callbacks.updateRecipe(name = recipe.name)
+                            }
+                        )
+                    }
                 }
             }
 
