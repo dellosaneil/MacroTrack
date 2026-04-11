@@ -92,6 +92,7 @@ private fun FoodLogTabScreen(
 ) {
     Column(
         modifier = modifier
+            .background(color = colors.white)
             .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
