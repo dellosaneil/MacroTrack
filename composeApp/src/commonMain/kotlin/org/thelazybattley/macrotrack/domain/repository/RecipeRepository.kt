@@ -13,5 +13,7 @@ interface RecipeRepository {
 
     suspend fun updateRecipe(recipe: Recipe)
 
+    suspend fun deleteRecipe(name: String)
+
 
 }

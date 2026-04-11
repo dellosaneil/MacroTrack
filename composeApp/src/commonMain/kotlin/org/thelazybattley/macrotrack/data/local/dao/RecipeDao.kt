@@ -23,4 +23,6 @@ interface RecipeDao {
     @Update
     suspend fun updateRecipe(recipe: RecipeEntity)
 
+    @Query("DELETE FROM recipeentity WHERE name = :name")
+    suspend fun deleteRecipe(name: String)
 }
