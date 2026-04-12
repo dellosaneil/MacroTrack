@@ -6,10 +6,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.domain.usecase.CalculateBMIUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 
 class ProfileViewModel(
-    private val getUserDetailsUseCase: GetUserDetailsUseCase
+    private val getUserDetailsUseCase: GetUserDetailsUseCase,
+    private val calculateBMIUseCase: CalculateBMIUseCase
 ): ViewModel(), ProfileCallbacks {
 
     private val _state = MutableStateFlow(value = ProfileViewState())
@@ -21,6 +23,13 @@ class ProfileViewModel(
                 _state.update {  currentState ->
                     currentState.copy(
                         currentGoal = userDetails?.goal,
+                    )
+                }
+            }
+            calculateBMIUseCase().let { bmi ->
+                _state.update { currentState ->
+                    currentState.copy(
+                        bmi = bmi
                     )
                 }
             }

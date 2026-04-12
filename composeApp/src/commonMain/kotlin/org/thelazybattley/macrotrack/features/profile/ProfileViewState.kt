@@ -5,5 +5,6 @@ import org.thelazybattley.macrotrack.domain.model.Goal
 
 data class ProfileViewState(
     val macroGoals: MacroGoals? = null,
-    val currentGoal: Goal? = null
+    val currentGoal: Goal? = null,
+    val bmi: Double? = null
 )
