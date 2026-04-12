@@ -165,9 +165,10 @@ private fun BMILegend(modifier: Modifier = Modifier) {
 enum class BMI(
     val bmiIndex: Float
 ) {
-    UNDERWEIGHT(bmiIndex = 18.5f), NORMAL(bmiIndex = 24.9f), OVERWEIGHT(bmiIndex = 29.9f), OBESE(
-        bmiIndex = 30f
-    );
+    UNDERWEIGHT(bmiIndex = 18.5f),
+    NORMAL(bmiIndex = 24.9f),
+    OVERWEIGHT(bmiIndex = 29.9f),
+    OBESE(bmiIndex = 30f);
 
     companion object {
         @Composable

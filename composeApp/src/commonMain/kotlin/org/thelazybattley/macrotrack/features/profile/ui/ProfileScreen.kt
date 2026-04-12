@@ -48,8 +48,8 @@ fun ProfileScreen(
             Surface {
                 ProfileBMI(
                     modifier = Modifier.fillMaxWidth(),
-                    bmiValue = viewState.bmiValue ?: 0.0,
-                    bmiCategory = viewState.bmiCategory ?: BMI.NORMAL
+                    bmiValue = viewState.bmi.value,
+                    bmiCategory = viewState.bmi.category
                 )
             }
         }
