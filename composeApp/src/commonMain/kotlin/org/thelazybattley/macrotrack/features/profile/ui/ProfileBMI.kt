@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.bmi
 import macrotrack.composeapp.generated.resources.normal
@@ -30,6 +32,7 @@ import macrotrack.composeapp.generated.resources.overweight
 import macrotrack.composeapp.generated.resources.underweight
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.features.profile.ProfileBMI
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -37,10 +40,9 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun ProfileBMI(
     modifier: Modifier = Modifier,
-    bmiValue: Double,
-    bmiCategory: BMI
+    profileBMI: ProfileBMI,
 ) {
-    val bmiDetails = BMI.toColor(bmi = bmiCategory)
+    val bmiDetails = BMI.toColor(bmi = profileBMI.category)
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -76,21 +78,45 @@ fun ProfileBMI(
             }
 
             Text(
-                text = bmiValue.toString(),
+                text = profileBMI.value.toString(),
                 color = colors.black,
                 style = typography.bold36
             )
-            BMILegend(modifier = Modifier.fillMaxWidth())
+            BMILegend(
+                modifier = Modifier.fillMaxWidth(),
+                profileBMI = profileBMI
+            )
         }
     }
 }
 
 @Composable
-private fun BMILegend(modifier: Modifier = Modifier) {
+private fun BMILegend(
+    modifier: Modifier = Modifier,
+    profileBMI: ProfileBMI
+) {
     BoxWithConstraints(modifier = modifier) {
         val obeseOffset = maxWidth * 0.75f
         val overweightOffset = maxWidth * 0.50f
         val normalWeightOffset = maxWidth * 0.25f
+
+        val indicatorOffset = when (profileBMI.category) {
+            BMI.UNDERWEIGHT -> {
+                profileBMI.progress * maxWidth * 0.25f
+            }
+
+            BMI.NORMAL -> {
+                profileBMI.progress * maxWidth * 0.5f
+            }
+
+            BMI.OVERWEIGHT -> {
+                profileBMI.progress * maxWidth * 0.75f
+            }
+
+            BMI.OBESE -> {
+                profileBMI.progress * maxWidth
+            }
+        }
         Spacer(
             modifier = Modifier
                 .offset(x = obeseOffset)
@@ -125,6 +151,15 @@ private fun BMILegend(modifier: Modifier = Modifier) {
                 .height(height = 8.dp)
                 .background(color = colors.emeraldGreen)
         )
+
+        Spacer(
+            modifier = Modifier
+                .offset(x = indicatorOffset)
+                .background(color = colors.black)
+                .height(height = 12.dp)
+                .width(width = 2.dp)
+        )
+
         Text(
             text = "0",
             color = colors.mediumGray,
@@ -228,8 +263,11 @@ private fun PreviewProfileBMI() {
         ProfileBMI(
             modifier = Modifier
                 .padding(all = 12.dp).fillMaxWidth(),
-            bmiValue = 25.8,
-            bmiCategory = BMI.NORMAL
+            profileBMI = ProfileBMI(
+                value = 24.89,
+                category = BMI.NORMAL,
+                progress = 0.99
+            )
         )
     }
 }

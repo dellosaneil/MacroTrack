@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.domain.usecase.CalculateBMIUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.profile.ui.BMI
@@ -50,12 +51,10 @@ class ProfileViewModel(
                         (bmi - BMI.OVERWEIGHT.bmiIndex) / (BMI.OBESE.bmiIndex - BMI.OVERWEIGHT.bmiIndex)
                     }
                 }
-
-                println("Test: $progress")
                 _state.update { currentState ->
                     currentState.copy(
-                        bmi = Bmi(
-                            value = bmi,
+                        profileBMI = ProfileBMI(
+                            value = bmi.to2Decimal(),
                             category = bmiCategory,
                             progress = progress
                         )

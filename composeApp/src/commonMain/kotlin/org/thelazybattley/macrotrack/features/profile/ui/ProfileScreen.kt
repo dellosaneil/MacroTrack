@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -15,6 +14,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.profile.ProfileCallbacks
 import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
 import org.thelazybattley.macrotrack.features.profile.ProfileViewState
+import org.thelazybattley.macrotrack.ui.common.CommonSurface
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
@@ -45,11 +45,10 @@ fun ProfileScreen(
             )
         }
         item {
-            Surface {
+            CommonSurface {
                 ProfileBMI(
                     modifier = Modifier.fillMaxWidth(),
-                    bmiValue = viewState.bmi.value,
-                    bmiCategory = viewState.bmi.category
+                    profileBMI = viewState.profileBMI
                 )
             }
         }
