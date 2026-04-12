@@ -4,9 +4,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
@@ -25,7 +28,20 @@ fun AddFoodTabScreen(
     viewState: AddMealViewState,
     callbacks: AddMealCallbacks.FoodCallbacks
 ) {
-    LazyColumn(modifier = modifier) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val lazyState = rememberLazyListState()
+    LaunchedEffect(key1 = viewState.highlightedFood?.name) {
+        val index = viewState.filteredFoodList.indexOfFirst { food ->
+            food.name == viewState.highlightedFood?.name
+        }
+        if(index == -1) return@LaunchedEffect
+        keyboardController?.hide()
+        lazyState.animateScrollToItem(index = index)
+    }
+    LazyColumn(
+        modifier = modifier,
+        state = lazyState
+    ) {
         items(
             items = viewState.filteredFoodList,
             key = { food -> food.name }
