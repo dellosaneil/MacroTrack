@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -44,9 +45,13 @@ fun ProfileScreen(
             )
         }
         item {
-            ProfileBMI(
-                modifier = Modifier.fillMaxWidth()
-            )
+            Surface {
+                ProfileBMI(
+                    modifier = Modifier.fillMaxWidth(),
+                    bmiValue = viewState.bmiValue ?: 0.0,
+                    bmiCategory = viewState.bmiCategory ?: BMI.NORMAL
+                )
+            }
         }
     }
 }

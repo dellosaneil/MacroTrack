@@ -35,8 +35,12 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun ProfileBMI(modifier: Modifier = Modifier) {
-    val bmiDetails = BMI.toColor(bmi = BMI.NORMAL)
+fun ProfileBMI(
+    modifier: Modifier = Modifier,
+    bmiValue: Double,
+    bmiCategory: BMI
+) {
+    val bmiDetails = BMI.toColor(bmi = bmiCategory)
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
@@ -72,7 +76,7 @@ fun ProfileBMI(modifier: Modifier = Modifier) {
             }
 
             Text(
-                text = "25.8",
+                text = bmiValue.toString(),
                 color = colors.black,
                 style = typography.bold36
             )
@@ -223,6 +227,8 @@ private fun PreviewProfileBMI() {
         ProfileBMI(
             modifier = Modifier
                 .padding(all = 12.dp).fillMaxWidth(),
+            bmiValue = 25.8,
+            bmiCategory = BMI.NORMAL
         )
     }
 }

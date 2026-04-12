@@ -19,6 +19,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
+import kotlin.math.round
 import kotlin.time.Clock
 
 fun getCurrentDate() = run {
@@ -26,6 +27,9 @@ fun getCurrentDate() = run {
         .toLocalDateTime(TimeZone.currentSystemDefault())
         .date
 }
+
+fun Double.to2Decimal() = round(x = this * 100) / 100
+
 
 @Composable
 fun MacroType.toColor(): Color {

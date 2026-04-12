@@ -6,13 +6,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.domain.usecase.CalculateBMIUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
+import org.thelazybattley.macrotrack.features.profile.ui.BMI
 
 class ProfileViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val calculateBMIUseCase: CalculateBMIUseCase
-): ViewModel(), ProfileCallbacks {
+) : ViewModel(), ProfileCallbacks {
 
     private val _state = MutableStateFlow(value = ProfileViewState())
     val state = _state.asStateFlow()
@@ -20,16 +22,24 @@ class ProfileViewModel(
     init {
         viewModelScope.launch {
             getUserDetailsUseCase().let { userDetails ->
-                _state.update {  currentState ->
+                _state.update { currentState ->
                     currentState.copy(
                         currentGoal = userDetails?.goal,
                     )
                 }
             }
             calculateBMIUseCase().let { bmi ->
+                val bmiCategory = when {
+                    (bmi <= BMI.UNDERWEIGHT.bmiIndex) -> BMI.UNDERWEIGHT
+                    (bmi <= BMI.NORMAL.bmiIndex) -> BMI.NORMAL
+                    (bmi <= BMI.OVERWEIGHT.bmiIndex) -> BMI.OVERWEIGHT
+                    else -> BMI.OBESE
+                }
+
                 _state.update { currentState ->
                     currentState.copy(
-                        bmi = bmi
+                        bmiValue = bmi.to2Decimal(),
+                        bmiCategory = bmiCategory
                     )
                 }
             }
