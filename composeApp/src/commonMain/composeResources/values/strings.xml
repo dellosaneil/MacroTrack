@@ -151,6 +151,11 @@
     <string name="deficit">Deficit</string>
     <string name="maintain">Maintain</string>
     <string name="surplus">Surplus</string>
+    <string name="bmi">BMI</string>
+    <string name="underweight">Underweight</string>
+    <string name="normal">Normal</string>
+    <string name="overweight">Overweight</string>
+    <string name="obese">Obese</string>
 
 
     <plurals name="items">

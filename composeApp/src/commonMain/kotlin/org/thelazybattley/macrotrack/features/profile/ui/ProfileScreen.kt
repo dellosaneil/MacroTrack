@@ -43,6 +43,11 @@ fun ProfileScreen(
                 currentGoal = viewState.currentGoal
             )
         }
+        item {
+            ProfileBMI(
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 

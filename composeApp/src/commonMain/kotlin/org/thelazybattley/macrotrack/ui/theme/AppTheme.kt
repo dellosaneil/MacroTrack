@@ -61,6 +61,16 @@ val lightMacroTrackColors = MacroTrackColors(
     deepNavy = DeepNavy,
     white55 = White55,
     iceMist = IceMist,
+    mintGreen = MintGreen,
+    seafoamGreen = SeafoamGreen,
+    azureBlue = AzureBlue,
+    cream = Cream,
+    coffeeBrown = CoffeeBrown,
+    rose = Rose,
+    wineRed = WineRed,
+    emeraldGreen = EmeraldGreen,
+    cyanBlue = CyanBlue,
+    amber = Amber
 )
 
 val darkMacroTrackColors = MacroTrackColors(
@@ -94,7 +104,17 @@ val darkMacroTrackColors = MacroTrackColors(
     classicGray = DarkClassicGray,
     deepNavy = DarkDeepNavy,
     white55 = DarkWhite55,
-    iceMist = DarkIceMist
+    iceMist = DarkIceMist,
+    mintGreen = DarkMintGreen,
+    seafoamGreen = DarkSeafoamGreen,
+    azureBlue = DarkAzureBlue,
+    cream = DarkCream,
+    coffeeBrown = DarkCoffeeBrown,
+    rose = DarkRose,
+    wineRed = DarkWineRed,
+    emeraldGreen = DarkEmeraldGreen,
+    cyanBlue = DarkCyanBlue,
+    amber = DarkAmber
 )
 
 

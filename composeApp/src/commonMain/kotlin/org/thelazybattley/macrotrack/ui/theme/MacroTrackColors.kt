@@ -33,5 +33,15 @@ data class MacroTrackColors(
     val classicGray: Color,
     val deepNavy: Color,
     val white55: Color,
-    val iceMist: Color
+    val iceMist: Color,
+    val mintGreen:Color,
+    val seafoamGreen:Color,
+    val azureBlue:Color,
+    val cream:Color,
+    val coffeeBrown:Color,
+    val rose:Color,
+    val wineRed:Color,
+    val emeraldGreen: Color,
+    val cyanBlue: Color,
+    val amber: Color,
 )
