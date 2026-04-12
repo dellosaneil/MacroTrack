@@ -147,6 +147,10 @@
     <string name="percentage_eaten">Percentage Eaten</string>
     <string name="sign_add">+ Add</string>
     <string name="nothing_logged_for_value">Nothing logged for %1$s</string>
+    <string name="current_goal">Current Goal</string>
+    <string name="deficit">Deficit</string>
+    <string name="maintain">Maintain</string>
+    <string name="surplus">Surplus</string>
 
 
     <plurals name="items">
