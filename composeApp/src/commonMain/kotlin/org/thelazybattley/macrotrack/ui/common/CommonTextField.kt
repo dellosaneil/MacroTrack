@@ -46,6 +46,8 @@ fun CommonTextField(
         errorIndicatorColor = Color.Transparent,
         cursorColor = colors.deepBlue,
         disabledContainerColor = colors.iceMist,
+        focusedTextColor = colors.black,
+        unfocusedTextColor = colors.black,
     ),
     isEnabled: Boolean = true,
     isError: Boolean = false,
