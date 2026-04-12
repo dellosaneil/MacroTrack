@@ -42,6 +42,7 @@ import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.home.HomeTabViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
+import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
 import org.thelazybattley.macrotrack.features.splash.SplashViewModel
 
 expect val platformModule: Module
@@ -91,6 +92,7 @@ val viewModelModule = module {
     viewModelOf(::FoodLogViewModel)
     viewModelOf(::CreateFoodViewModel)
     viewModelOf(::CreateRecipeViewModel)
+    viewModelOf(::ProfileViewModel)
 }
 
 fun initKoin() {
