@@ -13,10 +13,12 @@ import org.thelazybattley.macrotrack.data.repository.FoodLogRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.FoodRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.RecipeRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.UserDetailsRepositoryImpl
+import org.thelazybattley.macrotrack.data.repository.WeightRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
 import org.thelazybattley.macrotrack.domain.repository.FoodRepository
 import org.thelazybattley.macrotrack.domain.repository.RecipeRepository
 import org.thelazybattley.macrotrack.domain.repository.UserDetailsRepository
+import org.thelazybattley.macrotrack.domain.repository.WeightRepository
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateBMIUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosUseCase
@@ -61,6 +63,7 @@ val repositoryModule = module {
     singleOf(::RecipeRepositoryImpl) { bind<RecipeRepository>() }
     singleOf(::UserDetailsRepositoryImpl) { bind<UserDetailsRepository>() }
     singleOf(::FoodLogRepositoryImpl) { bind<FoodLogRepository>() }
+    singleOf(::WeightRepositoryImpl) { bind<WeightRepository>() }
 }
 
 val useCaseModule = module {

@@ -11,7 +11,7 @@ import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 interface WeightDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWeight(recipe: WeightEntity)
+    suspend fun insertWeight(weight: WeightEntity)
 
     @Query("SELECT * FROM weightentity")
     fun getAllWeight(): Flow<List<WeightEntity>>
