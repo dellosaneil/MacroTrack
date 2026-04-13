@@ -9,6 +9,7 @@ import org.thelazybattley.macrotrack.data.local.dao.FoodDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
 import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
 import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
+import org.thelazybattley.macrotrack.data.local.dao.WeightDao
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
@@ -26,6 +27,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recipeDao(): RecipeDao
     abstract fun userDetailsDao(): UserDetailsDao
     abstract fun foodLogDao(): FoodLogDao
+    abstract fun weightDao(): WeightDao
 }
 
 @Suppress("KotlinNoActualForExpect")
