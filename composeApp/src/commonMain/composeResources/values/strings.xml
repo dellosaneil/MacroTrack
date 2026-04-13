@@ -156,6 +156,9 @@
     <string name="normal">Normal</string>
     <string name="overweight">Overweight</string>
     <string name="obese">Obese</string>
+    <string name="log_today_weight">Log today's weight</string>
+    <string name="last_value">Last: %1$s kg · %2$s</string>
+    <string name="add_log">+ Log</string>
 
 
     <plurals name="items">

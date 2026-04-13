@@ -52,6 +52,11 @@ fun ProfileScreen(
                 )
             }
         }
+        item {
+            CommonSurface {
+                ProfileWeightCard(modifier = Modifier.fillMaxWidth())
+            }
+        }
     }
 }
 
