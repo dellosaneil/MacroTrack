@@ -14,10 +14,11 @@ import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
+import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
-    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class],
+    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class],
     version = 12, exportSchema = true
 )
 @ConstructedBy(AppDatabaseConstructor::class)
