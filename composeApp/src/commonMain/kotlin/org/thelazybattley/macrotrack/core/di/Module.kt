@@ -39,6 +39,8 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.InsertRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.UpdateRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
+import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewModel
 import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewModel
@@ -87,6 +89,8 @@ val useCaseModule = module {
     factoryOf(::UpdateRecipeUseCase)
     factoryOf(::DeleteRecipeUseCase)
     factoryOf(::CalculateBMIUseCase)
+    factoryOf(::InsertWeightUseCase)
+    factoryOf(::GetAllWeightUseCase)
 }
 
 val viewModelModule = module {
