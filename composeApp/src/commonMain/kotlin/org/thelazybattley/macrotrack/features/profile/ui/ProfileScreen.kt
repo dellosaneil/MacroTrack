@@ -71,11 +71,13 @@ fun ProfileScreen(
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         item {
-            ProfileCurrentGoal(
-                modifier = Modifier.fillMaxWidth(),
-                currentGoal = viewState.userDetails?.goal
-            ) { goal ->
-                callbacks.updateGoal(goal = goal)
+            CommonSurface {
+                ProfileCurrentGoal(
+                    modifier = Modifier.fillMaxWidth(),
+                    currentGoal = viewState.userDetails?.goal
+                ) { goal ->
+                    callbacks.updateGoal(goal = goal)
+                }
             }
         }
         item {

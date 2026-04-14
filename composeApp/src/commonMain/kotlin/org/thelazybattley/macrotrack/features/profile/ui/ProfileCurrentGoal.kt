@@ -24,7 +24,6 @@ import macrotrack.composeapp.generated.resources.current_goal
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.Goal
-import org.thelazybattley.macrotrack.ui.common.CommonSurface
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -36,7 +35,16 @@ fun ProfileCurrentGoal(
     onGoalSelected: (Goal) -> Unit
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.background(
+            color = colors.white,
+            shape = RoundedCornerShape(size = 14.dp)
+        )
+            .border(
+                width = 1.dp,
+                color = colors.lightGray,
+                shape = RoundedCornerShape(size = 14.dp)
+            )
+            .padding(all = 12.dp),
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Text(
@@ -44,42 +52,32 @@ fun ProfileCurrentGoal(
             color = colors.mediumGray,
             style = typography.bold10
         )
-
-        CommonSurface {
-            Row(
-                modifier = Modifier
-                    .background(color = colors.white, shape = RoundedCornerShape(size = 14.dp))
-                    .border(
-                        width = 1.dp,
-                        color = colors.lightGray,
-                        shape = RoundedCornerShape(size = 14.dp)
-                    )
-                    .padding(all = 12.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ProfileGoalCards(
+                modifier = Modifier.weight(weight = 1f),
+                goal = Goal.LOSE_WEIGHT,
+                isSelected = currentGoal == Goal.LOSE_WEIGHT
             ) {
-                ProfileGoalCards(
-                    modifier = Modifier.weight(weight = 1f),
-                    goal = Goal.LOSE_WEIGHT,
-                    isSelected = currentGoal == Goal.LOSE_WEIGHT
-                ) {
-                    onGoalSelected(Goal.LOSE_WEIGHT)
-                }
-                ProfileGoalCards(
-                    modifier = Modifier.weight(weight = 1f),
-                    goal = Goal.MAINTAIN_WEIGHT,
-                    isSelected = currentGoal == Goal.MAINTAIN_WEIGHT
-                ) {
-                    onGoalSelected(Goal.MAINTAIN_WEIGHT)
-                }
-                ProfileGoalCards(
-                    modifier = Modifier.weight(weight = 1f),
-                    goal = Goal.GAIN_WEIGHT,
-                    isSelected = currentGoal == Goal.GAIN_WEIGHT
-                ) {
-                    onGoalSelected(Goal.GAIN_WEIGHT)
-                }
+                onGoalSelected(Goal.LOSE_WEIGHT)
+            }
+            ProfileGoalCards(
+                modifier = Modifier.weight(weight = 1f),
+                goal = Goal.MAINTAIN_WEIGHT,
+                isSelected = currentGoal == Goal.MAINTAIN_WEIGHT
+            ) {
+                onGoalSelected(Goal.MAINTAIN_WEIGHT)
+            }
+            ProfileGoalCards(
+                modifier = Modifier.weight(weight = 1f),
+                goal = Goal.GAIN_WEIGHT,
+                isSelected = currentGoal == Goal.GAIN_WEIGHT
+            ) {
+                onGoalSelected(Goal.GAIN_WEIGHT)
             }
         }
     }
