@@ -69,7 +69,11 @@ fun ProfileWeightCard(
                     color = colors.black
                 )
                 Text(
-                    text = stringResource(resource = Res.string.last_value, previousWeight, "Mar 16"),
+                    text = stringResource(
+                        resource = Res.string.last_value,
+                        previousWeight,
+                        "Mar 16"
+                    ),
                     style = typography.regular11,
                     color = colors.mediumGray
                 )
@@ -154,31 +158,46 @@ private fun WeightBottomSheetContent(
                 modifier = Modifier.weight(weight = 1f),
                 previousWeight = previousWeightDouble,
                 adjustment = -0.5,
-                inputtedWeight = weightInputDouble
+                inputtedWeight = weightInputDouble,
+                onClick = { weight ->
+                    onWeightChanged(weight.toString())
+                }
             )
             QuickAdjustChip(
                 modifier = Modifier.weight(weight = 1f),
                 previousWeight = previousWeightDouble,
                 adjustment = -0.25,
-                inputtedWeight = weightInputDouble
+                inputtedWeight = weightInputDouble,
+                onClick = { weight ->
+                    onWeightChanged(weight.toString())
+                }
             )
             QuickAdjustChip(
                 modifier = Modifier.weight(weight = 1f),
                 previousWeight = previousWeightDouble,
                 adjustment = 0.0,
-                inputtedWeight = weightInputDouble
+                inputtedWeight = weightInputDouble,
+                onClick = { weight ->
+                    onWeightChanged(weight.toString())
+                }
             )
             QuickAdjustChip(
                 modifier = Modifier.weight(weight = 1f),
                 previousWeight = previousWeightDouble,
                 adjustment = 0.25,
-                inputtedWeight = weightInputDouble
+                inputtedWeight = weightInputDouble,
+                onClick = { weight ->
+                    onWeightChanged(weight.toString())
+                }
             )
             QuickAdjustChip(
                 modifier = Modifier.weight(weight = 1f),
                 previousWeight = previousWeightDouble,
                 adjustment = 0.5,
-                inputtedWeight = weightInputDouble
+                inputtedWeight = weightInputDouble,
+                onClick = { weight ->
+                    onWeightChanged(weight.toString())
+                }
             )
         }
     }
@@ -189,16 +208,17 @@ private fun QuickAdjustChip(
     modifier: Modifier = Modifier,
     adjustment: Double,
     previousWeight: Double,
-    inputtedWeight: Double
+    inputtedWeight: Double,
+    onClick: (Double) -> Unit
 ) {
     val adjustedWeight = previousWeight + adjustment
     val isSelected = inputtedWeight == adjustedWeight
-    val containerBackground = if(isSelected) {
+    val containerBackground = if (isSelected) {
         colors.paleBlue
     } else {
         colors.iceMist
     }
-    val borderColor = if(isSelected) {
+    val borderColor = if (isSelected) {
         colors.deepBlue
     } else {
         colors.lightGray
@@ -212,14 +232,17 @@ private fun QuickAdjustChip(
         border = BorderStroke(
             width = 1.dp,
             color = borderColor
-        )
+        ),
+        onClick = {
+            onClick(adjustedWeight)
+        }
     ) {
         val labelTextColor = when {
             isSelected -> colors.deepBlue
             adjustment >= 0 -> colors.green
-            else ->  colors.crimsonRed
+            else -> colors.crimsonRed
         }
-        val adjustedWeightTextColor = if(isSelected) {
+        val adjustedWeightTextColor = if (isSelected) {
             colors.deepBlue
         } else {
             colors.mediumGray
