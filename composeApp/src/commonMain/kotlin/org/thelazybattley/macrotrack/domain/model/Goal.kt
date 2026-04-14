@@ -20,7 +20,7 @@ enum class Goal(
     val description: StringResource
 ) {
     LOSE_WEIGHT(
-        calorieAdjust = -500,
+        calorieAdjust = -300,
         icon = Res.drawable.ic_lose_weight,
         title = Res.string.deficit,
         description = Res.string.lose_weight

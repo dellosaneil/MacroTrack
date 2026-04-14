@@ -32,7 +32,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun ProfileCurrentGoal(
     modifier: Modifier = Modifier,
-    currentGoal: Goal?
+    currentGoal: Goal?,
+    onGoalSelected: (Goal) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -62,17 +63,23 @@ fun ProfileCurrentGoal(
                     modifier = Modifier.weight(weight = 1f),
                     goal = Goal.LOSE_WEIGHT,
                     isSelected = currentGoal == Goal.LOSE_WEIGHT
-                )
+                ) {
+                    onGoalSelected(Goal.LOSE_WEIGHT)
+                }
                 ProfileGoalCards(
                     modifier = Modifier.weight(weight = 1f),
                     goal = Goal.MAINTAIN_WEIGHT,
                     isSelected = currentGoal == Goal.MAINTAIN_WEIGHT
-                )
+                ) {
+                    onGoalSelected(Goal.MAINTAIN_WEIGHT)
+                }
                 ProfileGoalCards(
                     modifier = Modifier.weight(weight = 1f),
                     goal = Goal.GAIN_WEIGHT,
                     isSelected = currentGoal == Goal.GAIN_WEIGHT
-                )
+                ) {
+                    onGoalSelected(Goal.GAIN_WEIGHT)
+                }
             }
         }
     }
@@ -83,19 +90,20 @@ private fun ProfileGoalCards(
     modifier: Modifier = Modifier,
     goal: Goal,
     isSelected: Boolean,
+    onClick: () -> Unit,
 ) {
 
-    val background = if(isSelected) {
+    val background = if (isSelected) {
         colors.paleBlue
     } else {
         colors.white
     }
-    val borderColor = if(isSelected) {
+    val borderColor = if (isSelected) {
         colors.deepBlue
     } else {
         colors.lightGray
     }
-    val contentColor = if(isSelected) {
+    val contentColor = if (isSelected) {
         colors.deepBlue
     } else {
         colors.black
@@ -103,10 +111,11 @@ private fun ProfileGoalCards(
 
 
     Card(
+        onClick = onClick,
         modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = background,
-            contentColor =contentColor
+            contentColor = contentColor
         ),
         border = BorderStroke(width = 1.dp, color = borderColor)
     ) {
@@ -144,6 +153,8 @@ private fun PreviewProfileCurrentGoal() {
                 .background(color = colors.iceMist)
                 .padding(all = 12.dp).fillMaxWidth(),
             currentGoal = Goal.MAINTAIN_WEIGHT
-        )
+        ) {
+
+        }
     }
 }

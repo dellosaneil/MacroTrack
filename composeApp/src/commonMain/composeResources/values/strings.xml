@@ -167,6 +167,7 @@
     <string name="negative_kg">%1$d kg ↓</string>
     <string name="positive_kg">%1$d kg ↑</string>
     <string name="value_kg">%1$d kg</string>
+    <string name="goal_updated">Goal updated to %1$s</string>
 
 
     <plurals name="items">

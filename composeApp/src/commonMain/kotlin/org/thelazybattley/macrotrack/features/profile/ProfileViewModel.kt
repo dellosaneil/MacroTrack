@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.to2Decimal
+import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.usecase.CalculateBMIUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
@@ -62,6 +63,23 @@ class ProfileViewModel(
                     userDetails = currentState.userDetails.copy(
                         weight = currentState.weightInput.toDouble()
                     )
+                )
+            }
+        }
+    }
+
+    override fun updateGoal(goal: Goal) {
+        viewModelScope.launch {
+            _state.update {currentState ->
+                if(currentState.userDetails == null) return@update currentState
+                val updatedUserDetails = currentState.userDetails.copy(
+                    goal = goal
+                )
+                insertUserDetailsUseCase(
+                    userDetails = updatedUserDetails
+                )
+                currentState.copy(
+                    userDetails = updatedUserDetails
                 )
             }
         }
