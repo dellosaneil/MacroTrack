@@ -41,7 +41,7 @@ fun ProfileScreen(
         item {
             ProfileCurrentGoal(
                 modifier = Modifier.fillMaxWidth(),
-                currentGoal = viewState.currentGoal
+                currentGoal = viewState.userDetails?.goal
             )
         }
         item {
@@ -60,7 +60,10 @@ fun ProfileScreen(
                     onWeightChanged = { weight ->
                         callbacks.onWeightInput(weight = weight)
                     },
-                    previousWeight = viewState.currentWeight
+                    previousWeight = viewState.userDetails?.weight.toString(),
+                    onSaveWeight = {
+                        callbacks.onSaveWeight()
+                    }
                 )
             }
         }

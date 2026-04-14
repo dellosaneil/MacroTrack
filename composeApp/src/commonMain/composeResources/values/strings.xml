@@ -164,6 +164,9 @@
     <string name="change_from_last">Change from last</string>
     <string name="quick_adjust_from_last">Quick adjust from last: %1$s kg</string>
     <string name="same">Same</string>
+    <string name="negative_kg">%1$d kg ↓</string>
+    <string name="positive_kg">%1$d kg ↑</string>
+    <string name="value_kg">%1$d kg</string>
 
 
     <plurals name="items">

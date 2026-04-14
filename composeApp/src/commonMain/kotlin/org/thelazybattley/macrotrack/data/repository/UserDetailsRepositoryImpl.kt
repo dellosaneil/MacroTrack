@@ -7,16 +7,16 @@ import org.thelazybattley.macrotrack.domain.model.toEntity
 import org.thelazybattley.macrotrack.domain.repository.UserDetailsRepository
 
 class UserDetailsRepositoryImpl(
-    private val userDetailsDao: UserDetailsDao
+    private val dao: UserDetailsDao
 ) : UserDetailsRepository {
     override suspend fun getUserDetails(): UserDetails? {
-        return userDetailsDao.getUserDetails()?.toDomain()
+        return dao.getUserDetails()?.toDomain()
     }
 
     override suspend fun insertUserDetails(
         userDetails: UserDetails
     ) {
-        userDetailsDao.insertUserDetails(
+        dao.insertUserDetails(
             userDetails = userDetails.toEntity()
         )
     }

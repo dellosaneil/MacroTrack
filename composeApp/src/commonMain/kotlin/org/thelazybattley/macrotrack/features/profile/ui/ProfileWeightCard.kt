@@ -25,14 +25,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_log
+import macrotrack.composeapp.generated.resources.change_from_last
 import macrotrack.composeapp.generated.resources.last_value
 import macrotrack.composeapp.generated.resources.log_today_weight
 import macrotrack.composeapp.generated.resources.log_weight
+import macrotrack.composeapp.generated.resources.negative_kg
+import macrotrack.composeapp.generated.resources.positive_kg
 import macrotrack.composeapp.generated.resources.quick_adjust_from_last
 import macrotrack.composeapp.generated.resources.same
+import macrotrack.composeapp.generated.resources.save_weight
+import macrotrack.composeapp.generated.resources.value_kg
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
+import org.thelazybattley.macrotrack.ui.common.CommonButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -44,6 +51,7 @@ fun ProfileWeightCard(
     modifier: Modifier = Modifier,
     weightInput: String,
     previousWeight: String,
+    onSaveWeight: () -> Unit,
     onWeightChanged: (String) -> Unit
 ) {
     val showBottomSheet = remember { mutableStateOf(value = false) }
@@ -107,7 +115,11 @@ fun ProfileWeightCard(
                 .fillMaxWidth(),
             previousWeight = previousWeight,
             weightInput = weightInput,
-            onWeightChanged = onWeightChanged
+            onWeightChanged = onWeightChanged,
+            onSaveWeight = {
+                showBottomSheet.value = false
+                onSaveWeight()
+            }
         )
     }
 }
@@ -118,6 +130,7 @@ private fun WeightBottomSheetContent(
     modifier: Modifier = Modifier,
     previousWeight: String,
     weightInput: String,
+    onSaveWeight:() -> Unit,
     onWeightChanged: (String) -> Unit
 ) {
     Column(
@@ -200,6 +213,50 @@ private fun WeightBottomSheetContent(
                 }
             )
         }
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = colors.paleBlue
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(all = 8.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.change_from_last),
+                    style = typography.regular11,
+                    color = colors.mediumGray
+                )
+                if (previousWeight.toDoubleOrNull() != null && weightInput.toDoubleOrNull() != null) {
+                    val weightDifference = previousWeight.toDouble() - weightInput.toDouble()
+                    val textDetails = when {
+                        weightDifference == 0.0 -> {
+                            colors.deepBlue to Res.string.value_kg
+                        }
+                        weightDifference > 0 -> {
+                            colors.emeraldGreen to Res.string.negative_kg
+                        }
+                        else -> {
+                            colors.crimsonRed to Res.string.positive_kg
+                        }
+                    }
+                    Text(
+                        text = stringResource(resource = textDetails.second, weightDifference.to2Decimal()),
+                        style = typography.bold11,
+                        color = textDetails.first
+                    )
+                }
+            }
+        }
+        CommonButton(
+            modifier = Modifier,
+            buttonText = stringResource(resource = Res.string.save_weight),
+            onClick = onSaveWeight
+        )
     }
 }
 
@@ -239,8 +296,8 @@ private fun QuickAdjustChip(
     ) {
         val labelTextColor = when {
             isSelected -> colors.deepBlue
-            adjustment >= 0 -> colors.green
-            else -> colors.crimsonRed
+            adjustment >= 0 -> colors.crimsonRed
+            else -> colors.emeraldGreen
         }
         val adjustedWeightTextColor = if (isSelected) {
             colors.deepBlue
@@ -284,6 +341,9 @@ private fun PreviewWeightBottomSheetContent() {
         weightInput = "78.4",
         onWeightChanged = {
 
+        },
+        onSaveWeight = {
+            
         }
     )
 }
@@ -298,8 +358,10 @@ private fun PreviewProfileWeightCard() {
             previousWeight = "68.4",
             onWeightChanged = {
 
-            }
+            },
+            onSaveWeight = {
 
+            }
         )
     }
 }

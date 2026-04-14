@@ -9,11 +9,15 @@ import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.domain.usecase.CalculateBMIUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.ui.BMI
 
 class ProfileViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
-    private val calculateBMIUseCase: CalculateBMIUseCase
+    private val calculateBMIUseCase: CalculateBMIUseCase,
+    private val insertWeightUseCase: InsertWeightUseCase,
+    private val insertUserDetailsUseCase: InsertUserDetailsUseCase
 ) : ViewModel(), ProfileCallbacks {
 
     private val _state = MutableStateFlow(value = ProfileViewState())
@@ -24,46 +28,12 @@ class ProfileViewModel(
             getUserDetailsUseCase().let { userDetails ->
                 _state.update { currentState ->
                     currentState.copy(
-                        currentGoal = userDetails?.goal,
+                        userDetails = userDetails,
                         weightInput = userDetails?.weight?.to2Decimal().toString(),
-                        currentWeight = userDetails?.weight?.to2Decimal().toString()
                     )
                 }
             }
-            calculateBMIUseCase().let { bmi ->
-                val bmiCategory = when {
-                    (bmi <= BMI.UNDERWEIGHT.bmiIndex) -> BMI.UNDERWEIGHT
-                    (bmi <= BMI.NORMAL.bmiIndex) -> BMI.NORMAL
-                    (bmi <= BMI.OVERWEIGHT.bmiIndex) -> BMI.OVERWEIGHT
-                    else -> BMI.OBESE
-                }
-                val progress = when {
-                    (bmi <= BMI.UNDERWEIGHT.bmiIndex) -> {
-                        bmi / BMI.UNDERWEIGHT.bmiIndex
-                    }
-
-                    (bmi <= BMI.NORMAL.bmiIndex) -> {
-                        (bmi - BMI.UNDERWEIGHT.bmiIndex) / (BMI.NORMAL.bmiIndex - BMI.UNDERWEIGHT.bmiIndex)
-                    }
-
-                    (bmi <= BMI.OVERWEIGHT.bmiIndex) -> {
-                        (bmi - BMI.NORMAL.bmiIndex) / (BMI.OVERWEIGHT.bmiIndex - BMI.NORMAL.bmiIndex)
-                    }
-
-                    else -> {
-                        (bmi - BMI.OVERWEIGHT.bmiIndex) / (BMI.OBESE.bmiIndex - BMI.OVERWEIGHT.bmiIndex)
-                    }
-                }
-                _state.update { currentState ->
-                    currentState.copy(
-                        profileBMI = ProfileBMI(
-                            value = bmi.to2Decimal(),
-                            category = bmiCategory,
-                            progress = progress
-                        )
-                    )
-                }
-            }
+            updateBMI()
         }
     }
 
@@ -73,6 +43,64 @@ class ProfileViewModel(
             currentState.copy(
                 weightInput = weight
             )
+        }
+    }
+
+    override fun onSaveWeight() {
+        viewModelScope.launch {
+            insertWeightUseCase(weight = _state.value.weightInput.toDouble())
+            _state.update { currentState ->
+                if(currentState.userDetails == null) return@update currentState
+                insertUserDetailsUseCase(
+                    userDetails = currentState.userDetails.copy(
+                        weight = currentState.weightInput.toDouble()
+                    )
+                ).also {
+                    updateBMI()
+                }
+                currentState.copy(
+                    userDetails = currentState.userDetails.copy(
+                        weight = currentState.weightInput.toDouble()
+                    )
+                )
+            }
+        }
+    }
+
+    private suspend fun updateBMI() {
+        calculateBMIUseCase().let { bmi ->
+            val bmiCategory = when {
+                (bmi <= BMI.UNDERWEIGHT.bmiIndex) -> BMI.UNDERWEIGHT
+                (bmi <= BMI.NORMAL.bmiIndex) -> BMI.NORMAL
+                (bmi <= BMI.OVERWEIGHT.bmiIndex) -> BMI.OVERWEIGHT
+                else -> BMI.OBESE
+            }
+            val progress = when {
+                (bmi <= BMI.UNDERWEIGHT.bmiIndex) -> {
+                    bmi / BMI.UNDERWEIGHT.bmiIndex
+                }
+
+                (bmi <= BMI.NORMAL.bmiIndex) -> {
+                    (bmi - BMI.UNDERWEIGHT.bmiIndex) / (BMI.NORMAL.bmiIndex - BMI.UNDERWEIGHT.bmiIndex)
+                }
+
+                (bmi <= BMI.OVERWEIGHT.bmiIndex) -> {
+                    (bmi - BMI.NORMAL.bmiIndex) / (BMI.OVERWEIGHT.bmiIndex - BMI.NORMAL.bmiIndex)
+                }
+
+                else -> {
+                    (bmi - BMI.OVERWEIGHT.bmiIndex) / (BMI.OBESE.bmiIndex - BMI.OVERWEIGHT.bmiIndex)
+                }
+            }
+            _state.update { currentState ->
+                currentState.copy(
+                    profileBMI = ProfileBMI(
+                        value = bmi.to2Decimal(),
+                        category = bmiCategory,
+                        progress = progress
+                    )
+                )
+            }
         }
     }
 }

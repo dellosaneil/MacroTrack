@@ -11,7 +11,7 @@ import org.thelazybattley.macrotrack.domain.model.UserGender
 @Entity
 @Serializable
 data class UserDetailsEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: Int = 0,
     val weight: Double,
     val age: Int,
     val height: Double,
