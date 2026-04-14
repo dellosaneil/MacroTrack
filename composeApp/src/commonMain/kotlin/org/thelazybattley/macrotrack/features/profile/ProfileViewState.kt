@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.profile
 
+import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.features.profile.ui.BMI
 
@@ -7,6 +8,7 @@ data class ProfileViewState(
     val profileBMI: ProfileBMI = ProfileBMI(),
     val weightInput: String = "0.0",
     val userDetails: UserDetails? = null,
+    val updatedGoal: Goal? = null,
 )
 
 data class ProfileBMI(

@@ -51,7 +51,7 @@ class ProfileViewModel(
         viewModelScope.launch {
             insertWeightUseCase(weight = _state.value.weightInput.toDouble())
             _state.update { currentState ->
-                if(currentState.userDetails == null) return@update currentState
+                if (currentState.userDetails == null) return@update currentState
                 insertUserDetailsUseCase(
                     userDetails = currentState.userDetails.copy(
                         weight = currentState.weightInput.toDouble()
@@ -70,16 +70,17 @@ class ProfileViewModel(
 
     override fun updateGoal(goal: Goal) {
         viewModelScope.launch {
-            _state.update {currentState ->
-                if(currentState.userDetails == null) return@update currentState
+            _state.update { currentState ->
+                if (currentState.userDetails == null) return@update currentState
                 val updatedUserDetails = currentState.userDetails.copy(
-                    goal = goal
+                    goal = goal,
                 )
                 insertUserDetailsUseCase(
                     userDetails = updatedUserDetails
                 )
                 currentState.copy(
-                    userDetails = updatedUserDetails
+                    userDetails = updatedUserDetails,
+                    updatedGoal = goal
                 )
             }
         }

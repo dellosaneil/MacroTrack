@@ -30,11 +30,11 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(key1 = viewState.userDetails?.goal) {
-        if (viewState.userDetails?.goal == null) {
+    LaunchedEffect(key1 = viewState.updatedGoal) {
+        if (viewState.updatedGoal == null) {
             snackBarHostState.currentSnackbarData?.dismiss()
         }
-        viewState.userDetails?.goal?.let {
+        viewState.updatedGoal?.let {
             snackBarHostState.showSnackbar(message = "")
         }
     }
@@ -48,7 +48,7 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
         hostState = snackBarHostState,
         modifier = Modifier
     ) { _ ->
-        val goalTitle = viewState.userDetails?.goal?.let { goal ->
+        val goalTitle = viewState.updatedGoal?.let { goal ->
             stringResource(resource = goal.title)
         } ?: return@SnackbarHost
 
