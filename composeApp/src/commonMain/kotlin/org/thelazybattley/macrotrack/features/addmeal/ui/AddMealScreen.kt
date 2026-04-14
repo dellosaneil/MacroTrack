@@ -152,7 +152,7 @@ private fun AddMealScreen(
     ) {
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
-            placeholder = Res.string.search_food,
+            placeholder = stringResource(resource = Res.string.search_food),
             prefixIcon = Res.drawable.ic_search,
             textValue = viewState.searchQuery
         ) { query ->

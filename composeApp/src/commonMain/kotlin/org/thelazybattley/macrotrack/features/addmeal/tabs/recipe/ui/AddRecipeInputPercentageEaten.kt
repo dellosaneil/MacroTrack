@@ -99,7 +99,7 @@ fun AddRecipeInputPercentageEaten(
             var textValue by rememberSaveable { mutableStateOf(value = "100") }
             CommonTextField(
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = Res.string.one_hundred,
+                placeholder = stringResource(resource = Res.string.one_hundred),
                 borderColor = colors.deepBlue, keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
                 ),

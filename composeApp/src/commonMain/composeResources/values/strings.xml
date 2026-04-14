@@ -159,6 +159,11 @@
     <string name="log_today_weight">Log today's weight</string>
     <string name="last_value">Last: %1$s kg · %2$s</string>
     <string name="add_log">+ Log</string>
+    <string name="log_weight">Log weight</string>
+    <string name="save_weight">Save Weight</string>
+    <string name="change_from_last">Change from last</string>
+    <string name="quick_adjust_from_last">Quick adjust from last: %1$s kg</string>
+    <string name="same">Same</string>
 
 
     <plurals name="items">

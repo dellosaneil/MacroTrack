@@ -30,6 +30,10 @@ fun getCurrentDate() = run {
 
 fun Double.to2Decimal() = round(x = this * 100) / 100
 
+fun normalizeInput(input: String): String {
+    return if (input.endsWith(suffix = ".")) input.dropLast(n = 1) else input
+}
+
 
 @Composable
 fun MacroType.toColor(): Color {

@@ -25,6 +25,8 @@ class ProfileViewModel(
                 _state.update { currentState ->
                     currentState.copy(
                         currentGoal = userDetails?.goal,
+                        weightInput = userDetails?.weight?.to2Decimal().toString(),
+                        currentWeight = userDetails?.weight?.to2Decimal().toString()
                     )
                 }
             }
@@ -47,6 +49,7 @@ class ProfileViewModel(
                     (bmi <= BMI.OVERWEIGHT.bmiIndex) -> {
                         (bmi - BMI.NORMAL.bmiIndex) / (BMI.OVERWEIGHT.bmiIndex - BMI.NORMAL.bmiIndex)
                     }
+
                     else -> {
                         (bmi - BMI.OVERWEIGHT.bmiIndex) / (BMI.OBESE.bmiIndex - BMI.OVERWEIGHT.bmiIndex)
                     }
@@ -61,6 +64,15 @@ class ProfileViewModel(
                     )
                 }
             }
+        }
+    }
+
+
+    override fun onWeightInput(weight: String) {
+        _state.update { currentState ->
+            currentState.copy(
+                weightInput = weight
+            )
         }
     }
 }

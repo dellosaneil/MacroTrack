@@ -16,6 +16,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
@@ -23,7 +24,6 @@ import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.ic_search
 import macrotrack.composeapp.generated.resources.search_food
 import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -33,7 +33,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun CommonTextField(
     modifier: Modifier = Modifier,
-    placeholder: StringResource,
+    placeholder: String,
     textValue: String,
     prefixIcon: DrawableResource? = null,
     borderColor: Color = colors.deepBlue,
@@ -53,6 +53,7 @@ fun CommonTextField(
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     clearActionAllowed: Boolean = true,
+    textStyle: TextStyle = typography.regular13,
     onValueChanged: (String) -> Unit,
 ) {
     val updatedBorderColor = if (isError) {
@@ -63,6 +64,7 @@ fun CommonTextField(
 
     TextField(
         value = textValue,
+        textStyle = textStyle,
         onValueChange = { newValue ->
             onValueChanged(newValue)
         },
@@ -73,8 +75,8 @@ fun CommonTextField(
             ),
         placeholder = {
             Text(
-                text = stringResource(resource = placeholder),
-                style = typography.regular13,
+                text = placeholder,
+                style = textStyle,
                 color = colors.gray
             )
         },
@@ -114,7 +116,7 @@ private fun PreviewCommonTextField() {
     MacroTrackTheme {
         CommonTextField(
             modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
-            placeholder = Res.string.search_food,
+            placeholder = stringResource(resource = Res.string.search_food),
             prefixIcon = Res.drawable.ic_search,
             textValue = "",
         ) {

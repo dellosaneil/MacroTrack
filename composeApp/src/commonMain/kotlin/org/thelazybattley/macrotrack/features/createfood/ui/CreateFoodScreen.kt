@@ -161,7 +161,7 @@ fun AddIngredientScreen(
                         .onSizeChanged { size ->
                             textFieldHeight.value = size.height
                         },
-                    placeholder = Res.string.one_hundred,
+                    placeholder = stringResource(resource = Res.string.one_hundred),
                     borderColor = colors.deepBlue,
                     onValueChanged = { value ->
                         callbacks.onTextFieldUpdated(
@@ -299,7 +299,7 @@ private fun AddIngredientTextField(
                 .onSizeChanged { size ->
                     onTextFieldSize(size)
                 },
-            placeholder = placeholder,
+            placeholder = stringResource(resource = placeholder),
             borderColor = borderColor,
             onValueChanged = { value ->
                 onValueChanged(value)

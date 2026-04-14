@@ -51,7 +51,7 @@ fun CreateRecipeAddIngredients(
         var textValue by rememberSaveable { mutableStateOf(value = "") }
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
-            placeholder = Res.string.search_ingredient,
+            placeholder = stringResource(resource = Res.string.search_ingredient),
             prefixIcon = Res.drawable.ic_search,
             onValueChanged = { keyword ->
                 textValue = keyword

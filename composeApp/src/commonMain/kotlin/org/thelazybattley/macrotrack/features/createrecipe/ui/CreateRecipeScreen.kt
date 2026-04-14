@@ -90,7 +90,7 @@ private fun CreateRecipeScreen(
     ) {
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
-            placeholder = Res.string.grilled_chicken_breast,
+            placeholder = stringResource(resource = Res.string.grilled_chicken_breast),
             borderColor = colors.deepBlue,
             isError = viewState.isRecipeNameTaken,
             textValue = viewState.recipeName,

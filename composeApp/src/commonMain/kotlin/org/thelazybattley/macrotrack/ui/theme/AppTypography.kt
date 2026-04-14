@@ -43,9 +43,17 @@ fun getMacroTrackTypography(): MacroTrackTypography {
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
         ),
+        bold18 = textStyle.copy(
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+        ),
         bold24 = textStyle.copy(
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
+        ),
+        bold32 = textStyle.copy(
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
         ),
         bold36 = textStyle.copy(
             fontWeight = FontWeight.Bold,

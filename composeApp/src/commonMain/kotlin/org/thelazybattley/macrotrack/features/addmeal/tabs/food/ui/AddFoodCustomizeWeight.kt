@@ -132,7 +132,7 @@ fun AddFoodCustomizeWeight(
                         .onSizeChanged { size ->
                             textFieldHeight.value = size.height
                         },
-                    placeholder = Res.string.one_hundred,
+                    placeholder = stringResource(resource = Res.string.one_hundred),
                     borderColor = colors.deepBlue, keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
                     ),
