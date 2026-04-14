@@ -99,7 +99,8 @@ fun ProfileScreen(
                     previousWeight = viewState.userDetails?.weight.toString(),
                     onSaveWeight = {
                         callbacks.onSaveWeight()
-                    }
+                    },
+                    lastWeightUpdate = viewState.lastWeightUpdatedDate
                 )
             }
         }

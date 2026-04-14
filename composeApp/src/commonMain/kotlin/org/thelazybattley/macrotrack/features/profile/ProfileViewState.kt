@@ -9,6 +9,7 @@ data class ProfileViewState(
     val weightInput: String = "0.0",
     val userDetails: UserDetails? = null,
     val updatedGoal: Goal? = null,
+    val lastWeightUpdatedDate: String = ""
 )
 
 data class ProfileBMI(

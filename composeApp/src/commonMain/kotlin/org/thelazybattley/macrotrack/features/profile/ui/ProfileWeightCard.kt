@@ -51,6 +51,7 @@ fun ProfileWeightCard(
     modifier: Modifier = Modifier,
     weightInput: String,
     previousWeight: String,
+    lastWeightUpdate: String,
     onSaveWeight: () -> Unit,
     onWeightChanged: (String) -> Unit
 ) {
@@ -80,7 +81,7 @@ fun ProfileWeightCard(
                     text = stringResource(
                         resource = Res.string.last_value,
                         previousWeight,
-                        "Mar 16"
+                        lastWeightUpdate
                     ),
                     style = typography.regular11,
                     color = colors.mediumGray
@@ -130,7 +131,7 @@ private fun WeightBottomSheetContent(
     modifier: Modifier = Modifier,
     previousWeight: String,
     weightInput: String,
-    onSaveWeight:() -> Unit,
+    onSaveWeight: () -> Unit,
     onWeightChanged: (String) -> Unit
 ) {
     Column(
@@ -237,15 +238,20 @@ private fun WeightBottomSheetContent(
                         weightDifference == 0.0 -> {
                             colors.deepBlue to Res.string.value_kg
                         }
+
                         weightDifference > 0 -> {
                             colors.emeraldGreen to Res.string.negative_kg
                         }
+
                         else -> {
                             colors.crimsonRed to Res.string.positive_kg
                         }
                     }
                     Text(
-                        text = stringResource(resource = textDetails.second, weightDifference.to2Decimal()),
+                        text = stringResource(
+                            resource = textDetails.second,
+                            weightDifference.to2Decimal()
+                        ),
                         style = typography.bold11,
                         color = textDetails.first
                     )
@@ -343,7 +349,7 @@ private fun PreviewWeightBottomSheetContent() {
 
         },
         onSaveWeight = {
-            
+
         }
     )
 }
@@ -361,7 +367,8 @@ private fun PreviewProfileWeightCard() {
             },
             onSaveWeight = {
 
-            }
+            },
+            lastWeightUpdate = "Mar 21"
         )
     }
 }

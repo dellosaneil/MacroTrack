@@ -6,6 +6,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import macrotrack.composeapp.generated.resources.Res
@@ -30,8 +31,8 @@ fun getCurrentDate() = run {
 
 fun Double.to2Decimal() = round(x = this * 100) / 100
 
-fun normalizeInput(input: String): String {
-    return if (input.endsWith(suffix = ".")) input.dropLast(n = 1) else input
+fun LocalDate.toAbbreviatedMonthDay() : String {
+    return month.name.lowercase().replaceFirstChar { it.uppercase() }.take(3) + " " + day
 }
 
 

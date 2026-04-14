@@ -4,13 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.to2Decimal
+import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.usecase.CalculateBMIUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.ui.BMI
 
@@ -18,7 +21,8 @@ class ProfileViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val calculateBMIUseCase: CalculateBMIUseCase,
     private val insertWeightUseCase: InsertWeightUseCase,
-    private val insertUserDetailsUseCase: InsertUserDetailsUseCase
+    private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
+    private val getAllWeightUseCase: GetAllWeightUseCase
 ) : ViewModel(), ProfileCallbacks {
 
     private val _state = MutableStateFlow(value = ProfileViewState())
@@ -35,6 +39,16 @@ class ProfileViewModel(
                 }
             }
             updateBMI()
+        }
+        viewModelScope.launch {
+            getAllWeightUseCase().collectLatest { weight ->
+                if (weight.isEmpty()) return@collectLatest
+                _state.update { currentState ->
+                    currentState.copy(
+                        lastWeightUpdatedDate = weight.last().date.toAbbreviatedMonthDay()
+                    )
+                }
+            }
         }
     }
 
