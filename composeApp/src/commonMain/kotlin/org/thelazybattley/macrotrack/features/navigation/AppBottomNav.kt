@@ -20,6 +20,7 @@ import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.createfood.ui.AddIngredientScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
+import org.thelazybattley.macrotrack.features.profile.personalinformation.ui.PersonalInformationScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
@@ -110,17 +111,17 @@ fun AppBottomNav() {
             composable(
                 route = AppDestinations.Profile.PersonalInfo.route
             ) {
-                Text(text = "personalINfo")
+                PersonalInformationScreen(modifier = Modifier)
             }
             composable(
                 route = AppDestinations.Profile.NutritionGoals.route
             ) {
-Text("nutritionGoals")
+                Text("nutritionGoals")
             }
             composable(
                 route = AppDestinations.Profile.WeightHistory.route
             ) {
-Text("weight")
+                Text("weight")
             }
 
         }
