@@ -104,6 +104,10 @@ fun ProfileScreen(
                 )
             }
         }
+        item {
+            ProfileAccount(modifier = Modifier.fillMaxWidth())
+
+        }
     }
 }
 
