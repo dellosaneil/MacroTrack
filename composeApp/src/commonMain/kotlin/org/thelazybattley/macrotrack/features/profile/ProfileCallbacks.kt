@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile
 
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
 
 interface ProfileCallbacks {
 
@@ -9,6 +10,10 @@ interface ProfileCallbacks {
     fun onSaveWeight()
 
     fun updateGoal(goal: Goal)
+
+    fun onNavigate(sectionEnum: ProfileSectionEnum)
+
+    fun onResetNavigation()
 
     companion object {
         fun default() = object : ProfileCallbacks {
@@ -21,6 +26,14 @@ interface ProfileCallbacks {
             }
 
             override fun updateGoal(goal: Goal) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onNavigate(sectionEnum: ProfileSectionEnum) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onResetNavigation() {
                 TODO("Not yet implemented")
             }
         }

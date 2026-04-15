@@ -13,6 +13,7 @@ import macrotrack.composeapp.generated.resources.progress
 import macrotrack.composeapp.generated.resources.steps
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
 
 sealed class AppDestinations {
 
@@ -65,13 +66,20 @@ sealed class AppDestinations {
         }
 
         object CreateFood : Root(route = "create_food")
-        object CreateRecipe : Root(route = "create_recipe", routeWithArgs = "create_recipe/{$RECIPE_NAME}") {
+        object CreateRecipe :
+            Root(route = "create_recipe", routeWithArgs = "create_recipe/{$RECIPE_NAME}") {
             fun createRoute(recipeName: String): String {
                 return "$route/$recipeName"
             }
         }
 
         object MainScreen : Root(route = "main")
+    }
+
+    sealed class Profile(val route: String) : AppDestinations() {
+        object PersonalInfo : Profile(route = ProfileSectionEnum.PERSONAL_INFO.name)
+        object NutritionGoals : Profile(route = ProfileSectionEnum.NUTRITION_GOALS.name)
+        object WeightHistory : Profile(route = ProfileSectionEnum.WEIGHT_HISTORY.name)
     }
 
     companion object {

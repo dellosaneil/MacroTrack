@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.features.navigation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -105,6 +106,23 @@ fun AppBottomNav() {
                     navController.popBackStack()
                 }
             }
+
+            composable(
+                route = AppDestinations.Profile.PersonalInfo.route
+            ) {
+                Text(text = "personalINfo")
+            }
+            composable(
+                route = AppDestinations.Profile.NutritionGoals.route
+            ) {
+Text("nutritionGoals")
+            }
+            composable(
+                route = AppDestinations.Profile.WeightHistory.route
+            ) {
+Text("weight")
+            }
+
         }
     }
 }

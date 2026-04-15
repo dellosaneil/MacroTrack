@@ -2,11 +2,13 @@ package org.thelazybattley.macrotrack.features.profile.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,11 +41,12 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun ProfileAccount(modifier: Modifier = Modifier) {
+fun ProfileAccount(modifier: Modifier = Modifier, onNavigate: (ProfileSectionEnum) -> Unit) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
+        Spacer(modifier = Modifier.height(height = 8.dp))
         Text(
             text = stringResource(resource = Res.string.account),
             color = colors.mediumGray,
@@ -63,7 +66,9 @@ fun ProfileAccount(modifier: Modifier = Modifier) {
             ) {
                 ProfileSectionEnum.entries.forEachIndexed { index, section ->
                     ProfileSection(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .clickable(onClick = { onNavigate(section) })
+                            .fillMaxWidth(),
                         section = section
                     )
                     if (index != ProfileSectionEnum.entries.lastIndex) {
@@ -123,7 +128,10 @@ private fun ProfileSection(
 private fun PreviewProfileAccount() {
     MacroTrackTheme {
         ProfileAccount(
-            modifier = Modifier.fillMaxWidth().padding(all = 12.dp)
+            modifier = Modifier.fillMaxWidth().padding(all = 12.dp),
+            onNavigate = {
+
+            }
         )
     }
 }

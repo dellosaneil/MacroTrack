@@ -26,7 +26,10 @@ import org.thelazybattley.macrotrack.ui.common.CommonSurface
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    onNavigate: (String) -> Unit
+) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -38,6 +41,13 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             snackBarHostState.showSnackbar(message = "")
         }
     }
+    LaunchedEffect(key1 = viewState.route) {
+        viewState.route?.let { route ->
+            onNavigate(route)
+            viewModel.onResetNavigation()
+        }
+    }
+
     ProfileScreen(
         modifier = modifier,
         viewState = viewState,
@@ -105,7 +115,10 @@ fun ProfileScreen(
             }
         }
         item {
-            ProfileAccount(modifier = Modifier.fillMaxWidth())
+            ProfileAccount(
+                modifier = Modifier.fillMaxWidth(),
+                onNavigate = callbacks::onNavigate
+            )
 
         }
     }

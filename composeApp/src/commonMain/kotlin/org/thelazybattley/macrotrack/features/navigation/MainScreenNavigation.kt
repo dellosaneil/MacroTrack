@@ -72,7 +72,10 @@ fun MainScreenNavigation(
             }
             composable(route = AppDestinations.BottomNavigation.Profile.route) {
                 ProfileScreen(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    onNavigate = { route ->
+                        onNavigate(route)
+                    }
                 )
             }
         }

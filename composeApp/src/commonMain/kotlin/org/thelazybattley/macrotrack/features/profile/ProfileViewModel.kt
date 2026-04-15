@@ -16,6 +16,7 @@ import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetail
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.ui.BMI
+import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
 
 class ProfileViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
@@ -97,6 +98,22 @@ class ProfileViewModel(
                     updatedGoal = goal
                 )
             }
+        }
+    }
+
+    override fun onNavigate(sectionEnum: ProfileSectionEnum) {
+        _state.update { currentState ->
+            currentState.copy(
+                route = sectionEnum.name
+            )
+        }
+    }
+
+    override fun onResetNavigation() {
+        _state.update { currentState ->
+            currentState.copy(
+                route = null
+            )
         }
     }
 
