@@ -66,7 +66,7 @@ fun SplashScreen(
     )
     LaunchedEffect(key1 = viewState.isLoading) {
         if (!viewState.isLoading && viewState.destination != null) {
-            delay(1_500)
+            delay(timeMillis = 250L)
             onNavigation(viewState.destination)
         }
     }

@@ -100,21 +100,22 @@ private fun BMILegend(
         val overweightOffset = maxWidth * 0.50f
         val normalWeightOffset = maxWidth * 0.25f
 
+        println("Test: $profileBMI")
         val indicatorOffset = when (profileBMI.category) {
             BMI.UNDERWEIGHT -> {
                 profileBMI.progress * maxWidth * 0.25f
             }
 
             BMI.NORMAL -> {
-                profileBMI.progress * maxWidth * 0.5f
+                (profileBMI.progress * maxWidth * 0.25f) + (maxWidth * 0.25f)
             }
 
             BMI.OVERWEIGHT -> {
-                profileBMI.progress * maxWidth * 0.75f
+                (profileBMI.progress * maxWidth * 0.25f) + (maxWidth * 0.5f)
             }
 
             BMI.OBESE -> {
-                profileBMI.progress * maxWidth
+                (profileBMI.progress * maxWidth * 0.25f) + (maxWidth * 0.75f)
             }
         }
         Spacer(
@@ -266,7 +267,7 @@ private fun PreviewProfileBMI() {
             profileBMI = ProfileBMI(
                 value = 24.89,
                 category = BMI.NORMAL,
-                progress = 0.99
+                progress = 0.75
             )
         )
     }
