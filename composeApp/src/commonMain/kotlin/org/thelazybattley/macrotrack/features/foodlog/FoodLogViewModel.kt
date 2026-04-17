@@ -104,7 +104,7 @@ class FoodLogViewModel(
                     height = user.height,
                     weight = user.weight,
                     age = user.age,
-                    gender = user.gender,
+                    gender = user.sex,
                     activityLevel = user.activityLevel,
                     goal = user.goal
                 )

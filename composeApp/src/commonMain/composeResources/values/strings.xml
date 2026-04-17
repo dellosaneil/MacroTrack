@@ -172,6 +172,7 @@
     <string name="personal_information">Personal Information</string>
     <string name="weight_history">Weight History</string>
     <string name="nutrition_goals">Nutrition Goals</string>
+    <string name="empty" />
 
 
     <plurals name="items">

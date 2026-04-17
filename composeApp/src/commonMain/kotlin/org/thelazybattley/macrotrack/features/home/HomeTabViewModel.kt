@@ -46,7 +46,7 @@ class HomeTabViewModel(
                         weight = userDetails.weight,
                         age = userDetails.age,
                         activityLevel = userDetails.activityLevel,
-                        gender = userDetails.gender,
+                        gender = userDetails.sex,
                         goal = userDetails.goal
                     )
                 )

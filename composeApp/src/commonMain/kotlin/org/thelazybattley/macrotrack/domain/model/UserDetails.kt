@@ -6,7 +6,7 @@ data class UserDetails(
     val weight: Double,
     val age: Int,
     val height: Double,
-    val gender: UserGender,
+    val sex: UserSex,
     val activityLevel: ActivityLevel,
     val goal: Goal
 )
@@ -15,7 +15,7 @@ fun UserDetails.toEntity() = UserDetailsEntity(
     weight = weight,
     age = age,
     height = height,
-    gender = gender,
+    gender = sex,
     activityLevel = activityLevel,
     goal = goal
 )

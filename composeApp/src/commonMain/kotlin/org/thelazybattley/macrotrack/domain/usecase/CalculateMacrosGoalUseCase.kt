@@ -3,7 +3,7 @@ package org.thelazybattley.macrotrack.domain.usecase
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
-import org.thelazybattley.macrotrack.domain.model.UserGender
+import org.thelazybattley.macrotrack.domain.model.UserSex
 import kotlin.math.roundToInt
 
 class CalculateMacrosGoalUseCase(
@@ -13,7 +13,7 @@ class CalculateMacrosGoalUseCase(
         height: Double,
         weight: Double,
         age: Int,
-        gender: UserGender,
+        gender: UserSex,
         activityLevel: ActivityLevel,
         goal: Goal
     ): MacroGoals {

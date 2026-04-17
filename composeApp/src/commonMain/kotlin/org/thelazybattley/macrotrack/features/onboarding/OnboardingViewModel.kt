@@ -10,7 +10,7 @@ import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.UserDetails
-import org.thelazybattley.macrotrack.domain.model.UserGender
+import org.thelazybattley.macrotrack.domain.model.UserSex
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingStep
@@ -39,7 +39,7 @@ class OnboardingViewModel(
         }
     }
 
-    override fun onGenderSelected(gender: UserGender) {
+    override fun onGenderSelected(gender: UserSex) {
         _state.update { currentState ->
             currentState.copy(
                 selectedGender = gender
@@ -54,7 +54,7 @@ class OnboardingViewModel(
                     weight = _state.value.weight,
                     age = _state.value.age,
                     height = _state.value.height,
-                    gender = _state.value.selectedGender!!,
+                    sex = _state.value.selectedGender!!,
                     activityLevel = _state.value.selectedActivityLevel!!,
                     goal = _state.value.selectedGoal!!,
                 )

@@ -2,7 +2,7 @@ package org.thelazybattley.macrotrack.features.onboarding
 
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
-import org.thelazybattley.macrotrack.domain.model.UserGender
+import org.thelazybattley.macrotrack.domain.model.UserSex
 
 interface OnboardingCallbacks {
 
@@ -10,7 +10,7 @@ interface OnboardingCallbacks {
 
     fun onActivityLevelSelected(activityLevel: ActivityLevel)
 
-    fun onGenderSelected(gender: UserGender)
+    fun onGenderSelected(gender: UserSex)
 
     fun onContinueClicked()
 
@@ -34,7 +34,7 @@ interface OnboardingCallbacks {
                     TODO("Not yet implemented")
                 }
 
-                override fun onGenderSelected(gender: UserGender) {
+                override fun onGenderSelected(gender: UserSex) {
                     TODO("Not yet implemented")
                 }
 

@@ -65,7 +65,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.Goal
-import org.thelazybattley.macrotrack.domain.model.UserGender
+import org.thelazybattley.macrotrack.domain.model.UserSex
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -205,7 +205,7 @@ fun OnboardingGoalAndStatsScreen(
 private fun OnboardingSelectSex(
     modifier: Modifier = Modifier,
     callbacks: OnboardingCallbacks,
-    selectedGender: UserGender?,
+    selectedGender: UserSex?,
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(value = false) }
 
@@ -258,7 +258,7 @@ private fun OnboardingSelectSex(
             containerColor = colors.white,
             modifier = Modifier.clip(shape = RoundedCornerShape(size = 12.dp))
         ) {
-            UserGender.entries.forEach { gender ->
+            UserSex.entries.forEach { gender ->
                 val isSelected = gender == selectedGender
                 val textStyle = typography.regular11.copy(
                     color = if (isSelected) colors.blue else colors.black,

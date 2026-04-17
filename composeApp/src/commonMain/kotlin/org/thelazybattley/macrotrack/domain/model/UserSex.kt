@@ -1,6 +1,6 @@
 package org.thelazybattley.macrotrack.domain.model
 
-enum class UserGender {
+enum class UserSex {
     MALE,
     FEMALE
 }
