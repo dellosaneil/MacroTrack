@@ -6,15 +6,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
@@ -38,6 +41,17 @@ fun CreateRecipeAddIngredients(
     viewState: CreateRecipeViewState,
     callbacks: CreateRecipeCallbacks
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val lazyListState = rememberLazyListState()
+
+    LaunchedEffect(key1 = viewState.highlightedIngredient?.name) {
+        val index = viewState.filteredIngredients.indexOfFirst { food ->
+            food.name == viewState.highlightedIngredient?.name
+        }
+        if (index == -1) return@LaunchedEffect
+        keyboardController?.hide()
+        lazyListState.animateScrollToItem(index = index)
+    }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 8.dp),
@@ -59,7 +73,7 @@ fun CreateRecipeAddIngredients(
             },
             textValue = textValue
         )
-        LazyColumn {
+        LazyColumn(state = lazyListState) {
             items(
                 items = viewState.filteredIngredients,
                 key = { it.name }
