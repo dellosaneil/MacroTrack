@@ -34,7 +34,7 @@ fun AddFoodTabScreen(
         val index = viewState.filteredFoodList.indexOfFirst { food ->
             food.name == viewState.highlightedFood?.name
         }
-        if(index == -1) return@LaunchedEffect
+        if (index == -1) return@LaunchedEffect
         keyboardController?.hide()
         lazyState.animateScrollToItem(index = index)
     }
@@ -69,7 +69,7 @@ fun AddFoodTabScreen(
                     )
                 }
 
-                viewState.loggedMeals.loggedMeals.contains(element = food) -> {
+                viewState.loggedMeals.loggedMeals.any { it.name == food.name } -> {
                     AddMealSelectedItem(
                         modifier = Modifier.fillMaxWidth(),
                         food = food
