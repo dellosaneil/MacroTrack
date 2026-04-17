@@ -19,7 +19,10 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
 @Composable
-fun PersonalInformationScreen(modifier: Modifier = Modifier) {
+fun PersonalInformationScreen(
+    modifier: Modifier = Modifier,
+    onPopBackStack: () -> Unit
+) {
     val viewModel = koinViewModel<PersonalInformationViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
 
@@ -28,10 +31,9 @@ fun PersonalInformationScreen(modifier: Modifier = Modifier) {
         containerColor = colors.white,
         topBar = {
             CommonTopBar(
-                modifier = Modifier,
                 stringResource = Res.string.personal_information,
-                onClick =  {
-
+                onClick = {
+                    onPopBackStack()
                 }
             )
         }

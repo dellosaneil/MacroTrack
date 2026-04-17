@@ -111,7 +111,12 @@ fun AppBottomNav() {
             composable(
                 route = AppDestinations.Profile.PersonalInfo.route
             ) {
-                PersonalInformationScreen(modifier = Modifier)
+                PersonalInformationScreen(
+                    modifier = Modifier,
+                    onPopBackStack = {
+                        navController.popBackStack()
+                    }
+                )
             }
             composable(
                 route = AppDestinations.Profile.NutritionGoals.route
