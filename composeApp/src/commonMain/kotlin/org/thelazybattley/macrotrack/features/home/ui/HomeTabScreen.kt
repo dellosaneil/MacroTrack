@@ -32,7 +32,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.features.home.HomeTabCallbacks
 import org.thelazybattley.macrotrack.features.home.HomeTabViewModel
 import org.thelazybattley.macrotrack.features.home.HomeTabViewState
-import org.thelazybattley.macrotrack.features.home.ui.today.HomeTodayScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -109,11 +108,7 @@ fun HomeTabScreen(
             }
         }
 
-        HomeTodayScreen(
-            viewState = viewState,
-            callbacks = callbacks,
-            onNavigate = onNavigate
-        )
+
     }
 
 }

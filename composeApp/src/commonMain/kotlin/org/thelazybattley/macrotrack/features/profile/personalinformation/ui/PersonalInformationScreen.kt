@@ -53,6 +53,7 @@ fun PersonalInformationScreen(
     val viewModel = koinViewModel<PersonalInformationViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
 
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = colors.white,
@@ -162,14 +163,14 @@ private fun PersonalInfoValues(
                     color = borderColor,
                     shape = RoundedCornerShape(size = 8.dp)
                 )
-                .padding(all = 12.dp),
+                .padding(all = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = value,
                 color = textColor,
-                style = typography.bold13,
+                style = typography.bold15,
             )
             if (suffixText != null) {
                 Text(
