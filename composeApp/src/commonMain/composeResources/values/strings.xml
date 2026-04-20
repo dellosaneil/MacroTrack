@@ -10,7 +10,7 @@
     <string name="track_improve_thrive">Track. Improve. Thrive.</string>
     <string name="activity_level_camel">Activity Level</string>
     <string name="how_active_are_you">How active are you on a typical week? This sets your daily calorie target.</string>
-
+    <string name="how_active_are_you_on_a_typical_week">How active are you on a typical week?</string>
     <string name="calorie_deficit">Calorie deficit</string>
     <string name="continue_text">Continue</string>
     <string name="lets_go">Let's go!</string>

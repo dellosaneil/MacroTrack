@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.ui.common
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -14,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
@@ -23,7 +25,7 @@ fun CommonBottomSheet(
     modifier: Modifier = Modifier,
     bottomSheetState: SheetState,
     showBottomSheet: MutableState<Boolean>,
-    content: @Composable () -> Unit
+    content: @Composable (Modifier) -> Unit
 ) {
     if (showBottomSheet.value) {
         ModalBottomSheet(
@@ -34,7 +36,11 @@ fun CommonBottomSheet(
             sheetState = bottomSheetState,
             containerColor = colors.white,
         ) {
-            content()
+            content(
+                Modifier
+                    .padding(paddingValues = AppPadding)
+                    .fillMaxWidth()
+            )
         }
     }
 }

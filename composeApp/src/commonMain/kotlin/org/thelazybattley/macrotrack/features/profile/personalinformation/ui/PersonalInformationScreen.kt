@@ -1,8 +1,10 @@
 package org.thelazybattley.macrotrack.features.profile.personalinformation.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,11 +16,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -33,6 +42,7 @@ import macrotrack.composeapp.generated.resources.cm
 import macrotrack.composeapp.generated.resources.empty
 import macrotrack.composeapp.generated.resources.female
 import macrotrack.composeapp.generated.resources.height
+import macrotrack.composeapp.generated.resources.how_active_are_you_on_a_typical_week
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.male
 import macrotrack.composeapp.generated.resources.personal_information
@@ -53,6 +63,7 @@ import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationCallbacks
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewModel
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewState
+import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
 import org.thelazybattley.macrotrack.ui.common.CommonTopBar
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -87,12 +98,17 @@ fun PersonalInformationScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PersonalInformationScreen(
     modifier: Modifier = Modifier,
     viewState: PersonalInformationViewState,
     callbacks: PersonalInformationCallbacks
 ) {
+    val showBottomSheet = remember { mutableStateOf(value = false) }
+    LaunchedEffect(key1 = viewState.userDetails?.activityLevel) {
+        showBottomSheet.value = false
+    }
     Column(
         modifier = modifier
             .padding(paddingValues = AppPadding)
@@ -146,15 +162,31 @@ private fun PersonalInformationScreen(
             ActivityLevelUi(
                 modifier = Modifier.fillMaxWidth(),
                 activityLevel = viewState.userDetails.activityLevel
-            )
+            ) {
+                showBottomSheet.value = true
+            }
         }
+    }
+
+
+    val bottomSheetState = rememberModalBottomSheetState()
+    CommonBottomSheet(
+        bottomSheetState = bottomSheetState,
+        showBottomSheet = showBottomSheet
+    ) { bottomSheetModifier ->
+        ActivityLevelBottomSheetContent(
+            modifier = bottomSheetModifier,
+            currentActivityLevel = viewState.userDetails?.activityLevel,
+            callbacks = callbacks
+        )
     }
 }
 
 @Composable
 private fun ActivityLevelUi(
     modifier: Modifier = Modifier,
-    activityLevel: ActivityLevel
+    activityLevel: ActivityLevel,
+    onClick: () -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -167,6 +199,9 @@ private fun ActivityLevelUi(
         )
         Row(
             modifier = Modifier
+                .clickable {
+                    onClick()
+                }
                 .fillMaxWidth()
                 .background(
                     color = colors.white,
@@ -215,6 +250,107 @@ private fun ActivityLevelUi(
     }
 }
 
+@Composable
+private fun ActivityLevelBottomSheetContent(
+    modifier: Modifier = Modifier,
+    currentActivityLevel: ActivityLevel?,
+    callbacks: PersonalInformationCallbacks
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        Text(
+            text = stringResource(resource = Res.string.activity_level_camel),
+            style = typography.bold18,
+            color = colors.black
+        )
+        Text(
+            text = stringResource(resource = Res.string.how_active_are_you_on_a_typical_week),
+            color = colors.mediumGray,
+            style = typography.regular11
+        )
+
+        ActivityLevel.entries.forEach { activityLevel ->
+            ActivityLevelPicker(
+                modifier = Modifier.fillMaxWidth(),
+                isSelected = currentActivityLevel == activityLevel,
+                activityLevel = activityLevel
+            ) {
+                callbacks.onActivityLevelSelected(activityLevel = activityLevel)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActivityLevelPicker(
+    modifier: Modifier = Modifier,
+    isSelected: Boolean,
+    activityLevel: ActivityLevel,
+    onClick: () -> Unit
+) {
+    val pickerColors = if (isSelected) {
+        ActivityLevelPickerColors(
+            containerColor = colors.paleBlue,
+            borderColor = colors.deepBlue,
+            titleTextColor = colors.deepBlue,
+            descriptionTextColor = colors.deepBlue.copy(
+                alpha = 0.8f
+            ),
+            multiplierColor = colors.deepBlue
+        )
+    } else {
+        ActivityLevelPickerColors(
+            containerColor = colors.iceMist,
+            borderColor = Color.Transparent,
+            titleTextColor = colors.black,
+            descriptionTextColor = colors.mediumGray,
+            multiplierColor = colors.mediumGray
+        )
+    }
+
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = pickerColors.containerColor),
+        border = BorderStroke(width = 1.dp, color = pickerColors.borderColor),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(all = 12.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+        ) {
+            Image(
+                painter = painterResource(resource = activityLevel.iconRes()),
+                contentDescription = null,
+                modifier = Modifier.size(size = 16.dp)
+            )
+            Column(
+                modifier = Modifier.weight(weight = 1f),
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+            ) {
+                Text(
+                    text = stringResource(resource = activityLevel.titleRes()),
+                    style = typography.bold13,
+                    color = pickerColors.titleTextColor
+                )
+                Text(
+                    text = stringResource(resource = activityLevel.descriptionRes()),
+                    style = typography.regular10,
+                    color = pickerColors.descriptionTextColor
+
+                )
+            }
+            Text(
+                text = "x${activityLevel.multiplier}",
+                color = pickerColors.multiplierColor,
+                style = typography.bold11,
+            )
+        }
+    }
+}
 
 @Composable
 private fun PersonalInfoValues(
@@ -311,3 +447,22 @@ private fun PreviewPersonalInformationScreen() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewActivityLevelBottomSheetContent() {
+    ActivityLevelBottomSheetContent(
+        modifier = Modifier.fillMaxWidth(),
+        currentActivityLevel = ActivityLevel.MODERATELY_ACTIVE,
+        callbacks = PersonalInformationCallbacks.default()
+    )
+}
+
+
+private data class ActivityLevelPickerColors(
+    val containerColor: Color,
+    val titleTextColor: Color,
+    val borderColor: Color,
+    val descriptionTextColor: Color,
+    val multiplierColor: Color
+)
