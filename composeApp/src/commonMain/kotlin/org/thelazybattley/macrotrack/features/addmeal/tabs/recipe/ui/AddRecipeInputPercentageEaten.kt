@@ -96,7 +96,7 @@ fun AddRecipeInputPercentageEaten(
                 style = typography.regular10,
                 color = colors.gray
             )
-            var textValue by rememberSaveable { mutableStateOf(value = "100") }
+            var textValue by rememberSaveable { mutableStateOf(value = "") }
             CommonTextField(
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = stringResource(resource = Res.string.one_hundred),

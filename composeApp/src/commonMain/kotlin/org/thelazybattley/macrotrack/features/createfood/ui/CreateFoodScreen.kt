@@ -154,7 +154,7 @@ fun AddIngredientScreen(
                 val height = with(receiver = LocalDensity.current) {
                     textFieldHeight.value.toDp()
                 }
-                var textValue by rememberSaveable { mutableStateOf(value = "100") }
+                var textValue by rememberSaveable { mutableStateOf(value = "") }
                 CommonTextField(
                     modifier = Modifier
                         .weight(weight = 0.85f)
