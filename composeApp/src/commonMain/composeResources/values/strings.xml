@@ -173,6 +173,7 @@
     <string name="weight_history">Weight History</string>
     <string name="nutrition_goals">Nutrition Goals</string>
     <string name="empty" />
+    <string name="activity_level_updated_to">Activity level updated to %1$s</string>
 
 
     <plurals name="items">

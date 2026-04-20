@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -21,6 +22,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -37,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.activity_level_camel
+import macrotrack.composeapp.generated.resources.activity_level_updated_to
 import macrotrack.composeapp.generated.resources.age
 import macrotrack.composeapp.generated.resources.cm
 import macrotrack.composeapp.generated.resources.empty
@@ -64,6 +68,7 @@ import org.thelazybattley.macrotrack.features.profile.personalinformation.Person
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewModel
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewState
 import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
+import org.thelazybattley.macrotrack.ui.common.CommonSnackBarContent
 import org.thelazybattley.macrotrack.ui.common.CommonTopBar
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -76,6 +81,7 @@ fun PersonalInformationScreen(
 ) {
     val viewModel = koinViewModel<PersonalInformationViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
+    val snackBarHostState = remember { SnackbarHostState() }
 
 
     Scaffold(
@@ -96,6 +102,32 @@ fun PersonalInformationScreen(
             callbacks = viewModel
         )
     }
+    LaunchedEffect(key1 = viewState.userDetails?.activityLevel) {
+        viewState.updatedActivityLevel?.let { _ ->
+            snackBarHostState.currentSnackbarData?.dismiss()
+            snackBarHostState.showSnackbar(message = "")
+
+        }
+    }
+
+    SnackbarHost(
+        hostState = snackBarHostState,
+        modifier = Modifier
+            .statusBarsPadding()
+    ) { _ ->
+        viewState.updatedActivityLevel?.let { activityLevel ->
+            val updatedActivityLevel =
+                stringResource(resource = activityLevel.titleRes())
+            CommonSnackBarContent(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                text = stringResource(
+                    resource = Res.string.activity_level_updated_to,
+                    updatedActivityLevel
+                )
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,7 +138,7 @@ private fun PersonalInformationScreen(
     callbacks: PersonalInformationCallbacks
 ) {
     val showBottomSheet = remember { mutableStateOf(value = false) }
-    LaunchedEffect(key1 = viewState.userDetails?.activityLevel) {
+    LaunchedEffect(key1 = viewState.updatedActivityLevel) {
         showBottomSheet.value = false
     }
     Column(

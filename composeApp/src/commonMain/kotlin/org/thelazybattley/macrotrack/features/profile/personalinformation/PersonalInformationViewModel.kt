@@ -41,10 +41,10 @@ class PersonalInformationViewModel(
                     userDetails = updatedUserDetails
                 )
                 currentState.copy(
-                    userDetails = updatedUserDetails
+                    userDetails = updatedUserDetails,
+                    updatedActivityLevel = activityLevel
                 )
             }
-
         }
     }
 }
