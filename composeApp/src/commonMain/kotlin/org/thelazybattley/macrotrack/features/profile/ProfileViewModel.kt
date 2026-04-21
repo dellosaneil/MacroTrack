@@ -31,7 +31,8 @@ class ProfileViewModel(
 
     init {
         viewModelScope.launch {
-            getUserDetailsUseCase().let { userDetails ->
+            getUserDetailsUseCase().collect { userDetails ->
+                updateBMI()
                 _state.update { currentState ->
                     currentState.copy(
                         userDetails = userDetails,
@@ -39,7 +40,6 @@ class ProfileViewModel(
                     )
                 }
             }
-            updateBMI()
         }
         viewModelScope.launch {
             getAllWeightUseCase().collectLatest { weight ->
@@ -85,19 +85,18 @@ class ProfileViewModel(
 
     override fun updateGoal(goal: Goal) {
         viewModelScope.launch {
-            _state.update { currentState ->
-                if (currentState.userDetails == null) return@update currentState
-                val updatedUserDetails = currentState.userDetails.copy(
-                    goal = goal,
-                )
-                insertUserDetailsUseCase(
-                    userDetails = updatedUserDetails
-                )
-                currentState.copy(
-                    userDetails = updatedUserDetails,
-                    updatedGoal = goal
-                )
-            }
+            val userDetails = _state.value.userDetails ?: return@launch
+            val updatedUserDetails = userDetails.copy(
+                goal = goal,
+            )
+            insertUserDetailsUseCase(
+                userDetails = updatedUserDetails
+            )
+        }
+        _state.update { currentState ->
+            currentState.copy(
+                updatedGoal = goal
+            )
         }
     }
 

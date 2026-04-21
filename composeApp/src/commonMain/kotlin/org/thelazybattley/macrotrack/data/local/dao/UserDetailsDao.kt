@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.data.local.dao
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 
 @Dao
@@ -12,5 +13,5 @@ interface UserDetailsDao {
     suspend fun insertUserDetails(userDetails: UserDetailsEntity)
 
     @Query("SELECT * FROM userdetailsentity LIMIT 1")
-    suspend fun getUserDetails(): UserDetailsEntity?
+    fun getUserDetails(): Flow<UserDetailsEntity?>
 }

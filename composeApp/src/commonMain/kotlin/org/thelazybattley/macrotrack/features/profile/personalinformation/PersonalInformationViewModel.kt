@@ -21,7 +21,7 @@ class PersonalInformationViewModel(
 
     init {
         viewModelScope.launch {
-            getUserDetailsUseCase().let { userDetails ->
+            getUserDetailsUseCase().collect { userDetails ->
                 _state.update { currentState ->
                     currentState.copy(
                         userDetails = userDetails
@@ -41,7 +41,6 @@ class PersonalInformationViewModel(
                     userDetails = updatedUserDetails
                 )
                 currentState.copy(
-                    userDetails = updatedUserDetails,
                     updatedActivityLevel = activityLevel
                 )
             }

@@ -101,7 +101,8 @@ class FoodLogViewModel(
 
     private fun updateMacroGoals() {
         viewModelScope.launch {
-            getUserDetailsUseCase()?.let { user ->
+            getUserDetailsUseCase().collect { user ->
+                if(user == null) return@collect
                 val goalMacros = calculateMacrosGoalUseCase(
                     height = user.height,
                     weight = user.weight,

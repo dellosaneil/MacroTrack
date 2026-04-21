@@ -45,7 +45,6 @@ import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewModel
 import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
-import org.thelazybattley.macrotrack.features.home.HomeTabViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewModel
@@ -98,7 +97,6 @@ val useCaseModule = module {
 val viewModelModule = module {
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::SplashViewModel)
-    viewModelOf(::HomeTabViewModel)
     viewModelOf(::AddMealViewModel)
     viewModelOf(::FoodLogViewModel)
     viewModelOf(::CreateFoodViewModel)
