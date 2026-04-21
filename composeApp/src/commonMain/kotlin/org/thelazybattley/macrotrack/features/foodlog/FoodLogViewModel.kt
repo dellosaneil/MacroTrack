@@ -30,10 +30,12 @@ class FoodLogViewModel(
     init {
         viewModelScope.launch {
             getAllFoodLogUseCase().collect { logs ->
+                val dates = logs.map { it.date }.toMutableSet()
+                dates.add(element = getCurrentDate())
                 _state.update { currentState ->
                     currentState.copy(
                         allFoodLog = logs,
-                        availableDates = logs.map { it.date }.toSet().toList()
+                        availableDates = dates.toList()
                     )
                 }.also {
                     val today = logs.filter { it.date == getCurrentDate() }

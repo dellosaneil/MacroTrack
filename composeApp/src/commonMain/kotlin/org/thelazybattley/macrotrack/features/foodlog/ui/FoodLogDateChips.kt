@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,7 +31,12 @@ fun FoodLogDateChips(
     dateSelected: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
 ) {
+    val state = rememberLazyListState(
+        initialFirstVisibleItemIndex = dates.size
+    )
+
     LazyRow(
+        state = state,
         modifier = modifier
             .border(width = 1.dp, color = colors.lightGray, shape = RoundedCornerShape(size = 8.dp))
             .padding(all = 10.dp),
@@ -55,7 +61,7 @@ private fun DateChips(
     isSelected: Boolean
 ) {
     val background = if (isSelected) colors.deepBlue else colors.iceMist
-    val textColor = if(isSelected) colors.white else colors.mediumGray
+    val textColor = if (isSelected) colors.white else colors.mediumGray
 
     Card(
         modifier = modifier,
