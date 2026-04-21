@@ -122,7 +122,6 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 onNavigate = callbacks::onNavigate
             )
-
         }
     }
 }
