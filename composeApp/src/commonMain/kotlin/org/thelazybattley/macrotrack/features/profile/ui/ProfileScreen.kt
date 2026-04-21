@@ -33,6 +33,9 @@ fun ProfileScreen(
     val viewModel = koinViewModel<ProfileViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(key1 = Unit) {
+        viewModel.clearGoalUpdated()
+    }
     LaunchedEffect(key1 = viewState.updatedGoal) {
         if (viewState.updatedGoal == null) {
             snackBarHostState.currentSnackbarData?.dismiss()

@@ -15,6 +15,8 @@ interface ProfileCallbacks {
 
     fun onResetNavigation()
 
+    fun clearGoalUpdated()
+
     companion object {
         fun default() = object : ProfileCallbacks {
             override fun onWeightInput(weight: String) {
@@ -34,6 +36,10 @@ interface ProfileCallbacks {
             }
 
             override fun onResetNavigation() {
+                TODO("Not yet implemented")
+            }
+
+            override fun clearGoalUpdated() {
                 TODO("Not yet implemented")
             }
         }

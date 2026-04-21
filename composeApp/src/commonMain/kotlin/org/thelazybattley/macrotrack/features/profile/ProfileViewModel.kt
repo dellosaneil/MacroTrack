@@ -116,6 +116,14 @@ class ProfileViewModel(
         }
     }
 
+    override fun clearGoalUpdated() {
+        _state.update { currentState ->
+            currentState.copy(
+                updatedGoal = null
+            )
+        }
+    }
+
     private suspend fun updateBMI() {
         calculateBMIUseCase().let { bmi ->
             val bmiCategory = when {
