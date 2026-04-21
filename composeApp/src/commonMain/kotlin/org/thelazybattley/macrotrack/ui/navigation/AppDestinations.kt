@@ -1,8 +1,6 @@
 package org.thelazybattley.macrotrack.ui.navigation
 
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.home
-import macrotrack.composeapp.generated.resources.ic_home
 import macrotrack.composeapp.generated.resources.ic_log
 import macrotrack.composeapp.generated.resources.ic_profile
 import macrotrack.composeapp.generated.resources.ic_progress
@@ -22,11 +20,6 @@ sealed class AppDestinations {
         val icon: DrawableResource,
         val label: StringResource
     ) : AppDestinations() {
-        object Home : BottomNavigation(
-            route = "home", label = Res.string.home,
-            icon = Res.drawable.ic_home
-        )
-
         object Log : BottomNavigation(
             route = "log", label = Res.string.log,
             icon = Res.drawable.ic_log
@@ -51,7 +44,7 @@ sealed class AppDestinations {
         companion object {
             val entries: List<BottomNavigation>
                 get() = listOf(
-                    Home, Log, Steps, Progress, Profile
+                    Log, Steps, Progress, Profile
                 )
         }
     }

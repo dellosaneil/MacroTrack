@@ -79,7 +79,7 @@ fun MacroBottomNavBar(
 private fun PreviewMacroBottomNavBar() {
     MacroBottomNavBar(
         modifier = Modifier.fillMaxWidth(),
-        selectedDestination = AppDestinations.BottomNavigation.Home
+        selectedDestination = AppDestinations.BottomNavigation.Log
     ) {
 
     }

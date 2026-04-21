@@ -15,7 +15,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.thelazybattley.macrotrack.features.foodlog.ui.FoodLogTabScreen
-import org.thelazybattley.macrotrack.features.home.ui.HomeTabScreen
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -26,12 +25,12 @@ fun MainScreenNavigation(
     onNavigate: (String) -> Unit
 ) {
     val navController = rememberNavController()
-    var currentDestination: AppDestinations.BottomNavigation by remember { mutableStateOf(value = AppDestinations.BottomNavigation.Home) }
+    var currentDestination: AppDestinations.BottomNavigation by remember { mutableStateOf(value = AppDestinations.BottomNavigation.Log) }
     LaunchedEffect(key1 = Unit) {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             currentDestination = AppDestinations.BottomNavigation.entries.find { macroDestination ->
                 destination.route == macroDestination.route
-            } ?: AppDestinations.BottomNavigation.Home
+            } ?: AppDestinations.BottomNavigation.Log
         }
     }
 
@@ -52,13 +51,8 @@ fun MainScreenNavigation(
                 .padding(paddingValues = innerPadding)
                 .padding(paddingValues = AppPadding),
             navController = navController,
-            startDestination = AppDestinations.BottomNavigation.Home.route
+            startDestination = AppDestinations.BottomNavigation.Log.route
         ) {
-            composable(route = AppDestinations.BottomNavigation.Home.route) {
-                HomeTabScreen { destination ->
-                    onNavigate(destination.route)
-                }
-            }
             composable(route = AppDestinations.BottomNavigation.Log.route) {
                 FoodLogTabScreen { route ->
                     onNavigate(route)
