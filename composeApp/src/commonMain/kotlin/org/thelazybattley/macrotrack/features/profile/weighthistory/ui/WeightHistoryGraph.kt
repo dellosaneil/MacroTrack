@@ -74,12 +74,12 @@ private fun drawGraphDetails(
     val maxWeight = weightList.maxOf { it.weight }
     val range = maxWeight - minWeight
     val labelInterval = range / (TICK_COUNT - 1)
-    val labelEndOffset = size.height - LABEL_Y_START_OFFSET
-    val labelOffsetInterval = (labelEndOffset - LABEL_Y_START_OFFSET) / (TICK_COUNT - 1)
+    val labelEndYOffset = size.height - LABEL_Y_START_OFFSET
+    val labelYInterval = (labelEndYOffset - LABEL_Y_START_OFFSET) / (TICK_COUNT - 1)
 
     repeat(times = TICK_COUNT) { index ->
         val text = maxWeight - (index * labelInterval)
-        val yOffset = LABEL_Y_START_OFFSET + (labelOffsetInterval * index)
+        val yOffset = LABEL_Y_START_OFFSET + (labelYInterval * index)
         val textLayoutResult = textMeasurer.measure(
             text = text.to2Decimal().toString(),
             style = labelTextStyle
@@ -103,6 +103,28 @@ private fun drawGraphDetails(
             )
         )
     }
+    weightList.forEachIndexed { index, weight ->
+        val yOffset =
+            ((maxWeight - weight.weight) / range) * (size.height - LABEL_Y_START_OFFSET * 2) + LABEL_Y_START_OFFSET
+        drawPoint(
+            center = Offset(
+                x = size.width, y = yOffset.toFloat()
+            ),
+            color = pointColor
+        )
+    }
+
+}
+
+private fun DrawScope.drawPoint(
+    center: Offset,
+    color: Color
+) {
+    drawCircle(
+        color = color,
+        radius = 24f,
+        center = center
+    )
 }
 
 private fun DrawScope.drawLabelLine(
@@ -145,11 +167,11 @@ private fun PreviewWeightHistoryGraph() {
                     date = getCurrentDate()
                 ),
                 Weight(
-                    weight = 65.4,
+                    weight = 66.9,
                     date = getCurrentDate().plus(period = DatePeriod(days = 1)),
                 ),
                 Weight(
-                    weight = 66.4,
+                    weight = 65.15,
                     date = getCurrentDate().plus(period = DatePeriod(days = 2)),
                 ),
                 Weight(
