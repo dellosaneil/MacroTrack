@@ -12,13 +12,12 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
@@ -38,10 +37,9 @@ fun WeightHistoryGraph(
     val lineColor = colors.deepBlue
     val labelColor = colors.mediumGray
     val textMeasurer = rememberTextMeasurer()
-    val scaleTextStyle = typography.regular10.copy(
+    val labelTextStyle = typography.regular10.copy(
         color = colors.mediumGray
     )
-    val localDensity = LocalDensity.current
     Box(
         modifier = modifier
             .drawBehind(
@@ -51,8 +49,7 @@ fun WeightHistoryGraph(
                     lineColor = lineColor,
                     labelColor = labelColor,
                     textMeasurer = textMeasurer,
-                    scaleTextStyle = scaleTextStyle,
-                    density = localDensity
+                    labelTextStyle = labelTextStyle
                 )
             )
             .border(
@@ -70,8 +67,7 @@ private fun drawGraphDetails(
     lineColor: Color,
     labelColor: Color,
     textMeasurer: TextMeasurer,
-    scaleTextStyle: TextStyle,
-    density: Density
+    labelTextStyle: TextStyle
 ): DrawScope.() -> Unit = {
 
     val minWeight = weightList.minOf { it.weight }
@@ -79,36 +75,57 @@ private fun drawGraphDetails(
     val range = maxWeight - minWeight
     val labelInterval = range / (TICK_COUNT - 1)
     val labelEndOffset = size.height - LABEL_Y_START_OFFSET
-    val labelOffsetInterval = (labelEndOffset - LABEL_Y_START_OFFSET) / TICK_COUNT
+    val labelOffsetInterval = (labelEndOffset - LABEL_Y_START_OFFSET) / (TICK_COUNT - 1)
 
     repeat(times = TICK_COUNT) { index ->
         val text = maxWeight - (index * labelInterval)
         val yOffset = LABEL_Y_START_OFFSET + (labelOffsetInterval * index)
-        drawLabel(
-            textMeasurer = textMeasurer,
+        val textLayoutResult = textMeasurer.measure(
             text = text.to2Decimal().toString(),
+            style = labelTextStyle
+        )
+        drawLabel(
+            textLayoutResult = textLayoutResult,
             position = Offset(
                 x = LABEL_X_OFFSET,
                 y = yOffset
             ),
-            style = scaleTextStyle
+        )
+        drawLabelLine(
+            color = labelTextStyle.color,
+            startOffset = Offset(
+                x = LABEL_X_OFFSET + 30.dp.toPx(),
+                y = yOffset
+            ),
+            endOffset = Offset(
+                x = size.width,
+                y = yOffset
+            )
         )
     }
 }
 
-private fun DrawScope.drawLabel(
-    textMeasurer: TextMeasurer,
-    text: String,
-    position: Offset,
-    style: TextStyle
+private fun DrawScope.drawLabelLine(
+    startOffset: Offset,
+    endOffset: Offset,
+    color: Color
 ) {
-    val layout = textMeasurer.measure(
-        text = text,
-        style = style
+    drawLine(
+        color = color,
+        start = startOffset,
+        end = endOffset
     )
+}
+
+private fun DrawScope.drawLabel(
+    textLayoutResult: TextLayoutResult,
+    position: Offset,
+) {
     drawText(
-        textLayoutResult = layout,
-        topLeft = position
+        textLayoutResult = textLayoutResult,
+        topLeft = position.copy(
+            y = position.y - (textLayoutResult.size.height / 2f)
+        )
     )
 }
 
