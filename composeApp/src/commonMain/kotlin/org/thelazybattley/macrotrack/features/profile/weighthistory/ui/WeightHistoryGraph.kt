@@ -45,7 +45,7 @@ fun WeightHistoryGraph(
                 onDraw = drawGraphDetails(
                     weightList = weightList,
                     pointColor = pointColor,
-                    lineColor = lineColor,
+                    lineSegmentColor = lineColor,
                     textMeasurer = textMeasurer,
                     labelTextStyle = labelTextStyle
                 )
@@ -62,7 +62,7 @@ fun WeightHistoryGraph(
 private fun drawGraphDetails(
     weightList: List<Weight>,
     pointColor: Color,
-    lineColor: Color,
+    lineSegmentColor: Color,
     textMeasurer: TextMeasurer,
     labelTextStyle: TextStyle
 ): DrawScope.() -> Unit = {
@@ -104,16 +104,83 @@ private fun drawGraphDetails(
     val graphWidth = size.width - labelStartOffset * 2
     val pointInterval = graphWidth / (weightList.size - 1)
     weightList.forEachIndexed { index, weight ->
-        val yOffset =
-            ((maxWeight - weight.weight) / range) * (size.height - LABEL_Y_START_OFFSET * 2) + LABEL_Y_START_OFFSET
-        val xOffset = labelStartOffset + (index * pointInterval)
+        val yOffset = calculateYPointOffset(
+            maxWeight = maxWeight,
+            weight = weight.weight,
+            range = range,
+            maxHeight = size.height
+        )
+        val xOffset = calculateXPointOffset(
+            startOffset = labelStartOffset,
+            index = index,
+            pointInterval = pointInterval
+        )
         drawPoint(
             center = Offset(
-                x = xOffset, y = yOffset.toFloat()
+                x = xOffset, y = yOffset
             ),
             color = pointColor
         )
+        val xEndOffset = if (index != weightList.size - 1) {
+            calculateXPointOffset(
+                startOffset = labelStartOffset,
+                index = index + 1,
+                pointInterval = pointInterval
+            )
+        } else {
+            xOffset
+        }
+
+        val yEndOffset = if (index != weightList.size - 1) {
+            calculateYPointOffset(
+                maxWeight = maxWeight,
+                weight = weightList.get(index = index + 1).weight,
+                range = range,
+                maxHeight = size.height
+            )
+        } else {
+            yOffset
+        }
+        lineSegment(
+            color = lineSegmentColor,
+            startOffset = Offset(
+                x = xOffset, y = yOffset
+            ),
+            endOffset = Offset(
+                x = xEndOffset, y = yEndOffset
+            )
+        )
     }
+}
+
+private fun calculateXPointOffset(
+    index: Int,
+    pointInterval: Float,
+    startOffset: Float
+): Float {
+    return startOffset + (index * pointInterval)
+}
+
+private fun calculateYPointOffset(
+    maxWeight: Double,
+    weight: Double,
+    range: Double,
+    maxHeight: Float
+): Float {
+    return (((maxWeight - weight) / range) * (maxHeight - LABEL_Y_START_OFFSET * 2) + LABEL_Y_START_OFFSET).toFloat()
+}
+
+
+private fun DrawScope.lineSegment(
+    color: Color,
+    startOffset: Offset,
+    endOffset: Offset
+) {
+    drawLine(
+        color = color,
+        start = startOffset,
+        end = endOffset
+    )
 }
 
 private fun DrawScope.drawPoint(
