@@ -35,7 +35,6 @@ fun WeightHistoryGraph(
 ) {
     val pointColor = colors.deepBlue
     val lineColor = colors.deepBlue
-    val labelColor = colors.mediumGray
     val textMeasurer = rememberTextMeasurer()
     val labelTextStyle = typography.regular10.copy(
         color = colors.mediumGray
@@ -47,7 +46,6 @@ fun WeightHistoryGraph(
                     weightList = weightList,
                     pointColor = pointColor,
                     lineColor = lineColor,
-                    labelColor = labelColor,
                     textMeasurer = textMeasurer,
                     labelTextStyle = labelTextStyle
                 )
@@ -65,7 +63,6 @@ private fun drawGraphDetails(
     weightList: List<Weight>,
     pointColor: Color,
     lineColor: Color,
-    labelColor: Color,
     textMeasurer: TextMeasurer,
     labelTextStyle: TextStyle
 ): DrawScope.() -> Unit = {
@@ -77,6 +74,7 @@ private fun drawGraphDetails(
     val labelEndYOffset = size.height - LABEL_Y_START_OFFSET
     val labelYInterval = (labelEndYOffset - LABEL_Y_START_OFFSET) / (TICK_COUNT - 1)
 
+    val labelStartOffset = LABEL_X_OFFSET + 30.dp.toPx()
     repeat(times = TICK_COUNT) { index ->
         val text = maxWeight - (index * labelInterval)
         val yOffset = LABEL_Y_START_OFFSET + (labelYInterval * index)
@@ -94,7 +92,7 @@ private fun drawGraphDetails(
         drawLabelLine(
             color = labelTextStyle.color,
             startOffset = Offset(
-                x = LABEL_X_OFFSET + 30.dp.toPx(),
+                x = labelStartOffset,
                 y = yOffset
             ),
             endOffset = Offset(
@@ -103,17 +101,19 @@ private fun drawGraphDetails(
             )
         )
     }
+    val graphWidth = size.width - labelStartOffset * 2
+    val pointInterval = graphWidth / (weightList.size - 1)
     weightList.forEachIndexed { index, weight ->
         val yOffset =
             ((maxWeight - weight.weight) / range) * (size.height - LABEL_Y_START_OFFSET * 2) + LABEL_Y_START_OFFSET
+        val xOffset = labelStartOffset + (index * pointInterval)
         drawPoint(
             center = Offset(
-                x = size.width, y = yOffset.toFloat()
+                x = xOffset, y = yOffset.toFloat()
             ),
             color = pointColor
         )
     }
-
 }
 
 private fun DrawScope.drawPoint(
@@ -122,7 +122,7 @@ private fun DrawScope.drawPoint(
 ) {
     drawCircle(
         color = color,
-        radius = 24f,
+        radius = 12f,
         center = center
     )
 }
@@ -163,7 +163,7 @@ private fun PreviewWeightHistoryGraph() {
                 .height(height = 256.dp),
             weightList = listOf(
                 Weight(
-                    weight = 67.4,
+                    weight = 68.65,
                     date = getCurrentDate()
                 ),
                 Weight(

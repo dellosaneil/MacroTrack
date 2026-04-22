@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory
 
+import org.thelazybattley.macrotrack.domain.model.Weight
+
 data class WeightHistoryViewState(
-    val weight: Double = 0.0
+    val weightList: List<Weight> = emptyList()
 )
