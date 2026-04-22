@@ -2,7 +2,6 @@ package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -51,7 +50,7 @@ fun WeightHistoryScreen(
     viewState: WeightHistoryViewState,
     callbacks: WeightHistoryCallbacks
 ) {
-    Text(text = "ASDA", modifier = modifier)
+
 }
 
 
