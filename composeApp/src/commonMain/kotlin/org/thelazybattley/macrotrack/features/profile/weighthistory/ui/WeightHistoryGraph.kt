@@ -1,7 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
@@ -18,6 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
@@ -34,18 +37,16 @@ fun WeightHistoryGraph(
     weightList: List<Weight>
 ) {
     val pointColor = colors.deepBlue
-    val lineColor = colors.deepBlue
     val textMeasurer = rememberTextMeasurer()
     val labelTextStyle = typography.regular10.copy(
         color = colors.mediumGray
     )
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .drawBehind(
                 onDraw = drawGraphDetails(
                     weightList = weightList,
                     pointColor = pointColor,
-                    lineSegmentColor = lineColor,
                     textMeasurer = textMeasurer,
                     labelTextStyle = labelTextStyle
                 )
@@ -56,13 +57,45 @@ fun WeightHistoryGraph(
             ),
     ) {
 
+
     }
+}
+
+private fun getPointOffset(
+    density: Density,
+    weightList: List<Weight>,
+    canvasWidth: Float,
+    canvasHeight: Float
+): List<Offset> {
+    val labelStartOffset = LABEL_X_OFFSET + density.run { 30.dp.toPx() }
+    val drawableCanvas = canvasWidth - (labelStartOffset * 2)
+    val pointInterval = drawableCanvas / weightList.lastIndex
+    val maxWeight = weightList.maxOf { it.weight }
+    val offsetList = mutableListOf<Offset>()
+    val minWeight = weightList.minOf { it.weight }
+    val range = maxWeight - minWeight
+
+    weightList.forEachIndexed { index, weight ->
+        val yOffset = calculateYPointOffset(
+            maxWeight = maxWeight,
+            weight = weight.weight,
+            range = range,
+            maxHeight = canvasHeight
+        )
+        val xOffset = calculateXPointOffset(
+            startOffset = labelStartOffset,
+            index = index,
+            pointInterval = pointInterval
+        )
+        offsetList.add(Offset(x = xOffset, y = yOffset))
+    }
+
+    return offsetList
 }
 
 private fun drawGraphDetails(
     weightList: List<Weight>,
     pointColor: Color,
-    lineSegmentColor: Color,
     textMeasurer: TextMeasurer,
     labelTextStyle: TextStyle
 ): DrawScope.() -> Unit = {
@@ -101,47 +134,26 @@ private fun drawGraphDetails(
             )
         )
     }
-    val graphWidth = size.width - labelStartOffset * 2
-    val pointInterval = graphWidth / (weightList.size - 1)
-    weightList.forEachIndexed { index, weight ->
-        val yOffset = calculateYPointOffset(
-            maxWeight = maxWeight,
-            weight = weight.weight,
-            range = range,
-            maxHeight = size.height
-        )
-        val xOffset = calculateXPointOffset(
-            startOffset = labelStartOffset,
-            index = index,
-            pointInterval = pointInterval
-        )
-        drawPoint(
-            center = Offset(
-                x = xOffset, y = yOffset
-            ),
-            color = pointColor
-        )
-        if(index != weightList.lastIndex) {
-            lineSegment(
-                color = lineSegmentColor,
-                startOffset = Offset(
-                    x = xOffset, y = yOffset
-                ),
-                endOffset = Offset(
-                    x = calculateXPointOffset(
-                        startOffset = labelStartOffset,
-                        index = index + 1,
-                        pointInterval = pointInterval
-                    ), y = calculateYPointOffset(
-                        maxWeight = maxWeight,
-                        weight = weightList.get(index = index + 1).weight,
-                        range = range,
-                        maxHeight = size.height
-                    )
-                )
-            )
-        }
-    }
+    val points = getPointOffset(
+        density = this,
+        weightList = weightList,
+        canvasWidth = size.width,
+        canvasHeight = size.height
+    )
+    drawPoints(
+        points = points,
+        color = pointColor,
+        pointMode = PointMode.Points,
+        strokeWidth = 24f,
+        cap = StrokeCap.Round
+    )
+    drawPoints(
+        points = points,
+        color = pointColor,
+        pointMode = PointMode.Polygon,
+        strokeWidth = 4f,
+        cap = StrokeCap.Butt
+    )
 }
 
 private fun calculateXPointOffset(
@@ -159,31 +171,6 @@ private fun calculateYPointOffset(
     maxHeight: Float
 ): Float {
     return (((maxWeight - weight) / range) * (maxHeight - LABEL_Y_START_OFFSET * 2) + LABEL_Y_START_OFFSET).toFloat()
-}
-
-
-private fun DrawScope.lineSegment(
-    color: Color,
-    startOffset: Offset,
-    endOffset: Offset
-) {
-    drawLine(
-        color = color,
-        start = startOffset,
-        end = endOffset,
-        strokeWidth = 4f
-    )
-}
-
-private fun DrawScope.drawPoint(
-    center: Offset,
-    color: Color
-) {
-    drawCircle(
-        color = color,
-        radius = 12f,
-        center = center,
-    )
 }
 
 private fun DrawScope.drawLabelLine(
