@@ -1,12 +1,22 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -14,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -24,12 +36,16 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
+import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.value_kg
+import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import kotlin.math.abs
 
 @Composable
 fun WeightHistoryGraph(
@@ -41,23 +57,72 @@ fun WeightHistoryGraph(
     val labelTextStyle = typography.regular10.copy(
         color = colors.mediumGray
     )
+    var selectedIndex by remember { mutableIntStateOf(value = -1) }
     BoxWithConstraints(
         modifier = modifier
-            .drawBehind(
-                onDraw = drawGraphDetails(
-                    weightList = weightList,
-                    pointColor = pointColor,
-                    textMeasurer = textMeasurer,
-                    labelTextStyle = labelTextStyle
-                )
-            )
             .border(
                 width = 1.dp, color = colors.lightGray,
                 shape = RoundedCornerShape(size = 16.dp)
             ),
     ) {
+        val density = LocalDensity.current
+        val points = getPointOffset(
+            density = density,
+            weightList = weightList,
+            canvasWidth = density.run { maxWidth.toPx() },
+            canvasHeight = density.run { maxHeight.toPx() }
+        )
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .pointerInput(key1 = Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            selectedIndex = searchIndexByOffset(points = points, clickedOffset = it)
+                        }
+                    )
+                }
+                .drawBehind(
+                    onDraw = drawGraphDetails(
+                        weightList = weightList,
+                        pointColor = pointColor,
+                        textMeasurer = textMeasurer,
+                        labelTextStyle = labelTextStyle,
+                        points = points
+                    )
+                )
+        ) {
+            if (selectedIndex >= 0) {
+                Text(
+                    text = stringResource(
+                        resource = Res.string.value_kg,
+                        weightList.get(index = selectedIndex).weight
+                    ),
+                    modifier = Modifier
+                        .offset(
+                            x = density.run { points.get(index = selectedIndex).x.toDp() },
+                            y = density.run { points.get(index = selectedIndex).y.toDp() }
+                        )
+                        .background(
+                            color = colors.deepBlue,
+                            shape = RoundedCornerShape(size = 6.dp)
+                        )
+                        .padding(all = 4.dp),
+                    style = typography.bold9,
+                    color = colors.white
+                )
+            }
+        }
+    }
+}
 
-
+private fun searchIndexByOffset(
+    points: List<Offset>,
+    clickedOffset: Offset
+): Int {
+    val clickableRadius = 40f
+    return points.indexOfFirst {
+        val distance = (it - clickedOffset).getDistance()
+        abs(x = distance) <= clickableRadius
     }
 }
 
@@ -97,7 +162,8 @@ private fun drawGraphDetails(
     weightList: List<Weight>,
     pointColor: Color,
     textMeasurer: TextMeasurer,
-    labelTextStyle: TextStyle
+    labelTextStyle: TextStyle,
+    points: List<Offset>
 ): DrawScope.() -> Unit = {
 
     val minWeight = weightList.minOf { it.weight }
@@ -134,17 +200,11 @@ private fun drawGraphDetails(
             )
         )
     }
-    val points = getPointOffset(
-        density = this,
-        weightList = weightList,
-        canvasWidth = size.width,
-        canvasHeight = size.height
-    )
     drawPoints(
         points = points,
         color = pointColor,
         pointMode = PointMode.Points,
-        strokeWidth = 24f,
+        strokeWidth = POINT_RADIUS,
         cap = StrokeCap.Round
     )
     drawPoints(
@@ -237,3 +297,4 @@ private fun PreviewWeightHistoryGraph() {
 private const val TICK_COUNT = 5
 private const val LABEL_X_OFFSET = 48f
 private const val LABEL_Y_START_OFFSET = 96f
+private const val POINT_RADIUS = 24f
