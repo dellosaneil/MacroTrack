@@ -121,35 +121,26 @@ private fun drawGraphDetails(
             ),
             color = pointColor
         )
-        val xEndOffset = if (index != weightList.size - 1) {
-            calculateXPointOffset(
-                startOffset = labelStartOffset,
-                index = index + 1,
-                pointInterval = pointInterval
+        if(index != weightList.lastIndex) {
+            lineSegment(
+                color = lineSegmentColor,
+                startOffset = Offset(
+                    x = xOffset, y = yOffset
+                ),
+                endOffset = Offset(
+                    x = calculateXPointOffset(
+                        startOffset = labelStartOffset,
+                        index = index + 1,
+                        pointInterval = pointInterval
+                    ), y = calculateYPointOffset(
+                        maxWeight = maxWeight,
+                        weight = weightList.get(index = index + 1).weight,
+                        range = range,
+                        maxHeight = size.height
+                    )
+                )
             )
-        } else {
-            xOffset
         }
-
-        val yEndOffset = if (index != weightList.size - 1) {
-            calculateYPointOffset(
-                maxWeight = maxWeight,
-                weight = weightList.get(index = index + 1).weight,
-                range = range,
-                maxHeight = size.height
-            )
-        } else {
-            yOffset
-        }
-        lineSegment(
-            color = lineSegmentColor,
-            startOffset = Offset(
-                x = xOffset, y = yOffset
-            ),
-            endOffset = Offset(
-                x = xEndOffset, y = yEndOffset
-            )
-        )
     }
 }
 
@@ -179,7 +170,8 @@ private fun DrawScope.lineSegment(
     drawLine(
         color = color,
         start = startOffset,
-        end = endOffset
+        end = endOffset,
+        strokeWidth = 4f
     )
 }
 
@@ -190,7 +182,7 @@ private fun DrawScope.drawPoint(
     drawCircle(
         color = color,
         radius = 12f,
-        center = center
+        center = center,
     )
 }
 

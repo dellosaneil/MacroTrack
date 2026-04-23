@@ -1,9 +1,11 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -13,6 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.weight_history
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
@@ -56,12 +59,20 @@ fun WeightHistoryScreen(
     callbacks: WeightHistoryCallbacks
 ) {
     if (viewState.weightList.isEmpty()) return
-    WeightHistoryGraph(
-        modifier = modifier
-            .height(height = 400.dp)
-            .fillMaxWidth(),
-        weightList = viewState.weightList
-    )
+    Column(
+        modifier = modifier,
+    ) {
+        WeightHistoryGraph(
+            modifier = Modifier
+                .height(height = 200.dp)
+                .fillMaxWidth(),
+            weightList = viewState.weightList
+        )
+
+        Text(
+            text = viewState.weightList.map { it.weight }.average().to2Decimal().toString()
+        )
+    }
 }
 
 
