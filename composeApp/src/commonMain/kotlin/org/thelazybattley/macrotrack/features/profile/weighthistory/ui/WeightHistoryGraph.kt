@@ -41,6 +41,7 @@ import macrotrack.composeapp.generated.resources.value_kg
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.to2Decimal
+import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -87,7 +88,8 @@ fun WeightHistoryGraph(
                         pointColor = pointColor,
                         textMeasurer = textMeasurer,
                         labelTextStyle = labelTextStyle,
-                        points = points
+                        points = points,
+                        selectedIndex = selectedIndex,
                     )
                 )
         ) {
@@ -163,7 +165,8 @@ private fun drawGraphDetails(
     pointColor: Color,
     textMeasurer: TextMeasurer,
     labelTextStyle: TextStyle,
-    points: List<Offset>
+    points: List<Offset>,
+    selectedIndex: Int
 ): DrawScope.() -> Unit = {
 
     val minWeight = weightList.minOf { it.weight }
@@ -213,6 +216,30 @@ private fun drawGraphDetails(
         pointMode = PointMode.Polygon,
         strokeWidth = 4f,
         cap = StrokeCap.Butt
+    )
+    if (selectedIndex >= 0) {
+        val selectedDate = weightList[selectedIndex].date
+        val textLayoutResult = textMeasurer.measure(
+            text = selectedDate.toAbbreviatedMonthDay(),
+            style = labelTextStyle
+        )
+        renderDate(
+            textLayoutResult = textLayoutResult,
+            offset = Offset(
+                x = points[selectedIndex].x - (textLayoutResult.size.width / 2),
+                y = labelEndYOffset + 12.dp.toPx()
+            )
+        )
+    }
+}
+
+private fun DrawScope.renderDate(
+    textLayoutResult: TextLayoutResult,
+    offset: Offset
+) {
+    drawText(
+        textLayoutResult,
+        topLeft = offset
     )
 }
 
