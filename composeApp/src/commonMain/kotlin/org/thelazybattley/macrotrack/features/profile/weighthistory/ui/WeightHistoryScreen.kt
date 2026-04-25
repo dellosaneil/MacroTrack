@@ -15,7 +15,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.weight_history
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.to2Decimal
+import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
@@ -62,6 +64,10 @@ fun WeightHistoryScreen(
     Column(
         modifier = modifier,
     ) {
+        WeightHistoryStatistics(
+            modifier = Modifier.fillMaxWidth(),
+            viewState = viewState
+        )
         WeightHistoryGraph(
             modifier = Modifier
                 .height(height = 200.dp)
@@ -82,7 +88,22 @@ private fun PreviewWeightHistoryScreen() {
     MacroTrackTheme {
         WeightHistoryScreen(
             modifier = Modifier,
-            viewState = WeightHistoryViewState(),
+            viewState = WeightHistoryViewState(
+                weightList = listOf(
+                    Weight(
+                        date = getCurrentDate(),
+                        weight = 64.3,
+                    ),
+                    Weight(
+                        date = getCurrentDate(),
+                        weight = 66.3,
+                    ),
+                    Weight(
+                        date = getCurrentDate(),
+                        weight = 62.3,
+                    ),
+                )
+            ),
             callbacks = WeightHistoryCallbacks.default()
         )
     }

@@ -21,7 +21,8 @@ class WeightHistoryViewModel(
             getAllWeightUseCase().collect { weightList ->
                 _state.update { currentState ->
                     currentState.copy(
-                        weightList = weightList
+                        weightList = weightList,
+                        averageWeight = weightList.map { it.weight }.average()
                     )
                 }
             }
