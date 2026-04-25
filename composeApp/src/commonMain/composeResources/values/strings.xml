@@ -177,6 +177,7 @@
     <string name="start">Start</string>
     <string name="latest">Latest</string>
     <string name="change">Change</string>
+    <string name="average_weight">Average Weight</string>
 
 
     <plurals name="items">

@@ -1,11 +1,13 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -16,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.average_weight
 import macrotrack.composeapp.generated.resources.change
 import macrotrack.composeapp.generated.resources.latest
 import macrotrack.composeapp.generated.resources.start
@@ -36,6 +39,7 @@ fun WeightHistoryStatistics(
 ) {
     Column(
         modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -66,9 +70,9 @@ fun WeightHistoryStatistics(
             val difference =
                 viewState.weightList.last().weight - viewState.weightList.first().weight
             val differenceText = when {
-               difference == 0.0 -> difference.toString()
-               difference >= 0 -> "+$difference"
-               else -> "-$difference"
+                difference == 0.0 -> difference.toString()
+                difference >= 0 -> "+$difference"
+                else -> "-$difference"
             }
 
 
@@ -93,8 +97,39 @@ fun WeightHistoryStatistics(
                 labelTextColor = borderColor
             )
         }
+        WeightAverage(
+            modifier = Modifier.fillMaxWidth(),
+            average = viewState.averageWeight
+        )
     }
+}
 
+@Composable
+private fun WeightAverage(
+    modifier: Modifier = Modifier,
+    average: Double
+) {
+    Row(
+        modifier = modifier
+            .background(
+                color = colors.paleBlue,
+                shape = RoundedCornerShape(size = 8.dp)
+            )
+            .padding(all = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = stringResource(resource = Res.string.average_weight),
+            color = colors.mediumGray,
+            style = typography.regular11
+        )
+        Text(
+            text = average.to2Decimal().toString(),
+            color = colors.deepBlue,
+            style = typography.bold14
+        )
+    }
 }
 
 @Composable
@@ -140,7 +175,7 @@ private fun WeightStatisticCard(
 private fun PreviewWeightHistoryStatistics() {
     MacroTrackTheme {
         WeightHistoryStatistics(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
             viewState = WeightHistoryViewState(
                 weightList = listOf(
                     Weight(
@@ -159,7 +194,8 @@ private fun PreviewWeightHistoryStatistics() {
                         date = getCurrentDate(),
                         weight = 65.5,
                     ),
-                )
+                ),
+                averageWeight = 56.3
 
             )
         )

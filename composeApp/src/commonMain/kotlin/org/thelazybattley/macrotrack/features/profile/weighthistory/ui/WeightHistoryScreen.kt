@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -63,6 +64,7 @@ fun WeightHistoryScreen(
     if (viewState.weightList.isEmpty()) return
     Column(
         modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         WeightHistoryStatistics(
             modifier = Modifier.fillMaxWidth(),
