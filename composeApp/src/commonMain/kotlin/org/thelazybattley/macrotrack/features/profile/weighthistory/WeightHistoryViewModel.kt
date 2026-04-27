@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
+import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryTimeRangeEnum
 
 class WeightHistoryViewModel(
     private val getAllWeightUseCase: GetAllWeightUseCase
@@ -26,6 +27,14 @@ class WeightHistoryViewModel(
                     )
                 }
             }
+        }
+    }
+
+    override fun onTimePeriodSelect(timeRange: WeightHistoryTimeRangeEnum) {
+        _state.update { currentState ->
+            currentState.copy(
+                timeRange = timeRange
+            )
         }
     }
 }

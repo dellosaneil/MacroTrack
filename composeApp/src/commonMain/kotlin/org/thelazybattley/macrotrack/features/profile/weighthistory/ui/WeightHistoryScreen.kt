@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -17,7 +16,6 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.weight_history
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
-import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.navigation.AppPadding
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
@@ -61,11 +59,18 @@ fun WeightHistoryScreen(
     viewState: WeightHistoryViewState,
     callbacks: WeightHistoryCallbacks
 ) {
-    if (viewState.weightList.isEmpty()) return
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
+        WeightHistoryTimeRange(
+            modifier = Modifier.fillMaxWidth(),
+            selectedTimeRange = viewState.timeRange,
+            onSelectTimeRange = { timeRange ->
+                callbacks.onTimePeriodSelect(timeRange = timeRange)
+            }
+        )
+        if (viewState.weightList.isEmpty()) return
         WeightHistoryStatistics(
             modifier = Modifier.fillMaxWidth(),
             viewState = viewState
@@ -75,10 +80,6 @@ fun WeightHistoryScreen(
                 .height(height = 200.dp)
                 .fillMaxWidth(),
             weightList = viewState.weightList
-        )
-
-        Text(
-            text = viewState.weightList.map { it.weight }.average().to2Decimal().toString()
         )
     }
 }
