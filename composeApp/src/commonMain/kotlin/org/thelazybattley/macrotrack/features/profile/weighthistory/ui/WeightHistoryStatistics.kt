@@ -70,9 +70,9 @@ fun WeightHistoryStatistics(
             val difference =
                 viewState.weightList.last().weight - viewState.weightList.first().weight
             val differenceText = when {
-                difference == 0.0 -> difference.toString()
-                difference >= 0 -> "+$difference"
-                else -> "-$difference"
+                difference == 0.0 -> difference.to2Decimal().toString()
+                difference >= 0 -> "+${difference.to2Decimal()}"
+                else -> "${difference.to2Decimal()}"
             }
 
 
