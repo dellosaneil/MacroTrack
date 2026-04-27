@@ -5,9 +5,7 @@ import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
 
 interface ProfileCallbacks {
 
-    fun onWeightInput(weight: String)
-
-    fun onSaveWeight()
+    fun onSaveWeight(weight: String)
 
     fun updateGoal(goal: Goal)
 
@@ -19,13 +17,10 @@ interface ProfileCallbacks {
 
     companion object {
         fun default() = object : ProfileCallbacks {
-            override fun onWeightInput(weight: String) {
+            override fun onSaveWeight(weight: String) {
                 TODO("Not yet implemented")
             }
 
-            override fun onSaveWeight() {
-                TODO("Not yet implemented")
-            }
 
             override fun updateGoal(goal: Goal) {
                 TODO("Not yet implemented")

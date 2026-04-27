@@ -105,13 +105,9 @@ fun ProfileScreen(
             CommonSurface {
                 ProfileWeightCard(
                     modifier = Modifier.fillMaxWidth(),
-                    weightInput = viewState.weightInput,
-                    onWeightChanged = { weight ->
-                        callbacks.onWeightInput(weight = weight)
-                    },
                     previousWeight = viewState.userDetails?.weight.toString(),
-                    onSaveWeight = {
-                        callbacks.onSaveWeight()
+                    onSaveWeight = { weight ->
+                        callbacks.onSaveWeight(weight = weight)
                     },
                     lastWeightUpdate = viewState.lastWeightUpdatedDate
                 )

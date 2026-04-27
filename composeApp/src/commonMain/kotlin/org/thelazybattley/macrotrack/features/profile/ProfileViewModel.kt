@@ -53,30 +53,21 @@ class ProfileViewModel(
         }
     }
 
-
-    override fun onWeightInput(weight: String) {
-        _state.update { currentState ->
-            currentState.copy(
-                weightInput = weight
-            )
-        }
-    }
-
-    override fun onSaveWeight() {
+    override fun onSaveWeight(weight: String) {
         viewModelScope.launch {
-            insertWeightUseCase(weight = _state.value.weightInput.toDouble())
+            insertWeightUseCase(weight = weight.toDouble())
             _state.update { currentState ->
                 if (currentState.userDetails == null) return@update currentState
                 insertUserDetailsUseCase(
                     userDetails = currentState.userDetails.copy(
-                        weight = currentState.weightInput.toDouble()
+                        weight = weight.toDouble()
                     )
                 ).also {
                     updateBMI()
                 }
                 currentState.copy(
                     userDetails = currentState.userDetails.copy(
-                        weight = currentState.weightInput.toDouble()
+                        weight = weight.toDouble()
                     )
                 )
             }
