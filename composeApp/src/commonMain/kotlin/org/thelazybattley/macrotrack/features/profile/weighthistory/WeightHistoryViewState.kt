@@ -1,7 +1,6 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory
 
 import kotlinx.datetime.Month
-import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryTimeRangeEnum
 
@@ -10,11 +9,16 @@ data class WeightHistoryViewState(
     val filteredWeightList: List<Weight> = emptyList(),
     val averageWeight: Double = 0.0,
     val timeRange: WeightHistoryTimeRangeEnum = WeightHistoryTimeRangeEnum.ALL,
-    val monthlyWeightHistory: MonthlyWeightHistory = MonthlyWeightHistory(),
-    val filteredValue: String = ""
+    val weightHistoryFilter: WeightHistoryFilters = WeightHistoryFilters.All
 )
 
-data class MonthlyWeightHistory(
-    val monthSelected: Month = getCurrentDate().month,
-    val weightsByMonth: Map<Month, List<Weight>> = emptyMap(),
-)
+sealed class WeightHistoryFilters {
+    object All : WeightHistoryFilters()
+    data class Monthly(
+        val month: Month
+    ) : WeightHistoryFilters()
+
+    data class Weekly(
+        val index: Int
+    ) : WeightHistoryFilters()
+}

@@ -61,12 +61,13 @@ fun WeightHistoryScreen(
                 callbacks.onTimePeriodSelect(timeRange = timeRange)
             }
         )
-        if (viewState.filteredWeightList.isEmpty()) return
         WeightHistoryFilter(
             modifier = Modifier.fillMaxWidth(),
-            filteredValue = viewState.filteredValue
+            weightHistoryFilters = viewState.weightHistoryFilter,
+            onBackButtonClicked = { callbacks.onFilterBackButtonClicked() },
+            onNextButtonClicked = { callbacks.onFilterNextButtonClicked() }
         )
-
+        if (viewState.filteredWeightList.isEmpty()) return
         WeightHistoryStatistics(
             modifier = Modifier.fillMaxWidth(), viewState = viewState
         )

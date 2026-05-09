@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Month
+import kotlinx.datetime.number
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryTimeRangeEnum
@@ -21,16 +23,11 @@ class WeightHistoryViewModel(
     init {
         viewModelScope.launch {
             getAllWeightUseCase().collect { weightList ->
-                val monthlyWeightList = weightList.groupBy { weight -> weight.date.month }
                 _state.update { currentState ->
                     currentState.copy(
                         completeWeightList = weightList,
                         averageWeight = weightList.map { it.weight }.average(),
                         filteredWeightList = weightList,
-                        monthlyWeightHistory = MonthlyWeightHistory(
-                            monthSelected = getCurrentDate().month,
-                            weightsByMonth = monthlyWeightList,
-                        )
                     )
                 }
             }
@@ -43,7 +40,8 @@ class WeightHistoryViewModel(
                 WeightHistoryTimeRangeEnum.ALL -> {
                     currentState.copy(
                         timeRange = timeRange,
-                        filteredWeightList = currentState.completeWeightList
+                        filteredWeightList = currentState.completeWeightList,
+                        weightHistoryFilter = WeightHistoryFilters.All
                     )
                 }
 
@@ -56,9 +54,10 @@ class WeightHistoryViewModel(
                 WeightHistoryTimeRangeEnum.MONTH -> {
                     currentState.copy(
                         timeRange = timeRange,
-                        filteredWeightList = currentState.monthlyWeightHistory.weightsByMonth[getCurrentDate().month]
-                            ?: emptyList(),
-                        filteredValue = getCurrentDate().month.name
+                        filteredWeightList = currentState.completeWeightList.filter { it.date.month == getCurrentDate().month },
+                        weightHistoryFilter = WeightHistoryFilters.Monthly(
+                            month = getCurrentDate().month
+                        )
                     )
                 }
 
@@ -67,6 +66,59 @@ class WeightHistoryViewModel(
                         timeRange = timeRange,
                     )
                 }
+            }
+        }
+    }
+
+    override fun onFilterBackButtonClicked() {
+        _state.update { currentState ->
+            when (currentState.timeRange) {
+                WeightHistoryTimeRangeEnum.ALL -> TODO()
+                WeightHistoryTimeRangeEnum.WEEK -> TODO()
+                WeightHistoryTimeRangeEnum.MONTH -> {
+                    val currentHistoryFilter =
+                        currentState.weightHistoryFilter as WeightHistoryFilters.Monthly
+                    val previousMonth = if (currentHistoryFilter.month == Month.DECEMBER) {
+                        Month.JANUARY
+                    } else {
+                        Month(number = currentHistoryFilter.month.number.dec())
+                    }
+                    currentState.copy(
+                        weightHistoryFilter = WeightHistoryFilters.Monthly(
+                            month = previousMonth
+                        ),
+                        filteredWeightList = currentState.completeWeightList.filter { it.date.month == previousMonth }
+                    )
+                }
+
+                WeightHistoryTimeRangeEnum.THREE_MONTHS -> TODO()
+            }
+        }
+
+    }
+
+    override fun onFilterNextButtonClicked() {
+        _state.update { currentState ->
+            when (currentState.timeRange) {
+                WeightHistoryTimeRangeEnum.ALL -> TODO()
+                WeightHistoryTimeRangeEnum.WEEK -> TODO()
+                WeightHistoryTimeRangeEnum.MONTH -> {
+                    val currentHistoryFilter =
+                        currentState.weightHistoryFilter as WeightHistoryFilters.Monthly
+                    val nextMonth = if (currentHistoryFilter.month == Month.JANUARY) {
+                        Month.DECEMBER
+                    } else {
+                        Month(number = currentHistoryFilter.month.number.inc())
+                    }
+                    currentState.copy(
+                        weightHistoryFilter = WeightHistoryFilters.Monthly(
+                            month = nextMonth
+                        ),
+                        filteredWeightList = currentState.completeWeightList.filter { it.date.month == nextMonth }
+                    )
+                }
+
+                WeightHistoryTimeRangeEnum.THREE_MONTHS -> TODO()
             }
         }
     }

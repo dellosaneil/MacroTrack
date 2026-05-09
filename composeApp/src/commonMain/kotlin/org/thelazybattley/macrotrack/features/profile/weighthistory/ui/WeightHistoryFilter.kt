@@ -19,6 +19,7 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import org.jetbrains.compose.resources.painterResource
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryFilters
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -26,9 +27,11 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun WeightHistoryFilter(
     modifier: Modifier = Modifier,
-    filteredValue: String
+    weightHistoryFilters: WeightHistoryFilters,
+    onNextButtonClicked: () -> Unit,
+    onBackButtonClicked: () -> Unit
 ) {
-    if (filteredValue.isEmpty()) return
+    if (weightHistoryFilters == WeightHistoryFilters.All) return
     Row(
         modifier = modifier
             .padding(vertical = 8.dp),
@@ -36,9 +39,7 @@ fun WeightHistoryFilter(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         IconButton(
-            onClick = {
-
-            },
+            onClick = onBackButtonClicked,
             colors = IconButtonDefaults.iconButtonColors(
                 containerColor = colors.lightGray
             ),
@@ -49,16 +50,22 @@ fun WeightHistoryFilter(
                 contentDescription = null
             )
         }
+        val text = when(weightHistoryFilters) {
+            is WeightHistoryFilters.Monthly -> {
+                weightHistoryFilters.month.name
+            }
+            is WeightHistoryFilters.Weekly -> {
+                "weekly"
+            }
+        }
         Text(
-            text = filteredValue,
+            text = text,
             style = typography.bold15,
             color = colors.black
         )
 
         IconButton(
-            onClick = {
-
-            },
+            onClick = onNextButtonClicked,
             colors = IconButtonDefaults.iconButtonColors(
                 containerColor = colors.lightGray
             ),
@@ -79,7 +86,11 @@ private fun PreviewWeightHistoryFilter() {
     MacroTrackTheme {
         WeightHistoryFilter(
             modifier = Modifier.fillMaxWidth(),
-            filteredValue = getCurrentDate().month.name
+            weightHistoryFilters = WeightHistoryFilters.Monthly(
+                month = getCurrentDate().month
+            ),
+            onNextButtonClicked = {},
+            onBackButtonClicked = {}
         )
     }
 }
