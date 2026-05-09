@@ -27,27 +27,20 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
 @Composable
 fun WeightHistoryScreen(
-    modifier: Modifier = Modifier,
-    onPopBackStack: () -> Unit
+    modifier: Modifier = Modifier, onPopBackStack: () -> Unit
 ) {
     val viewModel = koinViewModel<WeightHistoryViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
-        modifier = modifier,
-        containerColor = colors.white,
-        topBar = {
+        modifier = modifier, containerColor = colors.white, topBar = {
             CommonTopBar(
-                stringResource = Res.string.weight_history,
-                onClick = onPopBackStack
+                stringResource = Res.string.weight_history, onClick = onPopBackStack
             )
-        }
-    ) { innerPadding ->
+        }) { innerPadding ->
         WeightHistoryScreen(
             modifier = modifier.padding(paddingValues = innerPadding)
-                .padding(paddingValues = AppPadding),
-            viewState = viewState,
-            callbacks = viewModel
+                .padding(paddingValues = AppPadding), viewState = viewState, callbacks = viewModel
         )
     }
 
@@ -60,26 +53,21 @@ fun WeightHistoryScreen(
     callbacks: WeightHistoryCallbacks
 ) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+        modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         WeightHistoryTimeRange(
             modifier = Modifier.fillMaxWidth(),
             selectedTimeRange = viewState.timeRange,
             onSelectTimeRange = { timeRange ->
                 callbacks.onTimePeriodSelect(timeRange = timeRange)
-            }
-        )
-        if (viewState.weightList.isEmpty()) return
+            })
+        if (viewState.filteredWeightList.isEmpty()) return
         WeightHistoryStatistics(
-            modifier = Modifier.fillMaxWidth(),
-            viewState = viewState
+            modifier = Modifier.fillMaxWidth(), viewState = viewState
         )
         WeightHistoryGraph(
-            modifier = Modifier
-                .height(height = 200.dp)
-                .fillMaxWidth(),
-            weightList = viewState.weightList
+            modifier = Modifier.height(height = 200.dp).fillMaxWidth(),
+            weightList = viewState.filteredWeightList
         )
     }
 }
@@ -92,7 +80,7 @@ private fun PreviewWeightHistoryScreen() {
         WeightHistoryScreen(
             modifier = Modifier,
             viewState = WeightHistoryViewState(
-                weightList = listOf(
+                filteredWeightList = listOf(
                     Weight(
                         date = getCurrentDate(),
                         weight = 64.3,
@@ -105,9 +93,9 @@ private fun PreviewWeightHistoryScreen() {
                         date = getCurrentDate(),
                         weight = 62.3,
                     ),
-                )
+                ),
             ),
-            callbacks = WeightHistoryCallbacks.default()
+            callbacks = WeightHistoryCallbacks.default(),
         )
     }
 }

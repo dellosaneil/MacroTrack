@@ -22,8 +22,9 @@ class WeightHistoryViewModel(
             getAllWeightUseCase().collect { weightList ->
                 _state.update { currentState ->
                     currentState.copy(
-                        weightList = weightList,
-                        averageWeight = weightList.map { it.weight }.average()
+                        completeWeightList = weightList,
+                        averageWeight = weightList.map { it.weight }.average(),
+                        filteredWeightList = weightList
                     )
                 }
             }
@@ -32,9 +33,36 @@ class WeightHistoryViewModel(
 
     override fun onTimePeriodSelect(timeRange: WeightHistoryTimeRangeEnum) {
         _state.update { currentState ->
-            currentState.copy(
-                timeRange = timeRange
-            )
+            when (timeRange) {
+                WeightHistoryTimeRangeEnum.ALL -> {
+                    currentState.copy(
+                        selectedIndex = 0,
+                        timeRange = timeRange,
+                        filteredWeightList = currentState.completeWeightList
+                    )
+                }
+
+                WeightHistoryTimeRangeEnum.WEEK -> {
+                    currentState.copy(
+                        selectedIndex = 0,
+                        timeRange = timeRange,
+                    )
+                }
+
+                WeightHistoryTimeRangeEnum.MONTH -> {
+                    currentState.copy(
+                        selectedIndex = 0,
+                        timeRange = timeRange,
+                    )
+                }
+
+                WeightHistoryTimeRangeEnum.THREE_MONTHS -> {
+                    currentState.copy(
+                        selectedIndex = 0,
+                        timeRange = timeRange,
+                    )
+                }
+            }
         }
     }
 }

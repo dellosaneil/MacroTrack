@@ -50,7 +50,7 @@ fun WeightHistoryStatistics(
         ) {
             WeightStatisticCard(
                 modifier = Modifier.weight(weight = 1f),
-                value = viewState.weightList.first().weight.to2Decimal().toString(),
+                value = viewState.filteredWeightList.first().weight.to2Decimal().toString(),
                 textResource = Res.string.start,
                 backgroundColor = colors.paleBlue,
                 border = null,
@@ -60,7 +60,7 @@ fun WeightHistoryStatistics(
 
             WeightStatisticCard(
                 modifier = Modifier.weight(weight = 1f),
-                value = viewState.weightList.last().weight.to2Decimal().toString(),
+                value = viewState.filteredWeightList.last().weight.to2Decimal().toString(),
                 textResource = Res.string.latest,
                 backgroundColor = colors.paleBlue,
                 border = null,
@@ -68,7 +68,7 @@ fun WeightHistoryStatistics(
                 labelTextColor = colors.mediumGray
             )
             val difference =
-                viewState.weightList.last().weight - viewState.weightList.first().weight
+                viewState.filteredWeightList.last().weight - viewState.filteredWeightList.first().weight
             val differenceText = when {
                 difference == 0.0 -> difference.to2Decimal().toString()
                 difference >= 0 -> "+${difference.to2Decimal()}"
@@ -177,7 +177,7 @@ private fun PreviewWeightHistoryStatistics() {
         WeightHistoryStatistics(
             modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
             viewState = WeightHistoryViewState(
-                weightList = listOf(
+                completeWeightList = listOf(
                     Weight(
                         date = getCurrentDate(),
                         weight = 64.5,
