@@ -58,7 +58,7 @@ class WeightHistoryViewModel(
                         timeRange = timeRange,
                         filteredWeightList = currentState.monthlyWeightHistory.weightsByMonth[getCurrentDate().month]
                             ?: emptyList(),
-                        filteredBy = getCurrentDate().month.name
+                        filteredValue = getCurrentDate().month.name
                     )
                 }
 

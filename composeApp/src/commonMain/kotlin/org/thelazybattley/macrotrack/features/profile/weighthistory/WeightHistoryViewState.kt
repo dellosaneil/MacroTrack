@@ -11,7 +11,7 @@ data class WeightHistoryViewState(
     val averageWeight: Double = 0.0,
     val timeRange: WeightHistoryTimeRangeEnum = WeightHistoryTimeRangeEnum.ALL,
     val monthlyWeightHistory: MonthlyWeightHistory = MonthlyWeightHistory(),
-    val filteredBy: String = ""
+    val filteredValue: String = ""
 )
 
 data class MonthlyWeightHistory(

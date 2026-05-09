@@ -2,28 +2,18 @@ package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.weight_history
-import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Weight
@@ -34,7 +24,6 @@ import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistor
 import org.thelazybattley.macrotrack.ui.common.CommonTopBar
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
-import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
 fun WeightHistoryScreen(
@@ -73,48 +62,10 @@ fun WeightHistoryScreen(
             }
         )
         if (viewState.filteredWeightList.isEmpty()) return
-        Row(
-            modifier = Modifier
-                .padding(vertical = 8.dp).fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            IconButton(
-                onClick = {
-
-                },
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = colors.lightGray
-                ),
-                shape = RoundedCornerShape(size = 8.dp)
-            ) {
-                Icon(
-                    painter = painterResource(resource = Res.drawable.ic_chevron_left),
-                    contentDescription = null
-                )
-            }
-            Text(
-                text = viewState.filteredBy,
-                style = typography.bold15,
-                color = colors.black
-            )
-
-            IconButton(
-                onClick = {
-
-                },
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = colors.lightGray
-                ),
-                shape = RoundedCornerShape(size = 8.dp)
-            ) {
-                Icon(
-                    modifier = Modifier.rotate(degrees = 180f),
-                    painter = painterResource(resource = Res.drawable.ic_chevron_left),
-                    contentDescription = null
-                )
-            }
-        }
+        WeightHistoryFilter(
+            modifier = Modifier.fillMaxWidth(),
+            filteredValue = viewState.filteredValue
+        )
 
         WeightHistoryStatistics(
             modifier = Modifier.fillMaxWidth(), viewState = viewState
