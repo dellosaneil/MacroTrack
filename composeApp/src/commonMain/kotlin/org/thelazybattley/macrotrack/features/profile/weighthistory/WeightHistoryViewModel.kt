@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryTimeRangeEnum
 
@@ -20,11 +21,16 @@ class WeightHistoryViewModel(
     init {
         viewModelScope.launch {
             getAllWeightUseCase().collect { weightList ->
+                val monthlyWeightList = weightList.groupBy { weight -> weight.date.month }
                 _state.update { currentState ->
                     currentState.copy(
                         completeWeightList = weightList,
                         averageWeight = weightList.map { it.weight }.average(),
-                        filteredWeightList = weightList
+                        filteredWeightList = weightList,
+                        monthlyWeightHistory = MonthlyWeightHistory(
+                            monthSelected = getCurrentDate().month,
+                            weightsByMonth = monthlyWeightList,
+                        )
                     )
                 }
             }
@@ -36,7 +42,6 @@ class WeightHistoryViewModel(
             when (timeRange) {
                 WeightHistoryTimeRangeEnum.ALL -> {
                     currentState.copy(
-                        selectedIndex = 0,
                         timeRange = timeRange,
                         filteredWeightList = currentState.completeWeightList
                     )
@@ -44,21 +49,20 @@ class WeightHistoryViewModel(
 
                 WeightHistoryTimeRangeEnum.WEEK -> {
                     currentState.copy(
-                        selectedIndex = 0,
                         timeRange = timeRange,
                     )
                 }
 
                 WeightHistoryTimeRangeEnum.MONTH -> {
                     currentState.copy(
-                        selectedIndex = 0,
                         timeRange = timeRange,
+                        filteredWeightList = currentState.monthlyWeightHistory.weightsByMonth[getCurrentDate().month]
+                            ?: emptyList()
                     )
                 }
 
                 WeightHistoryTimeRangeEnum.THREE_MONTHS -> {
                     currentState.copy(
-                        selectedIndex = 0,
                         timeRange = timeRange,
                     )
                 }
