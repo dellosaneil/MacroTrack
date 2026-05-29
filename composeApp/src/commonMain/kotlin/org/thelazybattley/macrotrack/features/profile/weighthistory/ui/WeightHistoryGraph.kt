@@ -58,7 +58,7 @@ fun WeightHistoryGraph(
     val labelTextStyle = typography.regular10.copy(
         color = colors.mediumGray
     )
-    var selectedIndex by remember { mutableIntStateOf(value = -1) }
+    var selectedIndex by remember(key1 = weightList) { mutableIntStateOf(value = -1) }
     BoxWithConstraints(
         modifier = modifier
             .border(
@@ -75,7 +75,7 @@ fun WeightHistoryGraph(
         )
         Box(
             modifier = Modifier.fillMaxSize()
-                .pointerInput(key1 = Unit) {
+                .pointerInput(key1 = weightList) {
                     detectTapGestures(
                         onTap = {
                             selectedIndex = searchIndexByOffset(points = points, clickedOffset = it)
