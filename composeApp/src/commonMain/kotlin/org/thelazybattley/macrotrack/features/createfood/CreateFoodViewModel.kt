@@ -37,7 +37,7 @@ class CreateFoodViewModel(
                 _state.update { currentState ->
                     currentState.copy(
                         foodNameList = foodList.map { food -> food.name },
-                        isUpdating = foodName != null,
+                        isUpdating = !foodName.isNullOrEmpty(),
                         name = foodName ?: ""
                     )
                 }
