@@ -19,6 +19,7 @@ import macrotrack.composeapp.generated.resources.calories_auto_calculated
 import macrotrack.composeapp.generated.resources.calories_formula
 import macrotrack.composeapp.generated.resources.kcal_text
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -65,14 +66,18 @@ fun AddIngredientPreviewCalories(
                 )
             }
             Text(
-                text = stringResource(resource = Res.string.calories_formula, protein, carbs, fats),
+                text = stringResource(
+                    resource = Res.string.calories_formula,
+                    protein.to2Decimal(),
+                    carbs.to2Decimal(),
+                    fats.to2Decimal()
+                ),
                 style = typography.regular8,
                 color = colors.deepBlue
             )
         }
     }
 }
-
 
 
 @Preview(showBackground = true, backgroundColor = 0xffffffff)
