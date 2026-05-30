@@ -153,7 +153,7 @@ private fun AddMealScreen(
             mealFilter = viewState.selectedMealFilter
         ) {
             val route = when (viewState.selectedMealFilter) {
-                MealFilter.FOODS -> AppDestinations.Root.CreateFood.route
+                MealFilter.FOODS -> AppDestinations.Root.CreateFood.createRoute(foodName = "")
                 MealFilter.RECIPES -> AppDestinations.Root.CreateRecipe.createRoute(recipeName = "")
             }
             mainCallbacks.onNavigateScreen(route = route)

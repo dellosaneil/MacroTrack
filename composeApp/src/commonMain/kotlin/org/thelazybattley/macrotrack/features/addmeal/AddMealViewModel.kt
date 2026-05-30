@@ -193,6 +193,14 @@ class AddMealViewModel(
         }
     }
 
+    override fun updateFood(name: String) {
+        _state.update { currentState ->
+            currentState.copy(
+                destinationRoute = AppDestinations.Root.CreateFood.createRoute(foodName = name)
+            )
+        }
+    }
+
     override fun onPercentageEatenValue(value: Double) {
         _state.update { currentState ->
             if (currentState.highlightedRecipe == null) return@update currentState

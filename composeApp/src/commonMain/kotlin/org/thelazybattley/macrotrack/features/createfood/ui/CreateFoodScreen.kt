@@ -44,6 +44,7 @@ import macrotrack.composeapp.generated.resources.protein_g
 import macrotrack.composeapp.generated.resources.save_food
 import macrotrack.composeapp.generated.resources.this_food_is_already_saved
 import macrotrack.composeapp.generated.resources.unit
+import macrotrack.composeapp.generated.resources.update_food
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -75,12 +76,17 @@ fun AddIngredientScreen(
     Scaffold(
         containerColor = colors.white,
         topBar = {
+            val topBarStringResource = if (viewState.isUpdating) {
+                Res.string.update_food
+            } else {
+                Res.string.new_food
+            }
             CommonTopBar(
                 modifier = Modifier
                     .padding(paddingValues = AppPadding)
                     .fillMaxWidth()
                     .statusBarsPadding(),
-                stringResource = Res.string.new_food
+                stringResource = topBarStringResource
             ) {
                 popBackStack()
             }
@@ -118,7 +124,9 @@ fun AddIngredientScreen(
             titleTextColor = textColor,
             borderColor = colors.deepBlue,
             placeholder = Res.string.chicken_breast,
-            isError = viewState.duplicateFood
+            isError = viewState.duplicateFood,
+            isEnabled = !viewState.isUpdating,
+            defaultText = viewState.name,
         ) {
             callbacks.onTextFieldUpdated(
                 value = it,
@@ -263,8 +271,13 @@ fun AddIngredientScreen(
         )
 
         Spacer(modifier = Modifier.weight(weight = 1f))
+        val buttonResource = if (viewState.isUpdating) {
+            Res.string.update_food
+        } else {
+            Res.string.save_food
+        }
         CommonButton(
-            buttonText = stringResource(resource = Res.string.save_food),
+            buttonText = stringResource(resource = buttonResource),
             isEnabled = viewState.buttonEnabled
         ) {
             callbacks.onSaveFood()
@@ -283,6 +296,7 @@ private fun AddIngredientTextField(
     onTextFieldSize: (IntSize) -> Unit = {},
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    defaultText: String = "",
     onValueChanged: (String) -> Unit
 ) {
     Column(
@@ -294,7 +308,7 @@ private fun AddIngredientTextField(
             color = titleTextColor,
             style = typography.medium11
         )
-        var textValue by rememberSaveable { mutableStateOf(value = "") }
+        var textValue by rememberSaveable(defaultText) { mutableStateOf(value = defaultText) }
         CommonTextField(
             modifier = Modifier
                 .fillMaxWidth()

@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.createfood
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,23 +15,28 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseC
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
 
 class CreateFoodViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
     private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase,
     private val getAllFoodUseCase: GetAllFoodUseCase,
-    private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase
+    private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel(), CreateFoodCallbacks {
 
     private val _state = MutableStateFlow(value = CreateFoodViewState())
     val state = _state.asStateFlow()
 
     init {
+        val foodName: String? = savedStateHandle[FOOD_NAME]
         viewModelScope.launch {
             getAllFoodUseCase().collect { foodList ->
                 _state.update { currentState ->
                     currentState.copy(
-                        foodNameList = foodList.map { food -> food.name }
+                        foodNameList = foodList.map { food -> food.name },
+                        isUpdating = foodName != null,
+                        name = foodName ?: ""
                     )
                 }
             }

@@ -85,6 +85,9 @@ fun AddFoodTabScreen(
                         },
                         onMealClicked = {
                             callbacks.customizeFoodWeight(name = food.name)
+                        },
+                        onLongPress = {
+                            callbacks.updateFood(name = food.name)
                         }
                     )
                 }

@@ -58,7 +58,11 @@ sealed class AppDestinations {
             }
         }
 
-        object CreateFood : Root(route = "create_food")
+        object CreateFood : Root(route = "create_food", routeWithArgs = "create_food/{$FOOD_NAME}") {
+            fun createRoute(foodName: String): String {
+                return "$route/$foodName"
+            }
+        }
         object CreateRecipe :
             Root(route = "create_recipe", routeWithArgs = "create_recipe/{$RECIPE_NAME}") {
             fun createRoute(recipeName: String): String {
@@ -78,5 +82,6 @@ sealed class AppDestinations {
     companion object {
         const val MEAL_TYPE = "mealType"
         const val RECIPE_NAME = "recipeName"
+        const val FOOD_NAME = "foodName"
     }
 }
