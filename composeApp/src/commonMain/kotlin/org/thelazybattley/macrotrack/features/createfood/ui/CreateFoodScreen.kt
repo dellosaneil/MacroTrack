@@ -165,7 +165,11 @@ fun AddIngredientScreen(
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                var textValue by rememberSaveable { mutableStateOf(value = "") }
+                var textValue by rememberSaveable(viewState.weight) {
+                    mutableStateOf(
+                        value = viewState.weight.takeIf { it != 0.0 }?.toString() ?: ""
+                    )
+                }
                 CommonTextField(
                     modifier = Modifier
                         .weight(weight = 0.75f),
@@ -183,7 +187,7 @@ fun AddIngredientScreen(
                     ),
                     textValue = textValue
                 )
-                var unitTextValue by rememberSaveable { mutableStateOf(value = "") }
+                var unitTextValue by rememberSaveable(viewState.unit) { mutableStateOf(value = viewState.unit) }
                 CommonTextField(
                     modifier = Modifier
                         .weight(weight = 0.25f),
@@ -225,7 +229,8 @@ fun AddIngredientScreen(
                 placeholder = Res.string.placeholder_protein,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
-                )
+                ),
+                defaultText = viewState.protein?.toString() ?: ""
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.PROTEIN)
             }
@@ -237,7 +242,8 @@ fun AddIngredientScreen(
                 placeholder = Res.string.placeholder_carbs,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
-                )
+                ),
+                defaultText = viewState.carbs?.toString() ?: ""
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.CARBS)
             }
@@ -249,7 +255,8 @@ fun AddIngredientScreen(
                 placeholder = Res.string.placeholder_fats,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
-                )
+                ),
+                defaultText = viewState.fat?.toString() ?: ""
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.FATS)
             }

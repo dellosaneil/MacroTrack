@@ -34,17 +34,26 @@ class CreateFoodViewModel(
         val foodName: String? = savedStateHandle[FOOD_NAME]
         viewModelScope.launch {
             getAllFoodUseCase().collect { foodList ->
+                val foodDetails = foodList.find { food ->
+                    food.name == foodName
+                }
                 _state.update { currentState ->
                     currentState.copy(
                         foodNameList = foodList.map { food -> food.name },
                         isUpdating = !foodName.isNullOrEmpty(),
-                        name = foodName ?: ""
+                        name = foodName ?: "",
+                        protein = foodDetails?.macros?.protein,
+                        carbs = foodDetails?.macros?.carbs,
+                        fat = foodDetails?.macros?.fat,
+                        unit = foodDetails?.unit ?: "",
+                        weight = foodDetails?.weight ?: 0.0,
+                        calories = foodDetails?.macros?.calories ?: 0,
                     )
                 }
+                calculateMacroPercentage()
             }
         }
     }
-
 
     override fun onSaveFood() {
         viewModelScope.launch {
