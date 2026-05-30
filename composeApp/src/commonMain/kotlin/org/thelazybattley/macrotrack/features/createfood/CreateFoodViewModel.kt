@@ -118,7 +118,7 @@ class CreateFoodViewModel(
                     currentState.copy(weight = value.toDoubleOrNull() ?: 0.0)
 
                 AddFoodTextFieldType.FATS -> currentState.copy(
-                    fat = value.toDoubleOrNull() ?: 0.0,
+                    fat = value.toDoubleOrNull(),
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = currentState.protein ?: 0.0,
                         carbs = currentState.carbs ?: 0.0,
@@ -127,7 +127,7 @@ class CreateFoodViewModel(
                 )
 
                 AddFoodTextFieldType.PROTEIN -> currentState.copy(
-                    protein = value.toDoubleOrNull() ?: 0.0,
+                    protein = value.toDoubleOrNull(),
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = value.toDoubleOrNull() ?: 0.0,
                         carbs = currentState.carbs ?: 0.0,
@@ -136,7 +136,7 @@ class CreateFoodViewModel(
                 )
 
                 AddFoodTextFieldType.CARBS -> currentState.copy(
-                    carbs = value.toDoubleOrNull() ?: 0.0,
+                    carbs = value.toDoubleOrNull(),
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = currentState.protein ?: 0.0,
                         carbs = value.toDoubleOrNull() ?: 0.0,
