@@ -14,6 +14,7 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosU
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.UpdateFoodUseCase
 import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
 
@@ -22,6 +23,7 @@ class CreateFoodViewModel(
     private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase,
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
+    private val updateFoodUseCase: UpdateFoodUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), CreateFoodCallbacks {
 
@@ -54,20 +56,30 @@ class CreateFoodViewModel(
                 ).maxByOrNull {
                     it.second
                 }?.first ?: MacroType.PROTEIN
-
+                val food = Food(
+                    macros = FoodMacros(
+                        calories = calories,
+                        protein = protein!!,
+                        carbs = carbs!!,
+                        fat = fat!!
+                    ),
+                    name = state.value.name,
+                    weight = state.value.weight,
+                    dominantMacro = dominantMacro,
+                    unit = state.value.unit
+                )
+                if (isUpdating) {
+                    updateFoodUseCase(
+                        food = food
+                    ).also {
+                        _state.update { currentState ->
+                            currentState.copy(foodSaved = true)
+                        }
+                    }
+                    return@launch
+                }
                 insertFoodUseCase(
-                    food = Food(
-                        macros = FoodMacros(
-                            calories = calories,
-                            protein = protein!!,
-                            carbs = carbs!!,
-                            fat = fat!!
-                        ),
-                        name = state.value.name,
-                        weight = state.value.weight,
-                        dominantMacro = dominantMacro,
-                        unit = state.value.unit
-                    )
+                    food = food
                 ).also {
                     _state.update { currentState ->
                         currentState.copy(foodSaved = true)
@@ -122,6 +134,7 @@ class CreateFoodViewModel(
                         fat = currentState.fat ?: 0.0
                     )
                 )
+
                 AddFoodTextFieldType.UNIT -> currentState.copy(
                     unit = value
                 )
