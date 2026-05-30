@@ -62,7 +62,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
-fun AddIngredientScreen(
+fun CreateFoodScreen(
     modifier: Modifier = Modifier,
     popBackStack: () -> Unit
 ) {
@@ -92,7 +92,7 @@ fun AddIngredientScreen(
             }
         }
     ) { innerPadding ->
-        AddIngredientScreen(
+        CreateFoodScreen(
             modifier = modifier
                 .padding(paddingValues = innerPadding)
                 .padding(paddingValues = AppPadding),
@@ -103,7 +103,7 @@ fun AddIngredientScreen(
 }
 
 @Composable
-fun AddIngredientScreen(
+fun CreateFoodScreen(
     modifier: Modifier = Modifier,
     viewState: CreateFoodViewState,
     callbacks: CreateFoodCallbacks,
@@ -118,7 +118,7 @@ fun AddIngredientScreen(
         } else {
             colors.gray
         }
-        AddIngredientTextField(
+        CreateFoodTextField(
             modifier = Modifier.fillMaxWidth(),
             title = Res.string.food_name,
             titleTextColor = textColor,
@@ -221,7 +221,7 @@ fun AddIngredientScreen(
             horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AddIngredientTextField(
+            CreateFoodTextField(
                 modifier = Modifier.weight(weight = 1f),
                 title = Res.string.protein_g,
                 titleTextColor = MacroType.PROTEIN.toColor(),
@@ -234,7 +234,7 @@ fun AddIngredientScreen(
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.PROTEIN)
             }
-            AddIngredientTextField(
+            CreateFoodTextField(
                 modifier = Modifier.weight(weight = 1f),
                 title = Res.string.carbs_g,
                 titleTextColor = MacroType.CARBS.toColor(),
@@ -247,7 +247,7 @@ fun AddIngredientScreen(
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.CARBS)
             }
-            AddIngredientTextField(
+            CreateFoodTextField(
                 modifier = Modifier.weight(weight = 1f),
                 title = Res.string.fat_g,
                 titleTextColor = MacroType.FAT.toColor(),
@@ -293,7 +293,7 @@ fun AddIngredientScreen(
 }
 
 @Composable
-private fun AddIngredientTextField(
+private fun CreateFoodTextField(
     modifier: Modifier = Modifier.height(height = 32.dp),
     title: StringResource,
     placeholder: StringResource,
@@ -347,9 +347,9 @@ enum class AddFoodTextFieldType {
 
 @Preview(showBackground = true, backgroundColor = 0xffffffff)
 @Composable
-private fun PreviewAddIngredientScreen() {
+private fun PreviewCreateFoodScreen() {
     MacroTrackTheme {
-        AddIngredientScreen(
+        CreateFoodScreen(
             modifier = Modifier.fillMaxSize().padding(all = 16.dp),
             viewState = CreateFoodViewState(),
             callbacks = CreateFoodCallbacks.default()

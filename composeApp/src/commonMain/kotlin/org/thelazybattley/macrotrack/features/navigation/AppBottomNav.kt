@@ -17,7 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
-import org.thelazybattley.macrotrack.features.createfood.ui.AddIngredientScreen
+import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.profile.personalinformation.ui.PersonalInformationScreen
@@ -96,7 +96,7 @@ fun AppBottomNav() {
                     }
                 )
             ) {
-                AddIngredientScreen(
+                CreateFoodScreen(
                     modifier = Modifier
                 ) {
                     navController.popBackStack()
