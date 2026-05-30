@@ -21,4 +21,7 @@ interface FoodDao {
 
     @Update
     suspend fun updateFood(food: FoodEntity)
+
+    @Query(value = "DELETE FROM FoodEntity WHERE name = :name")
+    suspend fun deleteFood(name: String)
 }

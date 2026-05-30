@@ -34,4 +34,8 @@ class FoodRepositoryImpl(
     override suspend fun updateFood(food: Food) {
         dao.updateFood(food = food.toEntity())
     }
+
+    override suspend fun deleteFood(name: String) {
+        dao.deleteFood(name = name)
+    }
 }

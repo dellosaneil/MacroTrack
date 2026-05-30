@@ -25,6 +25,7 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateCaloriesFromMacrosU
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateTDEEUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.DeleteFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetFoodByNameUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
@@ -95,6 +96,7 @@ val useCaseModule = module {
     factoryOf(::InsertWeightUseCase)
     factoryOf(::GetAllWeightUseCase)
     factoryOf(::UpdateFoodUseCase)
+    factoryOf(::DeleteFoodUseCase)
 }
 
 val viewModelModule = module {

@@ -13,4 +13,6 @@ interface FoodRepository {
 
     suspend fun updateFood(food: Food)
 
+    suspend fun deleteFood(name: String)
+
 }
