@@ -1,9 +1,9 @@
 package org.thelazybattley.macrotrack.features.createfood
 
 data class CreateFoodViewState(
-    val protein: Double? = null,
-    val carbs: Double? = null,
-    val fat: Double? = null,
+    val protein: String? = null,
+    val carbs: String? = null,
+    val fat: String? = null,
     val calories: Int = 0,
     val weight: Double = 0.0,
     val name: String = "",

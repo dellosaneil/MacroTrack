@@ -256,7 +256,7 @@ fun AddIngredientScreen(
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
                 ),
-                defaultText = viewState.fat?.toString() ?: ""
+                defaultText = viewState.fat ?: ""
             ) {
                 callbacks.onTextFieldUpdated(value = it, type = AddFoodTextFieldType.FATS)
             }
@@ -265,9 +265,9 @@ fun AddIngredientScreen(
         AddIngredientPreviewCalories(
             modifier = Modifier.fillMaxWidth(),
             calories = viewState.calories,
-            protein = viewState.protein ?: 0.0,
-            fats = viewState.fat ?: 0.0,
-            carbs = viewState.carbs ?: 0.0
+            protein = viewState.protein?.toDoubleOrNull() ?: 0.0,
+            fats = viewState.fat?.toDoubleOrNull() ?: 0.0,
+            carbs = viewState.carbs?.toDoubleOrNull() ?: 0.0
         )
 
         CreateFoodMacroTracker(

@@ -42,9 +42,9 @@ class CreateFoodViewModel(
                         foodNameList = foodList.map { food -> food.name },
                         isUpdating = !foodName.isNullOrEmpty(),
                         name = foodName ?: "",
-                        protein = foodDetails?.macros?.protein,
-                        carbs = foodDetails?.macros?.carbs,
-                        fat = foodDetails?.macros?.fat,
+                        protein = foodDetails?.macros?.protein?.toString(),
+                        carbs = foodDetails?.macros?.carbs?.toString(),
+                        fat = foodDetails?.macros?.fat?.toString(),
                         unit = foodDetails?.unit ?: "",
                         weight = foodDetails?.weight ?: 0.0,
                         calories = foodDetails?.macros?.calories ?: 0,
@@ -68,9 +68,9 @@ class CreateFoodViewModel(
                 val food = Food(
                     macros = FoodMacros(
                         calories = calories,
-                        protein = protein!!,
-                        carbs = carbs!!,
-                        fat = fat!!
+                        protein = protein?.toDoubleOrNull() ?: 0.0,
+                        carbs = carbs?.toDoubleOrNull() ?: 0.0,
+                        fat = fat?.toDoubleOrNull() ?: 0.0
                     ),
                     name = state.value.name,
                     weight = state.value.weight,
@@ -118,29 +118,29 @@ class CreateFoodViewModel(
                     currentState.copy(weight = value.toDoubleOrNull() ?: 0.0)
 
                 AddFoodTextFieldType.FATS -> currentState.copy(
-                    fat = value.toDoubleOrNull(),
+                    fat = value,
                     calories = calculateCaloriesFromMacrosUseCase(
-                        protein = currentState.protein ?: 0.0,
-                        carbs = currentState.carbs ?: 0.0,
+                        protein = currentState.protein?.toDoubleOrNull() ?: 0.0,
+                        carbs = currentState.carbs?.toDoubleOrNull() ?: 0.0,
                         fat = value.toDoubleOrNull() ?: 0.0
                     )
                 )
 
                 AddFoodTextFieldType.PROTEIN -> currentState.copy(
-                    protein = value.toDoubleOrNull(),
+                    protein = value,
                     calories = calculateCaloriesFromMacrosUseCase(
                         protein = value.toDoubleOrNull() ?: 0.0,
-                        carbs = currentState.carbs ?: 0.0,
-                        fat = currentState.fat ?: 0.0
+                        carbs = currentState.carbs?.toDoubleOrNull() ?: 0.0,
+                        fat = currentState.fat?.toDoubleOrNull() ?: 0.0
                     )
                 )
 
                 AddFoodTextFieldType.CARBS -> currentState.copy(
-                    carbs = value.toDoubleOrNull(),
+                    carbs = value,
                     calories = calculateCaloriesFromMacrosUseCase(
-                        protein = currentState.protein ?: 0.0,
+                        protein = currentState.protein?.toDoubleOrNull() ?: 0.0,
                         carbs = value.toDoubleOrNull() ?: 0.0,
-                        fat = currentState.fat ?: 0.0
+                        fat = currentState.fat?.toDoubleOrNull() ?: 0.0
                     )
                 )
 
@@ -172,17 +172,17 @@ class CreateFoodViewModel(
             updatedState.copy(
                 proteinPercentage = calculateMacroPercentageUseCase(
                     totalCalories = updatedState.calories,
-                    macroValue = updatedState.protein ?: 0.0,
+                    macroValue = updatedState.protein?.toDoubleOrNull() ?: 0.0,
                     macroType = MacroType.PROTEIN
                 ),
                 carbsPercentage = calculateMacroPercentageUseCase(
                     totalCalories = updatedState.calories,
-                    macroValue = updatedState.carbs ?: 0.0,
+                    macroValue = updatedState.carbs?.toDoubleOrNull() ?: 0.0,
                     macroType = MacroType.CARBS
                 ),
                 fatPercentage = calculateMacroPercentageUseCase(
                     totalCalories = updatedState.calories,
-                    macroValue = updatedState.fat ?: 0.0,
+                    macroValue = updatedState.fat?.toDoubleOrNull() ?: 0.0,
                     macroType = MacroType.FAT
                 ),
             )
