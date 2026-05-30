@@ -14,6 +14,7 @@ import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.Recipe
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.DeleteFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
@@ -29,6 +30,7 @@ class AddMealViewModel(
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val getAllRecipeUseCase: GetAllRecipeUseCase,
     private val deleteRecipeUseCase: DeleteRecipeUseCase,
+    private val deleteFoodUseCase: DeleteFoodUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks.MainScreenCallbacks, AddMealCallbacks.FoodCallbacks,
     AddMealCallbacks.RecipeCallbacks {
@@ -358,6 +360,8 @@ class AddMealViewModel(
     }
 
     override fun deleteFood(name: String) {
-        TODO("Not yet implemented")
+        viewModelScope.launch {
+            deleteFoodUseCase(name = name)
+        }
     }
 }
