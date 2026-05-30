@@ -356,4 +356,8 @@ class AddMealViewModel(
             deleteRecipeUseCase(name = name)
         }
     }
+
+    override fun deleteFood(name: String) {
+        TODO("Not yet implemented")
+    }
 }

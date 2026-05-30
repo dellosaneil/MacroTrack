@@ -28,6 +28,8 @@ sealed interface AddMealCallbacks {
         fun addCustomizedFood()
 
         fun updateFood(name: String)
+
+        fun deleteFood(name: String)
     }
 
     interface RecipeCallbacks : AddMealCallbacks {
@@ -127,6 +129,10 @@ sealed interface AddMealCallbacks {
             }
 
             override fun updateFood(name: String) {
+                TODO("Not yet implemented")
+            }
+
+            override fun deleteFood(name: String) {
                 TODO("Not yet implemented")
             }
         }
