@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 
@@ -17,4 +18,7 @@ interface FoodDao {
 
     @Query(value = "SELECT * FROM FoodEntity WHERE name = :name")
     fun getFoodByName(name: String): Flow<List<FoodEntity>>
+
+    @Update
+    suspend fun updateFood(food: FoodEntity)
 }

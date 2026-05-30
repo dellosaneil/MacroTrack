@@ -30,4 +30,8 @@ class FoodRepositoryImpl(
             }
         }
     }
+
+    override suspend fun updateFood(food: Food) {
+        dao.updateFood(food = food.toEntity())
+    }
 }
