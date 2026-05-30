@@ -23,8 +23,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.kcal_per_gram
 import macrotrack.composeapp.generated.resources.kcal_per_serving
+import macrotrack.composeapp.generated.resources.kcal_per_unit
 import macrotrack.composeapp.generated.resources.plus_text
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.core.buildMacroNutrientText
@@ -104,9 +104,10 @@ fun AddMealItemCard(
                         )
                     } else {
                         stringResource(
-                            resource = Res.string.kcal_per_gram,
+                            resource = Res.string.kcal_per_unit,
                             food.macros.calories,
-                            food.weight.toInt()
+                            food.weight.toInt(),
+                            food.unit
                         )
                     }
                     Text(

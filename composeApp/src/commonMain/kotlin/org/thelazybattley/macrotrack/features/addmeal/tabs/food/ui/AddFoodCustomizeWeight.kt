@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.sp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.ic_close
-import macrotrack.composeapp.generated.resources.kcal_per_gram
+import macrotrack.composeapp.generated.resources.kcal_per_unit
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.one_hundred
 import macrotrack.composeapp.generated.resources.portion_size
@@ -104,9 +104,10 @@ fun AddFoodCustomizeWeight(
 
             Text(
                 text = stringResource(
-                    resource = Res.string.kcal_per_gram,
+                    resource = Res.string.kcal_per_unit,
                     calories,
-                    originalWeight
+                    originalWeight,
+                    food.unit
                 ),
                 style = typography.regular11,
                 color = colors.deepBlue
