@@ -239,7 +239,8 @@ class AddMealViewModel(
                 ),
                 name = recipe.food.name,
                 weight = 0.0,
-                dominantMacro = recipe.food.dominantMacro
+                dominantMacro = recipe.food.dominantMacro,
+                unit = recipe.food.unit
             )
             insertFoodLog(food = food)
         }
@@ -287,7 +288,8 @@ class AddMealViewModel(
                         macros = foodMacros,
                         name = ingredient.name,
                         weight = ingredient.weight,
-                        dominantMacro = ingredientAsFood.dominantMacro
+                        dominantMacro = ingredientAsFood.dominantMacro,
+                        unit = ingredientAsFood.unit
                     )
                 )
             }
@@ -300,7 +302,8 @@ class AddMealViewModel(
                 ),
                 name = recipe.name,
                 weight = 0.0,
-                dominantMacro = recipe.dominantMacro
+                dominantMacro = recipe.dominantMacro,
+                unit = "serving"
             )
             RecipeMeal(
                 food = food,

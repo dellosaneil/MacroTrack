@@ -13,5 +13,6 @@ data class CreateFoodViewState(
     val fatPercentage: Double = 0.0,
     val foodNameList: List<String> = emptyList(),
     val duplicateFood: Boolean = false,
-    val foodSaved: Boolean = false
+    val foodSaved: Boolean = false,
+    val unit: String = ""
 )

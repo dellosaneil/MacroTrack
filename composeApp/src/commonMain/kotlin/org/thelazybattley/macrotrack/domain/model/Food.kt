@@ -6,7 +6,8 @@ data class Food(
     val macros: FoodMacros,
     val name: String,
     val weight: Double,
-    val dominantMacro: MacroType
+    val dominantMacro: MacroType,
+    val unit: String
 )
 
 fun Food.toEntity() = FoodEntity(
@@ -16,7 +17,8 @@ fun Food.toEntity() = FoodEntity(
     fat = macros.fat,
     calories = macros.calories,
     weight = weight,
-    dominantMacro = dominantMacro.name
+    dominantMacro = dominantMacro.name,
+    unit = unit
 )
 
 
@@ -29,5 +31,6 @@ val dummyFood = Food(
         protein = 34.2,
         fat = 12.3
     ),
-    dominantMacro = MacroType.PROTEIN
+    dominantMacro = MacroType.PROTEIN,
+    unit = "g"
 )

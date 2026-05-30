@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
@@ -16,7 +17,9 @@ data class FoodEntity(
     val fat: Double,
     val calories: Int,
     val weight: Double,
-    val dominantMacro: String
+    val dominantMacro: String,
+    @ColumnInfo(defaultValue = "g")
+    val unit: String
 )
 
 fun FoodEntity.toFood() = Food(
@@ -28,5 +31,6 @@ fun FoodEntity.toFood() = Food(
     ),
     name = name,
     weight = weight,
-    dominantMacro = MacroType.valueOf(value = dominantMacro)
+    dominantMacro = MacroType.valueOf(value = dominantMacro),
+    unit = unit
 )

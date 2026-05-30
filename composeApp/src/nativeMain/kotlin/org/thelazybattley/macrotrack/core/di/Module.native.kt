@@ -14,7 +14,7 @@ actual val platformModule: Module = module {
         val dbFilePath = documentDirectory() + "/my_room.db"
         Room.databaseBuilder<AppDatabase>(
             name = dbFilePath,
-        )
+        ).addMigrations(AppDatabase.MIGRATION_2_3)
     }
 }
 

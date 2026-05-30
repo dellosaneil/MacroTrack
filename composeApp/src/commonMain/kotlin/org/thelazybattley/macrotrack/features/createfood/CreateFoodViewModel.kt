@@ -59,7 +59,8 @@ class CreateFoodViewModel(
                         ),
                         name = state.value.name,
                         weight = state.value.weight,
-                        dominantMacro = dominantMacro
+                        dominantMacro = dominantMacro,
+                        unit = state.value.unit
                     )
                 ).also {
                     _state.update { currentState ->
@@ -86,7 +87,7 @@ class CreateFoodViewModel(
                     currentState.copy(name = value, duplicateFood = duplicateFood)
                 }
 
-                AddFoodTextFieldType.AMOUNT_IN_GRAMS ->
+                AddFoodTextFieldType.AMOUNT ->
                     currentState.copy(weight = value.toDoubleOrNull() ?: 0.0)
 
                 AddFoodTextFieldType.FATS -> currentState.copy(
@@ -115,15 +116,18 @@ class CreateFoodViewModel(
                         fat = currentState.fat ?: 0.0
                     )
                 )
+                AddFoodTextFieldType.UNIT -> currentState.copy(
+                    unit = value
+                )
             }
         }
         val isButtonEnabled = with(receiver = state.value) {
-            name.isNotBlank() && weight > 0 && calories > 0 && fat != null && protein != null && carbs != null && !duplicateFood
+            name.isNotBlank() && weight > 0 && calories > 0 && fat != null && protein != null && carbs != null && !duplicateFood && unit.isNotBlank()
         }
         _state.update { currentState ->
             currentState.copy(buttonEnabled = isButtonEnabled)
         }
-        if (type != AddFoodTextFieldType.FOOD_NAME && type != AddFoodTextFieldType.AMOUNT_IN_GRAMS) {
+        if (type != AddFoodTextFieldType.FOOD_NAME && type != AddFoodTextFieldType.AMOUNT) {
             calculateMacroPercentage()
         }
     }

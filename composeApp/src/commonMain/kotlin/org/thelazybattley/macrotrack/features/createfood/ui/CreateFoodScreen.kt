@@ -1,8 +1,6 @@
 package org.thelazybattley.macrotrack.features.createfood.ui
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,14 +17,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
@@ -48,6 +43,7 @@ import macrotrack.composeapp.generated.resources.placeholder_protein
 import macrotrack.composeapp.generated.resources.protein_g
 import macrotrack.composeapp.generated.resources.save_food
 import macrotrack.composeapp.generated.resources.this_food_is_already_saved
+import macrotrack.composeapp.generated.resources.unit
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -140,33 +136,37 @@ fun AddIngredientScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
-            Text(
-                text = stringResource(resource = Res.string.amount),
-                color = colors.gray,
-                style = typography.medium11
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.amount),
+                    color = colors.black,
+                    style = typography.medium11,
+                    modifier = Modifier.weight(weight = 0.75f)
+                )
+                Text(
+                    text = stringResource(resource = Res.string.unit),
+                    color = colors.black,
+                    style = typography.medium11,
+                    modifier = Modifier.weight(weight = 0.25f)
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val textFieldHeight = remember { mutableStateOf(0) }
-                val height = with(receiver = LocalDensity.current) {
-                    textFieldHeight.value.toDp()
-                }
                 var textValue by rememberSaveable { mutableStateOf(value = "") }
                 CommonTextField(
                     modifier = Modifier
-                        .weight(weight = 0.85f)
-                        .onSizeChanged { size ->
-                            textFieldHeight.value = size.height
-                        },
+                        .weight(weight = 0.75f),
                     placeholder = stringResource(resource = Res.string.one_hundred),
                     borderColor = colors.deepBlue,
                     onValueChanged = { value ->
                         callbacks.onTextFieldUpdated(
                             value = value,
-                            type = AddFoodTextFieldType.AMOUNT_IN_GRAMS
+                            type = AddFoodTextFieldType.AMOUNT
                         )
                         textValue = value
                     },
@@ -175,22 +175,24 @@ fun AddIngredientScreen(
                     ),
                     textValue = textValue
                 )
-                Box(
+                var unitTextValue by rememberSaveable { mutableStateOf(value = "") }
+                CommonTextField(
                     modifier = Modifier
-                        .border(
-                            width = 1.dp, color = colors.deepBlue,
-                            shape = RoundedCornerShape(size = 12.dp)
+                        .weight(weight = 0.25f),
+                    placeholder = stringResource(resource = Res.string.g),
+                    borderColor = colors.deepBlue,
+                    onValueChanged = { value ->
+                        callbacks.onTextFieldUpdated(
+                            value = value,
+                            type = AddFoodTextFieldType.UNIT
                         )
-                        .height(height = height)
-                        .weight(weight = 0.15f),
-                ) {
-                    Text(
-                        text = stringResource(resource = Res.string.g),
-                        style = typography.bold12,
-                        color = colors.deepBlue,
-                        modifier = Modifier.align(alignment = Alignment.Center)
-                    )
-                }
+                        unitTextValue = value
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text
+                    ),
+                    textValue = unitTextValue,
+                )
             }
         }
 
@@ -315,10 +317,11 @@ private fun AddIngredientTextField(
 
 enum class AddFoodTextFieldType {
     FOOD_NAME,
-    AMOUNT_IN_GRAMS,
+    AMOUNT,
     FATS,
     PROTEIN,
-    CARBS
+    CARBS,
+    UNIT
 }
 
 @Preview(showBackground = true, backgroundColor = 0xffffffff)

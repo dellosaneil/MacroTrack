@@ -6,6 +6,9 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 import org.thelazybattley.macrotrack.data.local.dao.FoodDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
 import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
@@ -20,9 +23,10 @@ import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
     entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class],
-    version = 2, exportSchema = true,
+    version = 3, exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2)
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3)
     ]
 )
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -33,6 +37,17 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDetailsDao(): UserDetailsDao
     abstract fun foodLogDao(): FoodLogDao
     abstract fun weightDao(): WeightDao
+
+    companion object {
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE FoodEntity ADD COLUMN unit TEXT NOT NULL DEFAULT 'g'"
+                )
+            }
+        }
+    }
+
 }
 
 @Suppress("KotlinNoActualForExpect")
