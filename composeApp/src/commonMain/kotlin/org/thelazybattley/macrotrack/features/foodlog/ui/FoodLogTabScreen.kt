@@ -43,6 +43,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.buildMacroNutrientText
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.core.toColor
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
@@ -301,7 +302,7 @@ private fun FoodLogItem(
                     Text(
                         text = stringResource(
                             resource = Res.string.value_unit,
-                            food.weight.toInt(),
+                            food.weight.toCleanString(),
                             unit
                         ),
                         style = typography.bold11,

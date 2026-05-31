@@ -92,3 +92,7 @@ fun buildMacroNutrientText(
         }
     }
 }
+
+fun Double.toCleanString(): String {
+    return if (this == toInt().toDouble()) toInt().toString() else toString()
+}
