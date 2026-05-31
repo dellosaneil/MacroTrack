@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -12,6 +14,7 @@ import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
@@ -20,7 +23,8 @@ class FoodLogViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
     private val deleteFoodLogUseCase: DeleteFoodLogUseCase,
-    private val getAllFoodLogUseCase: GetAllFoodLogUseCase
+    private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
+    private val getAllFoodUseCase: GetAllFoodUseCase,
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -29,19 +33,25 @@ class FoodLogViewModel(
 
     init {
         viewModelScope.launch {
-            getAllFoodLogUseCase().collect { logs ->
+            combine(
+                flow = getAllFoodLogUseCase(),
+                flow2 = getAllFoodUseCase()
+            ) { logs, food ->
                 val dates = logs.map { it.date }.toMutableSet()
                 dates.add(element = getCurrentDate())
                 _state.update { currentState ->
                     currentState.copy(
                         allFoodLog = logs,
-                        availableDates = dates.toList()
+                        availableDates = dates.toList(),
+                        foodUnit = food.associate {
+                            it.name to it.unit
+                        }
                     )
                 }.also {
                     val today = logs.filter { it.date == getCurrentDate() }
                     filterFoodLogsByDate(foodLog = today)
                 }
-            }
+            }.collect()
         }
         updateMacroGoals()
     }
@@ -102,7 +112,7 @@ class FoodLogViewModel(
     private fun updateMacroGoals() {
         viewModelScope.launch {
             getUserDetailsUseCase().collect { user ->
-                if(user == null) return@collect
+                if (user == null) return@collect
                 val goalMacros = calculateMacrosGoalUseCase(
                     height = user.height,
                     weight = user.weight,

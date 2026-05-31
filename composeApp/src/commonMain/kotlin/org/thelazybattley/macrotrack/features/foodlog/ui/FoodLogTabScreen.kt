@@ -38,7 +38,7 @@ import macrotrack.composeapp.generated.resources.kcal
 import macrotrack.composeapp.generated.resources.nothing_logged_for_value
 import macrotrack.composeapp.generated.resources.recipe
 import macrotrack.composeapp.generated.resources.sign_add
-import macrotrack.composeapp.generated.resources.value_gram
+import macrotrack.composeapp.generated.resources.value_unit
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.buildMacroNutrientText
@@ -116,6 +116,7 @@ private fun FoodLogTabScreen(
                 callbacks.onDeleteFoodLog(id = id)
             },
             isToday = viewState.selectedDate == getCurrentDate(),
+            foodUnit = viewState.foodUnit,
             onNavigate = {
                 callbacks.onNavigate(mealType = MealType.BREAKFAST)
             }
@@ -127,6 +128,7 @@ private fun FoodLogTabScreen(
                 callbacks.onDeleteFoodLog(id = id)
             },
             isToday = viewState.selectedDate == getCurrentDate(),
+            foodUnit = viewState.foodUnit,
             onNavigate = {
                 callbacks.onNavigate(mealType = MealType.LUNCH)
             }
@@ -138,6 +140,7 @@ private fun FoodLogTabScreen(
                 callbacks.onDeleteFoodLog(id = id)
             },
             isToday = viewState.selectedDate == getCurrentDate(),
+            foodUnit = viewState.foodUnit,
             onNavigate = {
                 callbacks.onNavigate(mealType = MealType.DINNER)
             }
@@ -149,6 +152,7 @@ private fun FoodLogTabScreen(
                 callbacks.onDeleteFoodLog(id = id)
             },
             isToday = viewState.selectedDate == getCurrentDate(),
+            foodUnit = viewState.foodUnit,
             onNavigate = {
                 callbacks.onNavigate(mealType = MealType.SNACK)
             }
@@ -162,6 +166,7 @@ private fun LoggedFoodMealType(
     modifier: Modifier = Modifier,
     isToday: Boolean,
     foodList: FoodLogFoodListByMealType,
+    foodUnit: Map<String, String>,
     onDeleteFoodLog: (Long) -> Unit,
     onNavigate: () -> Unit
 ) {
@@ -212,7 +217,8 @@ private fun LoggedFoodMealType(
                                 .background(color = colors.white)
                                 .padding(horizontal = 12.dp)
                                 .fillMaxWidth(),
-                            food = food
+                            food = food,
+                            unit = foodUnit[food.foodName] ?: ""
                         )
                     }
                 }
@@ -224,7 +230,10 @@ private fun LoggedFoodMealType(
 }
 
 @Composable
-private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
+private fun FoodLogItem(
+    modifier: Modifier = Modifier, food: FoodLog,
+    unit: String
+) {
     val color = food.dominantMacro.toColor()
     Box(
         modifier = modifier
@@ -291,8 +300,9 @@ private fun FoodLogItem(modifier: Modifier = Modifier, food: FoodLog) {
                     Spacer(modifier = Modifier.width(width = 12.dp))
                     Text(
                         text = stringResource(
-                            resource = Res.string.value_gram,
-                            food.weight.toInt()
+                            resource = Res.string.value_unit,
+                            food.weight.toInt(),
+                            unit
                         ),
                         style = typography.bold11,
                         color = colors.mediumGray

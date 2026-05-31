@@ -26,7 +26,8 @@ data class FoodLogViewState(
     val totalFoodMacros: FoodMacros? = null,
     val navigateMealTypeParameter : MealType? = null,
     val availableDates: List<LocalDate> = emptyList(),
-    val selectedDate: LocalDate = getCurrentDate()
+    val selectedDate: LocalDate = getCurrentDate(),
+    val foodUnit: Map<String, String> = emptyMap()
 )
 
 data class FoodLogFoodListByMealType(
