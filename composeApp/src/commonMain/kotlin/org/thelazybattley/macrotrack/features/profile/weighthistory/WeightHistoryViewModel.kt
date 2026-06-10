@@ -52,12 +52,15 @@ class WeightHistoryViewModel(
                 }
 
                 WeightHistoryTimeRangeEnum.MONTH -> {
+                    val filteredWeight =
+                        currentState.completeWeightList.filter { it.date.month == getCurrentDate().month }
                     currentState.copy(
                         timeRange = timeRange,
-                        filteredWeightList = currentState.completeWeightList.filter { it.date.month == getCurrentDate().month },
+                        filteredWeightList = filteredWeight,
                         weightHistoryFilter = WeightHistoryFilters.Monthly(
                             month = getCurrentDate().month
-                        )
+                        ),
+                        averageWeight = filteredWeight.map { it.weight }.average()
                     )
                 }
 
@@ -83,11 +86,13 @@ class WeightHistoryViewModel(
                     } else {
                         Month(number = currentHistoryFilter.month.number.dec())
                     }
+                    val filteredWeight = currentState.completeWeightList.filter { it.date.month == previousMonth }
                     currentState.copy(
                         weightHistoryFilter = WeightHistoryFilters.Monthly(
                             month = previousMonth
                         ),
-                        filteredWeightList = currentState.completeWeightList.filter { it.date.month == previousMonth }
+                        filteredWeightList = filteredWeight,
+                        averageWeight = filteredWeight.map { it.weight }.average()
                     )
                 }
 
@@ -110,11 +115,13 @@ class WeightHistoryViewModel(
                     } else {
                         Month(number = currentHistoryFilter.month.number.inc())
                     }
+                    val filteredWeight = currentState.completeWeightList.filter { it.date.month == nextMonth }
                     currentState.copy(
                         weightHistoryFilter = WeightHistoryFilters.Monthly(
                             month = nextMonth
                         ),
-                        filteredWeightList = currentState.completeWeightList.filter { it.date.month == nextMonth }
+                        filteredWeightList = filteredWeight,
+                        averageWeight = filteredWeight.map { it.weight }.average()
                     )
                 }
 
