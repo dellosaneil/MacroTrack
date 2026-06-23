@@ -39,12 +39,14 @@ fun AddRecipeTabScreen(
         val index = viewState.filteredRecipeList.indexOfFirst { recipe ->
             recipe.name == viewState.highlightedRecipe?.name
         }
-        if(index == -1) return@LaunchedEffect
+        if (index == -1) return@LaunchedEffect
         keyboardController?.hide()
         lazyState.animateScrollToItem(index = index)
     }
-    LazyColumn(modifier = modifier,
-        state = lazyState) {
+    LazyColumn(
+        modifier = modifier,
+        state = lazyState
+    ) {
         items(items = viewState.filteredRecipeList, key = { it.name }) { recipe ->
             when {
                 viewState.highlightedRecipe?.name == recipe.name -> {

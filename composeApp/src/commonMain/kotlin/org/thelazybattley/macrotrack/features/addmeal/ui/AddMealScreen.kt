@@ -55,6 +55,9 @@ fun AddMealScreen(
             viewModel.resetNavigateScreen()
         }
     }
+    LaunchedEffect(key1 = Unit) {
+        viewModel.onSearchQuery(query = viewState.searchQuery)
+    }
 
     val snackBarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = viewState.loggedMeals.name) {
