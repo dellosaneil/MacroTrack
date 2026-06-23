@@ -39,7 +39,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.kcal_per_unit
 import macrotrack.composeapp.generated.resources.kcal_text
@@ -153,7 +152,7 @@ fun AddFoodCustomizeWeight(
                         .background(color = colors.white, shape = RoundedCornerShape(size = 12.dp)),
                 ) {
                     Text(
-                        text = stringResource(resource = Res.string.g),
+                        text = food.unit,
                         style = typography.bold12,
                         color = colors.deepBlue,
                         modifier = Modifier.align(alignment = Alignment.Center)
