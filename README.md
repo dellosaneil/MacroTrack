@@ -1,35 +1,63 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# MacroTrack
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+MacroTrack is a comprehensive macro and calorie tracking application built with **Kotlin Multiplatform** and **Compose Multiplatform**, targeting both Android and iOS. It helps users manage their nutrition goals, track daily intake, and monitor their weight progress.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+## 🚀 Features
 
-### Build and Run Android Application
+- **Onboarding & Goal Setting**: Personalized setup including activity level, sex, and weight goals to calculate target macros and TDEE.
+- **Daily Food Log**: Track your daily consumption of proteins, carbs, and fats. Navigate through historical logs with ease.
+- **Meal Management**:
+    - Search and add foods or recipes to your daily log.
+    - Customize portions and weights for accurate tracking.
+- **Custom Content Creation**:
+    - Create your own food entries with detailed macro information.
+    - Build recipes by combining multiple ingredients.
+- **Profile & Progress Tracking**:
+    - Monitor your BMI and weight history.
+    - Visual weight history graphs to track progress over time.
+    - Manage personal information and activity levels.
+- **Offline Support**: Fully functional offline using a local database.
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
+## 🛠 Tech Stack
 
-### Build and Run iOS Application
+- **Kotlin Multiplatform**: Shared business logic and UI across Android and iOS.
+- **Compose Multiplatform**: Declarative UI framework for shared screens.
+- **Room Database**: Local persistence for food logs, recipes, and user data.
+- **Koin**: Lightweight dependency injection framework.
+- **Navigation Compose**: Type-safe navigation for shared UI.
+- **Kotlinx Serialization**: JSON parsing and serialization.
+- **Kotlinx DateTime**: Handling date and time operations across platforms.
 
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+## 📂 Project Structure
+
+- `composeApp/src/commonMain`: Shared Kotlin code including UI (Compose), ViewModels, Repositories, Use Cases, and Domain models.
+- `composeApp/src/androidMain`: Android-specific implementations and entry point (`MainActivity`).
+- `composeApp/src/iosMain`: iOS-specific implementations and entry point (`MainViewController`).
+- `iosApp`: The Xcode project for the iOS application.
+
+## 🛠 Getting Started
+
+### Prerequisites
+
+- Android Studio (latest version recommended)
+- Xcode (for iOS development)
+- JDK 11 or higher
+
+### Build and Run
+
+#### Android
+You can run the app from Android Studio or via the terminal:
+```bash
+./gradlew :composeApp:assembleDebug
+```
+
+#### iOS
+1. Open the `iosApp` directory in Xcode.
+2. Select a simulator or physical device.
+3. Build and Run (Cmd + R).
+
+Alternatively, use the run configurations provided in Android Studio if the KMP plugin is installed.
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+*Developed with ❤️ using Kotlin Multiplatform.*
