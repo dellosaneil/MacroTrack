@@ -195,6 +195,11 @@
     <string name="left">left</string>
     <string name="expand_daily_summary">Expand daily summary</string>
     <string name="collapse_daily_summary">Collapse daily summary</string>
+    <string name="about_you">About you</string>
+    <string name="from_your_latest_log">From your latest log · %1$s</string>
+    <string name="your_daily_target">Your daily target</string>
+    <string name="updates_when_you_change_details">Updates when you change your details</string>
+    <string name="save_changes">Save changes</string>
     <plurals name="items">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>
