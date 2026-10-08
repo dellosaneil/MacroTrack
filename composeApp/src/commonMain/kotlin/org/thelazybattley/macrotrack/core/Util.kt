@@ -22,7 +22,9 @@ import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import kotlin.math.round
 import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 fun getCurrentDate() = run {
     Clock.System.now()
         .toLocalDateTime(TimeZone.currentSystemDefault())

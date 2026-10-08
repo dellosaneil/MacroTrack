@@ -57,6 +57,8 @@ fun WeightHistoryFilter(
             is WeightHistoryFilters.Weekly -> {
                 "weekly"
             }
+
+            WeightHistoryFilters.All -> ""
         }
         Text(
             text = text,
