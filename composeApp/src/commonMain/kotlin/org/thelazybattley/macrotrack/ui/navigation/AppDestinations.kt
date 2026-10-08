@@ -1,14 +1,12 @@
 package org.thelazybattley.macrotrack.ui.navigation
 
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.ic_log
-import macrotrack.composeapp.generated.resources.ic_profile
-import macrotrack.composeapp.generated.resources.ic_progress
-import macrotrack.composeapp.generated.resources.ic_steps
+import macrotrack.composeapp.generated.resources.ic_nav_log
+import macrotrack.composeapp.generated.resources.ic_nav_profile
+import macrotrack.composeapp.generated.resources.ic_nav_progress
 import macrotrack.composeapp.generated.resources.log
 import macrotrack.composeapp.generated.resources.profile
 import macrotrack.composeapp.generated.resources.progress
-import macrotrack.composeapp.generated.resources.steps
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
@@ -22,29 +20,23 @@ sealed class AppDestinations {
     ) : AppDestinations() {
         object Log : BottomNavigation(
             route = "log", label = Res.string.log,
-            icon = Res.drawable.ic_log
-        )
-
-        object Steps : BottomNavigation(
-            route = "steps",
-            label = Res.string.steps,
-            icon = Res.drawable.ic_steps
+            icon = Res.drawable.ic_nav_log
         )
 
         object Progress : BottomNavigation(
             route = "progress", label = Res.string.progress,
-            icon = Res.drawable.ic_progress
+            icon = Res.drawable.ic_nav_progress
         )
 
         object Profile : BottomNavigation(
             route = "profile", label = Res.string.profile,
-            icon = Res.drawable.ic_profile
+            icon = Res.drawable.ic_nav_profile
         )
 
         companion object {
             val entries: List<BottomNavigation>
                 get() = listOf(
-                    Log, Steps, Progress, Profile
+                    Log, Progress, Profile
                 )
         }
     }

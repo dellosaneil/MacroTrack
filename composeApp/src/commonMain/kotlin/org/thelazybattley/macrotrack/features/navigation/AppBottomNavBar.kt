@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
@@ -26,25 +27,18 @@ fun MacroBottomNavBar(
     selectedDestination: AppDestinations.BottomNavigation?,
     onDestinationClicked: (AppDestinations.BottomNavigation) -> Unit
 ) {
-    Column {
+    Column(modifier = modifier) {
         HorizontalDivider(
             thickness = 1.dp,
-            color = colors.lightGray
+            color = colors.line
         )
         NavigationBar(
-            modifier = modifier,
-            containerColor = colors.white
+            containerColor = colors.surface,
+            tonalElevation = 0.dp
         ) {
-
             AppDestinations.BottomNavigation.entries.forEach { destination ->
-                val isSelected = selectedDestination?.route?.let {
-                    destination.route == it
-                } ?: false
-                val color = if (isSelected) {
-                    colors.deepBlue
-                } else {
-                    colors.mediumGray
-                }
+                val isSelected = selectedDestination?.route == destination.route
+                val color = if (isSelected) colors.accentInk else colors.muted
                 NavigationBarItem(
                     selected = isSelected,
                     onClick = {
@@ -54,7 +48,7 @@ fun MacroBottomNavBar(
                         Icon(
                             painter = painterResource(resource = destination.icon),
                             contentDescription = null,
-                            modifier = Modifier.size(size = 24.dp),
+                            modifier = Modifier.size(size = 22.dp),
                             tint = color
                         )
                     },
@@ -62,7 +56,7 @@ fun MacroBottomNavBar(
                         Text(
                             text = stringResource(resource = destination.label),
                             color = color,
-                            style = typography.regular10
+                            style = if (isSelected) typography.bold11 else typography.medium11
                         )
                     },
                     colors = NavigationBarItemDefaults.colors(
@@ -77,11 +71,11 @@ fun MacroBottomNavBar(
 @Preview
 @Composable
 private fun PreviewMacroBottomNavBar() {
-    MacroBottomNavBar(
-        modifier = Modifier.fillMaxWidth(),
-        selectedDestination = AppDestinations.BottomNavigation.Log
-    ) {
-
+    MacroTrackTheme {
+        MacroBottomNavBar(
+            modifier = Modifier.fillMaxWidth(),
+            selectedDestination = AppDestinations.BottomNavigation.Log
+        ) {
+        }
     }
-
 }

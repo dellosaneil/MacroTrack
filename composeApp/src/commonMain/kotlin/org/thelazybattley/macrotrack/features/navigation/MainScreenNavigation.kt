@@ -58,9 +58,6 @@ fun MainScreenNavigation(
                     onNavigate(route)
                 }
             }
-            composable(route = AppDestinations.BottomNavigation.Steps.route) {
-                Text("steps")
-            }
             composable(route = AppDestinations.BottomNavigation.Progress.route) {
                 Text("progress")
             }
