@@ -3,7 +3,6 @@ package org.thelazybattley.macrotrack.features.navigation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -20,6 +19,7 @@ import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
+import org.thelazybattley.macrotrack.features.profile.nutritiongoals.ui.NutritionGoalsScreen
 import org.thelazybattley.macrotrack.features.profile.personalinformation.ui.PersonalInformationScreen
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
@@ -130,7 +130,15 @@ fun AppBottomNav() {
             composable(
                 route = AppDestinations.Profile.NutritionGoals.route
             ) {
-                Text("nutritionGoals")
+                NutritionGoalsScreen(
+                    modifier = Modifier,
+                    onPopBackStack = {
+                        navController.popBackStack()
+                    },
+                    onNavigateToPersonalInformation = {
+                        navController.navigate(route = AppDestinations.Profile.PersonalInfo.route)
+                    }
+                )
             }
             composable(
                 route = AppDestinations.Profile.WeightHistory.route

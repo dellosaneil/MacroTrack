@@ -49,6 +49,7 @@ import org.thelazybattley.macrotrack.features.createrecipe.CreateRecipeViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
+import org.thelazybattley.macrotrack.features.profile.nutritiongoals.NutritionGoalsViewModel
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewModel
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
 import org.thelazybattley.macrotrack.features.splash.SplashViewModel
@@ -108,6 +109,7 @@ val viewModelModule = module {
     viewModelOf(::CreateRecipeViewModel)
     viewModelOf(::ProfileViewModel)
     viewModelOf(::PersonalInformationViewModel)
+    viewModelOf(::NutritionGoalsViewModel)
     viewModelOf(::WeightHistoryViewModel)
 }
 

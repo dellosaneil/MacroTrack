@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,7 +22,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,13 +41,11 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.about_you
 import macrotrack.composeapp.generated.resources.activity_level_camel
 import macrotrack.composeapp.generated.resources.age
-import macrotrack.composeapp.generated.resources.back
 import macrotrack.composeapp.generated.resources.cm
 import macrotrack.composeapp.generated.resources.current_weight
 import macrotrack.composeapp.generated.resources.female
 import macrotrack.composeapp.generated.resources.from_your_latest_log
 import macrotrack.composeapp.generated.resources.height
-import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.male
@@ -60,7 +56,6 @@ import macrotrack.composeapp.generated.resources.updates_when_you_change_details
 import macrotrack.composeapp.generated.resources.your_daily_target
 import macrotrack.composeapp.generated.resources.yrs
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
@@ -77,6 +72,8 @@ import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationCallbacks
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewModel
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewState
+import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
+import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -112,14 +109,15 @@ private fun PersonalInformationScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = colors.background,
         topBar = {
-            PersonalInformationHeader(onBack = onBack)
+            CommonScreenHeader(title = Res.string.personal_information, onBack = onBack)
         },
         bottomBar = {
-            SaveButton(
+            CommonPrimaryButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
                     .padding(horizontal = 20.dp, vertical = 16.dp),
+                text = Res.string.save_changes,
                 enabled = viewState.canSave,
                 onClick = callbacks::onSave
             )
@@ -139,41 +137,6 @@ private fun PersonalInformationScreen(
             )
             DailyTargetCard(dailyCalories = viewState.dailyCalories)
         }
-    }
-}
-
-@Composable
-private fun PersonalInformationHeader(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = colors.background)
-            .statusBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(size = 40.dp)
-                .clip(shape = RoundedCornerShape(size = 12.dp))
-                .background(color = colors.surface)
-                .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 12.dp))
-                .clickable(onClick = onBack),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(resource = Res.drawable.ic_chevron_left),
-                contentDescription = stringResource(resource = Res.string.back),
-                tint = colors.ink,
-                modifier = Modifier.size(size = 18.dp)
-            )
-        }
-        Text(
-            text = stringResource(resource = Res.string.personal_information),
-            style = typography.bold18,
-            color = colors.ink
-        )
     }
 }
 
@@ -484,28 +447,6 @@ private fun DailyTargetCard(dailyCalories: Int?) {
             color = colors.muted,
             textAlign = TextAlign.End,
             modifier = Modifier.width(width = 140.dp)
-        )
-    }
-}
-
-@Composable
-private fun SaveButton(
-    modifier: Modifier = Modifier,
-    enabled: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .height(height = 54.dp)
-            .clip(shape = RoundedCornerShape(size = 16.dp))
-            .background(color = if (enabled) colors.accent else colors.line)
-            .clickable(enabled = enabled, onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = stringResource(resource = Res.string.save_changes),
-            style = typography.bold16,
-            color = if (enabled) colors.onAccent else colors.faint
         )
     }
 }
