@@ -56,7 +56,13 @@ fun FoodLogDateChips(
     )
     LaunchedEffect(key1 = allDates, key2 = dateSelected) {
         val index = allDates.indexOf(dateSelected)
-        if (index >= 0) {
+        if (index < 0) return@LaunchedEffect
+        val isFullyVisible = state.layoutInfo.visibleItemsInfo.any { item ->
+            item.index == index &&
+                item.offset >= state.layoutInfo.viewportStartOffset &&
+                item.offset + item.size <= state.layoutInfo.viewportEndOffset
+        }
+        if (!isFullyVisible) {
             state.scrollToItem(index = (index - MIN_DAYS_SHOWN + 1).coerceAtLeast(minimumValue = 0))
         }
     }
