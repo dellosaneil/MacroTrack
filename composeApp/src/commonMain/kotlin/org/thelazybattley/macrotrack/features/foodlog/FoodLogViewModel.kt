@@ -48,8 +48,8 @@ class FoodLogViewModel(
                         }
                     )
                 }.also {
-                    val today = logs.filter { it.date == getCurrentDate() }
-                    filterFoodLogsByDate(foodLog = today)
+                    val selectedDate = _state.value.selectedDate
+                    filterFoodLogsByDate(foodLog = logs.filter { it.date == selectedDate })
                 }
             }.collect()
         }

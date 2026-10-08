@@ -183,6 +183,18 @@
     <string name="average_weight">Average Weight</string>
 
 
+    <string name="kcal_left">kcal left</string>
+    <string name="remaining_title">Remaining</string>
+    <string name="meals">Meals</string>
+    <string name="nothing_logged_yet">Nothing logged yet</string>
+    <string name="add">Add</string>
+    <string name="value_gram_left">%1$dg left</string>
+    <string name="slash_value_gram">/ %1$dg</string>
+    <string name="items_kcal">%1$s · %2$d kcal</string>
+    <string name="remaining_today">Remaining today</string>
+    <string name="left">left</string>
+    <string name="expand_daily_summary">Expand daily summary</string>
+    <string name="collapse_daily_summary">Collapse daily summary</string>
     <plurals name="items">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>

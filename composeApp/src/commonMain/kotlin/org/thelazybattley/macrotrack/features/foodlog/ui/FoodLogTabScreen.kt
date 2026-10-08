@@ -7,17 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,25 +25,43 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.add
+import macrotrack.composeapp.generated.resources.add_to_value
+import macrotrack.composeapp.generated.resources.c_value_gram
+import macrotrack.composeapp.generated.resources.f_value_gram
+import macrotrack.composeapp.generated.resources.ic_meal_breakfast
+import macrotrack.composeapp.generated.resources.ic_meal_dinner
+import macrotrack.composeapp.generated.resources.ic_meal_lunch
+import macrotrack.composeapp.generated.resources.ic_meal_snack
+import macrotrack.composeapp.generated.resources.ic_plus
+import macrotrack.composeapp.generated.resources.items
+import macrotrack.composeapp.generated.resources.items_kcal
 import macrotrack.composeapp.generated.resources.kcal
-import macrotrack.composeapp.generated.resources.nothing_logged_for_value
+import macrotrack.composeapp.generated.resources.meals
+import macrotrack.composeapp.generated.resources.nothing_logged_yet
+import macrotrack.composeapp.generated.resources.p_c_f
+import macrotrack.composeapp.generated.resources.p_value_gram
 import macrotrack.composeapp.generated.resources.recipe
-import macrotrack.composeapp.generated.resources.sign_add
+import macrotrack.composeapp.generated.resources.today
 import macrotrack.composeapp.generated.resources.value_unit
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.thelazybattley.macrotrack.core.buildMacroNutrientText
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.core.toCleanString
-import org.thelazybattley.macrotrack.core.toColor
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFoodLog
@@ -52,7 +69,6 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
-import org.thelazybattley.macrotrack.ui.common.CommonSurface
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -67,6 +83,10 @@ fun FoodLogTabScreen(
 ) {
     val viewModel = koinViewModel<FoodLogViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.onDateFilterSelected(date = getCurrentDate())
+    }
 
     LaunchedEffect(key1 = viewState.navigateMealTypeParameter) {
         if (viewState.navigateMealTypeParameter != null) {
@@ -92,75 +112,102 @@ private fun FoodLogTabScreen(
     viewState: FoodLogViewState,
     callbacks: FoodLogCallbacks
 ) {
+    val isToday = viewState.selectedDate == getCurrentDate()
+    val meals = listOf(viewState.breakfast, viewState.lunch, viewState.dinner, viewState.snack)
+
     Column(
         modifier = modifier
-            .background(color = colors.white)
+            .background(color = colors.background)
             .verticalScroll(state = rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+        verticalArrangement = Arrangement.spacedBy(space = 14.dp)
     ) {
-        if (viewState.availableDates.isNotEmpty()) {
-            FoodLogDateChips(
-                modifier = Modifier.fillMaxWidth(),
-                dates = viewState.availableDates,
-                dateSelected = viewState.selectedDate,
-            ) { date ->
-                callbacks.onDateFilterSelected(date = date)
-            }
+        FoodLogHeader(
+            modifier = Modifier.fillMaxWidth(),
+            viewState = viewState,
+            isToday = isToday
+        )
+        FoodLogDateChips(
+            modifier = Modifier.fillMaxWidth(),
+            dates = viewState.availableDates,
+            dateSelected = viewState.selectedDate,
+        ) { date ->
+            callbacks.onDateFilterSelected(date = date)
         }
         FoodLogTotalMacros(
             modifier = Modifier.fillMaxWidth(),
             viewState = viewState
         )
-        LoggedFoodMealType(
-            foodList = viewState.breakfast,
-            onDeleteFoodLog = { id ->
-                callbacks.onDeleteFoodLog(id = id)
-            },
-            isToday = viewState.selectedDate == getCurrentDate(),
-            foodUnit = viewState.foodUnit,
-            onNavigate = {
-                callbacks.onNavigate(mealType = MealType.BREAKFAST)
-            }
+        MealsHeader(
+            modifier = Modifier.fillMaxWidth(),
+            itemCount = meals.sumOf { it.foodList.size },
+            calories = viewState.totalFoodMacros?.calories ?: 0
         )
+        meals.forEach { meal ->
+            LoggedFoodMealType(
+                modifier = Modifier.fillMaxWidth(),
+                foodList = meal,
+                isToday = isToday,
+                foodUnit = viewState.foodUnit,
+                onDeleteFoodLog = { id ->
+                    callbacks.onDeleteFoodLog(id = id)
+                },
+                onNavigate = {
+                    callbacks.onNavigate(mealType = meal.mealType)
+                }
+            )
+        }
+    }
+}
 
-        LoggedFoodMealType(
-            foodList = viewState.lunch,
-            onDeleteFoodLog = { id ->
-                callbacks.onDeleteFoodLog(id = id)
-            },
-            isToday = viewState.selectedDate == getCurrentDate(),
-            foodUnit = viewState.foodUnit,
-            onNavigate = {
-                callbacks.onNavigate(mealType = MealType.LUNCH)
-            }
+@Composable
+private fun FoodLogHeader(
+    modifier: Modifier = Modifier,
+    viewState: FoodLogViewState,
+    isToday: Boolean
+) {
+    val date = viewState.selectedDate
+    val dayOfWeek = date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+    Column(modifier = modifier) {
+        Text(
+            text = "$dayOfWeek, ${date.toAbbreviatedMonthDay()}",
+            style = typography.medium13,
+            color = colors.muted
         )
-
-        LoggedFoodMealType(
-            foodList = viewState.dinner,
-            onDeleteFoodLog = { id ->
-                callbacks.onDeleteFoodLog(id = id)
-            },
-            isToday = viewState.selectedDate == getCurrentDate(),
-            foodUnit = viewState.foodUnit,
-            onNavigate = {
-                callbacks.onNavigate(mealType = MealType.DINNER)
-            }
-        )
-
-        LoggedFoodMealType(
-            foodList = viewState.snack,
-            onDeleteFoodLog = { id ->
-                callbacks.onDeleteFoodLog(id = id)
-            },
-            isToday = viewState.selectedDate == getCurrentDate(),
-            foodUnit = viewState.foodUnit,
-            onNavigate = {
-                callbacks.onNavigate(mealType = MealType.SNACK)
-            }
+        Text(
+            text = if (isToday) stringResource(resource = Res.string.today) else dayOfWeek,
+            style = typography.bold32,
+            color = colors.ink
         )
     }
 }
 
+@Composable
+private fun MealsHeader(
+    modifier: Modifier = Modifier,
+    itemCount: Int,
+    calories: Int
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.Bottom
+    ) {
+        Text(
+            text = stringResource(resource = Res.string.meals),
+            style = typography.bold18,
+            color = colors.ink,
+            modifier = Modifier.weight(weight = 1f)
+        )
+        Text(
+            text = stringResource(
+                resource = Res.string.items_kcal,
+                pluralStringResource(resource = Res.plurals.items, quantity = itemCount, itemCount),
+                calories
+            ),
+            style = typography.regular11,
+            color = colors.muted
+        )
+    }
+}
 
 @Composable
 private fun LoggedFoodMealType(
@@ -171,60 +218,153 @@ private fun LoggedFoodMealType(
     onDeleteFoodLog: (Long) -> Unit,
     onNavigate: () -> Unit
 ) {
-    Column(
-        modifier = modifier,
-    ) {
-        FoodLogMealType(
-            modifier = Modifier.fillMaxWidth(), mealType = foodList.mealType,
-            totalCalories = foodList.calories,
-            onNavigate = onNavigate,
-            isToday = isToday,
-        )
-        Spacer(modifier = Modifier.height(height = 4.dp))
-        if (foodList.foodList.isEmpty()) {
-            val mealTypeText = stringResource(resource = foodList.mealType.title)
-            Text(
-                text = stringResource(resource = Res.string.nothing_logged_for_value, mealTypeText),
-                style = typography.regular11,
-                color = colors.mediumGray,
-                modifier = Modifier.fillMaxWidth()
-                    .border(
-                        width = 1.dp, color = colors.mediumGray,
-                        shape = RoundedCornerShape(size = 8.dp)
+    val shape = RoundedCornerShape(size = 20.dp)
+    val isEmpty = foodList.foodList.isEmpty()
+    val dashedColor = colors.dashed
+
+    val cardModifier = if (isEmpty) {
+        modifier.drawBehind {
+            drawRoundRect(
+                color = dashedColor,
+                style = Stroke(
+                    width = 1.5.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(
+                        intervals = floatArrayOf(6.dp.toPx(), 4.dp.toPx())
                     )
-                    .padding(all = 12.dp),
-                textAlign = TextAlign.Center
+                ),
+                cornerRadius = CornerRadius(x = 20.dp.toPx(), y = 20.dp.toPx())
             )
-            return@Column
         }
-        Column(
-            modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = colors.lightGray,
-                    shape = RoundedCornerShape(size = 12.dp)
-                )
-        ) {
-            foodList.foodList.forEachIndexed { index, food ->
-                key(food.id) {
-                    CommonSwipeToDelete(
-                        modifier = Modifier,
-                        onDelete = {
-                            onDeleteFoodLog(food.id)
-                        }
-                    ) {
-                        FoodLogItem(
-                            modifier = Modifier
-                                .background(color = colors.white)
-                                .padding(horizontal = 12.dp)
-                                .fillMaxWidth(),
-                            food = food,
-                            unit = foodUnit[food.foodName] ?: ""
-                        )
+    } else {
+        modifier
+            .clip(shape = shape)
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = shape)
+    }
+
+    Column(modifier = cardModifier) {
+        MealTypeHeader(
+            modifier = Modifier.fillMaxWidth().padding(all = 14.dp),
+            foodList = foodList,
+            isToday = isToday,
+            onNavigate = onNavigate
+        )
+        if (isEmpty) return@Column
+        HorizontalDivider(thickness = 1.dp, color = colors.divider)
+        foodList.foodList.forEachIndexed { index, food ->
+            key(food.id) {
+                CommonSwipeToDelete(
+                    modifier = Modifier.fillMaxWidth(),
+                    onDelete = {
+                        onDeleteFoodLog(food.id)
                     }
+                ) {
+                    FoodLogItem(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = colors.surface)
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        food = food,
+                        unit = foodUnit[food.foodName] ?: ""
+                    )
                 }
-                if (index == foodList.foodList.lastIndex) return@forEachIndexed
-                HorizontalDivider(thickness = 1.dp, color = colors.lightGray)
+            }
+            if (index == foodList.foodList.lastIndex) return@forEachIndexed
+            HorizontalDivider(thickness = 1.dp, color = colors.divider)
+        }
+    }
+}
+
+@Composable
+private fun MealTypeHeader(
+    modifier: Modifier = Modifier,
+    foodList: FoodLogFoodListByMealType,
+    isToday: Boolean,
+    onNavigate: () -> Unit
+) {
+    val isEmpty = foodList.foodList.isEmpty()
+    val style = foodList.mealType.toMealStyle()
+    val mealName = stringResource(resource = foodList.mealType.title)
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(size = 36.dp)
+                .background(color = style.background, shape = RoundedCornerShape(size = 12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(resource = style.icon),
+                contentDescription = null,
+                tint = style.tint,
+                modifier = Modifier.size(size = 18.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(weight = 1f)) {
+            Text(
+                text = mealName,
+                style = typography.bold15,
+                color = colors.ink
+            )
+            Text(
+                text = if (isEmpty) {
+                    stringResource(resource = Res.string.nothing_logged_yet)
+                } else {
+                    stringResource(
+                        resource = Res.string.p_c_f,
+                        foodList.protein.toInt(),
+                        foodList.carbs.toInt(),
+                        foodList.fat.toInt()
+                    )
+                },
+                style = typography.regular11,
+                color = colors.muted
+            )
+        }
+        if (!isEmpty) {
+            Text(
+                text = foodList.calories.withThousands(),
+                style = typography.bold16,
+                color = colors.ink
+            )
+        }
+        if (!isToday) return@Row
+        val addContentDescription = stringResource(resource = Res.string.add_to_value, mealName)
+        if (isEmpty) {
+            Box(
+                modifier = Modifier
+                    .height(height = 44.dp)
+                    .clip(shape = RoundedCornerShape(size = 12.dp))
+                    .background(color = colors.accent)
+                    .clickable(onClick = onNavigate)
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.add),
+                    style = typography.bold14,
+                    color = colors.onAccent
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(size = 44.dp)
+                    .clip(shape = RoundedCornerShape(size = 12.dp))
+                    .background(color = colors.accentSoft)
+                    .clickable(onClick = onNavigate),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_plus),
+                    contentDescription = addContentDescription,
+                    tint = colors.accentInk,
+                    modifier = Modifier.size(size = 18.dp)
+                )
             }
         }
     }
@@ -232,153 +372,113 @@ private fun LoggedFoodMealType(
 
 @Composable
 private fun FoodLogItem(
-    modifier: Modifier = Modifier, food: FoodLog,
+    modifier: Modifier = Modifier,
+    food: FoodLog,
     unit: String
 ) {
-    val color = food.dominantMacro.toColor()
-    Box(
-        modifier = modifier
-            .clip(shape = CardDefaults.shape)
-            .drawWithContent {
-                val height = size.height - 8.dp.toPx()
-                drawContent()
-                drawRoundRect(
-                    color = color,
-                    topLeft = Offset(x = 2.dp.toPx(), y = 4.dp.toPx()),
-                    size = size.copy(width = 4.dp.toPx(), height = height),
-                    cornerRadius = CornerRadius(x = 8.dp.toPx(), y = 8.dp.toPx())
-                )
-            }
+    val isRecipe = food.weight == 0.0
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth().padding(
-                    top = 4.dp, bottom = 4.dp,
-                    start = 12.dp
-                ),
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+            modifier = Modifier.weight(weight = 1f),
+            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
             Row(
-                modifier = Modifier,
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
             ) {
                 Text(
                     text = food.foodName,
-                    style = typography.bold15,
-                    color = colors.black
+                    style = typography.medium13,
+                    color = colors.ink,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(weight = 1f, fill = false)
                 )
-                if (food.weight == 0.0) {
-                    Box(
-                        modifier = Modifier.background(
-                            color = colors.paleBlue,
-                            shape = RoundedCornerShape(size = 4.dp)
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(resource = Res.string.recipe),
-                            style = typography.bold10,
-                            color = colors.deepBlue,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = buildMacroNutrientText(
-                        protein = food.protein.toInt(),
-                        fat = food.fat.toInt(),
-                        carbs = food.carbs.toInt()
-                    ),
-                    style = typography.bold12
-                )
-                if (food.weight != 0.0) {
-                    Spacer(modifier = Modifier.width(width = 12.dp))
+                if (isRecipe) {
                     Text(
-                        text = stringResource(
+                        text = stringResource(resource = Res.string.recipe).uppercase(),
+                        style = typography.bold10,
+                        color = colors.accentInk,
+                        modifier = Modifier
+                            .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 6.dp))
+                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                    )
+                } else {
+                    Text(
+                        text = "· " + stringResource(
                             resource = Res.string.value_unit,
                             food.weight.toCleanString(),
                             unit
                         ),
-                        style = typography.bold11,
-                        color = colors.mediumGray
+                        style = typography.regular13,
+                        color = colors.muted
                     )
                 }
-                Spacer(modifier = Modifier.weight(weight = 1f))
-                Text(
-                    text = stringResource(resource = Res.string.kcal, food.calories),
-                    style = typography.bold12,
-                    color = colors.black
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(space = 12.dp)) {
+                MacroValue(
+                    color = colors.protein,
+                    text = stringResource(resource = Res.string.p_value_gram, food.protein.toInt())
+                )
+                MacroValue(
+                    color = colors.carbs,
+                    text = stringResource(resource = Res.string.c_value_gram, food.carbs.toInt())
+                )
+                MacroValue(
+                    color = colors.fat,
+                    text = stringResource(resource = Res.string.f_value_gram, food.fat.toInt())
                 )
             }
         }
+        Text(
+            text = stringResource(resource = Res.string.kcal, food.calories),
+            style = typography.bold13,
+            color = colors.ink
+        )
     }
 }
-
 
 @Composable
-private fun FoodLogMealType(
-    modifier: Modifier = Modifier,
-    mealType: MealType,
-    totalCalories: Int,
-    isToday: Boolean,
-    onNavigate: () -> Unit,
+private fun MacroValue(
+    color: Color,
+    text: String
 ) {
     Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
     ) {
-        Text(
-            text = stringResource(resource = mealType.title),
-            color = colors.black,
-            style = typography.bold12
+        Box(
+            modifier = Modifier
+                .size(size = 7.dp)
+                .background(color = color, shape = RoundedCornerShape(size = 2.dp))
         )
-        Spacer(modifier = Modifier.weight(weight = 1f))
-        if (totalCalories > 0) {
-            Text(
-                text = stringResource(resource = Res.string.kcal, totalCalories),
-                style = typography.bold11,
-                color = colors.gray
-            )
-        }
-        if (isToday) {
-            CommonSurface(
-                shape = RoundedCornerShape(size = 6.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clickable {
-                            onNavigate()
-                        }
-                        .border(
-                            width = 1.dp,
-                            color = colors.skyBlue,
-                            shape = RoundedCornerShape(size = 6.dp)
-                        )
-                        .background(color = colors.paleBlue),
-                ) {
-                    Text(
-                        text = stringResource(resource = Res.string.sign_add),
-                        style = typography.bold11,
-                        color = colors.deepBlue,
-                        modifier = Modifier.padding(
-                            horizontal = 10.dp,
-                            vertical = 5.dp
-                        )
-                    )
-                }
-            }
-        }
+        Text(
+            text = text,
+            style = typography.regular11,
+            color = colors.muted
+        )
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xffffffff)
+private data class MealStyle(
+    val icon: DrawableResource,
+    val background: Color,
+    val tint: Color
+)
+
+@Composable
+private fun MealType.toMealStyle(): MealStyle = when (this) {
+    MealType.BREAKFAST -> MealStyle(Res.drawable.ic_meal_breakfast, colors.warmSoft, colors.warmInk)
+    MealType.LUNCH -> MealStyle(Res.drawable.ic_meal_lunch, colors.accentSoft, colors.accentInk)
+    MealType.DINNER -> MealStyle(Res.drawable.ic_meal_dinner, colors.nightSoft, colors.nightInk)
+    MealType.SNACK -> MealStyle(Res.drawable.ic_meal_snack, colors.warmSoft, colors.warmInk)
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F3EE)
 @Composable
 private fun PreviewFoodLogTabScreen() {
     MacroTrackTheme {
@@ -395,8 +495,13 @@ private fun PreviewFoodLogTabScreen() {
                         ),
                         dummyFoodLog.copy(id = 2),
                         dummyFoodLog.copy(id = 3),
-                    )
-                )
+                    ),
+                    calories = 369,
+                    protein = 63.9,
+                    carbs = 36.9,
+                    fat = 36.9
+                ),
+                availableDates = listOf(getCurrentDate())
             ),
             callbacks = FoodLogCallbacks.default()
         )

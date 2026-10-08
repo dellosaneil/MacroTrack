@@ -36,7 +36,7 @@ fun MainScreenNavigation(
 
     Scaffold(
         modifier = modifier,
-        containerColor = colors.white,
+        containerColor = colors.background,
         bottomBar = {
             MacroBottomNavBar(
                 selectedDestination = currentDestination,
