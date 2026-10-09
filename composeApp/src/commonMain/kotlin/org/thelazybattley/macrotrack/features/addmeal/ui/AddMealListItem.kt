@@ -24,24 +24,35 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.datetime.daysUntil
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.add_to_favorites
 import macrotrack.composeapp.generated.resources.add_value
+import macrotrack.composeapp.generated.resources.days_ago
 import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_plus
+import macrotrack.composeapp.generated.resources.ic_star_filled
+import macrotrack.composeapp.generated.resources.ic_star_outline
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.one_serving
 import macrotrack.composeapp.generated.resources.p_c_f
 import macrotrack.composeapp.generated.resources.percent_of_serving
 import macrotrack.composeapp.generated.resources.recipe
+import macrotrack.composeapp.generated.resources.remove_from_favorites
 import macrotrack.composeapp.generated.resources.remove_value
+import macrotrack.composeapp.generated.resources.today
 import macrotrack.composeapp.generated.resources.value_unit
+import macrotrack.composeapp.generated.resources.yesterday
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.dummyFood
+import org.thelazybattley.macrotrack.features.addmeal.LastLogged
 import org.thelazybattley.macrotrack.features.addmeal.MealListItem
 import org.thelazybattley.macrotrack.features.addmeal.SelectedMealItem
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
@@ -56,14 +67,18 @@ fun AddMealListItem(
     item: MealListItem,
     selectedItem: SelectedMealItem?,
     isExpanded: Boolean,
+    showLastLogged: Boolean,
     onToggle: () -> Unit,
+    onToggleFavorite: () -> Unit,
     onClick: () -> Unit,
     onLongPress: () -> Unit,
     onAmountChanged: (key: String, amount: Double) -> Unit
 ) {
     val shape = RoundedCornerShape(size = 16.dp)
     val isSelected = selectedItem != null
-    val food = selectedItem?.food ?: item.food
+    // On Recent, an unselected row shows the portion logged last time and when.
+    val lastLogged = item.lastLogged?.takeIf { showLastLogged && !isSelected }
+    val food = selectedItem?.food ?: lastLogged?.food ?: item.food
     Column(
         modifier = modifier
             .clip(shape = shape)
@@ -76,7 +91,7 @@ fun AddMealListItem(
                 .height(intrinsicSize = IntrinsicSize.Min)
                 .combinedClickable(onClick = onClick, onLongClick = onLongPress),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -87,7 +102,7 @@ fun AddMealListItem(
             Column(
                 modifier = Modifier
                     .weight(weight = 1f)
-                    .padding(vertical = 12.dp),
+                    .padding(start = 4.dp, top = 12.dp, bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(space = 2.dp)
             ) {
                 Row(
@@ -113,21 +128,27 @@ fun AddMealListItem(
                         )
                     }
                 }
+                val recipeAmount = selectedItem?.amount ?: lastLogged?.amount
                 val portion = when {
-                    selectedItem != null && item.isRecipe -> stringResource(
+                    item.isRecipe && recipeAmount != null -> stringResource(
                         resource = Res.string.percent_of_serving,
-                        selectedItem.amount.toCleanString()
+                        recipeAmount.toCleanString()
                     )
                     item.isRecipe -> stringResource(resource = Res.string.one_serving)
                     else -> stringResource(resource = Res.string.value_unit, food.weight.toCleanString(), food.unit)
                 }
-                Text(
-                    text = portion + " · " + stringResource(
+                val detail = if (lastLogged != null) {
+                    lastLogged.relativeDay()
+                } else {
+                    stringResource(
                         resource = Res.string.p_c_f,
                         food.macros.protein.toInt(),
                         food.macros.carbs.toInt(),
                         food.macros.fat.toInt()
-                    ),
+                    )
+                }
+                Text(
+                    text = "$portion · $detail",
                     style = typography.regular11,
                     color = colors.muted
                 )
@@ -142,6 +163,25 @@ fun AddMealListItem(
                     text = stringResource(resource = Res.string.kcal_text),
                     style = typography.regular10,
                     color = colors.muted
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(size = 40.dp)
+                    .clip(shape = RoundedCornerShape(size = 12.dp))
+                    .clickable(role = Role.Checkbox, onClick = onToggleFavorite),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(
+                        resource = if (item.isFavorite) Res.drawable.ic_star_filled else Res.drawable.ic_star_outline
+                    ),
+                    contentDescription = stringResource(
+                        resource = if (item.isFavorite) Res.string.remove_from_favorites else Res.string.add_to_favorites,
+                        food.name
+                    ),
+                    tint = if (item.isFavorite) colors.carbs else colors.faint,
+                    modifier = Modifier.size(size = 20.dp)
                 )
             }
             Box(
@@ -178,6 +218,14 @@ fun AddMealListItem(
     }
 }
 
+@Composable
+private fun LastLogged.relativeDay(): String =
+    when (val days = date.daysUntil(other = getCurrentDate())) {
+        0 -> stringResource(resource = Res.string.today)
+        1 -> stringResource(resource = Res.string.yesterday)
+        else -> stringResource(resource = Res.string.days_ago, days)
+    }
+
 @Preview(showBackground = true)
 @Composable
 private fun PreviewAddMealListItem() {
@@ -191,7 +239,9 @@ private fun PreviewAddMealListItem() {
                 item = MealListItem(food = dummyFood, isRecipe = false),
                 selectedItem = null,
                 isExpanded = false,
+                showLastLogged = false,
                 onToggle = {},
+                onToggleFavorite = {},
                 onClick = {},
                 onLongPress = {},
                 onAmountChanged = { _, _ -> }
@@ -207,7 +257,9 @@ private fun PreviewAddMealListItem() {
                     food = dummyFood.copy(name = "Chicken rice bowl")
                 ),
                 isExpanded = true,
+                showLastLogged = false,
                 onToggle = {},
+                onToggleFavorite = {},
                 onClick = {},
                 onLongPress = {},
                 onAmountChanged = { _, _ -> }

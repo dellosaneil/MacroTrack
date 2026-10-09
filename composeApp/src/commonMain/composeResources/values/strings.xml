@@ -374,4 +374,18 @@
         <item quantity="one">%1$d serving</item>
         <item quantity="other">%1$d servings</item>
     </plurals>
+    <string name="recent">Recent</string>
+    <string name="favorites">Favorites</string>
+    <string name="recently_logged">Recently logged</string>
+    <string name="your_favorites">Your favorites</string>
+    <string name="all_foods_and_recipes">All foods &amp; recipes</string>
+    <string name="clear_search">Clear search</string>
+    <string name="recent_portion_hint">Portions match what you logged last time.</string>
+    <string name="no_recent_items">Foods and recipes you log will show up here.</string>
+    <string name="no_favorites_title">No favorites yet</string>
+    <string name="no_favorites_hint">Tap the star on any food or recipe to keep it here for quick logging.</string>
+    <string name="add_to_favorites">Add %1$s to favorites</string>
+    <string name="remove_from_favorites">Remove %1$s from favorites</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="days_ago">%1$d days ago</string>
 </resources>

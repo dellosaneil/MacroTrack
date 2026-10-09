@@ -11,11 +11,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Food
+import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.Recipe
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.favorite.GetFavoriteKeysUseCase
+import org.thelazybattley.macrotrack.domain.usecase.favorite.SetFavoriteUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.DeleteFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
@@ -25,6 +28,7 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import kotlin.math.roundToInt
 
 class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
@@ -36,6 +40,8 @@ class AddMealViewModel(
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    private val getFavoriteKeysUseCase: GetFavoriteKeysUseCase,
+    private val setFavoriteUseCase: SetFavoriteUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks {
 
@@ -53,12 +59,17 @@ class AddMealViewModel(
         viewModelScope.launch {
             combine(
                 flow = getAllFoodUseCase(),
-                flow2 = getAllRecipeUseCase()
-            ) { foodList, recipeList ->
+                flow2 = getAllRecipeUseCase(),
+                flow3 = getAllFoodLogUseCase(),
+                flow4 = getFavoriteKeysUseCase()
+            ) { foodList, recipeList, foodLogs, favoriteKeys ->
+                val recipeMeals = recipeToRecipeMeal(recipes = recipeList, completeFoodList = foodList)
                 _state.update { currentState ->
                     currentState.copy(
                         completeFoodList = foodList,
-                        recipeList = recipeToRecipeMeal(recipes = recipeList, completeFoodList = foodList)
+                        recipeList = recipeMeals,
+                        lastLogged = lastLogged(foodLogs = foodLogs, foods = foodList, recipes = recipeMeals),
+                        favoriteKeys = favoriteKeys
                     )
                 }
             }.collect()
@@ -83,10 +94,7 @@ class AddMealViewModel(
                 }
                 _state.update { currentState ->
                     currentState.copy(
-                        remainingCalories = goal?.let { it - eatenToday },
-                        lastLoggedOrder = foodLogs
-                            .groupBy { it.foodName }
-                            .mapValues { (_, logs) -> logs.maxOf { it.id } }
+                        remainingCalories = goal?.let { it - eatenToday }
                     )
                 }
             }.collect()
@@ -110,7 +118,8 @@ class AddMealViewModel(
                     focusedKey = if (currentState.focusedKey == item.key) remaining.lastOrNull()?.key else currentState.focusedKey
                 )
             } else {
-                val amount = if (item.isRecipe) FULL_RECIPE_PERCENT else item.food.weight
+                // Start from the portion logged last time, if there is one.
+                val amount = item.lastLogged?.amount ?: if (item.isRecipe) FULL_RECIPE_PERCENT else item.food.weight
                 val selected = SelectedMealItem(
                     key = item.key,
                     isRecipe = item.isRecipe,
@@ -120,6 +129,12 @@ class AddMealViewModel(
                 )
                 currentState.copy(selection = currentState.selection + selected, focusedKey = item.key)
             }
+        }
+    }
+
+    override fun onToggleFavorite(item: MealListItem) {
+        viewModelScope.launch {
+            setFavoriteUseCase(key = item.key, isFavorite = !item.isFavorite)
         }
     }
 
@@ -185,6 +200,7 @@ class AddMealViewModel(
             } else {
                 deleteFoodUseCase(name = item.food.name)
             }
+            setFavoriteUseCase(key = item.key, isFavorite = false)
         }
     }
 
@@ -213,6 +229,45 @@ class AddMealViewModel(
             macros = calculateAdjustMacrosUseCase(portionSize = amount, originalFood = baseFood),
             weight = amount
         )
+    }
+
+    /**
+     * The newest log of each saved food and recipe, with its portion. Recipes are logged with
+     * weight 0.0, so their portion is worked out from the calories eaten.
+     */
+    private fun lastLogged(
+        foodLogs: List<FoodLog>,
+        foods: List<Food>,
+        recipes: List<RecipeMeal>
+    ): Map<String, LastLogged> {
+        val foodsByName = foods.associateBy { it.name }
+        val recipesByName = recipes.associateBy { it.name }
+        return foodLogs
+            .groupBy { mealItemKey(name = it.foodName, isRecipe = it.weight == 0.0) }
+            .mapNotNull { (key, logs) ->
+                val log = logs.maxBy { it.id }
+                val isRecipe = log.weight == 0.0
+                val baseFood = if (isRecipe) recipesByName[log.foodName]?.food else foodsByName[log.foodName]
+                if (baseFood == null) return@mapNotNull null
+                val amount = if (isRecipe) {
+                    val fullCalories = baseFood.macros.calories
+                    if (fullCalories > 0) {
+                        (log.calories * FULL_RECIPE_PERCENT / fullCalories).roundToInt().toDouble()
+                    } else {
+                        FULL_RECIPE_PERCENT
+                    }
+                } else {
+                    log.weight
+                }
+                if (amount <= 0) return@mapNotNull null
+                key to LastLogged(
+                    order = log.id,
+                    date = log.date,
+                    amount = amount,
+                    food = adjustedFood(baseFood = baseFood, isRecipe = isRecipe, amount = amount)
+                )
+            }
+            .toMap()
     }
 
     private fun recipeToRecipeMeal(

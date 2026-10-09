@@ -6,6 +6,7 @@ interface AddMealCallbacks {
     fun onMealFilterSelected(mealFilter: MealFilter)
     fun onSearchQuery(query: String)
     fun onToggleItem(item: MealListItem)
+    fun onToggleFavorite(item: MealListItem)
     fun onFocusItem(key: String)
     fun onAmountChanged(key: String, amount: Double)
     fun onAddSelection()
@@ -19,6 +20,7 @@ interface AddMealCallbacks {
             override fun onMealFilterSelected(mealFilter: MealFilter) {}
             override fun onSearchQuery(query: String) {}
             override fun onToggleItem(item: MealListItem) {}
+            override fun onToggleFavorite(item: MealListItem) {}
             override fun onFocusItem(key: String) {}
             override fun onAmountChanged(key: String, amount: Double) {}
             override fun onAddSelection() {}
