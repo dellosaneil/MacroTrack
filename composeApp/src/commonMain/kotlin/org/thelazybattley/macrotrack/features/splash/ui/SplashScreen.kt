@@ -1,15 +1,20 @@
 package org.thelazybattley.macrotrack.features.splash.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,16 +22,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.ic_splash_screen
+import macrotrack.composeapp.generated.resources.ic_app_logo
 import macrotrack.composeapp.generated.resources.macrotrack
-import macrotrack.composeapp.generated.resources.track_improve_thrive
+import macrotrack.composeapp.generated.resources.splash_tagline
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -59,11 +63,6 @@ fun SplashScreen(
     viewState: SplashViewState,
     onNavigation: (AppDestinations.Root) -> Unit
 ) {
-    val gradient = Brush.linearGradient(
-        colors = listOf(colors.royalBlue, colors.deepBlueSplash, colors.brightBlue),
-        start = Offset(0f,0f),
-        end = Offset(x = Float.POSITIVE_INFINITY, y = Float.POSITIVE_INFINITY)
-    )
     LaunchedEffect(key1 = viewState.isLoading) {
         if (!viewState.isLoading && viewState.destination != null) {
             delay(timeMillis = 250L)
@@ -72,49 +71,59 @@ fun SplashScreen(
     }
 
     Column(
-        modifier = modifier.fillMaxSize()
-            .background(brush = gradient,
-                ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = colors.background)
+            .navigationBarsPadding()
+            .padding(bottom = 56.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .clip(shape = RoundedCornerShape(size = 16.dp))
-                .border(
-                    width = 2.dp,
-                    color = colors.whiteSplash.copy(
-                        alpha = 0.22f
-                    ),
-                    shape = RoundedCornerShape(size = 16.dp)
-                )
-                .background(
-                    color = colors.whiteSplash.copy(
-                        alpha = 0.22f
-                    )
-                ),
+        Column(
+            modifier = Modifier.weight(weight = 1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                painter = painterResource(resource = Res.drawable.ic_splash_screen),
-                contentDescription = null,
-                tint = colors.whiteSplash,
-                modifier = Modifier.size(size = 66.dp).padding(all = 16.dp)
+            Box(
+                modifier = Modifier
+                    .size(size = 128.dp)
+                    .clip(shape = RoundedCornerShape(size = 32.dp))
+                    .background(color = colors.surface)
+                    .border(
+                        width = 1.dp,
+                        color = colors.line,
+                        shape = RoundedCornerShape(size = 32.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(resource = Res.drawable.ic_app_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(size = 96.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(height = 22.dp))
+            Text(
+                text = stringResource(resource = Res.string.macrotrack),
+                color = colors.ink,
+                style = typography.bold36
+            )
+            Spacer(modifier = Modifier.height(height = 6.dp))
+            Text(
+                text = stringResource(resource = Res.string.splash_tagline),
+                color = colors.muted,
+                style = typography.regular13
             )
         }
-        Text(
-            text = stringResource(resource = Res.string.macrotrack),
-            color = colors.whiteSplash,
-            style = typography.bold36
+        LinearProgressIndicator(
+            modifier = Modifier
+                .width(width = 120.dp)
+                .height(height = 4.dp)
+                .clip(shape = RoundedCornerShape(size = 2.dp)),
+            color = colors.accent,
+            trackColor = colors.heroTrack,
+            strokeCap = StrokeCap.Round,
+            gapSize = 0.dp
         )
-        Text(
-            text = stringResource(resource = Res.string.track_improve_thrive),
-            color = colors.whiteSplash.copy(
-                alpha = 0.55f
-            ),
-            style = typography.regular13
-        )
-
-
     }
 }
 
