@@ -31,7 +31,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 fun CommonScreenHeader(
     modifier: Modifier = Modifier,
     title: StringResource,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    trailing: (@Composable () -> Unit)? = null
 ) {
     Row(
         modifier = modifier
@@ -61,7 +62,9 @@ fun CommonScreenHeader(
         Text(
             text = stringResource(resource = title),
             style = typography.bold18,
-            color = colors.ink
+            color = colors.ink,
+            modifier = Modifier.weight(weight = 1f)
         )
+        trailing?.invoke()
     }
 }

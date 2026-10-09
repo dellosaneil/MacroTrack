@@ -1,107 +1,248 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.change_since_you_started
+import macrotrack.composeapp.generated.resources.log
+import macrotrack.composeapp.generated.resources.monthly_change
+import macrotrack.composeapp.generated.resources.no_weight_logged_for_period
+import macrotrack.composeapp.generated.resources.three_month_change
+import macrotrack.composeapp.generated.resources.value_kg_unit
+import macrotrack.composeapp.generated.resources.weekly_change
+import macrotrack.composeapp.generated.resources.weight_entries
 import macrotrack.composeapp.generated.resources.weight_history
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.Weight
-import org.thelazybattley.macrotrack.features.navigation.AppPadding
+import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
+import org.thelazybattley.macrotrack.features.profile.ui.WeightBottomSheetContent
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewState
-import org.thelazybattley.macrotrack.ui.common.CommonTopBar
+import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightPeriod
+import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
+import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
-
-@Composable
-fun WeightHistoryScreen(
-    modifier: Modifier = Modifier, onPopBackStack: () -> Unit
-) {
-    val viewModel = koinViewModel<WeightHistoryViewModel>()
-    val viewState by viewModel.state.collectAsStateWithLifecycle()
-
-    Scaffold(
-        modifier = modifier, containerColor = colors.white, topBar = {
-            CommonTopBar(
-                stringResource = Res.string.weight_history, onClick = onPopBackStack
-            )
-        }) { innerPadding ->
-        WeightHistoryScreen(
-            modifier = modifier.padding(paddingValues = innerPadding)
-                .padding(paddingValues = AppPadding), viewState = viewState, callbacks = viewModel
-        )
-    }
-}
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
 fun WeightHistoryScreen(
     modifier: Modifier = Modifier,
-    viewState: WeightHistoryViewState,
-    callbacks: WeightHistoryCallbacks
+    onPopBackStack: () -> Unit
 ) {
-    Column(
-        modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 8.dp)
-    ) {
-        WeightHistoryTimeRange(
-            modifier = Modifier.fillMaxWidth(),
-            selectedTimeRange = viewState.timeRange,
-            onSelectTimeRange = { timeRange ->
-                callbacks.onTimePeriodSelect(timeRange = timeRange)
+    val viewModel = koinViewModel<WeightHistoryViewModel>()
+    val viewState by viewModel.state.collectAsStateWithLifecycle()
+
+    WeightHistoryScreen(
+        modifier = modifier,
+        viewState = viewState,
+        callbacks = viewModel,
+        onBack = onPopBackStack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WeightHistoryScreen(
+    modifier: Modifier = Modifier,
+    viewState: WeightHistoryViewState,
+    callbacks: WeightHistoryCallbacks,
+    onBack: () -> Unit
+) {
+    val showLogWeightSheet = remember { mutableStateOf(value = false) }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = colors.background,
+        topBar = {
+            CommonScreenHeader(
+                title = Res.string.weight_history,
+                onBack = onBack,
+                trailing = {
+                    ProfilePillButton(
+                        text = stringResource(resource = Res.string.log),
+                        onClick = { showLogWeightSheet.value = true }
+                    )
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues = innerPadding)
+                .verticalScroll(state = rememberScrollState())
+                .navigationBarsPadding()
+                .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 14.dp)
+        ) {
+            WeightHistoryTimeRange(
+                modifier = Modifier.fillMaxWidth(),
+                selectedTimeRange = viewState.timeRange,
+                onSelectTimeRange = callbacks::onTimePeriodSelect
+            )
+            val period = viewState.period ?: return@Column
+            WeightHistoryFilter(
+                modifier = Modifier.fillMaxWidth(),
+                period = period,
+                canGoBack = viewState.canGoBack,
+                canGoNext = viewState.canGoNext,
+                onBackButtonClicked = callbacks::onPreviousPeriod,
+                onNextButtonClicked = callbacks::onNextPeriod
+            )
+            if (viewState.periodWeights.isEmpty()) {
+                EmptyPeriod()
+                return@Column
             }
-        )
-        WeightHistoryFilter(
-            modifier = Modifier.fillMaxWidth(),
-            weightHistoryFilters = viewState.weightHistoryFilter,
-            onBackButtonClicked = { callbacks.onFilterBackButtonClicked() },
-            onNextButtonClicked = { callbacks.onFilterNextButtonClicked() }
-        )
-        if (viewState.filteredWeightList.isEmpty()) return
-        WeightHistoryStatistics(
-            modifier = Modifier.fillMaxWidth(), viewState = viewState
-        )
-        WeightHistoryGraph(
-            modifier = Modifier.height(height = 200.dp).fillMaxWidth(),
-            weightList = viewState.filteredWeightList
+            ChartCard(period = period, weightList = viewState.periodWeights)
+            WeightHistoryAverageCard(modifier = Modifier.fillMaxWidth(), viewState = viewState)
+            WeightHistoryStatistics(modifier = Modifier.fillMaxWidth(), weightList = viewState.periodWeights)
+            WeightHistoryEntries(
+                modifier = Modifier.fillMaxWidth(),
+                weightList = viewState.periodWeights,
+                allWeights = viewState.allWeights
+            )
+        }
+    }
+
+    CommonBottomSheet(
+        bottomSheetState = rememberModalBottomSheetState(),
+        showBottomSheet = showLogWeightSheet
+    ) { sheetModifier ->
+        WeightBottomSheetContent(
+            modifier = sheetModifier,
+            previousWeight = (viewState.allWeights.lastOrNull()?.weight ?: viewState.userDetails?.weight)
+                ?.toCleanString().orEmpty(),
+            onSaveWeight = { weight ->
+                showLogWeightSheet.value = false
+                callbacks.onSaveWeight(weight = weight)
+            }
         )
     }
 }
 
+@Composable
+private fun ChartCard(
+    period: WeightPeriod,
+    weightList: List<Weight>
+) {
+    val change = weightList.last().weight - weightList.first().weight
+    val changeLabel = when (period.range) {
+        WeightHistoryTimeRangeEnum.WEEK -> Res.string.weekly_change
+        WeightHistoryTimeRangeEnum.MONTH -> Res.string.monthly_change
+        WeightHistoryTimeRangeEnum.THREE_MONTHS -> Res.string.three_month_change
+        WeightHistoryTimeRangeEnum.ALL -> Res.string.change_since_you_started
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(size = 24.dp))
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 24.dp))
+            .padding(all = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Column(modifier = Modifier.weight(weight = 1f)) {
+                Text(
+                    text = stringResource(resource = changeLabel),
+                    style = typography.regular11,
+                    color = colors.muted
+                )
+                Text(
+                    text = stringResource(resource = Res.string.value_kg_unit, change.toSignedKg()),
+                    style = typography.bold32,
+                    color = when {
+                        change < -0.005 -> colors.accentInk
+                        change > 0.005 -> colors.fat
+                        else -> colors.ink
+                    }
+                )
+            }
+            Text(
+                text = pluralStringResource(
+                    resource = Res.plurals.weight_entries,
+                    quantity = weightList.size,
+                    weightList.size
+                ),
+                style = typography.regular11,
+                color = colors.muted,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+        }
+        WeightHistoryGraph(
+            modifier = Modifier.fillMaxWidth().height(height = 170.dp),
+            weightList = weightList,
+            period = period
+        )
+    }
+}
+
+@Composable
+private fun EmptyPeriod() {
+    Text(
+        text = stringResource(resource = Res.string.no_weight_logged_for_period),
+        style = typography.regular13,
+        color = colors.muted,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(size = 20.dp))
+            .border(width = 1.5.dp, color = colors.dashed, shape = RoundedCornerShape(size = 20.dp))
+            .padding(vertical = 32.dp, horizontal = 16.dp)
+    )
+}
 
 @Preview(showBackground = true)
 @Composable
 private fun PreviewWeightHistoryScreen() {
     MacroTrackTheme {
+        val weights = listOf(
+            Weight(date = LocalDate(2026, 10, 1), weight = 74.8),
+            Weight(date = LocalDate(2026, 10, 3), weight = 74.6),
+            Weight(date = LocalDate(2026, 10, 8), weight = 74.2)
+        )
         WeightHistoryScreen(
-            modifier = Modifier,
             viewState = WeightHistoryViewState(
-                filteredWeightList = listOf(
-                    Weight(
-                        date = getCurrentDate(),
-                        weight = 64.3,
-                    ),
-                    Weight(
-                        date = getCurrentDate(),
-                        weight = 66.3,
-                    ),
-                    Weight(
-                        date = getCurrentDate(),
-                        weight = 62.3,
-                    ),
-                ),
+                allWeights = weights,
+                period = WeightPeriod(WeightHistoryTimeRangeEnum.MONTH, LocalDate(2026, 10, 1), LocalDate(2026, 10, 31)),
+                periodWeights = weights,
+                previousPeriod = WeightPeriod(WeightHistoryTimeRangeEnum.MONTH, LocalDate(2026, 9, 1), LocalDate(2026, 9, 30)),
+                previousWeights = listOf(Weight(date = LocalDate(2026, 9, 7), weight = 76.0)),
+                canGoBack = true
             ),
             callbacks = WeightHistoryCallbacks.default(),
+            onBack = {}
         )
     }
 }

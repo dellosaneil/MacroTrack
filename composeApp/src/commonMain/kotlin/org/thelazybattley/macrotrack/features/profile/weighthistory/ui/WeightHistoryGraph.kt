@@ -1,327 +1,208 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
-import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.value_kg
-import org.jetbrains.compose.resources.stringResource
-import org.thelazybattley.macrotrack.core.getCurrentDate
-import org.thelazybattley.macrotrack.core.to2Decimal
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.domain.model.Weight
+import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightPeriod
+import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
+
+private const val AXIS_LABEL_WIDTH_DP = 36
+private const val X_LABEL_HEIGHT_DP = 20
+private const val TOP_PADDING_DP = 8
+private const val TAP_RADIUS_DP = 24
 
 @Composable
 fun WeightHistoryGraph(
     modifier: Modifier = Modifier,
-    weightList: List<Weight>
+    weightList: List<Weight>,
+    period: WeightPeriod
 ) {
-    val pointColor = colors.deepBlue
+    if (weightList.isEmpty()) return
     val textMeasurer = rememberTextMeasurer()
-    val labelTextStyle = typography.regular10.copy(
-        color = colors.mediumGray
-    )
+    val axisStyle = typography.regular10.copy(color = colors.muted)
+    val tooltipStyle = typography.bold11.copy(color = colors.onAccent)
+    val gridColor = colors.divider
+    val lineColor = colors.accent
+    val areaColor = colors.accentSoft
+    val markerFill = colors.surface
     var selectedIndex by remember(key1 = weightList) { mutableIntStateOf(value = -1) }
-    BoxWithConstraints(
-        modifier = modifier
-            .border(
-                width = 1.dp, color = colors.lightGray,
-                shape = RoundedCornerShape(size = 16.dp)
-            ),
-    ) {
-        val density = LocalDensity.current
-        val points = getPointOffset(
-            density = density,
-            weightList = weightList,
-            canvasWidth = density.run { maxWidth.toPx() },
-            canvasHeight = density.run { maxHeight.toPx() }
-        )
-        Box(
-            modifier = Modifier.fillMaxSize()
-                .pointerInput(key1 = weightList) {
-                    detectTapGestures(
-                        onTap = {
-                            selectedIndex = searchIndexByOffset(points = points, clickedOffset = it)
-                        }
-                    )
+
+    val weights = weightList.map { it.weight }
+    val low = floor((weights.min() - 0.2) * 2) / 2
+    val high = ceil((weights.max() + 0.2) * 2) / 2
+    val spanDays = (period.end.toEpochDays() - period.start.toEpochDays()).coerceAtLeast(minimumValue = 1)
+    val midDate = period.start.plus(period = DatePeriod(days = (spanDays / 2).toInt()))
+
+    Canvas(
+        modifier = modifier.pointerInput(key1 = weightList, key2 = period) {
+            detectTapGestures { tap ->
+                val points = pointsFor(
+                    weightList = weightList,
+                    period = period,
+                    spanDays = spanDays,
+                    low = low,
+                    high = high,
+                    size = Size(width = size.width.toFloat(), height = size.height.toFloat()),
+                    density = this
+                )
+                val nearest = points.withIndex().minByOrNull { abs(it.value.x - tap.x) }
+                selectedIndex = if (nearest != null && abs(nearest.value.x - tap.x) <= TAP_RADIUS_DP.dp.toPx()) {
+                    if (nearest.index == selectedIndex) -1 else nearest.index
+                } else {
+                    -1
                 }
-                .drawBehind(
-                    onDraw = drawGraphDetails(
-                        weightList = weightList,
-                        pointColor = pointColor,
-                        textMeasurer = textMeasurer,
-                        labelTextStyle = labelTextStyle,
-                        points = points,
-                        selectedIndex = selectedIndex,
-                    )
-                )
-        ) {
-            if (selectedIndex >= 0) {
-                Text(
-                    text = stringResource(
-                        resource = Res.string.value_kg,
-                        weightList.get(index = selectedIndex).weight
-                    ),
-                    modifier = Modifier
-                        .offset(
-                            x = density.run { points.get(index = selectedIndex).x.toDp() },
-                            y = density.run { points.get(index = selectedIndex).y.toDp() }
-                        )
-                        .background(
-                            color = colors.deepBlue,
-                            shape = RoundedCornerShape(size = 6.dp)
-                        )
-                        .padding(all = 4.dp),
-                    style = typography.bold9,
-                    color = colors.white
-                )
             }
+        }
+    ) {
+        val left = AXIS_LABEL_WIDTH_DP.dp.toPx()
+        val top = TOP_PADDING_DP.dp.toPx()
+        val bottom = size.height - X_LABEL_HEIGHT_DP.dp.toPx()
+
+        listOf(high, (high + low) / 2, low).forEachIndexed { index, value ->
+            val y = top + (bottom - top) * index / 2f
+            drawLine(color = gridColor, start = Offset(x = left, y = y), end = Offset(x = size.width, y = y))
+            val label = textMeasurer.measure(text = value.formatAxis(), style = axisStyle)
+            drawText(textLayoutResult = label, topLeft = Offset(x = 0f, y = y - label.size.height / 2f))
+        }
+
+        listOf(period.start, midDate, period.end).forEachIndexed { index, date ->
+            val label = textMeasurer.measure(text = date.toAbbreviatedMonthDay(), style = axisStyle)
+            val x = when (index) {
+                0 -> left
+                1 -> left + (size.width - left) / 2f - label.size.width / 2f
+                else -> size.width - label.size.width
+            }
+            drawText(textLayoutResult = label, topLeft = Offset(x = x, y = bottom + 4.dp.toPx()))
+        }
+
+        val points = pointsFor(
+            weightList = weightList,
+            period = period,
+            spanDays = spanDays,
+            low = low,
+            high = high,
+            size = size,
+            density = this
+        )
+
+        val area = Path().apply {
+            moveTo(x = points.first().x, y = bottom)
+            points.forEach { lineTo(x = it.x, y = it.y) }
+            lineTo(x = points.last().x, y = bottom)
+            close()
+        }
+        drawPath(path = area, color = areaColor)
+        val line = Path().apply {
+            moveTo(x = points.first().x, y = points.first().y)
+            points.drop(n = 1).forEach { lineTo(x = it.x, y = it.y) }
+        }
+        drawPath(
+            path = line,
+            color = lineColor,
+            style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+        )
+
+        val marked = if (selectedIndex in points.indices) selectedIndex else points.lastIndex
+        drawCircle(color = markerFill, radius = 5.dp.toPx(), center = points[marked])
+        drawCircle(color = lineColor, radius = 5.dp.toPx(), center = points[marked], style = Stroke(width = 2.5.dp.toPx()))
+
+        if (selectedIndex in points.indices) {
+            val weight = weightList[selectedIndex]
+            val tooltip = textMeasurer.measure(
+                text = "${weight.weight.formatKg()} kg · ${weight.date.toAbbreviatedMonthDay()}",
+                style = tooltipStyle
+            )
+            val padding = 6.dp.toPx()
+            val boxWidth = tooltip.size.width + padding * 2
+            val boxHeight = tooltip.size.height + padding * 2
+            val point = points[selectedIndex]
+            val boxLeft = (point.x - boxWidth / 2f).coerceIn(left, size.width - boxWidth)
+            val boxTop = (point.y - boxHeight - 10.dp.toPx()).coerceAtLeast(minimumValue = 0f)
+            drawRoundRect(
+                color = lineColor,
+                topLeft = Offset(x = boxLeft, y = boxTop),
+                size = Size(width = boxWidth, height = boxHeight),
+                cornerRadius = CornerRadius(x = 8.dp.toPx(), y = 8.dp.toPx())
+            )
+            drawText(textLayoutResult = tooltip, topLeft = Offset(x = boxLeft + padding, y = boxTop + padding))
         }
     }
 }
 
-private fun searchIndexByOffset(
-    points: List<Offset>,
-    clickedOffset: Offset
-): Int {
-    val clickableRadius = 40f
-    return points.indexOfFirst {
-        val distance = (it - clickedOffset).getDistance()
-        abs(x = distance) <= clickableRadius
-    }
-}
-
-private fun getPointOffset(
-    density: Density,
+private fun pointsFor(
     weightList: List<Weight>,
-    canvasWidth: Float,
-    canvasHeight: Float
-): List<Offset> {
-    val labelStartOffset = LABEL_X_OFFSET + density.run { 30.dp.toPx() }
-    val drawableCanvas = canvasWidth - (labelStartOffset * 2)
-    val pointInterval = drawableCanvas / weightList.lastIndex
-    val maxWeight = weightList.maxOf { it.weight }
-    val offsetList = mutableListOf<Offset>()
-    val minWeight = weightList.minOf { it.weight }
-    val range = maxWeight - minWeight
-
-    weightList.forEachIndexed { index, weight ->
-        val yOffset = calculateYPointOffset(
-            maxWeight = maxWeight,
-            weight = weight.weight,
-            range = range,
-            maxHeight = canvasHeight
-        )
-        val xOffset = calculateXPointOffset(
-            startOffset = labelStartOffset,
-            index = index,
-            pointInterval = pointInterval
-        )
-        offsetList.add(Offset(x = xOffset, y = yOffset))
-    }
-
-    return offsetList
-}
-
-private fun drawGraphDetails(
-    weightList: List<Weight>,
-    pointColor: Color,
-    textMeasurer: TextMeasurer,
-    labelTextStyle: TextStyle,
-    points: List<Offset>,
-    selectedIndex: Int
-): DrawScope.() -> Unit = {
-
-    val minWeight = weightList.minOf { it.weight }
-    val maxWeight = weightList.maxOf { it.weight }
-    val range = maxWeight - minWeight
-    val labelInterval = range / (TICK_COUNT - 1)
-    val labelEndYOffset = size.height - LABEL_Y_START_OFFSET
-    val labelYInterval = (labelEndYOffset - LABEL_Y_START_OFFSET) / (TICK_COUNT - 1)
-
-    val labelStartOffset = LABEL_X_OFFSET + 30.dp.toPx()
-    repeat(times = TICK_COUNT) { index ->
-        val text = maxWeight - (index * labelInterval)
-        val yOffset = LABEL_Y_START_OFFSET + (labelYInterval * index)
-        val textLayoutResult = textMeasurer.measure(
-            text = text.to2Decimal().toString(),
-            style = labelTextStyle
-        )
-        drawLabel(
-            textLayoutResult = textLayoutResult,
-            position = Offset(
-                x = LABEL_X_OFFSET,
-                y = yOffset
-            ),
-        )
-        drawLabelLine(
-            color = labelTextStyle.color,
-            startOffset = Offset(
-                x = labelStartOffset,
-                y = yOffset
-            ),
-            endOffset = Offset(
-                x = size.width,
-                y = yOffset
-            )
-        )
-    }
-    drawPoints(
-        points = points,
-        color = pointColor,
-        pointMode = PointMode.Points,
-        strokeWidth = POINT_RADIUS,
-        cap = StrokeCap.Round
-    )
-    drawPoints(
-        points = points,
-        color = pointColor,
-        pointMode = PointMode.Polygon,
-        strokeWidth = 4f,
-        cap = StrokeCap.Butt
-    )
-    if (selectedIndex >= 0) {
-        val selectedDate = weightList[selectedIndex].date
-        val textLayoutResult = textMeasurer.measure(
-            text = selectedDate.toAbbreviatedMonthDay(),
-            style = labelTextStyle
-        )
-        renderDate(
-            textLayoutResult = textLayoutResult,
-            offset = Offset(
-                x = points[selectedIndex].x - (textLayoutResult.size.width / 2),
-                y = labelEndYOffset + 12.dp.toPx()
-            )
-        )
+    period: WeightPeriod,
+    spanDays: Long,
+    low: Double,
+    high: Double,
+    size: Size,
+    density: androidx.compose.ui.unit.Density
+): List<Offset> = with(density) {
+    val left = AXIS_LABEL_WIDTH_DP.dp.toPx()
+    val top = TOP_PADDING_DP.dp.toPx()
+    val bottom = size.height - X_LABEL_HEIGHT_DP.dp.toPx()
+    val inset = 6.dp.toPx()
+    weightList.map { weight ->
+        val dayIndex = weight.date.toEpochDays() - period.start.toEpochDays()
+        val x = left + inset + (size.width - left - inset * 2) * dayIndex / spanDays.toFloat()
+        val y = bottom - (bottom - top) * ((weight.weight - low) / (high - low)).toFloat()
+        Offset(x = x, y = y)
     }
 }
 
-private fun DrawScope.renderDate(
-    textLayoutResult: TextLayoutResult,
-    offset: Offset
-) {
-    drawText(
-        textLayoutResult,
-        topLeft = offset
-    )
+private fun Double.formatAxis(): String {
+    val tenths = kotlin.math.round(this * 10).toInt()
+    return "${tenths / 10}.${abs(tenths % 10)}"
 }
-
-private fun calculateXPointOffset(
-    index: Int,
-    pointInterval: Float,
-    startOffset: Float
-): Float {
-    return startOffset + (index * pointInterval)
-}
-
-private fun calculateYPointOffset(
-    maxWeight: Double,
-    weight: Double,
-    range: Double,
-    maxHeight: Float
-): Float {
-    return (((maxWeight - weight) / range) * (maxHeight - LABEL_Y_START_OFFSET * 2) + LABEL_Y_START_OFFSET).toFloat()
-}
-
-private fun DrawScope.drawLabelLine(
-    startOffset: Offset,
-    endOffset: Offset,
-    color: Color
-) {
-    drawLine(
-        color = color,
-        start = startOffset,
-        end = endOffset
-    )
-}
-
-private fun DrawScope.drawLabel(
-    textLayoutResult: TextLayoutResult,
-    position: Offset,
-) {
-    drawText(
-        textLayoutResult = textLayoutResult,
-        topLeft = position.copy(
-            y = position.y - (textLayoutResult.size.height / 2f)
-        )
-    )
-}
-
 
 @Preview(showBackground = true)
 @Composable
 private fun PreviewWeightHistoryGraph() {
     MacroTrackTheme {
         WeightHistoryGraph(
-            modifier = Modifier
-                .padding(all = 24.dp)
-                .fillMaxWidth()
-                .height(height = 256.dp),
+            modifier = Modifier.fillMaxWidth().height(height = 170.dp).padding(all = 16.dp),
             weightList = listOf(
-                Weight(
-                    weight = 68.65,
-                    date = getCurrentDate()
-                ),
-                Weight(
-                    weight = 66.9,
-                    date = getCurrentDate().plus(period = DatePeriod(days = 1)),
-                ),
-                Weight(
-                    weight = 65.15,
-                    date = getCurrentDate().plus(period = DatePeriod(days = 2)),
-                ),
-                Weight(
-                    weight = 63.4,
-                    date = getCurrentDate().plus(period = DatePeriod(days = 3)),
-                ),
-                Weight(
-                    weight = 70.4,
-                    date = getCurrentDate().plus(period = DatePeriod(days = 4)),
-                )
+                Weight(date = LocalDate(2026, 10, 1), weight = 74.8),
+                Weight(date = LocalDate(2026, 10, 3), weight = 74.6),
+                Weight(date = LocalDate(2026, 10, 5), weight = 74.5),
+                Weight(date = LocalDate(2026, 10, 8), weight = 74.2)
+            ),
+            period = WeightPeriod(
+                range = WeightHistoryTimeRangeEnum.MONTH,
+                start = LocalDate(2026, 10, 1),
+                end = LocalDate(2026, 10, 31)
             )
-
         )
     }
 }
-
-private const val TICK_COUNT = 5
-private const val LABEL_X_OFFSET = 48f
-private const val LABEL_Y_START_OFFSET = 96f
-private const val POINT_RADIUS = 24f

@@ -6,22 +6,24 @@ interface WeightHistoryCallbacks {
 
     fun onTimePeriodSelect(timeRange: WeightHistoryTimeRangeEnum)
 
-    fun onFilterBackButtonClicked()
+    fun onPreviousPeriod()
 
-    fun onFilterNextButtonClicked()
+    fun onNextPeriod()
+
+    fun onSaveWeight(weight: String)
 
     companion object {
         fun default() = object : WeightHistoryCallbacks {
             override fun onTimePeriodSelect(timeRange: WeightHistoryTimeRangeEnum) {
-                TODO("Not yet implemented")
             }
 
-            override fun onFilterBackButtonClicked() {
-                TODO("Not yet implemented")
+            override fun onPreviousPeriod() {
             }
 
-            override fun onFilterNextButtonClicked() {
-                TODO("Not yet implemented")
+            override fun onNextPeriod() {
+            }
+
+            override fun onSaveWeight(weight: String) {
             }
         }
     }
