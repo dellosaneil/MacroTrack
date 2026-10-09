@@ -50,83 +50,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileWeightCard(
-    modifier: Modifier = Modifier,
-    previousWeight: String,
-    lastWeightUpdate: String,
-    onSaveWeight: (String) -> Unit,
-) {
-    val showBottomSheet = remember { mutableStateOf(value = false) }
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = colors.white
-        ),
-        border = BorderStroke(width = 1.dp, color = colors.lightGray)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(all = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                modifier = Modifier.weight(weight = 1f),
-                verticalArrangement = Arrangement.spacedBy(space = 2.dp)
-            ) {
-                Text(
-                    text = stringResource(resource = Res.string.log_today_weight),
-                    style = typography.bold13,
-                    color = colors.black
-                )
-                Text(
-                    text = stringResource(
-                        resource = Res.string.last_value,
-                        previousWeight,
-                        lastWeightUpdate
-                    ),
-                    style = typography.regular11,
-                    color = colors.mediumGray
-                )
-            }
-            Button(
-                onClick = {
-                    showBottomSheet.value = true
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.deepBlue,
-                    contentColor = colors.white
-                ),
-                shape = RoundedCornerShape(size = 8.dp)
-            ) {
-                Text(
-                    text = stringResource(resource = Res.string.add_log),
-                    style = typography.bold13
-                )
-            }
-        }
-    }
-
-    val bottomSheetState = rememberModalBottomSheetState()
-    CommonBottomSheet(
-        bottomSheetState = bottomSheetState,
-        showBottomSheet = showBottomSheet
-    ) {
-        WeightBottomSheetContent(
-            modifier = Modifier
-                .padding(paddingValues = AppPadding)
-                .fillMaxWidth(),
-            previousWeight = previousWeight,
-            onSaveWeight = { weight ->
-                showBottomSheet.value = false
-                onSaveWeight(weight)
-            }
-        )
-    }
-}
-
-
-@Composable
-private fun WeightBottomSheetContent(
+internal fun WeightBottomSheetContent(
     modifier: Modifier = Modifier,
     previousWeight: String,
     onSaveWeight: (String) -> Unit,
@@ -348,19 +272,4 @@ private fun PreviewWeightBottomSheetContent() {
 
         }
     )
-}
-
-@Preview
-@Composable
-private fun PreviewProfileWeightCard() {
-    MacroTrackTheme {
-        ProfileWeightCard(
-            modifier = Modifier.fillMaxWidth(),
-            previousWeight = "68.4",
-            onSaveWeight = {
-
-            },
-            lastWeightUpdate = "Mar 21"
-        )
-    }
 }

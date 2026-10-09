@@ -4,26 +4,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.thelazybattley.macrotrack.core.to2Decimal
-import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
-import org.thelazybattley.macrotrack.domain.model.Goal
-import org.thelazybattley.macrotrack.domain.usecase.CalculateBMIUseCase
+import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
-import org.thelazybattley.macrotrack.features.profile.ui.BMI
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
 
 class ProfileViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
-    private val calculateBMIUseCase: CalculateBMIUseCase,
     private val insertWeightUseCase: InsertWeightUseCase,
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
-    private val getAllWeightUseCase: GetAllWeightUseCase
+    private val getAllWeightUseCase: GetAllWeightUseCase,
+    private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
+    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase
 ) : ViewModel(), ProfileCallbacks {
 
     private val _state = MutableStateFlow(value = ProfileViewState())
@@ -31,124 +31,83 @@ class ProfileViewModel(
 
     init {
         viewModelScope.launch {
-            getUserDetailsUseCase().collect { userDetails ->
-                updateBMI()
+            combine(
+                flow = getUserDetailsUseCase(),
+                flow2 = getAllWeightUseCase(),
+                flow3 = getAllFoodLogUseCase()
+            ) { userDetails, weights, foodLogs ->
+                val today = getCurrentDate()
+                if (userDetails != null && userDetails.targetWeight != null && userDetails.targetStartWeight == null) {
+                    // Targets saved before the start point was recorded begin from today's weight.
+                    insertUserDetailsUseCase(
+                        userDetails = userDetails.copy(
+                            targetStartWeight = userDetails.weight,
+                            targetSetDate = today
+                        )
+                    )
+                    return@combine
+                }
+                val macroGoals = userDetails?.let {
+                    calculateMacrosGoalUseCase(
+                        height = it.height,
+                        weight = it.weight,
+                        age = it.age,
+                        gender = it.sex,
+                        activityLevel = it.activityLevel,
+                        goal = it.goal
+                    )
+                }
                 _state.update { currentState ->
                     currentState.copy(
                         userDetails = userDetails,
-                        weightInput = userDetails?.weight?.to2Decimal().toString(),
+                        macroGoals = macroGoals,
+                        goalProgress = userDetails?.let {
+                            calculateGoalProgress(userDetails = it, today = today)
+                        },
+                        weekSummary = calculateWeekSummary(
+                            foodLogs = foodLogs,
+                            weights = weights,
+                            macroGoals = macroGoals,
+                            today = today
+                        )
                     )
                 }
-            }
-        }
-        viewModelScope.launch {
-            getAllWeightUseCase().collectLatest { weight ->
-                if (weight.isEmpty()) return@collectLatest
-                _state.update { currentState ->
-                    currentState.copy(
-                        lastWeightUpdatedDate = weight.last().date.toAbbreviatedMonthDay()
-                    )
-                }
-            }
+            }.collect()
         }
     }
 
     override fun onSaveWeight(weight: String) {
+        val newWeight = weight.toDoubleOrNull()?.takeIf { it > 0 } ?: return
+        val userDetails = _state.value.userDetails ?: return
         viewModelScope.launch {
-            insertWeightUseCase(weight = weight.toDouble())
-            _state.update { currentState ->
-                if (currentState.userDetails == null) return@update currentState
-                insertUserDetailsUseCase(
-                    userDetails = currentState.userDetails.copy(
-                        weight = weight.toDouble()
-                    )
-                ).also {
-                    updateBMI()
-                }
-                currentState.copy(
-                    userDetails = currentState.userDetails.copy(
-                        weight = weight.toDouble()
-                    )
-                )
-            }
+            insertWeightUseCase(weight = newWeight)
+            insertUserDetailsUseCase(userDetails = userDetails.copy(weight = newWeight))
         }
     }
 
-    override fun updateGoal(goal: Goal) {
+    override fun onSaveTargetWeight(targetWeight: String) {
+        val newTarget = targetWeight.toDoubleOrNull()?.takeIf { it > 0 } ?: return
+        val userDetails = _state.value.userDetails ?: return
         viewModelScope.launch {
-            val userDetails = _state.value.userDetails ?: return@launch
-            val updatedUserDetails = userDetails.copy(
-                goal = goal,
-            )
             insertUserDetailsUseCase(
-                userDetails = updatedUserDetails
-            )
-        }
-        _state.update { currentState ->
-            currentState.copy(
-                updatedGoal = goal
+                userDetails = userDetails.copy(
+                    targetWeight = newTarget,
+                    targetStartWeight = userDetails.weight,
+                    targetSetDate = getCurrentDate()
+                )
             )
         }
     }
 
     override fun onNavigate(sectionEnum: ProfileSectionEnum) {
         _state.update { currentState ->
-            currentState.copy(
-                route = sectionEnum.name
-            )
+            currentState.copy(route = sectionEnum.name)
         }
     }
 
     override fun onResetNavigation() {
         _state.update { currentState ->
-            currentState.copy(
-                route = null
-            )
-        }
-    }
-
-    override fun clearGoalUpdated() {
-        _state.update { currentState ->
-            currentState.copy(
-                updatedGoal = null
-            )
-        }
-    }
-
-    private suspend fun updateBMI() {
-        calculateBMIUseCase().let { bmi ->
-            val bmiCategory = when {
-                (bmi <= BMI.UNDERWEIGHT.bmiIndex) -> BMI.UNDERWEIGHT
-                (bmi <= BMI.NORMAL.bmiIndex) -> BMI.NORMAL
-                (bmi <= BMI.OVERWEIGHT.bmiIndex) -> BMI.OVERWEIGHT
-                else -> BMI.OBESE
-            }
-            val progress = when {
-                (bmi <= BMI.UNDERWEIGHT.bmiIndex) -> {
-                    bmi / BMI.UNDERWEIGHT.bmiIndex
-                }
-
-                (bmi <= BMI.NORMAL.bmiIndex) -> {
-                    (bmi - BMI.UNDERWEIGHT.bmiIndex) / (BMI.NORMAL.bmiIndex - BMI.UNDERWEIGHT.bmiIndex)
-                }
-
-                (bmi <= BMI.OVERWEIGHT.bmiIndex) -> {
-                    (bmi - BMI.NORMAL.bmiIndex) / (BMI.OVERWEIGHT.bmiIndex - BMI.NORMAL.bmiIndex)
-                }
-
-                else -> {
-                    (bmi - BMI.OVERWEIGHT.bmiIndex) / (BMI.OBESE.bmiIndex - BMI.OVERWEIGHT.bmiIndex)
-                }
-            }
-            _state.update { currentState ->
-                currentState.copy(
-                    profileBMI = ProfileBMI(
-                        value = bmi.to2Decimal(),
-                        category = bmiCategory,
-                        progress = progress
-                    )
-                )
-            }
+            currentState.copy(route = null)
         }
     }
 }

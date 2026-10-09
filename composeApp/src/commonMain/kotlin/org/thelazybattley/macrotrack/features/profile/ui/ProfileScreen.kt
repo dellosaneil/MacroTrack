@@ -1,29 +1,43 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.goal_updated
+import macrotrack.composeapp.generated.resources.profile
+import macrotrack.composeapp.generated.resources.save_target
+import macrotrack.composeapp.generated.resources.target_weight
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.features.profile.ProfileCallbacks
 import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
 import org.thelazybattley.macrotrack.features.profile.ProfileViewState
-import org.thelazybattley.macrotrack.ui.common.CommonSnackBarContent
-import org.thelazybattley.macrotrack.ui.common.CommonSurface
+import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
+import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
+import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
+import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 @Composable
 fun ProfileScreen(
@@ -32,18 +46,6 @@ fun ProfileScreen(
 ) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-    val snackBarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(key1 = Unit) {
-        viewModel.clearGoalUpdated()
-    }
-    LaunchedEffect(key1 = viewState.updatedGoal) {
-        if (viewState.updatedGoal == null) {
-            snackBarHostState.currentSnackbarData?.dismiss()
-        }
-        viewState.updatedGoal?.let {
-            snackBarHostState.showSnackbar(message = "")
-        }
-    }
     LaunchedEffect(key1 = viewState.route) {
         viewState.route?.let { route ->
             onNavigate(route)
@@ -56,74 +58,121 @@ fun ProfileScreen(
         viewState = viewState,
         callbacks = viewModel
     )
-
-    SnackbarHost(
-        hostState = snackBarHostState,
-        modifier = Modifier
-    ) { _ ->
-        val goalTitle = viewState.updatedGoal?.let { goal ->
-            stringResource(resource = goal.title)
-        } ?: return@SnackbarHost
-
-        CommonSnackBarContent(
-            modifier = Modifier
-                .fillMaxWidth(),
-            text = stringResource(resource = Res.string.goal_updated, goalTitle)
-        )
-    }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     viewState: ProfileViewState,
     callbacks: ProfileCallbacks
 ) {
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+    val showLogWeightSheet = remember { mutableStateOf(value = false) }
+    val showTargetWeightSheet = remember { mutableStateOf(value = false) }
+
+    Column(
+        modifier = modifier.verticalScroll(state = rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(space = 14.dp)
     ) {
-        item {
-            CommonSurface {
-                ProfileCurrentGoal(
-                    modifier = Modifier.fillMaxWidth(),
-                    currentGoal = viewState.userDetails?.goal
-                ) { goal ->
-                    callbacks.updateGoal(goal = goal)
-                }
-            }
-        }
-        item {
-            CommonSurface {
-                ProfileBMI(
-                    modifier = Modifier.fillMaxWidth(),
-                    profileBMI = viewState.profileBMI
-                )
-            }
-        }
-        item {
-            CommonSurface {
-                ProfileWeightCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    previousWeight = viewState.userDetails?.weight.toString(),
-                    onSaveWeight = { weight ->
-                        callbacks.onSaveWeight(weight = weight)
-                    },
-                    lastWeightUpdate = viewState.lastWeightUpdatedDate
-                )
-            }
-        }
-        item {
-            ProfileAccount(
+        Text(
+            text = stringResource(resource = Res.string.profile),
+            style = typography.bold32,
+            color = colors.ink
+        )
+        ProfileGoalProgress(
+            modifier = Modifier.fillMaxWidth(),
+            goalProgress = viewState.goalProgress,
+            onLogWeight = { showLogWeightSheet.value = true },
+            onSetTarget = { showTargetWeightSheet.value = true }
+        )
+        viewState.weekSummary?.let { weekSummary ->
+            ProfileThisWeek(
                 modifier = Modifier.fillMaxWidth(),
-                onNavigate = callbacks::onNavigate
+                weekSummary = weekSummary,
+                macroGoals = viewState.macroGoals
             )
         }
+        ProfileAccount(
+            modifier = Modifier.fillMaxWidth(),
+            goal = viewState.userDetails?.goal,
+            macroGoals = viewState.macroGoals,
+            targetWeight = viewState.userDetails?.targetWeight,
+            onNavigate = callbacks::onNavigate,
+            onTargetWeightClick = { showTargetWeightSheet.value = true }
+        )
+    }
+
+    CommonBottomSheet(
+        bottomSheetState = rememberModalBottomSheetState(),
+        showBottomSheet = showLogWeightSheet
+    ) { sheetModifier ->
+        WeightBottomSheetContent(
+            modifier = sheetModifier,
+            previousWeight = viewState.userDetails?.weight?.toCleanString().orEmpty(),
+            onSaveWeight = { weight ->
+                showLogWeightSheet.value = false
+                callbacks.onSaveWeight(weight = weight)
+            }
+        )
+    }
+
+    CommonBottomSheet(
+        bottomSheetState = rememberModalBottomSheetState(),
+        showBottomSheet = showTargetWeightSheet
+    ) { sheetModifier ->
+        TargetWeightSheetContent(
+            modifier = sheetModifier,
+            currentTarget = viewState.userDetails?.targetWeight,
+            currentWeight = viewState.userDetails?.weight,
+            onSave = { target ->
+                showTargetWeightSheet.value = false
+                callbacks.onSaveTargetWeight(targetWeight = target)
+            }
+        )
     }
 }
 
+@Composable
+private fun TargetWeightSheetContent(
+    modifier: Modifier = Modifier,
+    currentTarget: Double?,
+    currentWeight: Double?,
+    onSave: (String) -> Unit
+) {
+    var input by rememberSaveable { mutableStateOf(value = currentTarget?.toCleanString().orEmpty()) }
+    val isValid = input.toDoubleOrNull()?.let { it > 0 } == true
 
-@Preview(showBackground = true, backgroundColor = 0xfffffff)
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        Text(
+            text = stringResource(resource = Res.string.target_weight),
+            style = typography.bold18,
+            color = colors.ink
+        )
+        CommonTextField(
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = currentWeight?.toCleanString().orEmpty(),
+            textValue = input,
+            onValueChanged = { value ->
+                if (value.length <= 5 && value.count { it == '.' } <= 1 && value.all { it.isDigit() || it == '.' }) {
+                    input = value
+                }
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            textStyle = typography.bold32
+        )
+        CommonPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = Res.string.save_target,
+            enabled = isValid,
+            onClick = { onSave(input) }
+        )
+    }
+}
+
+@Preview(showBackground = true)
 @Composable
 private fun PreviewProfileScreen() {
     MacroTrackTheme {

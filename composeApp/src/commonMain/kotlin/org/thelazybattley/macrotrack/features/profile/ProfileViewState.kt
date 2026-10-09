@@ -1,20 +1,45 @@
 package org.thelazybattley.macrotrack.features.profile
 
-import org.thelazybattley.macrotrack.domain.model.Goal
+import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.UserDetails
-import org.thelazybattley.macrotrack.features.profile.ui.BMI
 
 data class ProfileViewState(
-    val profileBMI: ProfileBMI = ProfileBMI(),
-    val weightInput: String = "0.0",
     val userDetails: UserDetails? = null,
-    val updatedGoal: Goal? = null,
-    val lastWeightUpdatedDate: String = "",
+    val macroGoals: MacroGoals? = null,
+    val goalProgress: GoalProgress? = null,
+    val weekSummary: WeekSummary? = null,
     val route: String? = null
 )
 
-data class ProfileBMI(
-    val value: Double = 0.0,
-    val category: BMI = BMI.NORMAL,
-    val progress: Double = 0.0
+data class GoalProgress(
+    val startWeight: Double,
+    val startDate: LocalDate?,
+    val currentWeight: Double,
+    val targetWeight: Double,
+    val isGaining: Boolean,
+    val achievedKg: Double,
+    val totalKg: Double,
+    val progress: Float,
+    val status: GoalStatus,
+    val estimatedDate: LocalDate?
+)
+
+enum class GoalStatus {
+    ON_TRACK,
+    REACHED,
+    GOAL_MISMATCH
+}
+
+data class WeekSummary(
+    val weekStart: LocalDate,
+    val loggedDays: List<Boolean>,
+    val todayIndex: Int,
+    val currentStreak: Int,
+    val bestStreak: Int,
+    val averageCalories: Int?,
+    val averageProtein: Int?,
+    val daysOnTarget: Int,
+    val daysLogged: Int,
+    val weightChange: Double?
 )

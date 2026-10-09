@@ -23,7 +23,7 @@ import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
     entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class],
-    version = 3, exportSchema = true,
+    version = 5, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -43,6 +43,25 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL(
                     "ALTER TABLE FoodEntity ADD COLUMN unit TEXT NOT NULL DEFAULT 'g'"
+                )
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE UserDetailsEntity ADD COLUMN targetWeight REAL"
+                )
+            }
+        }
+
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE UserDetailsEntity ADD COLUMN targetStartWeight REAL"
+                )
+                connection.execSQL(
+                    "ALTER TABLE UserDetailsEntity ADD COLUMN targetSetDate TEXT"
                 )
             }
         }

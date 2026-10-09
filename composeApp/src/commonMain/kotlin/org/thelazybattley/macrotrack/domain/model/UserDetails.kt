@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.domain.model
 
+import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 
 data class UserDetails(
@@ -8,7 +9,10 @@ data class UserDetails(
     val height: Double,
     val sex: UserSex,
     val activityLevel: ActivityLevel,
-    val goal: Goal
+    val goal: Goal,
+    val targetWeight: Double? = null,
+    val targetStartWeight: Double? = null,
+    val targetSetDate: LocalDate? = null
 )
 
 fun UserDetails.toEntity() = UserDetailsEntity(
@@ -17,5 +21,8 @@ fun UserDetails.toEntity() = UserDetailsEntity(
     height = height,
     gender = sex,
     activityLevel = activityLevel,
-    goal = goal
+    goal = goal,
+    targetWeight = targetWeight,
+    targetStartWeight = targetStartWeight,
+    targetSetDate = targetSetDate
 )

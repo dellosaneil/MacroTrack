@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.data.local.entity
 
+import kotlinx.datetime.LocalDate
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
@@ -17,7 +18,10 @@ data class UserDetailsEntity(
     val height: Double,
     val gender: UserSex,
     val activityLevel: ActivityLevel,
-    val goal: Goal
+    val goal: Goal,
+    val targetWeight: Double? = null,
+    val targetStartWeight: Double? = null,
+    val targetSetDate: LocalDate? = null
 )
 
 fun UserDetailsEntity.toDomain() = UserDetails(
@@ -26,5 +30,8 @@ fun UserDetailsEntity.toDomain() = UserDetails(
     height = height,
     sex = gender,
     activityLevel = activityLevel,
-    goal = goal
+    goal = goal,
+    targetWeight = targetWeight,
+    targetStartWeight = targetStartWeight,
+    targetSetDate = targetSetDate
 )
