@@ -226,8 +226,15 @@ class FoodLogViewModel(
     }
 
     override fun onEntryAmountChanged(amount: Double) {
-        if (amount <= 0) return
-        _state.update { it.copy(entryEdit = it.entryEdit?.copy(amount = amount)) }
+        _state.update { it.copy(entryEdit = it.entryEdit?.withAmount(value = amount)) }
+    }
+
+    override fun onEntryTypingStarted() {
+        _state.update { it.copy(entryEdit = it.entryEdit?.startTyping()) }
+    }
+
+    override fun onEntryKey(key: Char) {
+        _state.update { it.copy(entryEdit = it.entryEdit?.typed(key = key)) }
     }
 
     override fun onEntryMealChanged(mealType: MealType) {

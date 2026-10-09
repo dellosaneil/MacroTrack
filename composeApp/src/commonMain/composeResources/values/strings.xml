@@ -444,5 +444,14 @@
     <string name="no_changes">No changes</string>
     <string name="unchanged">unchanged</string>
     <string name="was_value_gram">was %1$dg</string>
+    <string name="one_serving_is_kcal">One serving is %1$d kcal</string>
+    <string name="logged_portion_kcal">%1$s logged · %2$d kcal</string>
+    <string name="tap_to_type">Tap to type</string>
+    <string name="typing">Typing…</string>
+    <string name="servings_value">%1$s servings</string>
+    <string name="enter_an_amount">Enter an amount</string>
+    <string name="edit_amount">Edit amount</string>
+    <string name="change_meal">Change meal</string>
+    <string name="backspace">Backspace</string>
     <string name="edit_entry_value">Edit %1$s</string>
 </resources>

@@ -194,6 +194,8 @@ private fun FoodLogTabScreen(
         EntryEditSheet(
             edit = edit,
             onAmountChanged = callbacks::onEntryAmountChanged,
+            onTypingStarted = callbacks::onEntryTypingStarted,
+            onKey = callbacks::onEntryKey,
             onMealChanged = callbacks::onEntryMealChanged,
             onClose = callbacks::onCloseEntry,
             onSave = callbacks::onSaveEntry,

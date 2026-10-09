@@ -1,5 +1,12 @@
 package org.thelazybattley.macrotrack.features.foodlog.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,74 +20,82 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.carbs
+import macrotrack.composeapp.generated.resources.backspace
+import macrotrack.composeapp.generated.resources.change_meal
 import macrotrack.composeapp.generated.resources.close
 import macrotrack.composeapp.generated.resources.decrease_portion
 import macrotrack.composeapp.generated.resources.delete
-import macrotrack.composeapp.generated.resources.fat
+import macrotrack.composeapp.generated.resources.edit_amount
+import macrotrack.composeapp.generated.resources.enter_an_amount
+import macrotrack.composeapp.generated.resources.ic_chevron_down
 import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.ic_trash
 import macrotrack.composeapp.generated.resources.increase_portion
 import macrotrack.composeapp.generated.resources.kcal_text
-import macrotrack.composeapp.generated.resources.logged_on
-import macrotrack.composeapp.generated.resources.logged_today
-import macrotrack.composeapp.generated.resources.meal
+import macrotrack.composeapp.generated.resources.logged_portion_kcal
 import macrotrack.composeapp.generated.resources.no_changes
-import macrotrack.composeapp.generated.resources.percentage_eaten
-import macrotrack.composeapp.generated.resources.portion_size
-import macrotrack.composeapp.generated.resources.protein
+import macrotrack.composeapp.generated.resources.one_serving
+import macrotrack.composeapp.generated.resources.one_serving_is_kcal
 import macrotrack.composeapp.generated.resources.recipe
 import macrotrack.composeapp.generated.resources.save_changes
-import macrotrack.composeapp.generated.resources.unchanged
-import macrotrack.composeapp.generated.resources.was_value_gram
+import macrotrack.composeapp.generated.resources.servings_value
+import macrotrack.composeapp.generated.resources.tap_to_type
+import macrotrack.composeapp.generated.resources.typing
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.thelazybattley.macrotrack.core.getCurrentDate
-import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFoodLog
+import org.thelazybattley.macrotrack.features.addmeal.FULL_RECIPE_PERCENT
 import org.thelazybattley.macrotrack.features.foodlog.EntryEdit
+import org.thelazybattley.macrotrack.features.foodlog.KEY_BACKSPACE
+import org.thelazybattley.macrotrack.features.foodlog.KEY_DECIMAL
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
+import kotlin.math.round
 import kotlin.math.roundToInt
 
+private val keypadKeys = listOf('1', '2', '3', '4', '5', '6', '7', '8', '9', KEY_DECIMAL, '0', KEY_BACKSPACE)
+
+/**
+ * A compact sheet for changing a logged entry. Amounts are typed on an in-sheet keypad instead of the
+ * system keyboard, so nothing covers the readout or Save while typing.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntryEditSheet(
     edit: EntryEdit,
     onAmountChanged: (Double) -> Unit,
+    onTypingStarted: () -> Unit,
+    onKey: (Char) -> Unit,
     onMealChanged: (MealType) -> Unit,
     onClose: () -> Unit,
     onSave: () -> Unit,
@@ -95,9 +110,11 @@ fun EntryEditSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(start = 20.dp, end = 20.dp, bottom = 22.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
             edit = edit,
             onAmountChanged = onAmountChanged,
+            onTypingStarted = onTypingStarted,
+            onKey = onKey,
             onMealChanged = onMealChanged,
             onClose = onClose,
             onSave = onSave,
@@ -110,40 +127,70 @@ fun EntryEditSheet(
 private fun EntryEditContent(
     modifier: Modifier = Modifier,
     edit: EntryEdit,
+    isKeypadOpenInitially: Boolean = false,
     onAmountChanged: (Double) -> Unit,
+    onTypingStarted: () -> Unit,
+    onKey: (Char) -> Unit,
     onMealChanged: (MealType) -> Unit,
     onClose: () -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 16.dp)) {
-        Header(edit = edit, onClose = onClose)
-        AmountSection(edit = edit, onAmountChanged = onAmountChanged)
-        TotalsCard(edit = edit)
-        MealSection(selected = edit.mealType, onMealChanged = onMealChanged)
+    var isKeypadOpen by rememberSaveable(edit.log.id) { mutableStateOf(value = isKeypadOpenInitially) }
+    var isMealPickerOpen by rememberSaveable(edit.log.id) { mutableStateOf(value = false) }
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 12.dp)) {
+        Header(
+            edit = edit,
+            onMealClick = { isMealPickerOpen = !isMealPickerOpen },
+            onClose = onClose
+        )
+        AnimatedVisibility(visible = isMealPickerOpen) {
+            MealPicker(
+                selected = edit.mealType,
+                onMealChanged = {
+                    onMealChanged(it)
+                    isMealPickerOpen = false
+                }
+            )
+        }
+        Readout(
+            edit = edit,
+            isTyping = isKeypadOpen,
+            onClick = {
+                if (!isKeypadOpen) onTypingStarted()
+                isKeypadOpen = !isKeypadOpen
+            }
+        )
+        QuickPicks(edit = edit, onAmountChanged = onAmountChanged)
+        AnimatedVisibility(visible = isKeypadOpen) {
+            Keypad(onKey = onKey)
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-            val shape = RoundedCornerShape(size = 16.dp)
-            Row(
+            val shape = RoundedCornerShape(size = 14.dp)
+            val deleteText = stringResource(resource = Res.string.delete)
+            Box(
                 modifier = Modifier
-                    .height(height = 54.dp)
+                    .size(size = 54.dp)
                     .clip(shape = shape)
                     .border(width = 1.dp, color = colors.line, shape = shape)
                     .clickable(role = Role.Button, onClick = onDelete)
-                    .padding(horizontal = 18.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+                    .semantics { contentDescription = deleteText },
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(resource = Res.drawable.ic_trash),
                     contentDescription = null,
                     tint = colors.fat,
-                    modifier = Modifier.size(size = 16.dp)
+                    modifier = Modifier.size(size = 18.dp)
                 )
-                Text(text = stringResource(resource = Res.string.delete), style = typography.bold14, color = colors.fat)
             }
             CommonPrimaryButton(
                 modifier = Modifier.weight(weight = 1f),
-                text = if (edit.hasChanges) Res.string.save_changes else Res.string.no_changes,
+                text = when {
+                    edit.amount <= 0 -> Res.string.enter_an_amount
+                    edit.hasChanges -> Res.string.save_changes
+                    else -> Res.string.no_changes
+                },
                 enabled = edit.canSave,
                 onClick = onSave
             )
@@ -152,15 +199,16 @@ private fun EntryEditContent(
 }
 
 @Composable
-private fun Header(edit: EntryEdit, onClose: () -> Unit) {
-    val date = edit.log.date
-    Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(space = 10.dp)) {
+private fun Header(edit: EntryEdit, onMealClick: () -> Unit, onClose: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Column(modifier = Modifier.weight(weight = 1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
                 Text(
                     text = edit.log.foodName,
                     style = typography.bold18,
                     color = colors.ink,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(weight = 1f, fill = false)
                 )
                 if (edit.isRecipe) {
@@ -175,16 +223,46 @@ private fun Header(edit: EntryEdit, onClose: () -> Unit) {
                 }
             }
             Text(
-                text = if (date == getCurrentDate()) {
-                    stringResource(resource = Res.string.logged_today)
+                text = if (edit.isRecipe) {
+                    stringResource(resource = Res.string.one_serving_is_kcal, edit.baseCalories)
                 } else {
-                    stringResource(resource = Res.string.logged_on, date.toAbbreviatedMonthDay())
+                    stringResource(
+                        resource = Res.string.logged_portion_kcal,
+                        edit.originalAmount.toCleanString() + edit.unit.asSuffix(),
+                        edit.log.calories
+                    )
                 },
                 style = typography.regular11,
-                color = colors.muted
+                color = colors.muted,
+                maxLines = 1
             )
         }
-        val shape = RoundedCornerShape(size = 12.dp)
+        val shape = RoundedCornerShape(size = 10.dp)
+        val changeMealText = stringResource(resource = Res.string.change_meal)
+        Row(
+            modifier = Modifier
+                .height(height = 36.dp)
+                .clip(shape = shape)
+                .border(width = 1.dp, color = colors.line, shape = shape)
+                .clickable(role = Role.Button, onClick = onMealClick)
+                .semantics { contentDescription = changeMealText }
+                .padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(size = 8.dp)
+                    .background(color = edit.mealType.tint(), shape = RoundedCornerShape(size = 3.dp))
+            )
+            Text(text = stringResource(resource = edit.mealType.title), style = typography.bold13, color = colors.ink)
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_chevron_down),
+                contentDescription = null,
+                tint = colors.ink,
+                modifier = Modifier.size(size = 12.dp)
+            )
+        }
         Box(
             modifier = Modifier
                 .size(size = 36.dp)
@@ -197,87 +275,189 @@ private fun Header(edit: EntryEdit, onClose: () -> Unit) {
                 painter = painterResource(resource = Res.drawable.ic_close),
                 contentDescription = stringResource(resource = Res.string.close),
                 tint = colors.ink,
-                modifier = Modifier.size(size = 16.dp)
+                modifier = Modifier.size(size = 15.dp)
             )
         }
     }
 }
 
 @Composable
-private fun AmountSection(edit: EntryEdit, onAmountChanged: (Double) -> Unit) {
-    var text by remember(key1 = edit.log.id) { mutableStateOf(value = edit.amount.toCleanString()) }
-    LaunchedEffect(key1 = edit.amount) {
-        if (text.toDoubleOrNull() != edit.amount) text = edit.amount.toCleanString()
-    }
-    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        Text(
-            text = stringResource(resource = if (edit.isRecipe) Res.string.percentage_eaten else Res.string.portion_size),
-            style = typography.bold12,
-            color = colors.muted
-        )
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-            StepButton(
-                label = "−",
-                description = Res.string.decrease_portion,
-                enabled = edit.amount - edit.step > 0,
-                onClick = { onAmountChanged(edit.stepped(up = false)) }
-            )
-            Row(
+private fun MealPicker(selected: MealType, onMealChanged: (MealType) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(size = 12.dp))
+            .background(color = colors.divider)
+            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 12.dp))
+            .padding(all = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
+    ) {
+        MealType.entries.forEach { mealType ->
+            val isSelected = mealType == selected
+            Box(
                 modifier = Modifier
                     .weight(weight = 1f)
-                    .height(height = 48.dp)
-                    .clip(shape = RoundedCornerShape(size = 14.dp))
-                    .border(width = 1.5.dp, color = colors.accent, shape = RoundedCornerShape(size = 14.dp)),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.CenterHorizontally)
+                    .height(height = 34.dp)
+                    .clip(shape = RoundedCornerShape(size = 8.dp))
+                    .background(color = if (isSelected) colors.surface else Color.Transparent)
+                    .clickable(role = Role.Tab) { onMealChanged(mealType) },
+                contentAlignment = Alignment.Center
             ) {
-                BasicTextField(
-                    value = text,
-                    onValueChange = { value ->
-                        if (value.length > 6 || value.count { it == '.' } > 1 || value.any { !it.isDigit() && it != '.' }) {
-                            return@BasicTextField
-                        }
-                        text = value
-                        value.toDoubleOrNull()?.takeIf { it > 0 }?.let(onAmountChanged)
-                    },
-                    singleLine = true,
-                    textStyle = typography.bold24.copy(color = colors.ink, textAlign = TextAlign.End),
-                    cursorBrush = SolidColor(value = colors.accent),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.width(width = 80.dp)
+                Text(
+                    text = stringResource(resource = mealType.title),
+                    style = typography.bold12,
+                    color = if (isSelected) colors.ink else colors.muted,
+                    maxLines = 1
                 )
-                Text(text = edit.unit, style = typography.regular13, color = colors.muted, modifier = Modifier.width(width = 40.dp))
             }
-            StepButton(
-                label = "+",
-                description = Res.string.increase_portion,
-                enabled = true,
-                onClick = { onAmountChanged(edit.stepped(up = true)) }
+        }
+    }
+}
+
+@Composable
+private fun Readout(edit: EntryEdit, isTyping: Boolean, onClick: () -> Unit) {
+    val change = edit.caloriesChange
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(size = 18.dp))
+            .background(color = colors.hero)
+            .padding(all = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        val shape = RoundedCornerShape(size = 12.dp)
+        val editAmountText = stringResource(resource = Res.string.edit_amount)
+        Column(
+            modifier = Modifier
+                .widthIn(min = 124.dp)
+                .clip(shape = shape)
+                .background(color = colors.surface)
+                .border(width = 1.5.dp, color = if (isTyping) colors.accent else colors.line, shape = shape)
+                .clickable(role = Role.Button, onClick = onClick)
+                .semantics { contentDescription = editAmountText }
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 2.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = edit.amountText.ifEmpty { "0" },
+                    style = typography.bold32,
+                    color = when {
+                        edit.amountText.isEmpty() -> colors.faint
+                        isTyping && edit.replaceOnType -> colors.accentInk
+                        else -> colors.ink
+                    }
+                )
+                if (isTyping) Caret()
+                Text(
+                    text = edit.unit,
+                    style = typography.bold14,
+                    color = colors.muted,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+            Text(
+                text = when {
+                    isTyping -> stringResource(resource = Res.string.typing)
+                    edit.isRecipe -> edit.amount.servingsText()
+                    else -> stringResource(resource = Res.string.tap_to_type)
+                },
+                style = typography.regular11,
+                color = colors.muted
             )
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
-            edit.presets.forEach { preset ->
-                val isSelected = preset == edit.amount
-                val shape = RoundedCornerShape(size = 10.dp)
-                Box(
-                    modifier = Modifier
-                        .weight(weight = 1f)
-                        .height(height = 34.dp)
-                        .clip(shape = shape)
-                        .background(color = if (isSelected) colors.accentSoft else colors.surface)
-                        .border(width = 1.dp, color = if (isSelected) colors.accent else colors.line, shape = shape)
-                        .clickable(role = Role.Button) { onAmountChanged(preset) },
-                    contentAlignment = Alignment.Center
-                ) {
+        Column(
+            modifier = Modifier.weight(weight = 1f).padding(end = 6.dp),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 4.dp)) {
+                Text(text = edit.calories.withThousands(), style = typography.bold24, color = colors.ink)
+                Text(text = stringResource(resource = Res.string.kcal_text), style = typography.regular11, color = colors.muted)
+                if (change != 0) {
                     Text(
-                        text = preset.toCleanString() + if (edit.isRecipe || edit.unit.length <= 2) edit.unit else " ${edit.unit}",
-                        style = typography.bold13,
-                        color = if (isSelected) colors.accentInk else colors.ink,
-                        maxLines = 1
+                        text = if (change > 0) "+$change" else "−${abs(change)}",
+                        style = typography.bold11,
+                        color = if (change > 0) colors.warmInk else colors.accentInk,
+                        modifier = Modifier
+                            .clip(shape = RoundedCornerShape(size = 6.dp))
+                            .background(color = colors.surface)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
             }
+            Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                MacroValue(color = colors.protein, grams = edit.protein)
+                MacroValue(color = colors.carbs, grams = edit.carbs)
+                MacroValue(color = colors.fat, grams = edit.fat)
+            }
         }
+    }
+}
+
+@Composable
+private fun Caret() {
+    val transition = rememberInfiniteTransition()
+    val alpha by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(animation = tween(durationMillis = 500, easing = LinearEasing), repeatMode = RepeatMode.Reverse)
+    )
+    Box(
+        modifier = Modifier
+            .padding(start = 2.dp)
+            .width(width = 2.dp)
+            .height(height = 28.dp)
+            .alpha(alpha = alpha)
+            .background(color = colors.accent, shape = RoundedCornerShape(size = 1.dp))
+    )
+}
+
+@Composable
+private fun MacroValue(color: Color, grams: Double) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 3.dp)) {
+        Box(modifier = Modifier.size(size = 6.dp).background(color = color, shape = RoundedCornerShape(size = 2.dp)))
+        Text(text = "${grams.roundToInt()}g", style = typography.bold12, color = colors.ink)
+    }
+}
+
+@Composable
+private fun QuickPicks(edit: EntryEdit, onAmountChanged: (Double) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
+        StepButton(
+            label = "−",
+            description = Res.string.decrease_portion,
+            enabled = edit.amount - edit.step > 0,
+            onClick = { onAmountChanged(edit.stepped(up = false)) }
+        )
+        edit.presets.forEach { preset ->
+            val isSelected = preset == edit.amount
+            val shape = RoundedCornerShape(size = 10.dp)
+            Box(
+                modifier = Modifier
+                    .weight(weight = 1f)
+                    .height(height = 40.dp)
+                    .clip(shape = shape)
+                    .background(color = if (isSelected) colors.accentSoft else colors.surface)
+                    .border(width = 1.dp, color = if (isSelected) colors.accent else colors.line, shape = shape)
+                    .clickable(role = Role.Button) { onAmountChanged(preset) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = preset.toCleanString() + edit.unit.asSuffix(),
+                    style = typography.bold13,
+                    color = if (isSelected) colors.accentInk else colors.ink,
+                    maxLines = 1
+                )
+            }
+        }
+        StepButton(
+            label = "+",
+            description = Res.string.increase_portion,
+            enabled = true,
+            onClick = { onAmountChanged(edit.stepped(up = true)) }
+        )
     }
 }
 
@@ -288,11 +468,11 @@ private fun StepButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
-    val shape = RoundedCornerShape(size = 14.dp)
+    val shape = RoundedCornerShape(size = 10.dp)
     val text = stringResource(resource = description)
     Box(
         modifier = Modifier
-            .size(size = 48.dp)
+            .size(width = 42.dp, height = 40.dp)
             .clip(shape = shape)
             .border(width = 1.dp, color = colors.line, shape = shape)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
@@ -304,111 +484,49 @@ private fun StepButton(
 }
 
 @Composable
-private fun TotalsCard(edit: EntryEdit) {
-    val change = edit.caloriesChange
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape = RoundedCornerShape(size = 18.dp))
-            .background(color = colors.hero)
-            .padding(all = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(space = 10.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = edit.calories.withThousands(), style = typography.bold32, color = colors.ink, modifier = Modifier.alignByBaseline())
-            Text(
-                text = " " + stringResource(resource = Res.string.kcal_text),
-                style = typography.regular13,
-                color = colors.muted,
-                modifier = Modifier.alignByBaseline().weight(weight = 1f)
-            )
-            Text(
-                text = when {
-                    change == 0 -> stringResource(resource = Res.string.unchanged)
-                    change > 0 -> "+$change " + stringResource(resource = Res.string.kcal_text)
-                    else -> "−${abs(change)} " + stringResource(resource = Res.string.kcal_text)
-                },
-                style = typography.bold12,
-                color = when {
-                    change == 0 -> colors.muted
-                    change > 0 -> colors.warmInk
-                    else -> colors.accentInk
-                },
-                modifier = Modifier
-                    .clip(shape = RoundedCornerShape(size = 8.dp))
-                    .background(color = colors.surface)
-                    .padding(horizontal = 8.dp, vertical = 3.dp)
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-            MacroTile(Modifier.weight(weight = 1f), Res.string.protein, colors.protein, edit.protein, edit.log.protein)
-            MacroTile(Modifier.weight(weight = 1f), Res.string.carbs, colors.carbs, edit.carbs, edit.log.carbs)
-            MacroTile(Modifier.weight(weight = 1f), Res.string.fat, colors.fat, edit.fat, edit.log.fat)
-        }
-    }
-}
-
-@Composable
-private fun MacroTile(
-    modifier: Modifier,
-    label: StringResource,
-    color: Color,
-    grams: Double,
-    wasGrams: Double
-) {
-    Column(
-        modifier = modifier
-            .clip(shape = RoundedCornerShape(size = 12.dp))
-            .background(color = colors.surface)
-            .padding(horizontal = 10.dp, vertical = 8.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 5.dp)) {
-            Box(modifier = Modifier.size(size = 7.dp).background(color = color, shape = RoundedCornerShape(size = 2.dp)))
-            Text(text = stringResource(resource = label), style = typography.regular11, color = colors.muted)
-        }
-        Text(text = "${grams.roundToInt()}g", style = typography.bold16, color = colors.ink)
-        Text(
-            text = if (grams.roundToInt() == wasGrams.roundToInt()) " " else stringResource(resource = Res.string.was_value_gram, wasGrams.roundToInt()),
-            style = typography.regular11,
-            color = colors.faint
-        )
-    }
-}
-
-@Composable
-private fun MealSection(selected: MealType, onMealChanged: (MealType) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        Text(text = stringResource(resource = Res.string.meal), style = typography.bold12, color = colors.muted)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(size = 14.dp))
-                .background(color = colors.divider)
-                .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 14.dp))
-                .padding(all = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
-        ) {
-            MealType.entries.forEach { mealType ->
-                val isSelected = mealType == selected
-                Box(
-                    modifier = Modifier
-                        .weight(weight = 1f)
-                        .height(height = 38.dp)
-                        .clip(shape = RoundedCornerShape(size = 10.dp))
-                        .background(color = if (isSelected) colors.surface else Color.Transparent)
-                        .clickable(role = Role.Tab) { onMealChanged(mealType) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(resource = mealType.title),
-                        style = typography.bold12,
-                        color = if (isSelected) colors.ink else colors.muted,
-                        maxLines = 1
-                    )
+private fun Keypad(onKey: (Char) -> Unit) {
+    val backspaceText = stringResource(resource = Res.string.backspace)
+    Column(verticalArrangement = Arrangement.spacedBy(space = 5.dp)) {
+        keypadKeys.chunked(size = 3).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(space = 5.dp)) {
+                row.forEach { key ->
+                    val isAction = key == KEY_DECIMAL || key == KEY_BACKSPACE
+                    Box(
+                        modifier = Modifier
+                            .weight(weight = 1f)
+                            .height(height = 46.dp)
+                            .clip(shape = RoundedCornerShape(size = 10.dp))
+                            .background(color = if (isAction) colors.divider else colors.background)
+                            .clickable(role = Role.Button) { onKey(key) }
+                            .semantics { if (key == KEY_BACKSPACE) contentDescription = backspaceText },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = key.toString(), style = typography.bold18, color = colors.ink)
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun Double.servingsText(): String {
+    val servings = round(this / FULL_RECIPE_PERCENT * 100) / 100
+    return if (servings == 1.0) {
+        stringResource(resource = Res.string.one_serving)
+    } else {
+        stringResource(resource = Res.string.servings_value, servings.toCleanString())
+    }
+}
+
+/** "g" and "%" sit right against the number; longer units get a space. */
+private fun String.asSuffix(): String = if (length <= 2) this else " $this"
+
+@Composable
+private fun MealType.tint(): Color = when (this) {
+    MealType.BREAKFAST, MealType.SNACK -> colors.warmInk
+    MealType.LUNCH -> colors.accentInk
+    MealType.DINNER -> colors.nightInk
 }
 
 @Preview(showBackground = true)
@@ -416,14 +534,16 @@ private fun MealSection(selected: MealType, onMealChanged: (MealType) -> Unit) {
 private fun PreviewEntryEdit() {
     MacroTrackTheme {
         EntryEditContent(
-            modifier = Modifier.background(color = colors.surface).padding(all = 20.dp),
+            modifier = Modifier.background(color = colors.surface).padding(all = 16.dp),
             edit = EntryEdit(
                 log = dummyFoodLog.copy(foodName = "Chicken rice bowl", calories = 620, protein = 45.0, carbs = 70.0, fat = 14.0, weight = 0.0),
                 originalAmount = 100.0,
-                amount = 75.0,
                 unit = "%"
-            ),
+            ).withAmount(value = 75.0),
+            isKeypadOpenInitially = true,
             onAmountChanged = {},
+            onTypingStarted = {},
+            onKey = {},
             onMealChanged = {},
             onClose = {},
             onSave = {},

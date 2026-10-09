@@ -21,7 +21,7 @@ class EntryEditTest {
 
     @Test
     fun scalesMacrosFromTheLoggedPortion() {
-        val edit = EntryEdit(log = yogurt, originalAmount = 200.0, unit = "g").copy(amount = 150.0)
+        val edit = EntryEdit(log = yogurt, originalAmount = 200.0, unit = "g").withAmount(value = 150.0)
         assertEquals(143, edit.calories)
         assertEquals(15.0, edit.protein)
         assertEquals(-47, edit.caloriesChange)
@@ -31,7 +31,7 @@ class EntryEditTest {
 
     @Test
     fun recipeKeepsZeroWeightAndScalesByPercentage() {
-        val edit = EntryEdit(log = bowl, originalAmount = 100.0, unit = "%").copy(amount = 75.0)
+        val edit = EntryEdit(log = bowl, originalAmount = 100.0, unit = "%").withAmount(value = 75.0)
         assertTrue(edit.isRecipe)
         assertEquals(465, edit.calories)
         assertEquals(0.0, edit.weight)
@@ -55,7 +55,47 @@ class EntryEditTest {
         assertEquals(210.0, edit.stepped(up = true))
         val banana = EntryEdit(log = yogurt.copy(weight = 1.0), originalAmount = 1.0, unit = "pc")
         assertEquals(listOf(0.5, 1.0, 1.5, 2.0), banana.presets)
-        assertEquals(0.5, banana.copy(amount = 0.5).stepped(up = false))
+        assertEquals(0.5, banana.withAmount(value = 0.5).stepped(up = false))
+    }
+
+    @Test
+    fun recipeBaseCaloriesIsAFullServing() {
+        val edit = EntryEdit(log = bowl.copy(calories = 310), originalAmount = 50.0, unit = "%")
+        assertEquals(620, edit.baseCalories)
+    }
+
+    @Test
+    fun firstKeyReplacesTheAmountThenKeysAppend() {
+        val edit = EntryEdit(log = yogurt, originalAmount = 200.0, unit = "g")
+        val typed = edit.typed(key = '1').typed(key = '5').typed(key = '0')
+        assertEquals("150", typed.amountText)
+        assertEquals(150.0, typed.amount)
+        assertFalse(typed.replaceOnType)
+        assertEquals("1505", typed.typed(key = '5').amountText)
+        assertEquals("1505", typed.typed(key = '5').typed(key = '5').amountText)
+    }
+
+    @Test
+    fun decimalAndBackspaceRules() {
+        val edit = EntryEdit(log = yogurt, originalAmount = 200.0, unit = "g")
+        val half = edit.typed(key = KEY_DECIMAL).typed(key = '5')
+        assertEquals("0.5", half.amountText)
+        assertEquals("0.5", half.typed(key = KEY_DECIMAL).amountText)
+        assertEquals("0.5", half.typed(key = '2').amountText)
+        assertEquals("7", edit.typed(key = '0').typed(key = '7').amountText)
+        assertEquals("x", edit.typed(key = 'x').let { if (it == edit) "x" else it.amountText })
+    }
+
+    @Test
+    fun backspaceCanClearAndBlocksSaving() {
+        val cleared = EntryEdit(log = yogurt, originalAmount = 200.0, unit = "g").typed(key = KEY_BACKSPACE)
+        assertEquals("", cleared.amountText)
+        assertEquals(0.0, cleared.amount)
+        assertFalse(cleared.canSave)
+        val picked = cleared.withAmount(value = 100.0)
+        assertEquals("100", picked.amountText)
+        assertTrue(picked.replaceOnType)
+        assertTrue(picked.canSave)
     }
 
     @Test

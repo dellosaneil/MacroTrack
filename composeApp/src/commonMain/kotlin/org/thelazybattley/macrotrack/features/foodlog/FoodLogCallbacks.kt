@@ -16,6 +16,8 @@ interface FoodLogCallbacks {
 
     fun onOpenEntry(log: FoodLog)
     fun onEntryAmountChanged(amount: Double)
+    fun onEntryTypingStarted()
+    fun onEntryKey(key: Char)
     fun onEntryMealChanged(mealType: MealType)
     fun onCloseEntry()
     fun onSaveEntry()
@@ -46,6 +48,8 @@ interface FoodLogCallbacks {
 
             override fun onOpenEntry(log: FoodLog) = Unit
             override fun onEntryAmountChanged(amount: Double) = Unit
+            override fun onEntryTypingStarted() = Unit
+            override fun onEntryKey(key: Char) = Unit
             override fun onEntryMealChanged(mealType: MealType) = Unit
             override fun onCloseEntry() = Unit
             override fun onSaveEntry() = Unit
