@@ -26,10 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,11 +39,15 @@ import macrotrack.composeapp.generated.resources.add
 import macrotrack.composeapp.generated.resources.add_to_value
 import macrotrack.composeapp.generated.resources.c_value_gram
 import macrotrack.composeapp.generated.resources.f_value_gram
+import macrotrack.composeapp.generated.resources.goal_not_recorded
 import macrotrack.composeapp.generated.resources.ic_meal_breakfast
 import macrotrack.composeapp.generated.resources.ic_meal_dinner
 import macrotrack.composeapp.generated.resources.ic_meal_lunch
 import macrotrack.composeapp.generated.resources.ic_meal_snack
+import macrotrack.composeapp.generated.resources.ic_nav_progress
 import macrotrack.composeapp.generated.resources.ic_plus
+import macrotrack.composeapp.generated.resources.ic_trend_down
+import macrotrack.composeapp.generated.resources.ic_trend_flat
 import macrotrack.composeapp.generated.resources.items
 import macrotrack.composeapp.generated.resources.items_kcal
 import macrotrack.composeapp.generated.resources.kcal
@@ -63,8 +67,10 @@ import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFoodLog
+import org.thelazybattley.macrotrack.features.foodlog.DayGoal
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
@@ -74,7 +80,6 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
-
 
 @Composable
 fun FoodLogTabScreen(
@@ -167,17 +172,65 @@ private fun FoodLogHeader(
 ) {
     val date = viewState.selectedDate
     val dayOfWeek = date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+    val dateText = "$dayOfWeek, ${date.toAbbreviatedMonthDay()}"
+    val dayGoal = viewState.dayGoal
     Column(modifier = modifier) {
-        Text(
-            text = "$dayOfWeek, ${date.toAbbreviatedMonthDay()}",
-            style = typography.medium13,
-            color = colors.muted
-        )
+        if (dayGoal == null) {
+            Text(text = dateText, style = typography.medium13, color = colors.muted)
+        } else {
+            DayGoalLabel(dayGoal = dayGoal, dateText = dateText)
+        }
         Text(
             text = if (isToday) stringResource(resource = Res.string.today) else dayOfWeek,
             style = typography.bold32,
             color = colors.ink
         )
+        if (dayGoal?.isEstimated == true) {
+            Text(
+                text = stringResource(resource = Res.string.goal_not_recorded),
+                style = typography.regular11,
+                color = colors.muted
+            )
+        }
+    }
+}
+
+/** The label above the title: the selected day's nutrition goal, then its date. */
+@Composable
+private fun DayGoalLabel(
+    dayGoal: DayGoal,
+    dateText: String
+) {
+    val (icon, background, tint) = when (dayGoal.goal) {
+        Goal.LOSE_WEIGHT -> Triple(Res.drawable.ic_trend_down, colors.accentSoft, colors.accentInk)
+        Goal.MAINTAIN_WEIGHT -> Triple(Res.drawable.ic_trend_flat, colors.nightSoft, colors.nightInk)
+        Goal.GAIN_WEIGHT -> Triple(Res.drawable.ic_nav_progress, colors.warmSoft, colors.warmInk)
+    }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(size = 8.dp))
+                .background(color = background)
+                .padding(horizontal = 8.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 5.dp)
+        ) {
+            Icon(
+                painter = painterResource(resource = icon),
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(size = 13.dp)
+            )
+            Text(
+                text = stringResource(resource = dayGoal.goal.title),
+                style = typography.bold12,
+                color = tint
+            )
+        }
+        Text(text = dateText, style = typography.medium13, color = colors.muted)
     }
 }
 

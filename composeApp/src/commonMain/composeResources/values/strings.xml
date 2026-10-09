@@ -335,6 +335,7 @@
     <string name="this_month">This month</string>
     <string name="month_change_with_entry">%1$s kg since %2$s with this entry</string>
     <string name="replaces_entry">Replaces the %1$s kg already logged for this date</string>
+    <string name="goal_not_recorded">Not recorded for this day · showing your current goal</string>
     <plurals name="items">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>

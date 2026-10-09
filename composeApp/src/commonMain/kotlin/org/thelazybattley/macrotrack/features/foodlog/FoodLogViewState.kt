@@ -3,6 +3,8 @@ package org.thelazybattley.macrotrack.features.foodlog
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.MacroGoals
+import org.thelazybattley.macrotrack.domain.model.DailyGoal
+import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
@@ -23,6 +25,10 @@ data class FoodLogViewState(
     val filteredFoodLog: List<FoodLog> = emptyList(),
     val allFoodLog: List<FoodLog> = emptyList(),
     val macroGoals: MacroGoals? = null,
+    val dayGoal: DayGoal? = null,
+    val dailyGoals: List<DailyGoal> = emptyList(),
+    val currentGoal: Goal? = null,
+    val currentMacroGoals: MacroGoals? = null,
     val totalFoodMacros: FoodMacros? = null,
     val navigateMealTypeParameter : MealType? = null,
     val availableDates: List<LocalDate> = emptyList(),

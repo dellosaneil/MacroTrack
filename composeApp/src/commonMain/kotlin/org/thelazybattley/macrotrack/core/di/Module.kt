@@ -1,5 +1,9 @@
 package org.thelazybattley.macrotrack.core.di
 
+import org.thelazybattley.macrotrack.data.repository.DailyGoalRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.DailyGoalRepository
+import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.dailygoal.SaveDailyGoalUseCase
 import org.thelazybattley.macrotrack.features.logweight.LogWeightViewModel
 import org.thelazybattley.macrotrack.features.measurements.MeasurementUnitPreference
 import org.thelazybattley.macrotrack.features.measurements.detail.MeasurementDetailViewModel
@@ -74,6 +78,7 @@ val sharedModule = module {
     single { get<AppDatabase>().foodLogDao() }
     single { get<AppDatabase>().weightDao() }
     single { get<AppDatabase>().measurementDao() }
+    single { get<AppDatabase>().dailyGoalDao() }
     single { MeasurementUnitPreference() }
 }
 
@@ -84,6 +89,7 @@ val repositoryModule = module {
     singleOf(::FoodLogRepositoryImpl) { bind<FoodLogRepository>() }
     singleOf(::WeightRepositoryImpl) { bind<WeightRepository>() }
     singleOf(::MeasurementRepositoryImpl) { bind<MeasurementRepository>() }
+    singleOf(::DailyGoalRepositoryImpl) { bind<DailyGoalRepository>() }
 }
 
 val useCaseModule = module {
@@ -113,6 +119,8 @@ val useCaseModule = module {
     factoryOf(::DeleteFoodUseCase)
     factoryOf(::GetAllMeasurementsUseCase)
     factoryOf(::InsertMeasurementsUseCase)
+    factoryOf(::GetAllDailyGoalsUseCase)
+    factoryOf(::SaveDailyGoalUseCase)
 }
 
 val viewModelModule = module {

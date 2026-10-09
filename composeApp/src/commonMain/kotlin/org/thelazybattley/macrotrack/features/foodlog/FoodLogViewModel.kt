@@ -6,14 +6,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.dailygoal.SaveDailyGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
@@ -25,6 +30,8 @@ class FoodLogViewModel(
     private val deleteFoodLogUseCase: DeleteFoodLogUseCase,
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
     private val getAllFoodUseCase: GetAllFoodUseCase,
+    private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase,
+    private val saveDailyGoalUseCase: SaveDailyGoalUseCase,
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -111,23 +118,48 @@ class FoodLogViewModel(
 
     private fun updateMacroGoals() {
         viewModelScope.launch {
-            getUserDetailsUseCase().collect { user ->
-                if (user == null) return@collect
-                val goalMacros = calculateMacrosGoalUseCase(
-                    height = user.height,
-                    weight = user.weight,
-                    age = user.age,
-                    gender = user.sex,
-                    activityLevel = user.activityLevel,
-                    goal = user.goal
-                )
-                _state.update { currentState ->
-                    currentState.copy(
-                        macroGoals = goalMacros
+            combine(
+                flow = flow { emitAll(getUserDetailsUseCase()) },
+                flow2 = getAllDailyGoalsUseCase()
+            ) { user, dailyGoals ->
+                val today = getCurrentDate()
+                val currentMacroGoals = user?.let {
+                    calculateMacrosGoalUseCase(
+                        height = it.height,
+                        weight = it.weight,
+                        age = it.age,
+                        gender = it.sex,
+                        activityLevel = it.activityLevel,
+                        goal = it.goal
                     )
                 }
-            }
+                if (user != null && currentMacroGoals != null) {
+                    // Record today's goal so past days keep the goal they were tracked with.
+                    val todayGoal = DailyGoal(date = today, goal = user.goal, macroGoals = currentMacroGoals)
+                    if (dailyGoals.find { it.date == today } != todayGoal) {
+                        saveDailyGoalUseCase(dailyGoal = todayGoal)
+                    }
+                }
+                _state.update { currentState ->
+                    currentState.copy(
+                        dailyGoals = dailyGoals,
+                        currentGoal = user?.goal,
+                        currentMacroGoals = currentMacroGoals
+                    ).withDayGoal()
+                }
+            }.collect()
         }
+    }
+
+    private fun FoodLogViewState.withDayGoal(): FoodLogViewState {
+        val dayGoal = resolveDayGoal(
+            date = selectedDate,
+            today = getCurrentDate(),
+            dailyGoals = dailyGoals,
+            currentGoal = currentGoal,
+            currentMacroGoals = currentMacroGoals
+        )
+        return copy(dayGoal = dayGoal, macroGoals = dayGoal?.macroGoals)
     }
 
     override fun onNavigate(mealType: MealType) {
@@ -158,7 +190,7 @@ class FoodLogViewModel(
             filterFoodLogsByDate(foodLog = filteredLogs)
             currentState.copy(
                 selectedDate = date,
-            )
+            ).withDayGoal()
         }
     }
 }
