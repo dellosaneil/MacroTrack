@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -113,6 +114,12 @@ private fun AddMealScreen(
     ) { innerPadding ->
         val items = viewState.visibleItems
         val selectedItems = viewState.selection.associateBy { it.key }
+        val listState = rememberLazyListState()
+        // The list re-sorts once the recently logged order loads; keep the list pinned to the top
+        // instead of following the previous first item into the middle.
+        LaunchedEffect(key1 = items.firstOrNull()?.key) {
+            listState.scrollToItem(index = 0)
+        }
         Column(
             modifier = Modifier
                 .padding(paddingValues = innerPadding)
@@ -160,6 +167,7 @@ private fun AddMealScreen(
                 modifier = Modifier
                     .weight(weight = 1f)
                     .fillMaxWidth(),
+                state = listState,
                 contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(space = 8.dp)
             ) {
