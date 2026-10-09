@@ -1,9 +1,11 @@
 package org.thelazybattley.macrotrack.ui.navigation
 
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.ic_nav_insights
 import macrotrack.composeapp.generated.resources.ic_nav_log
 import macrotrack.composeapp.generated.resources.ic_nav_profile
 import macrotrack.composeapp.generated.resources.ic_nav_progress
+import macrotrack.composeapp.generated.resources.insights
 import macrotrack.composeapp.generated.resources.log
 import macrotrack.composeapp.generated.resources.profile
 import macrotrack.composeapp.generated.resources.progress
@@ -23,6 +25,11 @@ sealed class AppDestinations {
             icon = Res.drawable.ic_nav_log
         )
 
+        object Insights : BottomNavigation(
+            route = "insights", label = Res.string.insights,
+            icon = Res.drawable.ic_nav_insights
+        )
+
         object Progress : BottomNavigation(
             route = "progress", label = Res.string.progress,
             icon = Res.drawable.ic_nav_progress
@@ -36,7 +43,7 @@ sealed class AppDestinations {
         companion object {
             val entries: List<BottomNavigation>
                 get() = listOf(
-                    Log, Progress, Profile
+                    Log, Insights, Progress, Profile
                 )
         }
     }

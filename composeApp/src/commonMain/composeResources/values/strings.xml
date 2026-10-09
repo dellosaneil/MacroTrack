@@ -336,6 +336,21 @@
     <string name="month_change_with_entry">%1$s kg since %2$s with this entry</string>
     <string name="replaces_entry">Replaces the %1$s kg already logged for this date</string>
     <string name="goal_not_recorded">Not recorded for this day · showing your current goal</string>
+    <string name="insights">Insights</string>
+    <string name="calories_vs_goal">Calories vs goal</string>
+    <string name="avg_kcal_per_day">avg kcal / day</string>
+    <string name="on_target">On target</string>
+    <string name="logged_days_on_target">%1$d of %2$d logged days</string>
+    <string name="within_ten_percent">Within 10% of goal</string>
+    <string name="off_target">Off target</string>
+    <string name="that_days_goal">That day's goal</string>
+    <string name="average_macros_vs_targets">Average macros vs targets</string>
+    <string name="macro_on_track">%1$d% of target · on track</string>
+    <string name="macro_short">%1$d% of target · %2$dg short on average</string>
+    <string name="macro_over">%1$d% of target · %2$dg over on average</string>
+    <string name="where_calories_come_from">Where your calories come from</string>
+    <string name="most_logged">Most logged</string>
+    <string name="no_food_logged_in_range">No food logged in this period yet</string>
     <plurals name="items">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>
@@ -347,5 +362,9 @@
     <plurals name="save_measurements">
         <item quantity="one">Save %1$d measurement</item>
         <item quantity="other">Save %1$d measurements</item>
+    </plurals>
+    <plurals name="servings">
+        <item quantity="one">%1$d serving</item>
+        <item quantity="other">%1$d servings</item>
     </plurals>
 </resources>

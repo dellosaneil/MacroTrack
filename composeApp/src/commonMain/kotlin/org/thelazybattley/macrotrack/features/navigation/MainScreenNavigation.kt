@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.thelazybattley.macrotrack.features.foodlog.ui.FoodLogTabScreen
+import org.thelazybattley.macrotrack.features.insights.ui.InsightsScreen
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileScreen
 import org.thelazybattley.macrotrack.features.progress.ui.ProgressScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
@@ -57,6 +58,9 @@ fun MainScreenNavigation(
                 FoodLogTabScreen { route ->
                     onNavigate(route)
                 }
+            }
+            composable(route = AppDestinations.BottomNavigation.Insights.route) {
+                InsightsScreen(modifier = Modifier.fillMaxSize())
             }
             composable(route = AppDestinations.BottomNavigation.Progress.route) {
                 ProgressScreen(modifier = Modifier.fillMaxSize()) { route ->

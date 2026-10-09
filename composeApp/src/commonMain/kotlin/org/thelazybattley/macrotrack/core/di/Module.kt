@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.core.di
 
+import org.thelazybattley.macrotrack.features.insights.InsightsViewModel
 import org.thelazybattley.macrotrack.data.repository.DailyGoalRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.DailyGoalRepository
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
@@ -139,6 +140,7 @@ val viewModelModule = module {
     viewModelOf(::MeasurementDetailViewModel)
     viewModelOf(::ProgressViewModel)
     viewModelOf(::LogWeightViewModel)
+    viewModelOf(::InsightsViewModel)
 }
 
 fun initKoin() {
