@@ -86,53 +86,23 @@ class CreateRecipeViewModel(
     }
 
     override fun onAddIngredient(food: Food) {
+        if (_state.value.selectedIngredients.any { it.name == food.name }) return
         val updatedIngredients = _state.value.selectedIngredients.plus(element = food)
         updateIngredients(updatedIngredients = updatedIngredients)
     }
 
-    override fun customizeIngredientWeight(name: String) {
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedIngredient = currentState.ingredients.firstOrNull { it.name == name }
-            )
-        }
-    }
-
-    override fun closeCustomWeight() {
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedIngredient = null
-            )
-        }
-    }
-
-    override fun addCustomizedIngredient() {
+    override fun onIngredientAmountChanged(name: String, amount: Double) {
+        if (amount <= 0) return
         val currentState = _state.value
-        if (currentState.highlightedIngredient == null) return
-        onAddIngredient(food = currentState.highlightedIngredient)
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedIngredient = null
+        val originalFood = currentState.ingredients.find { it.name == name } ?: return
+        val updatedIngredients = currentState.selectedIngredients.map { food ->
+            if (food.name != name) return@map food
+            food.copy(
+                macros = calculateAdjustMacrosUseCase(portionSize = amount, originalFood = originalFood),
+                weight = amount
             )
         }
-    }
-
-    override fun updateWeight(portionSize: Double) {
-        _state.update { currentState ->
-            val originalFood =
-                currentState.ingredients
-                    .find { it.name == currentState.highlightedIngredient?.name }
-                    ?: return@update currentState
-            currentState.copy(
-                highlightedIngredient = currentState.highlightedIngredient?.copy(
-                    macros = calculateAdjustMacrosUseCase(
-                        portionSize = portionSize,
-                        originalFood = originalFood
-                    ),
-                    weight = portionSize
-                )
-            )
-        }
+        updateIngredients(updatedIngredients = updatedIngredients)
     }
 
     override fun onSaveRecipe() {
@@ -186,7 +156,7 @@ class CreateRecipeViewModel(
     }
 
     override fun removeIngredient(food: Food) {
-        val updatedIngredients = _state.value.selectedIngredients.minus(element = food)
+        val updatedIngredients = _state.value.selectedIngredients.filterNot { it.name == food.name }
         updateIngredients(updatedIngredients = updatedIngredients)
     }
 

@@ -315,6 +315,14 @@
     <string name="value_with_unit">%1$s %2$s</string>
     <string name="no_weight_logged_yet">No weight logged yet</string>
     <string name="no_entries_for_period">No entries for this period</string>
+    <string name="recipe_name">Recipe name</string>
+    <string name="serving_amount">Serving amount</string>
+    <string name="preview_per_value">PREVIEW · PER %1$s %2$s</string>
+    <string name="auto_calculated">Auto-calculated</string>
+    <string name="total">Total</string>
+    <string name="add_ingredients">Add ingredients</string>
+    <string name="no_ingredients_yet">No ingredients yet. Add some from the list below.</string>
+    <string name="macro_split">%1$s protein · %2$s carbs · %3$s fat</string>
     <plurals name="items">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>
