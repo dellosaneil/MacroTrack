@@ -18,6 +18,9 @@ import androidx.navigation.navArgument
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
+import org.thelazybattley.macrotrack.features.measurements.detail.MeasurementDetailScreen
+import org.thelazybattley.macrotrack.features.measurements.log.MeasurementsLogScreen
+import org.thelazybattley.macrotrack.features.measurements.overview.MeasurementsScreen
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.profile.nutritiongoals.ui.NutritionGoalsScreen
 import org.thelazybattley.macrotrack.features.profile.personalinformation.ui.PersonalInformationScreen
@@ -26,6 +29,7 @@ import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEASUREMENT_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
@@ -137,6 +141,47 @@ fun AppBottomNav() {
                     },
                     onNavigateToPersonalInformation = {
                         navController.navigate(route = AppDestinations.Profile.PersonalInfo.route)
+                    }
+                )
+            }
+            composable(
+                route = AppDestinations.Profile.BodyMeasurements.route
+            ) {
+                MeasurementsScreen(
+                    modifier = Modifier,
+                    onPopBackStack = {
+                        navController.popBackStack()
+                    },
+                    onNavigate = { route ->
+                        navController.navigate(route = route)
+                    }
+                )
+            }
+            composable(
+                route = AppDestinations.Root.MeasurementsLog.route
+            ) {
+                MeasurementsLogScreen(
+                    modifier = Modifier,
+                    onPopBackStack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            composable(
+                route = AppDestinations.Root.MeasurementDetail.routeWithArgs!!,
+                arguments = listOf(
+                    navArgument(name = MEASUREMENT_TYPE) {
+                        type = NavType.StringType
+                    }
+                )
+            ) {
+                MeasurementDetailScreen(
+                    modifier = Modifier,
+                    onPopBackStack = {
+                        navController.popBackStack()
+                    },
+                    onNavigate = { route ->
+                        navController.navigate(route = route)
                     }
                 )
             }

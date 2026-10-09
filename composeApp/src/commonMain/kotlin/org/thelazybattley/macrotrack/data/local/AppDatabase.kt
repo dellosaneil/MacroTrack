@@ -13,17 +13,19 @@ import org.thelazybattley.macrotrack.data.local.dao.FoodDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
 import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
 import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
+import org.thelazybattley.macrotrack.data.local.dao.MeasurementDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
+import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
-    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class],
-    version = 5, exportSchema = true,
+    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class],
+    version = 6, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -37,6 +39,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDetailsDao(): UserDetailsDao
     abstract fun foodLogDao(): FoodLogDao
     abstract fun weightDao(): WeightDao
+    abstract fun measurementDao(): MeasurementDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -62,6 +65,15 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                 connection.execSQL(
                     "ALTER TABLE UserDetailsEntity ADD COLUMN targetSetDate TEXT"
+                )
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `MeasurementEntity` (`date` TEXT NOT NULL, `type` TEXT NOT NULL, " +
+                        "`valueCm` REAL NOT NULL, `note` TEXT, PRIMARY KEY(`date`, `type`))"
                 )
             }
         }

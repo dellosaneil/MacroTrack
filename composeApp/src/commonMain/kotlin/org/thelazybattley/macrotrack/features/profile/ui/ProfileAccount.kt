@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.account
+import macrotrack.composeapp.generated.resources.body_measurements
 import macrotrack.composeapp.generated.resources.goal_with_calories
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.not_set
@@ -89,6 +90,11 @@ fun ProfileAccount(
             AccountRow(
                 label = Res.string.weight_history,
                 onClick = { onNavigate(ProfileSectionEnum.WEIGHT_HISTORY) }
+            )
+            HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            AccountRow(
+                label = Res.string.body_measurements,
+                onClick = { onNavigate(ProfileSectionEnum.BODY_MEASUREMENTS) }
             )
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             AccountRow(
@@ -163,5 +169,6 @@ private fun PreviewProfileAccount() {
 enum class ProfileSectionEnum {
     PERSONAL_INFO,
     NUTRITION_GOALS,
-    WEIGHT_HISTORY
+    WEIGHT_HISTORY,
+    BODY_MEASUREMENTS
 }

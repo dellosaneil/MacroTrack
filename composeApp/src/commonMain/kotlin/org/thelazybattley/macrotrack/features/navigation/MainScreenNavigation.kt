@@ -3,7 +3,6 @@ package org.thelazybattley.macrotrack.features.navigation
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.thelazybattley.macrotrack.features.foodlog.ui.FoodLogTabScreen
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileScreen
+import org.thelazybattley.macrotrack.features.progress.ui.ProgressScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 
@@ -59,7 +59,9 @@ fun MainScreenNavigation(
                 }
             }
             composable(route = AppDestinations.BottomNavigation.Progress.route) {
-                Text("progress")
+                ProgressScreen(modifier = Modifier.fillMaxSize()) { route ->
+                    onNavigate(route)
+                }
             }
             composable(route = AppDestinations.BottomNavigation.Profile.route) {
                 ProfileScreen(

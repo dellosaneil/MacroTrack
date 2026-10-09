@@ -63,17 +63,28 @@ sealed class AppDestinations {
         }
 
         object MainScreen : Root(route = "main")
+
+        object MeasurementsLog : Root(route = "measurements_log")
+
+        object MeasurementDetail :
+            Root(route = "measurement_detail", routeWithArgs = "measurement_detail/{$MEASUREMENT_TYPE}") {
+            fun createRoute(type: String): String {
+                return "$route/$type"
+            }
+        }
     }
 
     sealed class Profile(val route: String) : AppDestinations() {
         object PersonalInfo : Profile(route = ProfileSectionEnum.PERSONAL_INFO.name)
         object NutritionGoals : Profile(route = ProfileSectionEnum.NUTRITION_GOALS.name)
         object WeightHistory : Profile(route = ProfileSectionEnum.WEIGHT_HISTORY.name)
+        object BodyMeasurements : Profile(route = ProfileSectionEnum.BODY_MEASUREMENTS.name)
     }
 
     companion object {
         const val MEAL_TYPE = "mealType"
         const val RECIPE_NAME = "recipeName"
         const val FOOD_NAME = "foodName"
+        const val MEASUREMENT_TYPE = "measurementType"
     }
 }

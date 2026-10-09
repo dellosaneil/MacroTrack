@@ -46,7 +46,8 @@ private const val TAP_RADIUS_DP = 24
 fun WeightHistoryGraph(
     modifier: Modifier = Modifier,
     weightList: List<Weight>,
-    period: WeightPeriod
+    period: WeightPeriod,
+    unitLabel: String = "kg"
 ) {
     if (weightList.isEmpty()) return
     val textMeasurer = rememberTextMeasurer()
@@ -140,7 +141,7 @@ fun WeightHistoryGraph(
         if (selectedIndex in points.indices) {
             val weight = weightList[selectedIndex]
             val tooltip = textMeasurer.measure(
-                text = "${weight.weight.formatKg()} kg · ${weight.date.toAbbreviatedMonthDay()}",
+                text = "${weight.weight.formatKg()} $unitLabel · ${weight.date.toAbbreviatedMonthDay()}",
                 style = tooltipStyle
             )
             val padding = 6.dp.toPx()

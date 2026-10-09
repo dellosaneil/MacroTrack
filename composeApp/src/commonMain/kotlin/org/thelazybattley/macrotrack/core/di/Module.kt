@@ -1,5 +1,14 @@
 package org.thelazybattley.macrotrack.core.di
 
+import org.thelazybattley.macrotrack.features.measurements.MeasurementUnitPreference
+import org.thelazybattley.macrotrack.features.measurements.detail.MeasurementDetailViewModel
+import org.thelazybattley.macrotrack.features.measurements.log.MeasurementsLogViewModel
+import org.thelazybattley.macrotrack.features.measurements.overview.MeasurementsViewModel
+import org.thelazybattley.macrotrack.features.progress.ProgressViewModel
+import org.thelazybattley.macrotrack.data.repository.MeasurementRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.MeasurementRepository
+import org.thelazybattley.macrotrack.domain.usecase.measurement.GetAllMeasurementsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.measurement.InsertMeasurementsUseCase
 import getRoomDatabase
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -63,6 +72,8 @@ val sharedModule = module {
     single { get<AppDatabase>().userDetailsDao() }
     single { get<AppDatabase>().foodLogDao() }
     single { get<AppDatabase>().weightDao() }
+    single { get<AppDatabase>().measurementDao() }
+    single { MeasurementUnitPreference() }
 }
 
 val repositoryModule = module {
@@ -71,6 +82,7 @@ val repositoryModule = module {
     singleOf(::UserDetailsRepositoryImpl) { bind<UserDetailsRepository>() }
     singleOf(::FoodLogRepositoryImpl) { bind<FoodLogRepository>() }
     singleOf(::WeightRepositoryImpl) { bind<WeightRepository>() }
+    singleOf(::MeasurementRepositoryImpl) { bind<MeasurementRepository>() }
 }
 
 val useCaseModule = module {
@@ -98,6 +110,8 @@ val useCaseModule = module {
     factoryOf(::GetAllWeightUseCase)
     factoryOf(::UpdateFoodUseCase)
     factoryOf(::DeleteFoodUseCase)
+    factoryOf(::GetAllMeasurementsUseCase)
+    factoryOf(::InsertMeasurementsUseCase)
 }
 
 val viewModelModule = module {
@@ -111,6 +125,10 @@ val viewModelModule = module {
     viewModelOf(::PersonalInformationViewModel)
     viewModelOf(::NutritionGoalsViewModel)
     viewModelOf(::WeightHistoryViewModel)
+    viewModelOf(::MeasurementsViewModel)
+    viewModelOf(::MeasurementsLogViewModel)
+    viewModelOf(::MeasurementDetailViewModel)
+    viewModelOf(::ProgressViewModel)
 }
 
 fun initKoin() {

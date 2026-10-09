@@ -274,6 +274,47 @@
     <string name="base_serving">Base serving %1$s %2$s</string>
     <string name="recipe_full_serving">1 serving = 100%</string>
     <string name="percent_of_serving">%1$s% of a serving</string>
+    <string name="upper_body">Upper body</string>
+    <string name="core">Core</string>
+    <string name="lower_body">Lower body</string>
+    <string name="neck">Neck</string>
+    <string name="shoulders">Shoulders</string>
+    <string name="chest">Chest</string>
+    <string name="left_bicep">Left bicep</string>
+    <string name="right_bicep">Right bicep</string>
+    <string name="waist">Waist</string>
+    <string name="hips">Hips</string>
+    <string name="left_thigh">Left thigh</string>
+    <string name="right_thigh">Right thigh</string>
+    <string name="calves">Calves</string>
+    <string name="body_measurements">Body measurements</string>
+    <string name="log_measurements">Log measurements</string>
+    <string name="last_measured">Last measured</string>
+    <string name="compared_with_value">Compared with %1$s</string>
+    <string name="measured_on_value">Measured %1$s</string>
+    <string name="biceps_average">Biceps (avg)</string>
+    <string name="change_since_value">%1$s since %2$s</string>
+    <string name="no_measurements_yet">No measurements yet</string>
+    <string name="no_measurements_prompt">Log your first measurements to start tracking changes.</string>
+    <string name="date">Date</string>
+    <string name="today_value">Today, %1$s</string>
+    <string name="fill_only_measured">Fill in only what you measured. Empty fields are skipped.</string>
+    <string name="last_value_on">Last: %1$s · %2$s</string>
+    <string name="note_optional">Note (optional)</string>
+    <string name="note_placeholder">e.g. Measured in the morning</string>
+    <string name="all_measurements">All measurements</string>
+    <string name="six_months">6 Months</string>
+    <string name="six_month_change">6-month change</string>
+    <string name="weight">Weight</string>
+    <string name="weight_month_summary">%1$s kg this month · avg %2$s kg</string>
+    <string name="last_logged">Last logged</string>
+    <string name="unit_cm">cm</string>
+    <string name="unit_in">in</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="value_with_unit">%1$s %2$s</string>
+    <string name="no_weight_logged_yet">No weight logged yet</string>
+    <string name="no_entries_for_period">No entries for this period</string>
     <plurals name="items">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>
@@ -281,5 +322,9 @@
     <plurals name="weight_entries">
         <item quantity="one">%1$d entry</item>
         <item quantity="other">%1$d entries</item>
+    </plurals>
+    <plurals name="save_measurements">
+        <item quantity="one">Save %1$d measurement</item>
+        <item quantity="other">Save %1$d measurements</item>
     </plurals>
 </resources>
