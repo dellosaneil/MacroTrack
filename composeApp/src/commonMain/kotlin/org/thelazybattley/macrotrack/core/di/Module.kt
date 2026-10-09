@@ -22,7 +22,9 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
+import org.thelazybattley.macrotrack.domain.usecase.dailygoal.ApplyPastGoalUseCase
 import org.thelazybattley.macrotrack.features.calendar.CalendarViewModel
+import org.thelazybattley.macrotrack.features.profile.pastgoal.PastGoalViewModel
 import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.data.local.AppDatabase
@@ -130,6 +132,7 @@ val useCaseModule = module {
     factoryOf(::GetAllMeasurementsUseCase)
     factoryOf(::InsertMeasurementsUseCase)
     factoryOf(::GetAllDailyGoalsUseCase)
+    factoryOf(::ApplyPastGoalUseCase)
     factoryOf(::SaveDailyGoalUseCase)
     factoryOf(::GetFavoriteKeysUseCase)
     factoryOf(::SetFavoriteUseCase)
@@ -153,6 +156,7 @@ val viewModelModule = module {
     viewModelOf(::LogWeightViewModel)
     viewModelOf(::InsightsViewModel)
     viewModelOf(::CalendarViewModel)
+    viewModelOf(::PastGoalViewModel)
 }
 
 fun initKoin() {

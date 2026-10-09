@@ -414,4 +414,25 @@
         <item quantity="one">%1$d meal</item>
         <item quantity="other">%1$d meals</item>
     </plurals>
+    <string name="goal_history">Goal history</string>
+    <string name="change_past_goal">Change a past goal</string>
+    <string name="goal_history_hint">Saving above changes your goal from today. To fix earlier days, change a past goal.</string>
+    <string name="period_to_today">%1$s – Today</string>
+    <string name="period_dates">%1$s – %2$s</string>
+    <string name="pick_months_step">1 · Pick the months · tap the first, then the last</string>
+    <string name="pick_goal_step">2 · Goal for these days</string>
+    <string name="history_after_saving_step">3 · Your goal history after saving</string>
+    <string name="from">From</string>
+    <string name="until">Until</string>
+    <string name="pick_exact_day_hint">Tap From or Until to pick an exact day.</string>
+    <string name="targets_from_weight">Targets use your weight at the time (%1$s kg on %2$s).</string>
+    <string name="past_goal_impact">%1$d days change to %2$s, including %3$d logged days. Food log, calendar and streak stats will use the new targets for those days. Your current goal isn\'t changed.</string>
+    <string name="apply_to_range">Apply to %1$s – %2$s</string>
+    <string name="starts_on">Starts on</string>
+    <string name="ends_on">Ends on</string>
+    <string name="until_value">Until %1$s</string>
+    <string name="from_value">From %1$s</string>
+    <string name="no_past_days_title">Nothing to change yet</string>
+    <string name="no_past_days_hint">Once you\'ve logged on an earlier day, you can change the goal that applied then.</string>
+    <string name="value_kcal">%1$s kcal</string>
 </resources>

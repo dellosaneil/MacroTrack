@@ -77,6 +77,8 @@ sealed class AppDestinations {
 
         object Calendar : Root(route = "calendar")
 
+        object PastGoal : Root(route = "past_goal")
+
         object MeasurementDetail :
             Root(route = "measurement_detail", routeWithArgs = "measurement_detail/{$MEASUREMENT_TYPE}") {
             fun createRoute(type: String): String {

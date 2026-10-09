@@ -23,6 +23,21 @@ fun CommonPrimaryButton(
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
+    CommonPrimaryButton(
+        modifier = modifier,
+        text = stringResource(resource = text),
+        enabled = enabled,
+        onClick = onClick
+    )
+}
+
+@Composable
+fun CommonPrimaryButton(
+    modifier: Modifier = Modifier,
+    text: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
     Box(
         modifier = modifier
             .height(height = 54.dp)
@@ -32,7 +47,7 @@ fun CommonPrimaryButton(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = stringResource(resource = text),
+            text = text,
             style = typography.bold16,
             color = if (enabled) colors.onAccent else colors.faint
         )

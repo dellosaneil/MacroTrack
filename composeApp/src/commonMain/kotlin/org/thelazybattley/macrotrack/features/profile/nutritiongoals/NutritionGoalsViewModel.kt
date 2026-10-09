@@ -4,9 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.goalPeriods
+import org.thelazybattley.macrotrack.domain.model.withCurrentGoal
+import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateTDEEUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
@@ -17,6 +26,7 @@ class NutritionGoalsViewModel(
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
     private val calculateTDEEUseCase: CalculateTDEEUseCase,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase,
 ) : ViewModel(), NutritionGoalsCallbacks {
 
     private val _state = MutableStateFlow(value = NutritionGoalsViewState())
@@ -25,15 +35,36 @@ class NutritionGoalsViewModel(
 
     init {
         viewModelScope.launch {
-            getUserDetailsUseCase().collect { userDetails ->
-                if (userDetails == null) return@collect
+            combine(
+                flow = flow { emitAll(getUserDetailsUseCase()) },
+                flow2 = getAllDailyGoalsUseCase()
+            ) { userDetails, records ->
+                if (userDetails == null) return@combine
+                val today = getCurrentDate()
+                val current = DailyGoal(
+                    date = today,
+                    goal = userDetails.goal,
+                    macroGoals = calculateMacrosGoalUseCase(
+                        height = userDetails.height,
+                        weight = userDetails.weight,
+                        age = userDetails.age,
+                        gender = userDetails.sex,
+                        activityLevel = userDetails.activityLevel,
+                        goal = userDetails.goal
+                    )
+                )
+                val history = goalPeriods(
+                    records = withCurrentGoal(records = records, today = today, current = current),
+                    today = today
+                ).reversed()
                 _state.update { currentState ->
                     currentState.copy(
                         userDetails = userDetails,
-                        selectedGoal = currentState.selectedGoal ?: userDetails.goal
+                        selectedGoal = currentState.selectedGoal ?: userDetails.goal,
+                        history = history
                     ).withCalculatedGoals()
                 }
-            }
+            }.collect()
         }
     }
 

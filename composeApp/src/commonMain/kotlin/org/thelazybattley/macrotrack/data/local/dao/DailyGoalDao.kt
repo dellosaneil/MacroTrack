@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 
 @Dao
@@ -12,6 +13,9 @@ interface DailyGoalDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertDailyGoal(dailyGoal: DailyGoalEntity)
+
+    @Query("DELETE FROM dailygoalentity WHERE date BETWEEN :start AND :end")
+    suspend fun deleteDailyGoals(start: LocalDate, end: LocalDate)
 
     @Query("SELECT * FROM dailygoalentity ORDER BY date")
     fun getAllDailyGoals(): Flow<List<DailyGoalEntity>>

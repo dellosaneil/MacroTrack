@@ -78,12 +78,21 @@ import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import androidx.compose.ui.semantics.Role
+import macrotrack.composeapp.generated.resources.change_past_goal
+import macrotrack.composeapp.generated.resources.goal_history
+import macrotrack.composeapp.generated.resources.goal_history_hint
+import macrotrack.composeapp.generated.resources.ic_clock
+import macrotrack.composeapp.generated.resources.ic_chevron_right
+import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.features.profile.pastgoal.ui.GoalPeriodList
 
 @Composable
 fun NutritionGoalsScreen(
     modifier: Modifier = Modifier,
     onPopBackStack: () -> Unit,
-    onNavigateToPersonalInformation: () -> Unit
+    onNavigateToPersonalInformation: () -> Unit,
+    onNavigateToPastGoal: () -> Unit
 ) {
     val viewModel = koinViewModel<NutritionGoalsViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -97,7 +106,8 @@ fun NutritionGoalsScreen(
         viewState = viewState,
         callbacks = viewModel,
         onBack = onPopBackStack,
-        onNavigateToPersonalInformation = onNavigateToPersonalInformation
+        onNavigateToPersonalInformation = onNavigateToPersonalInformation,
+        onNavigateToPastGoal = onNavigateToPastGoal
     )
 }
 
@@ -107,7 +117,8 @@ private fun NutritionGoalsScreen(
     viewState: NutritionGoalsViewState,
     callbacks: NutritionGoalsCallbacks,
     onBack: () -> Unit,
-    onNavigateToPersonalInformation: () -> Unit
+    onNavigateToPersonalInformation: () -> Unit,
+    onNavigateToPastGoal: () -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -145,6 +156,12 @@ private fun NutritionGoalsScreen(
             )
             viewState.macroGoals?.let { macroGoals ->
                 MacroTargetsSection(macroGoals = macroGoals)
+            }
+            if (viewState.history.isNotEmpty()) {
+                GoalHistorySection(
+                    viewState = viewState,
+                    onChangePastGoal = onNavigateToPastGoal
+                )
             }
             viewState.userDetails?.let { userDetails ->
                 PersonalInformationLink(
@@ -507,6 +524,55 @@ private fun PersonalInformationLink(
 }
 
 @Composable
+private fun GoalHistorySection(
+    viewState: NutritionGoalsViewState,
+    onChangePastGoal: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        SectionLabel(text = stringResource(resource = Res.string.goal_history))
+        GoalPeriodList(
+            periods = viewState.history,
+            today = getCurrentDate(),
+            footer = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(height = 48.dp)
+                        .clickable(role = Role.Button, onClick = onChangePastGoal)
+                        .padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_clock),
+                        contentDescription = null,
+                        tint = colors.accentInk,
+                        modifier = Modifier.size(size = 16.dp)
+                    )
+                    Text(
+                        text = stringResource(resource = Res.string.change_past_goal),
+                        style = typography.bold14,
+                        color = colors.accentInk,
+                        modifier = Modifier.weight(weight = 1f)
+                    )
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_chevron_right),
+                        contentDescription = null,
+                        tint = colors.faint,
+                        modifier = Modifier.size(size = 16.dp)
+                    )
+                }
+            }
+        )
+        Text(
+            text = stringResource(resource = Res.string.goal_history_hint),
+            style = typography.regular11,
+            color = colors.muted
+        )
+    }
+}
+
+@Composable
 private fun SectionLabel(text: String) {
     Text(
         text = text,
@@ -541,7 +607,8 @@ private fun PreviewNutritionGoalsScreen() {
             ),
             callbacks = NutritionGoalsCallbacks.default(),
             onBack = {},
-            onNavigateToPersonalInformation = {}
+            onNavigateToPersonalInformation = {},
+            onNavigateToPastGoal = {}
         )
     }
 }
