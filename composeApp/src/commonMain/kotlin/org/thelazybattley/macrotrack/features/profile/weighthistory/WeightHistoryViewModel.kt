@@ -10,16 +10,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
-import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
-import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryTimeRangeEnum
 
 class WeightHistoryViewModel(
     private val getAllWeightUseCase: GetAllWeightUseCase,
-    private val getUserDetailsUseCase: GetUserDetailsUseCase,
-    private val insertWeightUseCase: InsertWeightUseCase,
-    private val insertUserDetailsUseCase: InsertUserDetailsUseCase
+    private val getUserDetailsUseCase: GetUserDetailsUseCase
 ) : ViewModel(), WeightHistoryCallbacks {
 
     private val _state = MutableStateFlow(value = WeightHistoryViewState())
@@ -75,17 +71,6 @@ class WeightHistoryViewModel(
             if (!currentState.canGoNext) return@update currentState
             val period = currentState.period ?: return@update currentState
             currentState.withPeriod(period = period.shift(steps = 1))
-        }
-    }
-
-    override fun onSaveWeight(weight: String) {
-        val newWeight = weight.toDoubleOrNull()?.takeIf { it > 0 } ?: return
-        val userDetails = _state.value.userDetails
-        viewModelScope.launch {
-            insertWeightUseCase(weight = newWeight)
-            if (userDetails != null) {
-                insertUserDetailsUseCase(userDetails = userDetails.copy(weight = newWeight))
-            }
         }
     }
 

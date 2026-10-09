@@ -71,12 +71,12 @@ import org.thelazybattley.macrotrack.features.measurements.MeasurementUnit
 import org.thelazybattley.macrotrack.features.measurements.formatMeasure
 import org.thelazybattley.macrotrack.features.measurements.ui.MeasurementUnitToggle
 import org.thelazybattley.macrotrack.features.measurements.ui.toMeasurementDate
+import org.thelazybattley.macrotrack.ui.common.CommonDateButton
+import org.thelazybattley.macrotrack.ui.common.CommonDatePickerDialog
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
-
-private const val MILLIS_PER_DAY = 86_400_000L
 
 @Composable
 fun MeasurementsLogScreen(
@@ -151,7 +151,7 @@ private fun MeasurementsLogScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
             ) {
-                DateButton(
+                CommonDateButton(
                     modifier = Modifier.weight(weight = 1f),
                     date = viewState.date,
                     onClick = { showDatePicker = true }
@@ -194,7 +194,7 @@ private fun MeasurementsLogScreen(
     }
 
     if (showDatePicker) {
-        MeasurementDatePicker(
+        CommonDatePickerDialog(
             selected = viewState.date,
             onDismiss = { showDatePicker = false },
             onConfirm = { date ->
@@ -202,45 +202,6 @@ private fun MeasurementsLogScreen(
                 onDateSelected(date)
             }
         )
-    }
-}
-
-@Composable
-private fun DateButton(
-    modifier: Modifier = Modifier,
-    date: LocalDate,
-    onClick: () -> Unit
-) {
-    val shape = RoundedCornerShape(size = 14.dp)
-    Row(
-        modifier = modifier
-            .height(height = 48.dp)
-            .clip(shape = shape)
-            .background(color = colors.surface)
-            .border(width = 1.dp, color = colors.line, shape = shape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
-    ) {
-        Icon(
-            painter = painterResource(resource = Res.drawable.ic_nav_log),
-            contentDescription = null,
-            tint = colors.accentInk,
-            modifier = Modifier.size(size = 18.dp)
-        )
-        Column {
-            Text(text = stringResource(resource = Res.string.date), style = typography.regular10, color = colors.muted)
-            Text(
-                text = if (date == getCurrentDate()) {
-                    stringResource(resource = Res.string.today_value, date.toMeasurementDate())
-                } else {
-                    date.toMeasurementDate()
-                },
-                style = typography.bold13,
-                color = colors.ink
-            )
-        }
     }
 }
 
@@ -361,42 +322,6 @@ private fun InputBox(
             }
         }
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MeasurementDatePicker(
-    selected: LocalDate,
-    onDismiss: () -> Unit,
-    onConfirm: (LocalDate) -> Unit
-) {
-    val todayMillis = getCurrentDate().toEpochDays() * MILLIS_PER_DAY
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selected.toEpochDays() * MILLIS_PER_DAY,
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis <= todayMillis
-        }
-    )
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val millis = datePickerState.selectedDateMillis ?: return@TextButton onDismiss()
-                    onConfirm(LocalDate.fromEpochDays(millis / MILLIS_PER_DAY))
-                }
-            ) {
-                Text(text = stringResource(resource = Res.string.ok), color = colors.accentInk)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = stringResource(resource = Res.string.cancel), color = colors.muted)
-            }
-        }
-    ) {
-        DatePicker(state = datePickerState)
-    }
 }
 
 @Preview(showBackground = true)

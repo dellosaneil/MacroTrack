@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
@@ -17,9 +16,7 @@ import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.domain.usecase.measurement.GetAllMeasurementsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
-import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
-import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import org.thelazybattley.macrotrack.features.measurements.MeasurementSummary
 import org.thelazybattley.macrotrack.features.measurements.MeasurementUnit
 import org.thelazybattley.macrotrack.features.measurements.MeasurementUnitPreference
@@ -49,9 +46,7 @@ class ProgressViewModel(
     getAllWeightUseCase: GetAllWeightUseCase,
     getUserDetailsUseCase: GetUserDetailsUseCase,
     getAllMeasurementsUseCase: GetAllMeasurementsUseCase,
-    unitPreference: MeasurementUnitPreference,
-    private val insertWeightUseCase: InsertWeightUseCase,
-    private val insertUserDetailsUseCase: InsertUserDetailsUseCase
+    unitPreference: MeasurementUnitPreference
 ) : ViewModel() {
 
     val state = combine(
@@ -92,15 +87,4 @@ class ProgressViewModel(
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
         initialValue = ProgressViewState()
     )
-
-    fun onSaveWeight(weight: String) {
-        val newWeight = weight.toDoubleOrNull()?.takeIf { it > 0 } ?: return
-        val userDetails = state.value.userDetails
-        viewModelScope.launch {
-            insertWeightUseCase(weight = newWeight)
-            if (userDetails != null) {
-                insertUserDetailsUseCase(userDetails = userDetails.copy(weight = newWeight))
-            }
-        }
-    }
 }

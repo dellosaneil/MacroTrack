@@ -33,6 +33,7 @@ import org.thelazybattley.macrotrack.features.profile.ProfileCallbacks
 import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
 import org.thelazybattley.macrotrack.features.profile.ProfileViewState
 import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -56,7 +57,8 @@ fun ProfileScreen(
     ProfileScreen(
         modifier = modifier,
         viewState = viewState,
-        callbacks = viewModel
+        callbacks = viewModel,
+        onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) }
     )
 }
 
@@ -65,9 +67,9 @@ fun ProfileScreen(
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     viewState: ProfileViewState,
-    callbacks: ProfileCallbacks
+    callbacks: ProfileCallbacks,
+    onLogWeight: () -> Unit = {}
 ) {
-    val showLogWeightSheet = remember { mutableStateOf(value = false) }
     val showTargetWeightSheet = remember { mutableStateOf(value = false) }
 
     Column(
@@ -82,7 +84,7 @@ fun ProfileScreen(
         ProfileGoalProgress(
             modifier = Modifier.fillMaxWidth(),
             goalProgress = viewState.goalProgress,
-            onLogWeight = { showLogWeightSheet.value = true },
+            onLogWeight = onLogWeight,
             onSetTarget = { showTargetWeightSheet.value = true }
         )
         viewState.weekSummary?.let { weekSummary ->
@@ -99,20 +101,6 @@ fun ProfileScreen(
             targetWeight = viewState.userDetails?.targetWeight,
             onNavigate = callbacks::onNavigate,
             onTargetWeightClick = { showTargetWeightSheet.value = true }
-        )
-    }
-
-    CommonBottomSheet(
-        bottomSheetState = rememberModalBottomSheetState(),
-        showBottomSheet = showLogWeightSheet
-    ) { sheetModifier ->
-        WeightBottomSheetContent(
-            modifier = sheetModifier,
-            previousWeight = viewState.userDetails?.weight?.toCleanString().orEmpty(),
-            onSaveWeight = { weight ->
-                showLogWeightSheet.value = false
-                callbacks.onSaveWeight(weight = weight)
-            }
         )
     }
 

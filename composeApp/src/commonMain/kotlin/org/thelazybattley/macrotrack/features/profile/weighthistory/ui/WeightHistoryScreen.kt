@@ -13,14 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,16 +38,14 @@ import macrotrack.composeapp.generated.resources.weight_history
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
-import org.thelazybattley.macrotrack.features.profile.ui.WeightBottomSheetContent
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewState
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightPeriod
-import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -59,7 +53,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun WeightHistoryScreen(
     modifier: Modifier = Modifier,
-    onPopBackStack: () -> Unit
+    onPopBackStack: () -> Unit,
+    onNavigate: (String) -> Unit
 ) {
     val viewModel = koinViewModel<WeightHistoryViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -68,19 +63,19 @@ fun WeightHistoryScreen(
         modifier = modifier,
         viewState = viewState,
         callbacks = viewModel,
-        onBack = onPopBackStack
+        onBack = onPopBackStack,
+        onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WeightHistoryScreen(
     modifier: Modifier = Modifier,
     viewState: WeightHistoryViewState,
     callbacks: WeightHistoryCallbacks,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onLogWeight: () -> Unit
 ) {
-    val showLogWeightSheet = remember { mutableStateOf(value = false) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -92,7 +87,7 @@ private fun WeightHistoryScreen(
                 trailing = {
                     ProfilePillButton(
                         text = stringResource(resource = Res.string.log),
-                        onClick = { showLogWeightSheet.value = true }
+                        onClick = onLogWeight
                     )
                 }
             )
@@ -133,21 +128,6 @@ private fun WeightHistoryScreen(
                 allWeights = viewState.allWeights
             )
         }
-    }
-
-    CommonBottomSheet(
-        bottomSheetState = rememberModalBottomSheetState(),
-        showBottomSheet = showLogWeightSheet
-    ) { sheetModifier ->
-        WeightBottomSheetContent(
-            modifier = sheetModifier,
-            previousWeight = (viewState.allWeights.lastOrNull()?.weight ?: viewState.userDetails?.weight)
-                ?.toCleanString().orEmpty(),
-            onSaveWeight = { weight ->
-                showLogWeightSheet.value = false
-                callbacks.onSaveWeight(weight = weight)
-            }
-        )
     }
 }
 
@@ -242,7 +222,8 @@ private fun PreviewWeightHistoryScreen() {
                 canGoBack = true
             ),
             callbacks = WeightHistoryCallbacks.default(),
-            onBack = {}
+            onBack = {},
+            onLogWeight = {}
         )
     }
 }

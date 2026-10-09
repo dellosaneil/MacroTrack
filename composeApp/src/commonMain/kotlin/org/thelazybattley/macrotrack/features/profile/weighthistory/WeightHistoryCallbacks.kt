@@ -10,8 +10,6 @@ interface WeightHistoryCallbacks {
 
     fun onNextPeriod()
 
-    fun onSaveWeight(weight: String)
-
     companion object {
         fun default() = object : WeightHistoryCallbacks {
             override fun onTimePeriodSelect(timeRange: WeightHistoryTimeRangeEnum) {
@@ -21,9 +19,6 @@ interface WeightHistoryCallbacks {
             }
 
             override fun onNextPeriod() {
-            }
-
-            override fun onSaveWeight(weight: String) {
             }
         }
     }

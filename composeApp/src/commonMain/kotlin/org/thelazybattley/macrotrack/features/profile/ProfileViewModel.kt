@@ -14,12 +14,10 @@ import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
-import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
 
 class ProfileViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
-    private val insertWeightUseCase: InsertWeightUseCase,
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
     private val getAllWeightUseCase: GetAllWeightUseCase,
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
@@ -73,15 +71,6 @@ class ProfileViewModel(
                     )
                 }
             }.collect()
-        }
-    }
-
-    override fun onSaveWeight(weight: String) {
-        val newWeight = weight.toDoubleOrNull()?.takeIf { it > 0 } ?: return
-        val userDetails = _state.value.userDetails ?: return
-        viewModelScope.launch {
-            insertWeightUseCase(weight = newWeight)
-            insertUserDetailsUseCase(userDetails = userDetails.copy(weight = newWeight))
         }
     }
 

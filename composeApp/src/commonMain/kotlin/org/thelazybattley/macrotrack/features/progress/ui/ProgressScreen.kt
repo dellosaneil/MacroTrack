@@ -14,14 +14,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,18 +56,15 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
-import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.MeasurementType
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.measurements.MeasurementSummary
 import org.thelazybattley.macrotrack.features.measurements.MeasurementUnit
 import org.thelazybattley.macrotrack.features.measurements.formatChange
 import org.thelazybattley.macrotrack.features.measurements.formatMeasure
-import org.thelazybattley.macrotrack.features.profile.ui.WeightBottomSheetContent
 import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.features.progress.ProgressViewModel
 import org.thelazybattley.macrotrack.features.progress.ProgressViewState
-import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -87,20 +80,16 @@ fun ProgressScreen(
     ProgressScreen(
         modifier = modifier,
         viewState = viewState,
-        onSaveWeight = viewModel::onSaveWeight,
         onNavigate = onNavigate
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProgressScreen(
     modifier: Modifier = Modifier,
     viewState: ProgressViewState,
-    onSaveWeight: (String) -> Unit,
     onNavigate: (String) -> Unit
 ) {
-    val showLogWeightSheet = remember { mutableStateOf(value = false) }
     Column(
         modifier = modifier.verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(space = 14.dp)
@@ -115,7 +104,7 @@ private fun ProgressScreen(
                 modifier = Modifier.weight(weight = 1f),
                 text = Res.string.log_weight,
                 isPrimary = true,
-                onClick = { showLogWeightSheet.value = true }
+                onClick = { onNavigate(AppDestinations.Root.LogWeight.route) }
             )
             QuickAction(
                 modifier = Modifier.weight(weight = 1f),
@@ -133,20 +122,6 @@ private fun ProgressScreen(
             onOpenAll = { onNavigate(AppDestinations.Profile.BodyMeasurements.route) },
             onOpenType = { type -> onNavigate(AppDestinations.Root.MeasurementDetail.createRoute(type = type.name)) },
             onLog = { onNavigate(AppDestinations.Root.MeasurementsLog.route) }
-        )
-    }
-
-    CommonBottomSheet(
-        bottomSheetState = rememberModalBottomSheetState(),
-        showBottomSheet = showLogWeightSheet
-    ) { sheetModifier ->
-        WeightBottomSheetContent(
-            modifier = sheetModifier,
-            previousWeight = (viewState.latestWeight?.weight ?: viewState.userDetails?.weight)?.toCleanString().orEmpty(),
-            onSaveWeight = { weight ->
-                showLogWeightSheet.value = false
-                onSaveWeight(weight)
-            }
         )
     }
 }
@@ -409,7 +384,6 @@ private fun PreviewProgressScreen() {
     MacroTrackTheme {
         ProgressScreen(
             viewState = ProgressViewState(),
-            onSaveWeight = {},
             onNavigate = {}
         )
     }

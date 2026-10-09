@@ -4,8 +4,6 @@ import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
 
 interface ProfileCallbacks {
 
-    fun onSaveWeight(weight: String)
-
     fun onSaveTargetWeight(targetWeight: String)
 
     fun onNavigate(sectionEnum: ProfileSectionEnum)
@@ -14,9 +12,6 @@ interface ProfileCallbacks {
 
     companion object {
         fun default() = object : ProfileCallbacks {
-            override fun onSaveWeight(weight: String) {
-            }
-
             override fun onSaveTargetWeight(targetWeight: String) {
             }
 

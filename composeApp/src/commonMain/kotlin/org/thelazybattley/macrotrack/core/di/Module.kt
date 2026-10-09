@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.core.di
 
+import org.thelazybattley.macrotrack.features.logweight.LogWeightViewModel
 import org.thelazybattley.macrotrack.features.measurements.MeasurementUnitPreference
 import org.thelazybattley.macrotrack.features.measurements.detail.MeasurementDetailViewModel
 import org.thelazybattley.macrotrack.features.measurements.log.MeasurementsLogViewModel
@@ -129,6 +130,7 @@ val viewModelModule = module {
     viewModelOf(::MeasurementsLogViewModel)
     viewModelOf(::MeasurementDetailViewModel)
     viewModelOf(::ProgressViewModel)
+    viewModelOf(::LogWeightViewModel)
 }
 
 fun initKoin() {

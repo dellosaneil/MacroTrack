@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
+import org.thelazybattley.macrotrack.features.logweight.ui.LogWeightScreen
 import org.thelazybattley.macrotrack.features.measurements.detail.MeasurementDetailScreen
 import org.thelazybattley.macrotrack.features.measurements.log.MeasurementsLogScreen
 import org.thelazybattley.macrotrack.features.measurements.overview.MeasurementsScreen
@@ -189,6 +190,19 @@ fun AppBottomNav() {
                 route = AppDestinations.Profile.WeightHistory.route
             ) {
                 WeightHistoryScreen(
+                    modifier = Modifier,
+                    onPopBackStack = {
+                        navController.popBackStack()
+                    },
+                    onNavigate = { route ->
+                        navController.navigate(route = route)
+                    }
+                )
+            }
+            composable(
+                route = AppDestinations.Root.LogWeight.route
+            ) {
+                LogWeightScreen(
                     modifier = Modifier,
                     onPopBackStack = {
                         navController.popBackStack()
