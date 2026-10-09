@@ -51,6 +51,7 @@ import macrotrack.composeapp.generated.resources.ic_trend_flat
 import macrotrack.composeapp.generated.resources.items
 import macrotrack.composeapp.generated.resources.items_kcal
 import macrotrack.composeapp.generated.resources.kcal
+import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.meals
 import macrotrack.composeapp.generated.resources.nothing_logged_yet
 import macrotrack.composeapp.generated.resources.p_c_f
@@ -379,11 +380,20 @@ private fun MealTypeHeader(
             )
         }
         if (!isEmpty) {
-            Text(
-                text = foodList.calories.withThousands(),
-                style = typography.bold16,
-                color = colors.ink
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(space = 3.dp)) {
+                Text(
+                    text = foodList.calories.withThousands(),
+                    style = typography.bold16,
+                    color = colors.ink,
+                    modifier = Modifier.alignByBaseline()
+                )
+                Text(
+                    text = stringResource(resource = Res.string.kcal_text),
+                    style = typography.regular11,
+                    color = colors.muted,
+                    modifier = Modifier.alignByBaseline()
+                )
+            }
         }
         if (!isToday) return@Row
         val addContentDescription = stringResource(resource = Res.string.add_to_value, mealName)
