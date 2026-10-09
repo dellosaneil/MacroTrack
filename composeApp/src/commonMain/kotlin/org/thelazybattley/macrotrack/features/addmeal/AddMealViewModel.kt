@@ -14,7 +14,6 @@ import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
-import org.thelazybattley.macrotrack.domain.model.Recipe
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.favorite.GetFavoriteKeysUseCase
@@ -28,7 +27,6 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
-import kotlin.math.roundToInt
 
 class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
@@ -63,7 +61,7 @@ class AddMealViewModel(
                 flow3 = getAllFoodLogUseCase(),
                 flow4 = getFavoriteKeysUseCase()
             ) { foodList, recipeList, foodLogs, favoriteKeys ->
-                val recipeMeals = recipeToRecipeMeal(recipes = recipeList, completeFoodList = foodList)
+                val recipeMeals = recipeList.toRecipeMeals(foods = foodList, calculateAdjustMacros = calculateAdjustMacrosUseCase)
                 _state.update { currentState ->
                     currentState.copy(
                         completeFoodList = foodList,
@@ -250,12 +248,7 @@ class AddMealViewModel(
                 val baseFood = if (isRecipe) recipesByName[log.foodName]?.food else foodsByName[log.foodName]
                 if (baseFood == null) return@mapNotNull null
                 val amount = if (isRecipe) {
-                    val fullCalories = baseFood.macros.calories
-                    if (fullCalories > 0) {
-                        (log.calories * FULL_RECIPE_PERCENT / fullCalories).roundToInt().toDouble()
-                    } else {
-                        FULL_RECIPE_PERCENT
-                    }
+                    recipePercentEaten(loggedCalories = log.calories, fullCalories = baseFood.macros.calories)
                 } else {
                     log.weight
                 }
@@ -268,36 +261,5 @@ class AddMealViewModel(
                 )
             }
             .toMap()
-    }
-
-    private fun recipeToRecipeMeal(
-        recipes: List<Recipe>,
-        completeFoodList: List<Food>
-    ): List<RecipeMeal> = recipes.map { recipe ->
-        val ingredients = recipe.ingredients.mapNotNull { ingredient ->
-            val ingredientAsFood = completeFoodList.find { it.name == ingredient.name } ?: return@mapNotNull null
-            calculateAdjustMacrosUseCase(portionSize = ingredient.weight, originalFood = ingredientAsFood)
-        }
-        RecipeMeal(
-            food = Food(
-                macros = FoodMacros(
-                    protein = ingredients.sumOf { it.protein },
-                    carbs = ingredients.sumOf { it.carbs },
-                    fat = ingredients.sumOf { it.fat },
-                    calories = ingredients.sumOf { it.calories }
-                ),
-                name = recipe.name,
-                weight = 0.0,
-                dominantMacro = recipe.dominantMacro,
-                unit = "serving"
-            ),
-            ingredients = recipe.ingredients,
-            percentage = 1.0,
-            name = recipe.name
-        )
-    }
-
-    companion object {
-        const val FULL_RECIPE_PERCENT = 100.0
     }
 }

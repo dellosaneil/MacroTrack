@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.foodlog
 
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
 
 interface FoodLogCallbacks {
@@ -12,6 +13,13 @@ interface FoodLogCallbacks {
 
     /** Shows the date picked on the calendar, or today. */
     fun onScreenShown()
+
+    fun onOpenEntry(log: FoodLog)
+    fun onEntryAmountChanged(amount: Double)
+    fun onEntryMealChanged(mealType: MealType)
+    fun onCloseEntry()
+    fun onSaveEntry()
+    fun onDeleteEntry()
 
 
     companion object {
@@ -35,6 +43,13 @@ interface FoodLogCallbacks {
             override fun onScreenShown() {
                 TODO("Not yet implemented")
             }
+
+            override fun onOpenEntry(log: FoodLog) = Unit
+            override fun onEntryAmountChanged(amount: Double) = Unit
+            override fun onEntryMealChanged(mealType: MealType) = Unit
+            override fun onCloseEntry() = Unit
+            override fun onSaveEntry() = Unit
+            override fun onDeleteEntry() = Unit
         }
     }
 }

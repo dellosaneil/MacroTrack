@@ -23,6 +23,12 @@ import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.UpdateFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
+import org.thelazybattley.macrotrack.features.addmeal.FULL_RECIPE_PERCENT
+import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
+import org.thelazybattley.macrotrack.features.addmeal.toRecipeMeals
 import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
 import org.thelazybattley.macrotrack.features.calendar.currentStreak
 
@@ -35,6 +41,9 @@ class FoodLogViewModel(
     private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase,
     private val saveDailyGoalUseCase: SaveDailyGoalUseCase,
     private val logDateRequest: LogDateRequest,
+    private val getAllRecipeUseCase: GetAllRecipeUseCase,
+    private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
+    private val updateFoodLogUseCase: UpdateFoodLogUseCase,
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -45,8 +54,9 @@ class FoodLogViewModel(
         viewModelScope.launch {
             combine(
                 flow = getAllFoodLogUseCase(),
-                flow2 = getAllFoodUseCase()
-            ) { logs, food ->
+                flow2 = getAllFoodUseCase(),
+                flow3 = getAllRecipeUseCase()
+            ) { logs, food, recipes ->
                 val dates = logs.map { it.date }.toMutableSet()
                 dates.add(element = getCurrentDate())
                 _state.update { currentState ->
@@ -56,7 +66,10 @@ class FoodLogViewModel(
                         currentStreak = currentStreak(loggedDates = logs.map { it.date }.toSet(), today = getCurrentDate()),
                         foodUnit = food.associate {
                             it.name to it.unit
-                        }
+                        },
+                        recipeCalories = recipes
+                            .toRecipeMeals(foods = food, calculateAdjustMacros = calculateAdjustMacrosUseCase)
+                            .associate { it.name to it.food.macros.calories }
                     )
                 }.also {
                     val selectedDate = _state.value.selectedDate
@@ -190,6 +203,62 @@ class FoodLogViewModel(
 
     override fun onScreenShown() {
         onDateFilterSelected(date = logDateRequest.consume() ?: getCurrentDate())
+    }
+
+    override fun onOpenEntry(log: FoodLog) {
+        _state.update { currentState ->
+            val isRecipe = log.weight == 0.0
+            val originalAmount = if (isRecipe) {
+                currentState.recipeCalories[log.foodName]
+                    ?.let { recipePercentEaten(loggedCalories = log.calories, fullCalories = it) }
+                    ?: FULL_RECIPE_PERCENT
+            } else {
+                log.weight
+            }
+            currentState.copy(
+                entryEdit = EntryEdit(
+                    log = log,
+                    originalAmount = originalAmount,
+                    unit = if (isRecipe) "%" else currentState.foodUnit[log.foodName].orEmpty()
+                )
+            )
+        }
+    }
+
+    override fun onEntryAmountChanged(amount: Double) {
+        if (amount <= 0) return
+        _state.update { it.copy(entryEdit = it.entryEdit?.copy(amount = amount)) }
+    }
+
+    override fun onEntryMealChanged(mealType: MealType) {
+        _state.update { it.copy(entryEdit = it.entryEdit?.copy(mealType = mealType)) }
+    }
+
+    override fun onCloseEntry() {
+        _state.update { it.copy(entryEdit = null) }
+    }
+
+    override fun onSaveEntry() {
+        val edit = _state.value.entryEdit ?: return
+        if (!edit.canSave) return
+        _state.update { it.copy(entryEdit = null) }
+        viewModelScope.launch {
+            updateFoodLogUseCase(
+                id = edit.log.id,
+                mealType = edit.mealType,
+                calories = edit.calories,
+                protein = edit.protein,
+                carbs = edit.carbs,
+                fat = edit.fat,
+                weight = edit.weight
+            )
+        }
+    }
+
+    override fun onDeleteEntry() {
+        val edit = _state.value.entryEdit ?: return
+        _state.update { it.copy(entryEdit = null) }
+        onDeleteFoodLog(id = edit.log.id)
     }
 
     override fun onDateFilterSelected(date: LocalDate) {

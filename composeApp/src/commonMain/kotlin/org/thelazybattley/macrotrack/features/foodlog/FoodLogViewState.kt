@@ -34,7 +34,11 @@ data class FoodLogViewState(
     val availableDates: List<LocalDate> = emptyList(),
     val selectedDate: LocalDate = getCurrentDate(),
     val currentStreak: Int = 0,
-    val foodUnit: Map<String, String> = emptyMap()
+    val foodUnit: Map<String, String> = emptyMap(),
+    /** Calories in one full serving of each recipe, to work out the percentage a log ate. */
+    val recipeCalories: Map<String, Int> = emptyMap(),
+    /** The logged entry open in the edit sheet. */
+    val entryEdit: EntryEdit? = null
 )
 
 data class FoodLogFoodListByMealType(

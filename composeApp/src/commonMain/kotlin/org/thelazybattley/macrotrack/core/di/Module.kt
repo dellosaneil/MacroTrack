@@ -23,6 +23,7 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.ApplyPastGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.UpdateFoodLogUseCase
 import org.thelazybattley.macrotrack.features.calendar.CalendarViewModel
 import org.thelazybattley.macrotrack.features.profile.pastgoal.PastGoalViewModel
 import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
@@ -117,6 +118,7 @@ val useCaseModule = module {
     factoryOf(::GetUserDetailsUseCase)
     factoryOf(::DeleteFoodLogUseCase)
     factoryOf(::GetAllFoodLogUseCase)
+    factoryOf(::UpdateFoodLogUseCase)
     factoryOf(::InsertFoodLogUseCase)
     factoryOf(::CalculateCaloriesFromMacrosUseCase)
     factoryOf(::CalculateAdjustMacrosUseCase)

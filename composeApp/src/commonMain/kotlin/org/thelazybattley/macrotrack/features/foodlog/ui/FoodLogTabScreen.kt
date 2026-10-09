@@ -40,6 +40,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.ic_chevron_right
+import macrotrack.composeapp.generated.resources.edit_entry_value
+import macrotrack.composeapp.generated.resources.tap_entry_hint
 import macrotrack.composeapp.generated.resources.add
 import macrotrack.composeapp.generated.resources.add_to_value
 import macrotrack.composeapp.generated.resources.c_value_gram
@@ -164,6 +167,13 @@ private fun FoodLogTabScreen(
             itemCount = meals.sumOf { it.foodList.size },
             calories = viewState.totalFoodMacros?.calories ?: 0
         )
+        if (meals.any { it.foodList.isNotEmpty() }) {
+            Text(
+                text = stringResource(resource = Res.string.tap_entry_hint),
+                style = typography.regular11,
+                color = colors.muted
+            )
+        }
         meals.forEach { meal ->
             LoggedFoodMealType(
                 modifier = Modifier.fillMaxWidth(),
@@ -173,11 +183,22 @@ private fun FoodLogTabScreen(
                 onDeleteFoodLog = { id ->
                     callbacks.onDeleteFoodLog(id = id)
                 },
+                onOpenEntry = callbacks::onOpenEntry,
                 onNavigate = {
                     callbacks.onNavigate(mealType = meal.mealType)
                 }
             )
         }
+    }
+    viewState.entryEdit?.let { edit ->
+        EntryEditSheet(
+            edit = edit,
+            onAmountChanged = callbacks::onEntryAmountChanged,
+            onMealChanged = callbacks::onEntryMealChanged,
+            onClose = callbacks::onCloseEntry,
+            onSave = callbacks::onSaveEntry,
+            onDelete = callbacks::onDeleteEntry
+        )
     }
 }
 
@@ -333,6 +354,7 @@ private fun LoggedFoodMealType(
     foodList: FoodLogFoodListByMealType,
     foodUnit: Map<String, String>,
     onDeleteFoodLog: (Long) -> Unit,
+    onOpenEntry: (FoodLog) -> Unit,
     onNavigate: () -> Unit
 ) {
     val shape = RoundedCornerShape(size = 20.dp)
@@ -380,6 +402,10 @@ private fun LoggedFoodMealType(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(color = colors.surface)
+                            .clickable(
+                                onClickLabel = stringResource(resource = Res.string.edit_entry_value, food.foodName),
+                                role = Role.Button
+                            ) { onOpenEntry(food) }
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                         food = food,
                         unit = foodUnit[food.foodName] ?: ""
@@ -564,6 +590,12 @@ private fun FoodLogItem(
             text = stringResource(resource = Res.string.kcal, food.calories),
             style = typography.bold13,
             color = colors.ink
+        )
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_chevron_right),
+            contentDescription = null,
+            tint = colors.faint,
+            modifier = Modifier.size(size = 14.dp)
         )
     }
 }

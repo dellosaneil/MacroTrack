@@ -435,4 +435,14 @@
     <string name="no_past_days_title">Nothing to change yet</string>
     <string name="no_past_days_hint">Once you\'ve logged on an earlier day, you can change the goal that applied then.</string>
     <string name="value_kcal">%1$s kcal</string>
+    <string name="tap_entry_hint">Tap an entry to change it · swipe left to delete</string>
+    <string name="logged_today">Logged today</string>
+    <string name="logged_on">Logged %1$s</string>
+    <string name="meal">Meal</string>
+    <string name="delete">Delete</string>
+    <string name="close">Close</string>
+    <string name="no_changes">No changes</string>
+    <string name="unchanged">unchanged</string>
+    <string name="was_value_gram">was %1$dg</string>
+    <string name="edit_entry_value">Edit %1$s</string>
 </resources>

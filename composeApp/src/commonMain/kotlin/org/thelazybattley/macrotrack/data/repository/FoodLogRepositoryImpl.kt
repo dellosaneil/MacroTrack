@@ -34,6 +34,24 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
         )
     )
 
+    override suspend fun updateFoodLog(
+        id: Long,
+        mealType: MealType,
+        calories: Int,
+        protein: Double,
+        carbs: Double,
+        fat: Double,
+        weight: Double
+    ) = dao.updateFoodLog(
+        id = id,
+        mealType = mealType,
+        calories = calories,
+        protein = protein,
+        carbs = carbs,
+        fat = fat,
+        weight = weight
+    )
+
     override suspend fun deleteFoodLog(
         id: Long
     ) = dao.deleteFoodLog(id = id)

@@ -19,6 +19,17 @@ interface FoodLogRepository {
         dominantMacro: MacroType
     ) : Long
 
+    /** Changes a log's meal and portion; [weight] stays 0.0 for a recipe. */
+    suspend fun updateFoodLog(
+        id: Long,
+        mealType: MealType,
+        calories: Int,
+        protein: Double,
+        carbs: Double,
+        fat: Double,
+        weight: Double
+    )
+
     suspend fun deleteFoodLog(id: Long)
 
     fun getAllFoodLogs(): Flow<List<FoodLog>>
