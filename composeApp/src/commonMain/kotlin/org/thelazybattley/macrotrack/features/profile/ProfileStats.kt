@@ -10,13 +10,15 @@ import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.Weight
+import org.thelazybattley.macrotrack.features.calendar.bestStreak
+import org.thelazybattley.macrotrack.features.calendar.currentStreak
+import org.thelazybattley.macrotrack.features.calendar.isOnTarget
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 private const val KCAL_PER_KG = 7700.0
 private const val DAYS_PER_WEEK = 7
-private const val ON_TARGET_TOLERANCE = 0.1
 
 fun calculateGoalProgress(
     userDetails: UserDetails,
@@ -79,8 +81,8 @@ fun calculateWeekSummary(
     val loggedThisWeek = weekDays.filter { it <= today && it in loggedDates }
     val dailyCalories = loggedThisWeek.map { date -> logsByDate.getValue(date).sumOf { it.calories } }
     val dailyProtein = loggedThisWeek.map { date -> logsByDate.getValue(date).sumOf { it.protein } }
-    val daysOnTarget = macroGoals?.calories?.takeIf { it > 0 }?.let { goal ->
-        dailyCalories.count { calories -> abs(calories - goal) <= goal * ON_TARGET_TOLERANCE }
+    val daysOnTarget = macroGoals?.calories?.let { goal ->
+        dailyCalories.count { calories -> isOnTarget(calories = calories, goalCalories = goal) }
     } ?: 0
 
     val sortedWeights = weights.sortedBy { it.date }
@@ -102,27 +104,4 @@ fun calculateWeekSummary(
         daysLogged = loggedThisWeek.size,
         weightChange = weightChange
     )
-}
-
-private fun currentStreak(loggedDates: Set<LocalDate>, today: LocalDate): Int {
-    val oneDay = DatePeriod(days = 1)
-    var day = if (today in loggedDates) today else today.minus(period = oneDay)
-    var streak = 0
-    while (day in loggedDates) {
-        streak++
-        day = day.minus(period = oneDay)
-    }
-    return streak
-}
-
-private fun bestStreak(loggedDates: Set<LocalDate>): Int {
-    var best = 0
-    var current = 0
-    var previous: LocalDate? = null
-    loggedDates.sorted().forEach { date ->
-        current = if (previous != null && previous.plus(period = DatePeriod(days = 1)) == date) current + 1 else 1
-        best = maxOf(best, current)
-        previous = date
-    }
-    return best
 }

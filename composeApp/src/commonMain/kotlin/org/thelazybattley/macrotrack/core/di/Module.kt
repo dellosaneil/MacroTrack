@@ -22,6 +22,8 @@ import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
+import org.thelazybattley.macrotrack.features.calendar.CalendarViewModel
+import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.data.local.AppDatabase
 import org.thelazybattley.macrotrack.data.repository.FoodLogRepositoryImpl
@@ -93,6 +95,7 @@ val repositoryModule = module {
     singleOf(::RecipeRepositoryImpl) { bind<RecipeRepository>() }
     singleOf(::UserDetailsRepositoryImpl) { bind<UserDetailsRepository>() }
     singleOf(::FoodLogRepositoryImpl) { bind<FoodLogRepository>() }
+    singleOf(::LogDateRequest)
     singleOf(::WeightRepositoryImpl) { bind<WeightRepository>() }
     singleOf(::MeasurementRepositoryImpl) { bind<MeasurementRepository>() }
     singleOf(::DailyGoalRepositoryImpl) { bind<DailyGoalRepository>() }
@@ -149,6 +152,7 @@ val viewModelModule = module {
     viewModelOf(::ProgressViewModel)
     viewModelOf(::LogWeightViewModel)
     viewModelOf(::InsightsViewModel)
+    viewModelOf(::CalendarViewModel)
 }
 
 fun initKoin() {

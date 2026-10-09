@@ -33,6 +33,7 @@ data class FoodLogViewState(
     val navigateMealTypeParameter : MealType? = null,
     val availableDates: List<LocalDate> = emptyList(),
     val selectedDate: LocalDate = getCurrentDate(),
+    val currentStreak: Int = 0,
     val foodUnit: Map<String, String> = emptyMap()
 )
 

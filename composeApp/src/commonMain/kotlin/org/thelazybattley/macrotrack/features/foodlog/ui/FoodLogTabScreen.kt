@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,6 +31,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,6 +45,8 @@ import macrotrack.composeapp.generated.resources.add_to_value
 import macrotrack.composeapp.generated.resources.c_value_gram
 import macrotrack.composeapp.generated.resources.f_value_gram
 import macrotrack.composeapp.generated.resources.goal_not_recorded
+import macrotrack.composeapp.generated.resources.ic_calendar
+import macrotrack.composeapp.generated.resources.ic_flame
 import macrotrack.composeapp.generated.resources.ic_meal_breakfast
 import macrotrack.composeapp.generated.resources.ic_meal_dinner
 import macrotrack.composeapp.generated.resources.ic_meal_lunch
@@ -57,6 +64,7 @@ import macrotrack.composeapp.generated.resources.nothing_logged_yet
 import macrotrack.composeapp.generated.resources.p_c_f
 import macrotrack.composeapp.generated.resources.p_value_gram
 import macrotrack.composeapp.generated.resources.recipe
+import macrotrack.composeapp.generated.resources.streak_open_calendar
 import macrotrack.composeapp.generated.resources.today
 import macrotrack.composeapp.generated.resources.value_unit
 import org.jetbrains.compose.resources.DrawableResource
@@ -91,7 +99,7 @@ fun FoodLogTabScreen(
     val viewState by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
-        viewModel.onDateFilterSelected(date = getCurrentDate())
+        viewModel.onScreenShown()
     }
 
     LaunchedEffect(key1 = viewState.navigateMealTypeParameter) {
@@ -108,7 +116,8 @@ fun FoodLogTabScreen(
     FoodLogTabScreen(
         modifier = modifier,
         viewState = viewState,
-        callbacks = viewModel
+        callbacks = viewModel,
+        onOpenCalendar = { onNavigate(AppDestinations.Root.Calendar.route) }
     )
 }
 
@@ -116,7 +125,8 @@ fun FoodLogTabScreen(
 private fun FoodLogTabScreen(
     modifier: Modifier = Modifier,
     viewState: FoodLogViewState,
-    callbacks: FoodLogCallbacks
+    callbacks: FoodLogCallbacks,
+    onOpenCalendar: () -> Unit
 ) {
     val isToday = viewState.selectedDate == getCurrentDate()
     val meals = listOf(viewState.breakfast, viewState.lunch, viewState.dinner, viewState.snack)
@@ -127,11 +137,17 @@ private fun FoodLogTabScreen(
             .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(space = 14.dp)
     ) {
-        FoodLogHeader(
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            viewState = viewState,
-            isToday = isToday
-        )
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FoodLogHeader(
+                modifier = Modifier.weight(weight = 1f),
+                viewState = viewState,
+                isToday = isToday
+            )
+            StreakCalendarButton(streak = viewState.currentStreak, onClick = onOpenCalendar)
+        }
         FoodLogDateChips(
             modifier = Modifier.fillMaxWidth(),
             dates = viewState.availableDates,
@@ -193,6 +209,53 @@ private fun FoodLogHeader(
                 color = colors.muted
             )
         }
+    }
+}
+
+/** Today's logging streak; opens the calendar. */
+@Composable
+private fun StreakCalendarButton(
+    streak: Int,
+    onClick: () -> Unit
+) {
+    val shape = RoundedCornerShape(size = 14.dp)
+    val description = stringResource(resource = Res.string.streak_open_calendar, streak)
+    Row(
+        modifier = Modifier
+            .height(height = 44.dp)
+            .clip(shape = shape)
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = description }
+            .padding(start = 10.dp, end = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_flame),
+            contentDescription = null,
+            tint = if (streak > 0) colors.fat else colors.faint,
+            modifier = Modifier.size(size = 20.dp)
+        )
+        Text(
+            text = streak.toString(),
+            style = typography.bold18,
+            color = colors.ink,
+            modifier = Modifier.clearAndSetSemantics {}
+        )
+        Box(
+            modifier = Modifier
+                .width(width = 1.dp)
+                .height(height = 20.dp)
+                .background(color = colors.line)
+        )
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_calendar),
+            contentDescription = null,
+            tint = colors.muted,
+            modifier = Modifier.size(size = 18.dp)
+        )
     }
 }
 
@@ -566,7 +629,8 @@ private fun PreviewFoodLogTabScreen() {
                 ),
                 availableDates = listOf(getCurrentDate())
             ),
-            callbacks = FoodLogCallbacks.default()
+            callbacks = FoodLogCallbacks.default(),
+            onOpenCalendar = {}
         )
     }
 }

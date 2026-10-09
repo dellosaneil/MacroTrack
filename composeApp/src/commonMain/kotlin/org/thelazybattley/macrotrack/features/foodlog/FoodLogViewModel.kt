@@ -23,6 +23,8 @@ import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
+import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
+import org.thelazybattley.macrotrack.features.calendar.currentStreak
 
 class FoodLogViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
@@ -32,6 +34,7 @@ class FoodLogViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase,
     private val saveDailyGoalUseCase: SaveDailyGoalUseCase,
+    private val logDateRequest: LogDateRequest,
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -50,6 +53,7 @@ class FoodLogViewModel(
                     currentState.copy(
                         allFoodLog = logs,
                         availableDates = dates.toList(),
+                        currentStreak = currentStreak(loggedDates = logs.map { it.date }.toSet(), today = getCurrentDate()),
                         foodUnit = food.associate {
                             it.name to it.unit
                         }
@@ -182,6 +186,10 @@ class FoodLogViewModel(
         viewModelScope.launch {
             deleteFoodLogUseCase(id = id)
         }
+    }
+
+    override fun onScreenShown() {
+        onDateFilterSelected(date = logDateRequest.consume() ?: getCurrentDate())
     }
 
     override fun onDateFilterSelected(date: LocalDate) {

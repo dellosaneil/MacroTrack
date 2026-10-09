@@ -388,4 +388,30 @@
     <string name="remove_from_favorites">Remove %1$s from favorites</string>
     <string name="yesterday">Yesterday</string>
     <string name="days_ago">%1$d days ago</string>
+    <string name="calendar">Calendar</string>
+    <string name="day_streak">day streak</string>
+    <string name="streak_open_calendar">%1$d-day logging streak. Open calendar</string>
+    <string name="streak_logged_today_best">Logged today · best is %1$d days (%2$s – %3$s)</string>
+    <string name="streak_logged_today_record">Logged today · your best streak yet</string>
+    <string name="streak_at_risk">Log a meal today to keep it going · best is %1$d days</string>
+    <string name="streak_ended">Your %1$d-day streak ended on %2$s · log today to start again</string>
+    <string name="streak_none">Log a meal today to start a streak</string>
+    <string name="log_a_meal_today">Log a meal today</string>
+    <string name="not_logged">Not logged</string>
+    <string name="previous_month">Previous month</string>
+    <string name="next_month">Next month</string>
+    <string name="days_logged">Days logged</string>
+    <string name="avg_intake">Avg intake</string>
+    <string name="of_value">of %1$d</string>
+    <string name="kcal_unit">kcal</string>
+    <string name="slash_value_kcal">/ %1$s kcal</string>
+    <string name="over_by_kcal">Over by %1$s kcal</string>
+    <string name="under_by_kcal">Under by %1$s kcal</string>
+    <string name="in_progress">In progress</string>
+    <string name="nothing_logged">Nothing logged</string>
+    <string name="open_in_food_log">Open in Food log</string>
+    <plurals name="meal_count">
+        <item quantity="one">%1$d meal</item>
+        <item quantity="other">%1$d meals</item>
+    </plurals>
 </resources>

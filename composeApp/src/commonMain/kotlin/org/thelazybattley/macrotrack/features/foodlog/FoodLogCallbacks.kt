@@ -10,6 +10,9 @@ interface FoodLogCallbacks {
     fun onDeleteFoodLog(id: Long)
     fun onDateFilterSelected(date: LocalDate)
 
+    /** Shows the date picked on the calendar, or today. */
+    fun onScreenShown()
+
 
     companion object {
         fun default() = object : FoodLogCallbacks {
@@ -26,6 +29,10 @@ interface FoodLogCallbacks {
             }
 
             override fun onDateFilterSelected(date: LocalDate) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onScreenShown() {
                 TODO("Not yet implemented")
             }
         }

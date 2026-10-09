@@ -75,6 +75,8 @@ sealed class AppDestinations {
 
         object LogWeight : Root(route = "log_weight")
 
+        object Calendar : Root(route = "calendar")
+
         object MeasurementDetail :
             Root(route = "measurement_detail", routeWithArgs = "measurement_detail/{$MEASUREMENT_TYPE}") {
             fun createRoute(type: String): String {
