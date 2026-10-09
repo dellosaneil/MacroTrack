@@ -426,14 +426,14 @@
     <string name="until">Until</string>
     <string name="pick_exact_day_hint">Tap From or Until to pick an exact day.</string>
     <string name="targets_from_weight">Targets use your weight at the time (%1$s kg on %2$s).</string>
-    <string name="past_goal_impact">%1$d days change to %2$s, including %3$d logged days. Food log, calendar and streak stats will use the new targets for those days. Your current goal isn\'t changed.</string>
+    <string name="past_goal_impact">%1$d days change to %2$s, including %3$d logged days. Food log, calendar and streak stats will use the new targets for those days. Your current goal isn't changed.</string>
     <string name="apply_to_range">Apply to %1$s – %2$s</string>
     <string name="starts_on">Starts on</string>
     <string name="ends_on">Ends on</string>
     <string name="until_value">Until %1$s</string>
     <string name="from_value">From %1$s</string>
     <string name="no_past_days_title">Nothing to change yet</string>
-    <string name="no_past_days_hint">Once you\'ve logged on an earlier day, you can change the goal that applied then.</string>
+    <string name="no_past_days_hint">Once you've logged on an earlier day, you can change the goal that applied then.</string>
     <string name="value_kcal">%1$s kcal</string>
     <string name="tap_entry_hint">Tap an entry to change it · swipe left to delete</string>
     <string name="logged_today">Logged today</string>
