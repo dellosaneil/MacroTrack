@@ -1,6 +1,10 @@
 package org.thelazybattley.macrotrack.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -181,14 +185,39 @@ fun MacroTrackTheme(
     content: @Composable () -> Unit,
 ) {
     val colors = if (darkTheme) {
-        lightMacroTrackColors
+        darkMacroTrackColors
     } else {
         lightMacroTrackColors
     }
 
-    CompositionLocalProvider(
-        LocalMacroTrackColors provides colors,
-        LocalMacroTrackTypography provides getMacroTrackTypography(),
-        content = content,
-    )
+    // Material components (sheets, text fields, ripples) read MaterialTheme, so map the app tokens onto it.
+    val colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme()
+    MaterialTheme(
+        colorScheme = colorScheme.copy(
+            primary = colors.accent,
+            onPrimary = colors.onAccent,
+            primaryContainer = colors.accentSoft,
+            onPrimaryContainer = colors.accentInk,
+            background = colors.background,
+            onBackground = colors.ink,
+            surface = colors.surface,
+            onSurface = colors.ink,
+            surfaceContainerLow = colors.surface,
+            surfaceContainer = colors.surface,
+            surfaceContainerHigh = colors.surface,
+            surfaceContainerHighest = colors.divider,
+            secondaryContainer = colors.accentSoft,
+            onSecondaryContainer = colors.accentInk,
+            onSurfaceVariant = colors.muted,
+            outline = colors.line,
+            outlineVariant = colors.divider
+        )
+    ) {
+        CompositionLocalProvider(
+            LocalMacroTrackColors provides colors,
+            LocalMacroTrackTypography provides getMacroTrackTypography(),
+            LocalContentColor provides colors.ink,
+            content = content,
+        )
+    }
 }

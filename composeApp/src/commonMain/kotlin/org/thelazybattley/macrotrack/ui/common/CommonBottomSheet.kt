@@ -34,7 +34,7 @@ fun CommonBottomSheet(
                 showBottomSheet.value = false
             },
             sheetState = bottomSheetState,
-            containerColor = colors.white,
+            containerColor = colors.surface,
         ) {
             content(
                 Modifier

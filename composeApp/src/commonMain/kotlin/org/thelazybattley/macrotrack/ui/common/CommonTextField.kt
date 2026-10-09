@@ -36,18 +36,18 @@ fun CommonTextField(
     placeholder: String,
     textValue: String,
     prefixIcon: DrawableResource? = null,
-    borderColor: Color = colors.deepBlue,
+    borderColor: Color = colors.line,
     textFieldColors: TextFieldColors = TextFieldDefaults.colors(
-        focusedContainerColor = colors.white,
-        unfocusedContainerColor = colors.white,
+        focusedContainerColor = colors.surface,
+        unfocusedContainerColor = colors.surface,
         unfocusedIndicatorColor = Color.Transparent,
         focusedIndicatorColor = Color.Transparent,
-        errorContainerColor = colors.whiteSmoke,
+        errorContainerColor = colors.surface,
         errorIndicatorColor = Color.Transparent,
-        cursorColor = colors.deepBlue,
-        disabledContainerColor = colors.iceMist,
-        focusedTextColor = colors.black,
-        unfocusedTextColor = colors.black,
+        cursorColor = colors.accent,
+        disabledContainerColor = colors.divider,
+        focusedTextColor = colors.ink,
+        unfocusedTextColor = colors.ink,
     ),
     isEnabled: Boolean = true,
     isError: Boolean = false,
@@ -77,7 +77,7 @@ fun CommonTextField(
             Text(
                 text = placeholder,
                 style = textStyle,
-                color = colors.gray
+                color = colors.faint
             )
         },
         singleLine = true,
@@ -88,7 +88,7 @@ fun CommonTextField(
                 Icon(
                     painter = painterResource(resource = prefixIcon),
                     contentDescription = null,
-                    tint = colors.gray,
+                    tint = colors.muted,
                     modifier = Modifier.size(size = 16.dp)
                 )
             }
