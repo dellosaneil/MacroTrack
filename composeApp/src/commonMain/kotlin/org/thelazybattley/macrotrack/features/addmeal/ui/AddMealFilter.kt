@@ -1,27 +1,29 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.all
 import macrotrack.composeapp.generated.resources.foods
 import macrotrack.composeapp.generated.resources.recipes
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -29,90 +31,54 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun AddMealFilter(
     modifier: Modifier = Modifier,
-    viewState: AddMealViewState,
-    onFilterSelected: (MealFilter) -> Unit,
+    selectedFilter: MealFilter,
+    onFilterSelected: (MealFilter) -> Unit
 ) {
     Row(
         modifier = modifier
-            .background(
-                color = colors.offWhite,
-                shape = RoundedCornerShape(size = 12.dp)
-            )
+            .clip(shape = RoundedCornerShape(size = 14.dp))
+            .background(color = colors.divider)
+            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 14.dp))
             .padding(all = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
     ) {
-        MealFilter.entries.forEach { foodFilter ->
-            FoodFilterChip(
-                modifier = Modifier.weight(weight = 1f),
-                mealFilter = foodFilter,
-                isSelected = foodFilter == viewState.selectedMealFilter,
+        MealFilter.entries.forEach { filter ->
+            val isSelected = filter == selectedFilter
+            Box(
+                modifier = Modifier
+                    .weight(weight = 1f)
+                    .height(height = 38.dp)
+                    .clip(shape = RoundedCornerShape(size = 10.dp))
+                    .background(color = if (isSelected) colors.surface else Color.Transparent)
+                    .clickable { onFilterSelected(filter) },
+                contentAlignment = Alignment.Center
             ) {
-                onFilterSelected(foodFilter)
+                Text(
+                    text = stringResource(resource = filter.text),
+                    style = typography.bold13,
+                    color = if (isSelected) colors.ink else colors.muted
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun FoodFilterChip(
-    modifier: Modifier = Modifier,
-    mealFilter: MealFilter,
-    isSelected: Boolean,
-    onSelected: () -> Unit
-) {
-    val background = if (isSelected) {
-        colors.iceBlue
-    } else {
-        colors.offWhite
-    }
-    val textColor = if (isSelected) {
-        colors.deepBlue
-    } else {
-        colors.gray
-    }
-
-    Card(
-        modifier = modifier
-            .clip(
-                shape = RoundedCornerShape(size = 8.dp)
-            )
-            .clickable {
-                onSelected()
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = background,
-            contentColor = textColor
-        ),
-    ) {
-        Text(
-            text = stringResource(resource = mealFilter.text),
-            style = typography.bold11,
-            modifier = Modifier
-                .padding(all = 8.dp)
-                .fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Preview(
-    showBackground = true,
-    backgroundColor = 0xffffffff
-)
-@Composable
-private fun PreviewAddMealFilter() {
-    MacroTrackTheme {
-        AddMealFilter(
-            modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
-            viewState = AddMealViewState(),
-            onFilterSelected = {}
-        )
     }
 }
 
 enum class MealFilter(
     val text: StringResource
 ) {
+    ALL(text = Res.string.all),
     FOODS(text = Res.string.foods),
     RECIPES(text = Res.string.recipes)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewAddMealFilter() {
+    MacroTrackTheme {
+        AddMealFilter(
+            modifier = Modifier.fillMaxWidth().padding(all = 16.dp),
+            selectedFilter = MealFilter.ALL,
+            onFilterSelected = {}
+        )
+    }
 }

@@ -9,40 +9,44 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.Recipe
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
+import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.DeleteFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
-import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val insertFoodLogUseCase: InsertFoodLogUseCase,
-    private val deleteFoodLogUseCase: DeleteFoodLogUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val getAllRecipeUseCase: GetAllRecipeUseCase,
     private val deleteRecipeUseCase: DeleteRecipeUseCase,
     private val deleteFoodUseCase: DeleteFoodUseCase,
+    private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
+    private val getUserDetailsUseCase: GetUserDetailsUseCase,
+    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
     savedStateHandle: SavedStateHandle
-) : ViewModel(), AddMealCallbacks.MainScreenCallbacks, AddMealCallbacks.FoodCallbacks,
-    AddMealCallbacks.RecipeCallbacks {
+) : ViewModel(), AddMealCallbacks {
 
     private val _state = MutableStateFlow(value = AddMealViewState())
     val state = _state.asStateFlow()
-    val mealType: String? = savedStateHandle["mealType"]
+    private val mealType: String? = savedStateHandle["mealType"]
 
     init {
         _state.update { currentState ->
             currentState.copy(
-                selectedMealType = MealType.valueOf(mealType ?: "")
+                selectedMealType = MealType.entries.find { it.name == mealType } ?: MealType.BREAKFAST
             )
         }
 
@@ -52,13 +56,37 @@ class AddMealViewModel(
                 flow2 = getAllRecipeUseCase()
             ) { foodList, recipeList ->
                 _state.update { currentState ->
-                    val recipeMealList =
-                        recipeToRecipeMeal(recipes = recipeList, completeFoodList = foodList)
                     currentState.copy(
                         completeFoodList = foodList,
-                        filteredFoodList = foodList,
-                        filteredRecipeList = recipeMealList,
-                        recipeList = recipeMealList
+                        recipeList = recipeToRecipeMeal(recipes = recipeList, completeFoodList = foodList)
+                    )
+                }
+            }.collect()
+        }
+
+        viewModelScope.launch {
+            combine(
+                flow = getAllFoodLogUseCase(),
+                flow2 = getUserDetailsUseCase()
+            ) { foodLogs, userDetails ->
+                val today = getCurrentDate()
+                val eatenToday = foodLogs.filter { it.date == today }.sumOf { it.calories }
+                val goal = userDetails?.let {
+                    calculateMacrosGoalUseCase(
+                        height = it.height,
+                        weight = it.weight,
+                        age = it.age,
+                        gender = it.sex,
+                        activityLevel = it.activityLevel,
+                        goal = it.goal
+                    ).calories
+                }
+                _state.update { currentState ->
+                    currentState.copy(
+                        remainingCalories = goal?.let { it - eatenToday },
+                        lastLoggedOrder = foodLogs
+                            .groupBy { it.foodName }
+                            .mapValues { (_, logs) -> logs.maxOf { it.id } }
                     )
                 }
             }.collect()
@@ -66,302 +94,155 @@ class AddMealViewModel(
     }
 
     override fun onMealFilterSelected(mealFilter: MealFilter) {
+        _state.update { currentState -> currentState.copy(selectedMealFilter = mealFilter) }
+    }
+
+    override fun onSearchQuery(query: String) {
+        _state.update { currentState -> currentState.copy(searchQuery = query) }
+    }
+
+    override fun onToggleItem(item: MealListItem) {
+        _state.update { currentState ->
+            if (currentState.selection.any { it.key == item.key }) {
+                val remaining = currentState.selection.filterNot { it.key == item.key }
+                currentState.copy(
+                    selection = remaining,
+                    focusedKey = if (currentState.focusedKey == item.key) remaining.lastOrNull()?.key else currentState.focusedKey
+                )
+            } else {
+                val amount = if (item.isRecipe) FULL_RECIPE_PERCENT else item.food.weight
+                val selected = SelectedMealItem(
+                    key = item.key,
+                    isRecipe = item.isRecipe,
+                    baseFood = item.food,
+                    amount = amount,
+                    food = adjustedFood(baseFood = item.food, isRecipe = item.isRecipe, amount = amount)
+                )
+                currentState.copy(selection = currentState.selection + selected, focusedKey = item.key)
+            }
+        }
+    }
+
+    override fun onFocusItem(key: String) {
+        _state.update { currentState ->
+            if (currentState.selection.none { it.key == key }) return@update currentState
+            // Tapping the expanded item collapses it; it stays selected.
+            currentState.copy(focusedKey = if (currentState.focusedKey == key) null else key)
+        }
+    }
+
+    override fun onAmountChanged(key: String, amount: Double) {
+        if (amount <= 0) return
         _state.update { currentState ->
             currentState.copy(
-                selectedMealFilter = mealFilter
+                selection = currentState.selection.map { item ->
+                    if (item.key != key) return@map item
+                    item.copy(
+                        amount = amount,
+                        food = adjustedFood(baseFood = item.baseFood, isRecipe = item.isRecipe, amount = amount)
+                    )
+                }
             )
+        }
+    }
+
+    override fun onAddSelection() {
+        val currentState = _state.value
+        if (currentState.selection.isEmpty() || currentState.isSaved) return
+        viewModelScope.launch {
+            currentState.selection.forEach { item ->
+                insertFoodLogUseCase(
+                    foodName = item.food.name,
+                    carbs = item.food.macros.carbs,
+                    fat = item.food.macros.fat,
+                    calories = item.food.macros.calories,
+                    protein = item.food.macros.protein,
+                    mealType = currentState.selectedMealType,
+                    weight = item.food.weight,
+                    dominantMacro = item.food.dominantMacro
+                )
+            }
+            _state.update { it.copy(isSaved = true) }
+        }
+    }
+
+    override fun onEditItem(item: MealListItem) {
+        val route = if (item.isRecipe) {
+            AppDestinations.Root.CreateRecipe.createRoute(recipeName = item.food.name)
+        } else {
+            AppDestinations.Root.CreateFood.createRoute(foodName = item.food.name)
+        }
+        onNavigateScreen(route = route)
+    }
+
+    override fun onDeleteItem(item: MealListItem) {
+        _state.update { currentState ->
+            currentState.copy(selection = currentState.selection.filterNot { it.key == item.key })
+        }
+        viewModelScope.launch {
+            if (item.isRecipe) {
+                deleteRecipeUseCase(name = item.food.name)
+            } else {
+                deleteFoodUseCase(name = item.food.name)
+            }
         }
     }
 
     override fun onNavigateScreen(route: String) {
-        _state.update { currentState ->
-            currentState.copy(
-                destinationRoute = route
-            )
-        }
+        _state.update { currentState -> currentState.copy(destinationRoute = route) }
     }
 
     override fun resetNavigateScreen() {
-        _state.update { currentState ->
-            currentState.copy(
-                destinationRoute = null
-            )
-        }
+        _state.update { currentState -> currentState.copy(destinationRoute = null) }
     }
 
-    override fun onRevertLog() {
-        if (state.value.loggedMeals.id == 0L || state.value.loggedMeals.name.isEmpty()) return
-        viewModelScope.launch {
-            deleteFoodLogUseCase(id = state.value.loggedMeals.id)
-            _state.update { currentState ->
-                val updatedList =
-                    currentState.loggedMeals.loggedMeals.toMutableList()
-                updatedList.remove(element = currentState.loggedMeals.loggedMeals.last())
-                currentState.copy(
-                    loggedMeals = currentState.loggedMeals.copy(
-                        name = "",
-                        id = 0L,
-                        loggedMeals = updatedList,
-                        totalCalories = updatedList.sumOf { it.macros.calories },
-                        totalProtein = updatedList.sumOf { it.macros.protein }.toInt(),
-                        totalFat = updatedList.sumOf { it.macros.fat }.toInt(),
-                        totalCarbs = updatedList.sumOf { it.macros.carbs }.toInt()
-                    )
-                )
-            }
-        }
-    }
-
-    private suspend fun insertFoodLog(food: Food) {
-        val id = insertFoodLogUseCase(
-            foodName = food.name,
-            carbs = food.macros.carbs,
-            fat = food.macros.fat,
-            calories = food.macros.calories,
-            protein = food.macros.protein,
-            mealType = state.value.selectedMealType,
-            weight = food.weight,
-            dominantMacro = food.dominantMacro
+    /** Recipes are logged with weight 0.0, which the food log uses to tag them as recipes. */
+    private fun adjustedFood(baseFood: Food, isRecipe: Boolean, amount: Double): Food = if (isRecipe) {
+        val fraction = amount / FULL_RECIPE_PERCENT
+        baseFood.copy(
+            macros = FoodMacros(
+                protein = baseFood.macros.protein * fraction,
+                carbs = baseFood.macros.carbs * fraction,
+                fat = baseFood.macros.fat * fraction,
+                calories = (baseFood.macros.calories * fraction).toInt()
+            ),
+            weight = 0.0
         )
-        _state.update { currentState ->
-            val updatedList =
-                currentState.loggedMeals.loggedMeals.toMutableList()
-            updatedList.add(element = food)
-            currentState.copy(
-                loggedMeals = currentState.loggedMeals.copy(
-                    name = food.name,
-                    id = id,
-                    loggedMeals = updatedList,
-                    totalCalories = updatedList.sumOf { it.macros.calories },
-                    totalProtein = updatedList.sumOf { it.macros.protein }.toInt(),
-                    totalFat = updatedList.sumOf { it.macros.fat }.toInt(),
-                    totalCarbs = updatedList.sumOf { it.macros.carbs }.toInt()
-                ),
-            )
-        }
-    }
-
-    override fun insertFood(food: Food) {
-        viewModelScope.launch {
-            insertFoodLog(food = food)
-        }
-    }
-
-    override fun customizeFoodWeight(name: String) {
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedFood = currentState.completeFoodList.find { it.name == name }
-            )
-        }
-    }
-
-    override fun closeCustomizeFoodWeight() {
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedFood = null
-            )
-        }
-    }
-
-    override fun updateWeight(portionSize: Double) {
-        _state.update { currentState ->
-            val originalFood =
-                currentState.completeFoodList
-                    .find { it.name == currentState.highlightedFood?.name }
-                    ?: return@update currentState
-            currentState.copy(
-                highlightedFood = currentState.highlightedFood?.copy(
-                    macros = calculateAdjustMacrosUseCase(
-                        portionSize = portionSize,
-                        originalFood = originalFood
-                    ),
-                    weight = portionSize
-                )
-            )
-        }
-    }
-
-    override fun addCustomizedFood() {
-        if (_state.value.highlightedFood == null) {
-            return
-        }
-        viewModelScope.launch {
-            insertFoodLog(food = _state.value.highlightedFood!!)
-        }
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedFood = null
-            )
-        }
-    }
-
-    override fun updateFood(name: String) {
-        _state.update { currentState ->
-            currentState.copy(
-                destinationRoute = AppDestinations.Root.CreateFood.createRoute(foodName = name)
-            )
-        }
-    }
-
-    override fun onPercentageEatenValue(value: Double) {
-        _state.update { currentState ->
-            if (currentState.highlightedRecipe == null) return@update currentState
-            val recipeMeal =
-                currentState.recipeList.find { it.name == currentState.highlightedRecipe.name }
-                    ?: return@update currentState
-            currentState.copy(
-                highlightedRecipe = recipeMeal.copy(
-                    food = recipeMeal.food.copy(
-                        macros = recipeMeal.food.macros.copy(
-                            protein = recipeMeal.food.macros.protein * value / 100,
-                            carbs = recipeMeal.food.macros.carbs * value / 100,
-                            fat = recipeMeal.food.macros.fat * value / 100,
-                            calories = (recipeMeal.food.macros.calories * value / 100).toInt(),
-                        )
-                    ),
-                    percentage = value
-                )
-            )
-        }
-    }
-
-    override fun insertSelectedRecipe() {
-        viewModelScope.launch {
-            if (state.value.highlightedRecipe == null) return@launch
-            insertFoodLog(food = state.value.highlightedRecipe!!.food)
-        }
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedRecipe = null,
-            )
-        }
-    }
-
-    override fun insertRecipe(name: String, percentage: Double) {
-        val recipe = _state.value.recipeList.find { it.name == name } ?: return
-        viewModelScope.launch {
-            val food = Food(
-                macros = FoodMacros(
-                    protein = recipe.food.macros.protein * percentage,
-                    carbs = recipe.food.macros.carbs * percentage,
-                    fat = recipe.food.macros.fat * percentage,
-                    calories = (recipe.food.macros.calories * percentage).toInt()
-                ),
-                name = recipe.food.name,
-                weight = 0.0,
-                dominantMacro = recipe.food.dominantMacro,
-                unit = recipe.food.unit
-            )
-            insertFoodLog(food = food)
-        }
-        viewModelScope.launch {
-            _state.update { currentState ->
-                currentState.copy(
-                    highlightedRecipe = null
-                )
-            }
-        }
-    }
-
-    override fun onRecipeSelected(name: String) {
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedRecipe = currentState.recipeList.find { it.name == name }
-            )
-        }
-    }
-
-    override fun closeSelectedRecipe() {
-        _state.update { currentState ->
-            currentState.copy(
-                highlightedRecipe = null
-            )
-        }
+    } else {
+        baseFood.copy(
+            macros = calculateAdjustMacrosUseCase(portionSize = amount, originalFood = baseFood),
+            weight = amount
+        )
     }
 
     private fun recipeToRecipeMeal(
         recipes: List<Recipe>,
         completeFoodList: List<Food>
-    ): List<RecipeMeal> {
-        val recipeMealList = recipes.map { recipe ->
-            val foodList = mutableListOf<Food>()
-            recipe.ingredients.map { ingredient ->
-                val ingredientAsFood =
-                    completeFoodList.find { it.name == ingredient.name }
-                        ?: return@map null
-                val foodMacros = calculateAdjustMacrosUseCase(
-                    portionSize = ingredient.weight,
-                    originalFood = ingredientAsFood
-                )
-                foodList.add(
-                    element = Food(
-                        macros = foodMacros,
-                        name = ingredient.name,
-                        weight = ingredient.weight,
-                        dominantMacro = ingredientAsFood.dominantMacro,
-                        unit = ingredientAsFood.unit
-                    )
-                )
-            }
-            val food = Food(
+    ): List<RecipeMeal> = recipes.map { recipe ->
+        val ingredients = recipe.ingredients.mapNotNull { ingredient ->
+            val ingredientAsFood = completeFoodList.find { it.name == ingredient.name } ?: return@mapNotNull null
+            calculateAdjustMacrosUseCase(portionSize = ingredient.weight, originalFood = ingredientAsFood)
+        }
+        RecipeMeal(
+            food = Food(
                 macros = FoodMacros(
-                    protein = foodList.sumOf { it.macros.protein },
-                    carbs = foodList.sumOf { it.macros.carbs },
-                    fat = foodList.sumOf { it.macros.fat },
-                    calories = foodList.sumOf { it.macros.calories }
+                    protein = ingredients.sumOf { it.protein },
+                    carbs = ingredients.sumOf { it.carbs },
+                    fat = ingredients.sumOf { it.fat },
+                    calories = ingredients.sumOf { it.calories }
                 ),
                 name = recipe.name,
                 weight = 0.0,
                 dominantMacro = recipe.dominantMacro,
                 unit = "serving"
-            )
-            RecipeMeal(
-                food = food,
-                ingredients = recipe.ingredients,
-                percentage = 1.0,
-                name = recipe.name
-            )
-        }
-        return recipeMealList
+            ),
+            ingredients = recipe.ingredients,
+            percentage = 1.0,
+            name = recipe.name
+        )
     }
 
-    override fun onSearchQuery(query: String) {
-        _state.update { currentState ->
-            currentState.copy(
-                filteredFoodList = currentState.completeFoodList.filter { food ->
-                    food.name.contains(
-                        other = query,
-                        ignoreCase = true
-                    )
-                },
-                filteredRecipeList = currentState.recipeList.filter { recipe ->
-                    recipe.name.contains(
-                        other = query,
-                        ignoreCase = true
-                    )
-                },
-                searchQuery = query
-            )
-        }
-    }
-
-    override fun updateRecipe(name: String) {
-        _state.update { currentState ->
-            currentState.copy(
-                destinationRoute = AppDestinations.Root.CreateRecipe.createRoute(recipeName = name)
-            )
-        }
-    }
-
-    override fun deleteRecipe(name: String) {
-        viewModelScope.launch {
-            deleteRecipeUseCase(name = name)
-        }
-    }
-
-    override fun deleteFood(name: String) {
-        viewModelScope.launch {
-            deleteFoodUseCase(name = name)
-        }
+    companion object {
+        const val FULL_RECIPE_PERCENT = 100.0
     }
 }

@@ -256,6 +256,24 @@
     <string name="entries">Entries</string>
     <string name="no_weight_logged_for_period">No weight logged for this period</string>
     <string name="all_time_since">All time · since %1$s</string>
+    <string name="adding_to">Adding to</string>
+    <string name="search_foods_and_recipes">Search foods and recipes</string>
+    <string name="new_food_button">New food</string>
+    <string name="new_recipe_button">New recipe</string>
+    <string name="add_items_to_meal">Add %1$s to %2$s</string>
+    <string name="add_value">Add %1$s</string>
+    <string name="remove_value">Remove %1$s</string>
+    <string name="decrease_portion">Decrease portion</string>
+    <string name="increase_portion">Increase portion</string>
+    <string name="one_serving">1 serving</string>
+    <string name="no_items_match">No foods or recipes match "%1$s"</string>
+    <string name="no_saved_items">No saved foods or recipes yet</string>
+    <string name="add_count">Add %1$d</string>
+    <string name="selected_summary">%1$d selected · %2$s kcal</string>
+    <string name="after_adding_left">After adding: %1$s kcal left</string>
+    <string name="base_serving">Base serving %1$s %2$s</string>
+    <string name="recipe_full_serving">1 serving = 100%</string>
+    <string name="percent_of_serving">%1$s% of a serving</string>
     <plurals name="items">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>
