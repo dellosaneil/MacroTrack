@@ -55,7 +55,11 @@ fun AppBottomNav() {
                 OnboardingScreen(
                     modifier = Modifier
                 ) {
-                    navController.navigate(route = AppDestinations.Root.MainScreen.route)
+                    navController.navigate(route = AppDestinations.Root.MainScreen.route) {
+                        popUpTo(route = AppDestinations.Root.Onboarding.route) {
+                            inclusive = true
+                        }
+                    }
                 }
             }
             composable(route = AppDestinations.Root.MainScreen.route) {

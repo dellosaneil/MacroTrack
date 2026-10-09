@@ -72,6 +72,7 @@ import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationCallbacks
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewModel
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewState
+import org.thelazybattley.macrotrack.ui.common.CommonActivityLevelOption
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -335,75 +336,13 @@ private fun ActivityLevelSection(
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         SectionLabel(text = stringResource(resource = Res.string.activity_level_camel))
         ActivityLevel.entries.forEachIndexed { index, activityLevel ->
-            ActivityLevelOption(
+            CommonActivityLevelOption(
                 level = index,
                 activityLevel = activityLevel,
                 isSelected = activityLevel == selected,
                 onClick = { onSelected(activityLevel) }
             )
         }
-    }
-}
-
-@Composable
-private fun ActivityLevelOption(
-    level: Int,
-    activityLevel: ActivityLevel,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val shape = RoundedCornerShape(size = 16.dp)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 60.dp)
-            .clip(shape = shape)
-            .background(color = if (isSelected) colors.accentSoft else colors.surface)
-            .border(width = 1.5.dp, color = if (isSelected) colors.accent else colors.line, shape = shape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 14.dp)
-    ) {
-        Row(
-            modifier = Modifier.width(width = 28.dp).height(height = 22.dp),
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(space = 3.dp)
-        ) {
-            repeat(times = ActivityLevel.entries.size) { bar ->
-                Box(
-                    modifier = Modifier
-                        .width(width = 3.dp)
-                        .height(height = (6 + bar * 4).dp)
-                        .background(
-                            color = if (bar <= level) colors.accent else colors.line,
-                            shape = RoundedCornerShape(size = 2.dp)
-                        )
-                )
-            }
-        }
-        Column(modifier = Modifier.weight(weight = 1f)) {
-            Text(
-                text = stringResource(resource = activityLevel.titleRes()),
-                style = typography.bold15,
-                color = colors.ink
-            )
-            Text(
-                text = stringResource(resource = activityLevel.descriptionRes()),
-                style = typography.regular11,
-                color = colors.muted
-            )
-        }
-        Box(
-            modifier = Modifier
-                .size(size = 18.dp)
-                .background(color = colors.surface, shape = CircleShape)
-                .border(
-                    width = if (isSelected) 6.dp else 2.dp,
-                    color = if (isSelected) colors.accent else colors.faint,
-                    shape = CircleShape
-                )
-        )
     }
 }
 

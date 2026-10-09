@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
@@ -16,7 +17,7 @@ class SplashViewModel(private val getUserDetailsUseCase: GetUserDetailsUseCase) 
 
     init {
         viewModelScope.launch {
-            getUserDetailsUseCase().also { user ->
+            getUserDetailsUseCase().first().also { user ->
                 val destination = if (user == null) {
                     AppDestinations.Root.Onboarding
                 } else {

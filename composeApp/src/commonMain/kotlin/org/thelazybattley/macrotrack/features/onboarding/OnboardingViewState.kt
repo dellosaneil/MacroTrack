@@ -15,5 +15,14 @@ data class OnboardingViewState(
     val height: Double = 0.0,
     val weight: Double = 0.0,
     val macroGoals: MacroGoals? = null,
+    val maintenanceCalories: Int? = null,
     val isFinished: Boolean = false
-)
+) {
+    val canContinue: Boolean
+        get() = when (currentStep) {
+            OnboardingStep.GOAL_AND_STATS ->
+                age > 0 && height > 0 && weight > 0 && selectedGoal != null && selectedGender != null
+            OnboardingStep.ACTIVITY_LEVEL -> selectedActivityLevel != null
+            OnboardingStep.SUMMARY -> macroGoals != null
+        }
+}

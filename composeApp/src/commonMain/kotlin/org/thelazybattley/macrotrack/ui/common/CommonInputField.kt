@@ -36,7 +36,8 @@ fun CommonInputField(
     isError: Boolean = false,
     enabled: Boolean = true,
     cornerRadius: Dp = 14.dp,
-    horizontalPadding: Dp = 14.dp
+    horizontalPadding: Dp = 14.dp,
+    showBorder: Boolean = true
 ) {
     val shape = RoundedCornerShape(size = cornerRadius)
     val borderColor = when {
@@ -55,7 +56,13 @@ fun CommonInputField(
         modifier = modifier
             .clip(shape = shape)
             .background(color = if (enabled) colors.surface else colors.divider)
-            .border(width = if (isHighlighted || isError) 1.5.dp else 1.dp, color = borderColor, shape = shape),
+            .then(
+                if (showBorder) {
+                    Modifier.border(width = if (isHighlighted || isError) 1.5.dp else 1.dp, color = borderColor, shape = shape)
+                } else {
+                    Modifier
+                }
+            ),
         decorationBox = { innerTextField ->
             Box(
                 modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding),

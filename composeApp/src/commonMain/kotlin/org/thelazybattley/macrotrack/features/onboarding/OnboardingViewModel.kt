@@ -6,131 +6,105 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.UserSex
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.CalculateTDEEUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingStep
 
 class OnboardingViewModel(
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    private val calculateTDEEUseCase: CalculateTDEEUseCase,
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
-) :
-    ViewModel(), OnboardingCallbacks {
+) : ViewModel(), OnboardingCallbacks {
+
     private val _state = MutableStateFlow(value = OnboardingViewState())
     val state = _state.asStateFlow()
 
     override fun onGoalSelected(goal: Goal) {
-        _state.update { currentState ->
-            currentState.copy(
-                selectedGoal = goal
-            )
-        }
+        _state.update { it.copy(selectedGoal = goal).withPlan() }
     }
 
     override fun onActivityLevelSelected(activityLevel: ActivityLevel) {
-        _state.update { currentState ->
-            currentState.copy(
-                selectedActivityLevel = activityLevel
-            )
-        }
+        _state.update { it.copy(selectedActivityLevel = activityLevel).withPlan() }
     }
 
     override fun onGenderSelected(gender: UserSex) {
-        _state.update { currentState ->
-            currentState.copy(
-                selectedGender = gender
-            )
-        }
-    }
-
-    override fun onContinueClicked() {
-        if (_state.value.currentStep == OnboardingStep.SUMMARY) {
-            viewModelScope.launch {
-                val userDetails = UserDetails(
-                    weight = _state.value.weight,
-                    age = _state.value.age,
-                    height = _state.value.height,
-                    sex = _state.value.selectedGender!!,
-                    activityLevel = _state.value.selectedActivityLevel!!,
-                    goal = _state.value.selectedGoal!!,
-                )
-                insertUserDetailsUseCase(
-                    userDetails = userDetails
-                ).also {
-                    _state.update { currentState ->
-                        currentState.copy(
-                            isFinished = true
-                        )
-                    }
-                }
-            }
-            return
-        }
-
-
-        _state.update { currentState ->
-            val nextStepNumber = currentState.currentStep.ordinal.inc()
-            var macroGoals: MacroGoals? = null
-            if (nextStepNumber == OnboardingStep.SUMMARY.ordinal && listOf(
-                    currentState.selectedGender,
-                    currentState.selectedActivityLevel,
-                    currentState.selectedGoal
-                ).all { it != null }
-            ) {
-                macroGoals = calculateMacrosGoalUseCase(
-                    height = currentState.height,
-                    weight = currentState.weight,
-                    age = currentState.age,
-                    gender = currentState.selectedGender!!,
-                    activityLevel = currentState.selectedActivityLevel!!,
-                    goal = currentState.selectedGoal!!
-                )
-            }
-            currentState.copy(
-                currentStep = OnboardingStep.entries.firstOrNull { it.ordinal == nextStepNumber }
-                    ?: OnboardingStep.GOAL_AND_STATS,
-                macroGoals = macroGoals
-            )
-
-        }
+        _state.update { it.copy(selectedGender = gender).withPlan() }
     }
 
     override fun onAgeUpdated(age: Int) {
-        _state.update { currentState ->
-            currentState.copy(
-                age = age
-            )
-        }
+        _state.update { it.copy(age = age).withPlan() }
     }
 
     override fun onHeightUpdated(height: Double) {
-        _state.update { currentState ->
-            currentState.copy(
-                height = height
-            )
-        }
+        _state.update { it.copy(height = height).withPlan() }
     }
 
     override fun onWeightUpdated(weight: Double) {
-        _state.update { currentState ->
-            currentState.copy(
-                weight = weight
-            )
+        _state.update { it.copy(weight = weight).withPlan() }
+    }
+
+    override fun onContinueClicked() {
+        val currentState = _state.value
+        if (!currentState.canContinue) return
+        if (currentState.currentStep == OnboardingStep.SUMMARY) {
+            val gender = currentState.selectedGender ?: return
+            val activityLevel = currentState.selectedActivityLevel ?: return
+            val goal = currentState.selectedGoal ?: return
+            viewModelScope.launch {
+                insertUserDetailsUseCase(
+                    userDetails = UserDetails(
+                        weight = currentState.weight,
+                        age = currentState.age,
+                        height = currentState.height,
+                        sex = gender,
+                        activityLevel = activityLevel,
+                        goal = goal
+                    )
+                )
+                _state.update { it.copy(isFinished = true) }
+            }
+            return
+        }
+        _state.update {
+            it.copy(currentStep = OnboardingStep.entries[it.currentStep.ordinal + 1])
         }
     }
 
     override fun onBackClicked() {
-        _state.update { currentState ->
-            val nextStepNumber = currentState.currentStep.ordinal.dec()
-            currentState.copy(
-                currentStep = OnboardingStep.entries.firstOrNull { it.ordinal == nextStepNumber }
-                    ?: OnboardingStep.GOAL_AND_STATS
-            )
+        _state.update {
+            it.copy(currentStep = OnboardingStep.entries[(it.currentStep.ordinal - 1).coerceAtLeast(minimumValue = 0)])
         }
     }
 
+    /** Recalculates the daily target as soon as every input is known. */
+    private fun OnboardingViewState.withPlan(): OnboardingViewState {
+        val gender = selectedGender
+        val activityLevel = selectedActivityLevel
+        val goal = selectedGoal
+        if (gender == null || activityLevel == null || goal == null || age <= 0 || height <= 0 || weight <= 0) {
+            return copy(macroGoals = null, maintenanceCalories = null)
+        }
+        return copy(
+            macroGoals = calculateMacrosGoalUseCase(
+                height = height,
+                weight = weight,
+                age = age,
+                gender = gender,
+                activityLevel = activityLevel,
+                goal = goal
+            ),
+            maintenanceCalories = calculateTDEEUseCase(
+                height = height,
+                weight = weight,
+                age = age,
+                gender = gender,
+                activityLevel = activityLevel
+            )
+        )
+    }
 }

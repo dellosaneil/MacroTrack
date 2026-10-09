@@ -351,6 +351,13 @@
     <string name="where_calories_come_from">Where your calories come from</string>
     <string name="most_logged">Most logged</string>
     <string name="no_food_logged_in_range">No food logged in this period yet</string>
+    <string name="step_of">Step %1$d of %2$d</string>
+    <string name="your_main_goal_title">Your main goal</string>
+    <string name="your_stats_title">Your stats</string>
+    <string name="how_active_title">How active are you?</string>
+    <string name="typical_week_sets_target">Your typical week sets your daily calorie target.</string>
+    <string name="estimated_daily_target">Estimated daily target</string>
+    <string name="weight_kg_label">Weight</string>
     <plurals name="items">
         <item quantity="one">%1$d item</item>
         <item quantity="other">%1$d items</item>
