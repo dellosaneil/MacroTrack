@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.foodlog
 
+import org.thelazybattley.macrotrack.core.KEY_BACKSPACE
+import org.thelazybattley.macrotrack.core.KEY_DECIMAL
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.dummyFoodLog
 import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
@@ -59,6 +61,13 @@ class EntryEditTest {
     }
 
     @Test
+    fun unchangedAmountWithManyDecimalsIsNotAChange() {
+        val edit = EntryEdit(log = bowl, originalAmount = 100.0 / 3, unit = "%")
+        assertEquals("33.33", edit.amountText)
+        assertFalse(edit.hasChanges)
+    }
+
+    @Test
     fun recipeBaseCaloriesIsAFullServing() {
         val edit = EntryEdit(log = bowl.copy(calories = 310), originalAmount = 50.0, unit = "%")
         assertEquals(620, edit.baseCalories)
@@ -81,7 +90,8 @@ class EntryEditTest {
         val half = edit.typed(key = KEY_DECIMAL).typed(key = '5')
         assertEquals("0.5", half.amountText)
         assertEquals("0.5", half.typed(key = KEY_DECIMAL).amountText)
-        assertEquals("0.5", half.typed(key = '2').amountText)
+        assertEquals("0.52", half.typed(key = '2').amountText)
+        assertEquals("0.52", half.typed(key = '2').typed(key = '9').amountText)
         assertEquals("7", edit.typed(key = '0').typed(key = '7').amountText)
         assertEquals("x", edit.typed(key = 'x').let { if (it == edit) "x" else it.amountText })
     }

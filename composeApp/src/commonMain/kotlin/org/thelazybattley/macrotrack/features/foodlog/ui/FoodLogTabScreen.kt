@@ -66,6 +66,7 @@ import macrotrack.composeapp.generated.resources.meals
 import macrotrack.composeapp.generated.resources.nothing_logged_yet
 import macrotrack.composeapp.generated.resources.p_c_f
 import macrotrack.composeapp.generated.resources.p_value_gram
+import macrotrack.composeapp.generated.resources.percent_value
 import macrotrack.composeapp.generated.resources.recipe
 import macrotrack.composeapp.generated.resources.streak_open_calendar
 import macrotrack.composeapp.generated.resources.today
@@ -78,6 +79,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.core.toCleanString
+import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.MealType
@@ -92,6 +94,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import kotlin.math.roundToInt
 
 @Composable
 fun FoodLogTabScreen(
@@ -180,6 +183,7 @@ private fun FoodLogTabScreen(
                 foodList = meal,
                 isToday = isToday,
                 foodUnit = viewState.foodUnit,
+                recipeCalories = viewState.recipeCalories,
                 onDeleteFoodLog = { id ->
                     callbacks.onDeleteFoodLog(id = id)
                 },
@@ -355,6 +359,7 @@ private fun LoggedFoodMealType(
     isToday: Boolean,
     foodList: FoodLogFoodListByMealType,
     foodUnit: Map<String, String>,
+    recipeCalories: Map<String, Int>,
     onDeleteFoodLog: (Long) -> Unit,
     onOpenEntry: (FoodLog) -> Unit,
     onNavigate: () -> Unit
@@ -410,7 +415,10 @@ private fun LoggedFoodMealType(
                             ) { onOpenEntry(food) }
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                         food = food,
-                        unit = foodUnit[food.foodName] ?: ""
+                        unit = foodUnit[food.foodName] ?: "",
+                        recipePercent = recipeCalories[food.foodName]?.let {
+                            recipePercentEaten(loggedCalories = food.calories, fullCalories = it)
+                        }
                     )
                 }
             }
@@ -528,7 +536,9 @@ private fun MealTypeHeader(
 private fun FoodLogItem(
     modifier: Modifier = Modifier,
     food: FoodLog,
-    unit: String
+    unit: String,
+    /** The share of a full recipe serving eaten; null for a food, or a recipe that no longer exists. */
+    recipePercent: Double? = null
 ) {
     val isRecipe = food.weight == 0.0
     Row(
@@ -561,7 +571,14 @@ private fun FoodLogItem(
                             .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 6.dp))
                             .padding(horizontal = 6.dp, vertical = 1.dp)
                     )
-                } else {
+                }
+                if (isRecipe && recipePercent != null) {
+                    Text(
+                        text = "· " + stringResource(resource = Res.string.percent_value, recipePercent.roundToInt()),
+                        style = typography.regular13,
+                        color = colors.muted
+                    )
+                } else if (!isRecipe) {
                     Text(
                         text = "· " + stringResource(
                             resource = Res.string.value_unit,

@@ -11,32 +11,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.base_serving
 import macrotrack.composeapp.generated.resources.decrease_portion
+import macrotrack.composeapp.generated.resources.edit_amount
 import macrotrack.composeapp.generated.resources.increase_portion
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.percentage_eaten
@@ -67,10 +63,7 @@ fun AddMealPortionEditor(
         else -> 0.5
     }
     val unit = if (item.isRecipe) "%" else item.baseFood.unit
-    var text by remember(key1 = item.key) { mutableStateOf(value = item.amount.toCleanString()) }
-    LaunchedEffect(key1 = item.amount) {
-        if (text.toDoubleOrNull() != item.amount) text = item.amount.toCleanString()
-    }
+    var isKeypadOpen by rememberSaveable(item.key) { mutableStateOf(value = false) }
 
     Column(
         modifier = modifier,
@@ -142,28 +135,23 @@ fun AddMealPortionEditor(
                     enabled = item.amount - step > 0,
                     onClick = { onAmountChanged(item.key, (item.amount - step).roundTo(step = step)) }
                 )
-                BasicTextField(
-                    value = text,
-                    onValueChange = { value ->
-                        if (value.length > 6 || value.count { it == '.' } > 1 || value.any { !it.isDigit() && it != '.' }) {
-                            return@BasicTextField
-                        }
-                        text = value
-                        value.toDoubleOrNull()?.takeIf { it > 0 }?.let { onAmountChanged(item.key, it) }
-                    },
-                    singleLine = true,
-                    textStyle = typography.bold16.copy(color = colors.ink, textAlign = TextAlign.End),
-                    cursorBrush = SolidColor(value = colors.accent),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.width(width = 48.dp)
-                )
-                Text(
-                    text = unit,
-                    style = typography.regular13,
-                    color = colors.muted,
-                    maxLines = 1,
-                    modifier = Modifier.padding(end = 4.dp)
-                )
+                val editAmountText = stringResource(resource = Res.string.edit_amount)
+                Row(
+                    modifier = Modifier
+                        .widthIn(min = 64.dp)
+                        .height(height = 40.dp)
+                        .clip(shape = RoundedCornerShape(size = 9.dp))
+                        .background(color = colors.surface)
+                        .border(width = 1.5.dp, color = colors.accent, shape = RoundedCornerShape(size = 9.dp))
+                        .clickable(role = Role.Button) { isKeypadOpen = true }
+                        .semantics { contentDescription = editAmountText }
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(space = 3.dp, alignment = Alignment.CenterHorizontally)
+                ) {
+                    Text(text = item.amount.toCleanString(), style = typography.bold16, color = colors.ink, maxLines = 1)
+                    Text(text = unit, style = typography.regular13, color = colors.muted, maxLines = 1)
+                }
                 StepperButton(
                     label = "+",
                     contentDescription = stringResource(resource = Res.string.increase_portion),
@@ -172,6 +160,14 @@ fun AddMealPortionEditor(
                 )
             }
         }
+    }
+    if (isKeypadOpen) {
+        AddMealKeypadSheet(
+            item = item,
+            unit = unit,
+            onAmountChanged = { amount -> onAmountChanged(item.key, amount) },
+            onDismiss = { isKeypadOpen = false }
+        )
     }
 }
 
