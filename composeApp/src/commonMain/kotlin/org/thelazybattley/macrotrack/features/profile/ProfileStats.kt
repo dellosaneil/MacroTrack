@@ -7,7 +7,6 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.FoodLog
-import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.calendar.bestStreak
@@ -17,11 +16,13 @@ import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-private const val KCAL_PER_KG = 7700.0
 private const val DAYS_PER_WEEK = 7
+private const val MIN_TREND_DAYS = 7
+private const val MIN_WEEKLY_KG = 0.05
 
 fun calculateGoalProgress(
     userDetails: UserDetails,
+    weights: List<Weight>,
     today: LocalDate
 ): GoalProgress? {
     val target = userDetails.targetWeight ?: return null
@@ -34,20 +35,20 @@ fun calculateGoalProgress(
     val progress = if (totalKg == 0.0) 1f else (achievedKg / totalKg).toFloat().coerceIn(0f, 1f)
     val remainingKg = if (isGaining) target - current else current - target
 
-    val goalMatchesDirection = when (userDetails.goal) {
-        Goal.LOSE_WEIGHT -> !isGaining
-        Goal.GAIN_WEIGHT -> isGaining
-        Goal.MAINTAIN_WEIGHT -> false
+    val weeklyChange = startDate?.let {
+        weeklyTrend(startDate = it, startWeight = start, weights = weights, today = today)
     }
-    val weeklyKg = abs(userDetails.goal.calorieAdjust) * DAYS_PER_WEEK / KCAL_PER_KG
+    // Positive when the trend moves toward the target.
+    val weeklyKgTowardTarget = weeklyChange?.let { if (isGaining) it else -it }
 
     val status = when {
         remainingKg <= 0.0 -> GoalStatus.REACHED
-        !goalMatchesDirection || weeklyKg == 0.0 -> GoalStatus.GOAL_MISMATCH
+        weeklyKgTowardTarget == null -> GoalStatus.NEEDS_MORE_DATA
+        weeklyKgTowardTarget < MIN_WEEKLY_KG -> GoalStatus.OFF_TRACK
         else -> GoalStatus.ON_TRACK
     }
-    val estimatedDate = if (status == GoalStatus.ON_TRACK) {
-        val days = ceil(remainingKg / weeklyKg * DAYS_PER_WEEK).toInt()
+    val estimatedDate = if (status == GoalStatus.ON_TRACK && weeklyKgTowardTarget != null) {
+        val days = ceil(remainingKg / weeklyKgTowardTarget * DAYS_PER_WEEK).toInt()
         today.plus(period = DatePeriod(days = days))
     } else {
         null
@@ -63,8 +64,38 @@ fun calculateGoalProgress(
         totalKg = totalKg,
         progress = progress,
         status = status,
+        weeklyChange = weeklyChange,
         estimatedDate = estimatedDate
     )
+}
+
+/**
+ * Least-squares slope, in kg per week, of the start weight and every weigh-in after the start date.
+ * Null until the weigh-ins span at least a week, since a shorter span is mostly day-to-day noise.
+ */
+internal fun weeklyTrend(
+    startDate: LocalDate,
+    startWeight: Double,
+    weights: List<Weight>,
+    today: LocalDate
+): Double? {
+    val points = listOf(0.0 to startWeight) + weights
+        .filter { it.date > startDate && it.date <= today }
+        .map { (it.date.toEpochDays() - startDate.toEpochDays()).toDouble() to it.weight }
+    if (points.size < 2 || points.maxOf { it.first } < MIN_TREND_DAYS) return null
+    val meanDay = points.sumOf { it.first } / points.size
+    val meanWeight = points.sumOf { it.second } / points.size
+    val covariance = points.sumOf { (day, weight) -> (day - meanDay) * (weight - meanWeight) }
+    val variance = points.sumOf { (day, _) -> (day - meanDay) * (day - meanDay) }
+    return covariance / variance * DAYS_PER_WEEK
+}
+
+/**
+ * The weight to start from on [date]: the last weigh-in on or before it, else the first after it.
+ */
+fun startWeightOn(date: LocalDate, weights: List<Weight>): Weight? {
+    val sorted = weights.sortedBy { it.date }
+    return sorted.lastOrNull { it.date <= date } ?: sorted.firstOrNull()
 }
 
 fun calculateWeekSummary(

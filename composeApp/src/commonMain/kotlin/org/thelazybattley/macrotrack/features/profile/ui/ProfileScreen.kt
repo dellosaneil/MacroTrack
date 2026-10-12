@@ -28,11 +28,13 @@ import macrotrack.composeapp.generated.resources.save_target
 import macrotrack.composeapp.generated.resources.target_weight
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.features.profile.ProfileCallbacks
 import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
 import org.thelazybattley.macrotrack.features.profile.ProfileViewState
 import org.thelazybattley.macrotrack.ui.common.CommonBottomSheet
+import org.thelazybattley.macrotrack.ui.common.CommonDatePickerDialog
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.common.CommonTextField
@@ -71,6 +73,7 @@ fun ProfileScreen(
     onLogWeight: () -> Unit = {}
 ) {
     val showTargetWeightSheet = remember { mutableStateOf(value = false) }
+    var showStartDatePicker by remember { mutableStateOf(value = false) }
 
     Column(
         modifier = modifier.verticalScroll(state = rememberScrollState()),
@@ -85,7 +88,8 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth(),
             goalProgress = viewState.goalProgress,
             onLogWeight = onLogWeight,
-            onSetTarget = { showTargetWeightSheet.value = true }
+            onSetTarget = { showTargetWeightSheet.value = true },
+            onStartDateClick = { showStartDatePicker = true }
         )
         viewState.weekSummary?.let { weekSummary ->
             ProfileThisWeek(
@@ -101,6 +105,18 @@ fun ProfileScreen(
             targetWeight = viewState.userDetails?.targetWeight,
             onNavigate = callbacks::onNavigate,
             onTargetWeightClick = { showTargetWeightSheet.value = true }
+        )
+    }
+
+    if (showStartDatePicker) {
+        CommonDatePickerDialog(
+            selected = viewState.goalProgress?.startDate ?: getCurrentDate(),
+            minDate = viewState.firstWeightDate,
+            onDismiss = { showStartDatePicker = false },
+            onConfirm = { date ->
+                showStartDatePicker = false
+                callbacks.onStartDateSelected(date = date)
+            }
         )
     }
 

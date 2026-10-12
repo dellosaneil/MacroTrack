@@ -82,14 +82,16 @@ fun CommonDateButton(
 @Composable
 fun CommonDatePickerDialog(
     selected: LocalDate,
+    minDate: LocalDate? = null,
     onDismiss: () -> Unit,
     onConfirm: (LocalDate) -> Unit
 ) {
     val todayMillis = getCurrentDate().toEpochDays() * MILLIS_PER_DAY
+    val minMillis = minDate?.let { it.toEpochDays() * MILLIS_PER_DAY } ?: Long.MIN_VALUE
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selected.toEpochDays() * MILLIS_PER_DAY,
         selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis <= todayMillis
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis in minMillis..todayMillis
         }
     )
     DatePickerDialog(

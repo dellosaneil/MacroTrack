@@ -225,7 +225,11 @@
     <string name="target_value_kg">Target %1$s kg</string>
     <string name="on_track_to_reach_target">On track to reach your target around %1$s</string>
     <string name="target_reached">You've reached your target weight</string>
-    <string name="change_goal_to_reach_target">Change your nutrition goal to move toward this target</string>
+    <string name="not_trending_toward_target">Not trending toward your target yet</string>
+    <string name="log_weight_to_estimate_target">Log your weight for a week to estimate when you'll reach your target</string>
+    <string name="losing_kg_per_week_since">Losing %1$s kg a week since %2$s</string>
+    <string name="gaining_kg_per_week_since">Gaining %1$s kg a week since %2$s</string>
+    <string name="change_start_date">Change start date</string>
     <string name="set_target_weight_prompt">Set a target weight to track your progress</string>
     <string name="set_target">Set target</string>
     <string name="this_week">This week</string>

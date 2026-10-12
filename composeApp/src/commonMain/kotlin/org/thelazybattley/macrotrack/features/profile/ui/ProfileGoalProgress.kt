@@ -25,10 +25,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.change_goal_to_reach_target
+import macrotrack.composeapp.generated.resources.change_start_date
+import macrotrack.composeapp.generated.resources.gaining_kg_per_week_since
 import macrotrack.composeapp.generated.resources.goal_progress
+import macrotrack.composeapp.generated.resources.ic_calendar
 import macrotrack.composeapp.generated.resources.ic_nav_log
+import macrotrack.composeapp.generated.resources.ic_trend_flat
 import macrotrack.composeapp.generated.resources.log_weight
+import macrotrack.composeapp.generated.resources.log_weight_to_estimate_target
+import macrotrack.composeapp.generated.resources.losing_kg_per_week_since
+import macrotrack.composeapp.generated.resources.not_trending_toward_target
 import macrotrack.composeapp.generated.resources.now_value_kg
 import macrotrack.composeapp.generated.resources.of_value_kg_gained
 import macrotrack.composeapp.generated.resources.of_value_kg_lost
@@ -53,7 +59,8 @@ fun ProfileGoalProgress(
     modifier: Modifier = Modifier,
     goalProgress: GoalProgress?,
     onLogWeight: () -> Unit,
-    onSetTarget: () -> Unit
+    onSetTarget: () -> Unit,
+    onStartDateClick: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -110,13 +117,13 @@ fun ProfileGoalProgress(
             )
             return@Column
         }
-        GoalProgressBar(goalProgress = goalProgress)
+        GoalProgressBar(goalProgress = goalProgress, onStartDateClick = onStartDateClick)
         GoalStatusRow(goalProgress = goalProgress)
     }
 }
 
 @Composable
-private fun GoalProgressBar(goalProgress: GoalProgress) {
+private fun GoalProgressBar(goalProgress: GoalProgress, onStartDateClick: () -> Unit) {
     val animatedProgress by animateFloatAsState(
         targetValue = goalProgress.progress,
         animationSpec = tween(durationMillis = 1000)
@@ -137,19 +144,16 @@ private fun GoalProgressBar(goalProgress: GoalProgress) {
             )
         }
         Row(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.weight(weight = 1f)) {
+            Column(
+                modifier = Modifier.weight(weight = 1f),
+                verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+            ) {
                 Text(
                     text = stringResource(resource = Res.string.start_value_kg, goalProgress.startWeight.formatKg()),
                     style = typography.regular11,
                     color = colors.muted
                 )
-                goalProgress.startDate?.let { startDate ->
-                    Text(
-                        text = startDate.toFullDate(),
-                        style = typography.regular10,
-                        color = colors.muted
-                    )
-                }
+                StartDateChip(startDate = goalProgress.startDate, onClick = onStartDateClick)
             }
             Text(
                 text = stringResource(resource = Res.string.now_value_kg, goalProgress.currentWeight.formatKg()),
@@ -168,14 +172,48 @@ private fun GoalProgressBar(goalProgress: GoalProgress) {
 }
 
 @Composable
+private fun StartDateChip(startDate: LocalDate?, onClick: () -> Unit) {
+    val changeStartDate = stringResource(resource = Res.string.change_start_date)
+    Row(
+        modifier = Modifier
+            .clip(shape = RoundedCornerShape(size = 8.dp))
+            .background(color = colors.surface)
+            .clickable(onClickLabel = changeStartDate, onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 5.dp)
+    ) {
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_calendar),
+            contentDescription = null,
+            tint = colors.accentInk,
+            modifier = Modifier.size(size = 12.dp)
+        )
+        Text(
+            text = startDate?.toFullDate() ?: changeStartDate,
+            style = typography.bold10,
+            color = colors.accentInk
+        )
+    }
+}
+
+@Composable
 private fun GoalStatusRow(goalProgress: GoalProgress) {
     val text = when (goalProgress.status) {
         GoalStatus.ON_TRACK -> stringResource(
             resource = Res.string.on_track_to_reach_target,
             goalProgress.estimatedDate?.toMonthYear().orEmpty()
         )
+        GoalStatus.OFF_TRACK -> stringResource(resource = Res.string.not_trending_toward_target)
+        GoalStatus.NEEDS_MORE_DATA -> stringResource(resource = Res.string.log_weight_to_estimate_target)
         GoalStatus.REACHED -> stringResource(resource = Res.string.target_reached)
-        GoalStatus.GOAL_MISMATCH -> stringResource(resource = Res.string.change_goal_to_reach_target)
+    }
+    val trend = goalProgress.weeklyChange?.takeIf { goalProgress.status != GoalStatus.REACHED }?.let { weeklyChange ->
+        stringResource(
+            resource = if (weeklyChange > 0) Res.string.gaining_kg_per_week_since else Res.string.losing_kg_per_week_since,
+            kotlin.math.abs(weeklyChange).formatKg(),
+            goalProgress.startDate?.toAbbreviatedMonthDay().orEmpty()
+        )
     }
     Row(
         modifier = Modifier
@@ -187,16 +225,27 @@ private fun GoalStatusRow(goalProgress: GoalProgress) {
         horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Icon(
-            painter = painterResource(resource = Res.drawable.ic_nav_log),
+            painter = painterResource(
+                resource = if (goalProgress.status == GoalStatus.OFF_TRACK) Res.drawable.ic_trend_flat else Res.drawable.ic_nav_log
+            ),
             contentDescription = null,
-            tint = colors.accentInk,
+            tint = if (goalProgress.status == GoalStatus.OFF_TRACK) colors.warmInk else colors.accentInk,
             modifier = Modifier.size(size = 16.dp)
         )
-        Text(
-            text = text,
-            style = typography.medium13,
-            color = colors.ink
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+            Text(
+                text = text,
+                style = typography.medium13,
+                color = colors.ink
+            )
+            trend?.let {
+                Text(
+                    text = it,
+                    style = typography.regular11,
+                    color = colors.muted
+                )
+            }
+        }
     }
 }
 
@@ -250,10 +299,12 @@ private fun PreviewProfileGoalProgress() {
                 totalKg = 8.4,
                 progress = 0.45f,
                 status = GoalStatus.ON_TRACK,
+                weeklyChange = -0.31,
                 estimatedDate = getCurrentDate()
             ),
             onLogWeight = {},
-            onSetTarget = {}
+            onSetTarget = {},
+            onStartDateClick = {}
         )
     }
 }

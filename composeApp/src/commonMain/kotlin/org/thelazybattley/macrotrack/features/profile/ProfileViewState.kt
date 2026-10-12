@@ -9,6 +9,7 @@ data class ProfileViewState(
     val macroGoals: MacroGoals? = null,
     val goalProgress: GoalProgress? = null,
     val weekSummary: WeekSummary? = null,
+    val firstWeightDate: LocalDate? = null,
     val route: String? = null
 )
 
@@ -22,13 +23,15 @@ data class GoalProgress(
     val totalKg: Double,
     val progress: Float,
     val status: GoalStatus,
+    val weeklyChange: Double?,
     val estimatedDate: LocalDate?
 )
 
 enum class GoalStatus {
     ON_TRACK,
-    REACHED,
-    GOAL_MISMATCH
+    OFF_TRACK,
+    NEEDS_MORE_DATA,
+    REACHED
 }
 
 data class WeekSummary(

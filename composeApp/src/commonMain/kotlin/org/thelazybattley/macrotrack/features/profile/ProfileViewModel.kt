@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
@@ -27,6 +29,8 @@ class ProfileViewModel(
     private val _state = MutableStateFlow(value = ProfileViewState())
     val state = _state.asStateFlow()
 
+    private var weights: List<Weight> = emptyList()
+
     init {
         viewModelScope.launch {
             combine(
@@ -35,6 +39,7 @@ class ProfileViewModel(
                 flow3 = getAllFoodLogUseCase()
             ) { userDetails, weights, foodLogs ->
                 val today = getCurrentDate()
+                this@ProfileViewModel.weights = weights
                 if (userDetails != null && userDetails.targetWeight != null && userDetails.targetStartWeight == null) {
                     // Targets saved before the start point was recorded begin from today's weight.
                     insertUserDetailsUseCase(
@@ -60,14 +65,15 @@ class ProfileViewModel(
                         userDetails = userDetails,
                         macroGoals = macroGoals,
                         goalProgress = userDetails?.let {
-                            calculateGoalProgress(userDetails = it, today = today)
+                            calculateGoalProgress(userDetails = it, weights = weights, today = today)
                         },
                         weekSummary = calculateWeekSummary(
                             foodLogs = foodLogs,
                             weights = weights,
                             macroGoals = macroGoals,
                             today = today
-                        )
+                        ),
+                        firstWeightDate = weights.minOfOrNull { it.date }
                     )
                 }
             }.collect()
@@ -83,6 +89,19 @@ class ProfileViewModel(
                     targetWeight = newTarget,
                     targetStartWeight = userDetails.weight,
                     targetSetDate = getCurrentDate()
+                )
+            )
+        }
+    }
+
+    override fun onStartDateSelected(date: LocalDate) {
+        val userDetails = _state.value.userDetails ?: return
+        val startWeight = startWeightOn(date = date, weights = weights)?.weight ?: userDetails.weight
+        viewModelScope.launch {
+            insertUserDetailsUseCase(
+                userDetails = userDetails.copy(
+                    targetStartWeight = startWeight,
+                    targetSetDate = date
                 )
             )
         }
