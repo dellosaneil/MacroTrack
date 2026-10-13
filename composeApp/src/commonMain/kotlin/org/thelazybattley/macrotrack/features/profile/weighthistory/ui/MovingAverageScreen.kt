@@ -40,8 +40,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.change
-import macrotrack.composeapp.generated.resources.change_vs_week_ago
-import macrotrack.composeapp.generated.resources.compare_averages
 import macrotrack.composeapp.generated.resources.daily_weigh_in
 import macrotrack.composeapp.generated.resources.date
 import macrotrack.composeapp.generated.resources.entries
@@ -164,11 +162,7 @@ private fun MovingAverageScreen(
                 summary = summary,
                 onSelectWindow = callbacks::onMovingAverageWindowSelect
             )
-            CompareAverages(
-                summaries = viewState.movingAverageSummaries,
-                selectedWindow = viewState.movingAverageWindow,
-                onSelectWindow = callbacks::onMovingAverageWindowSelect
-            )
+            MovingAverageNote(window = viewState.movingAverageWindow)
             MovingAverageEntries(
                 weightList = viewState.periodWeights,
                 movingAverage = viewState.periodMovingAverage,
@@ -348,123 +342,26 @@ private fun Legend(window: MovingAverageWindow) {
 }
 
 @Composable
-private fun CompareAverages(
-    summaries: List<MovingAverageSummary>,
-    selectedWindow: MovingAverageWindow,
-    onSelectWindow: (MovingAverageWindow) -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(
-                text = stringResource(resource = Res.string.compare_averages),
-                style = typography.bold18,
-                color = colors.ink,
-                modifier = Modifier.weight(weight = 1f)
-            )
-            Text(
-                text = stringResource(resource = Res.string.change_vs_week_ago),
-                style = typography.regular11,
-                color = colors.muted
-            )
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(size = 18.dp))
-                .background(color = colors.surface)
-                .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 18.dp))
-                .selectableGroup()
-        ) {
-            summaries.forEachIndexed { index, summary ->
-                CompareRow(
-                    summary = summary,
-                    isSelected = summary.window == selectedWindow,
-                    onClick = { onSelectWindow(summary.window) }
-                )
-                if (index != summaries.lastIndex) {
-                    HorizontalDivider(thickness = 1.dp, color = colors.divider)
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(size = 16.dp))
-                .background(color = colors.hero)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
-        ) {
-            Icon(
-                painter = painterResource(resource = Res.drawable.ic_info),
-                contentDescription = null,
-                tint = colors.accentInk,
-                modifier = Modifier.padding(top = 1.dp).size(size = 18.dp)
-            )
-            Text(
-                text = stringResource(resource = Res.string.moving_average_note, selectedWindow.days),
-                style = typography.regular13,
-                color = colors.ink
-            )
-        }
-    }
-}
-
-@Composable
-private fun CompareRow(
-    summary: MovingAverageSummary,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
+private fun MovingAverageNote(window: MovingAverageWindow) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 64.dp)
-            .background(color = if (isSelected) colors.accentSoft else Color.Transparent)
-            .selectable(selected = isSelected, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+            .clip(shape = RoundedCornerShape(size = 16.dp))
+            .background(color = colors.hero)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(size = 20.dp)
-                .border(width = 2.dp, color = if (isSelected) colors.accent else colors.dashed, shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isSelected) {
-                Box(modifier = Modifier.size(size = 10.dp).background(color = colors.accent, shape = CircleShape))
-            }
-        }
-        Column(
-            modifier = Modifier.weight(weight = 1f),
-            verticalArrangement = Arrangement.spacedBy(space = 2.dp)
-        ) {
-            Text(
-                text = stringResource(resource = Res.string.moving_average_days, summary.window.days),
-                style = typography.bold14,
-                color = colors.ink
-            )
-            Text(
-                text = stringResource(resource = summary.window.description),
-                style = typography.regular11,
-                color = colors.muted
-            )
-        }
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(space = 2.dp)
-        ) {
-            Text(
-                text = stringResource(resource = Res.string.value_kg_unit, summary.average.formatKg()),
-                style = typography.bold16,
-                color = colors.ink
-            )
-            Text(
-                text = summary.change?.let { stringResource(resource = Res.string.value_kg_unit, it.toSignedKg()) } ?: "—",
-                style = typography.bold11,
-                color = summary.change?.changeColor() ?: colors.muted
-            )
-        }
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_info),
+            contentDescription = null,
+            tint = colors.accentInk,
+            modifier = Modifier.padding(top = 1.dp).size(size = 18.dp)
+        )
+        Text(
+            text = stringResource(resource = Res.string.moving_average_note, window.days),
+            style = typography.regular13,
+            color = colors.ink
+        )
     }
 }
 
@@ -592,9 +489,10 @@ private fun PreviewMovingAverageScreen() {
                 periodWeights = weights.drop(n = 1),
                 periodMovingAverage = weights.movingAverage(windowDays = 7).drop(n = 1),
                 periodMovingAverageChanges = weights.movingAverage(windowDays = 7).changesFromPrevious(),
-                movingAverageSummaries = MovingAverageWindow.entries.mapNotNull {
-                    weights.movingAverageSummary(date = LocalDate(2026, 10, 8), window = it)
-                },
+                movingAverageSummary = weights.movingAverageSummary(
+                    date = LocalDate(2026, 10, 8),
+                    window = MovingAverageWindow.SEVEN
+                ),
                 canGoBack = true
             ),
             callbacks = WeightHistoryCallbacks.default(),

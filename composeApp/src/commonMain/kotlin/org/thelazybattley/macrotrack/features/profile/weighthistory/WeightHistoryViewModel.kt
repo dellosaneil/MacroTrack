@@ -96,9 +96,7 @@ class WeightHistoryViewModel(
             periodWeights = periodWeights,
             periodMovingAverage = movingAverage.inPeriod(period = period),
             periodMovingAverageChanges = movingAverage.changesFromPrevious().filterKeys { it in period },
-            movingAverageSummaries = latestDate?.let { date ->
-                MovingAverageWindow.entries.mapNotNull { allWeights.movingAverageSummary(date = date, window = it) }
-            }.orEmpty(),
+            movingAverageSummary = latestDate?.let { allWeights.movingAverageSummary(date = it, window = movingAverageWindow) },
             previousPeriod = previousPeriod,
             previousWeights = previousPeriod?.let { allWeights.inPeriod(period = it) }.orEmpty(),
             canGoBack = !isAll && earliest != null && earliest < period.start,

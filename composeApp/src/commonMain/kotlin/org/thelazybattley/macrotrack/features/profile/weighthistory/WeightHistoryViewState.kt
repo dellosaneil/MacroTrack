@@ -16,8 +16,8 @@ data class WeightHistoryViewState(
     val periodMovingAverage: List<Weight> = emptyList(),
     /** How much the moving average moved since the previous weigh-in, by date, for the period's weigh-ins. */
     val periodMovingAverageChanges: Map<LocalDate, Double> = emptyMap(),
-    /** One per window, as of the period's latest weigh-in. */
-    val movingAverageSummaries: List<MovingAverageSummary> = emptyList(),
+    /** The selected window's average as of the period's latest weigh-in. */
+    val movingAverageSummary: MovingAverageSummary? = null,
     val previousPeriod: WeightPeriod? = null,
     val previousWeights: List<Weight> = emptyList(),
     val canGoBack: Boolean = false,
@@ -25,5 +25,4 @@ data class WeightHistoryViewState(
 ) {
     val average: Double? get() = periodWeights.takeIf { it.isNotEmpty() }?.map { it.weight }?.average()
     val previousAverage: Double? get() = previousWeights.takeIf { it.isNotEmpty() }?.map { it.weight }?.average()
-    val movingAverageSummary: MovingAverageSummary? get() = movingAverageSummaries.firstOrNull { it.window == movingAverageWindow }
 }

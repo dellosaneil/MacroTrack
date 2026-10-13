@@ -190,13 +190,7 @@
     <string name="moving_average_on_date">%1$d-day average · %2$s</string>
     <string name="moving_average_change_vs_week_ago">%1$s kg vs 7 days ago</string>
     <string name="moving_average_window">Moving average window</string>
-    <string name="moving_average_window_3">Reacts fastest · noisiest</string>
-    <string name="moving_average_window_5">Responsive</string>
-    <string name="moving_average_window_7">Balanced · smooths a full week</string>
-    <string name="moving_average_window_10">Smoothest · slowest to react</string>
     <string name="moving_average_note">Daily weight moves with water, salt and meal timing. The %1$d-day average blends your weigh-ins from the last %1$d days so the real trend shows through. Shorter windows react faster; longer ones are steadier.</string>
-    <string name="compare_averages">Compare averages</string>
-    <string name="change_vs_week_ago">Change vs 7 days ago</string>
     <string name="daily_weigh_in">Daily weigh-in</string>
     <string name="moving_average_chart_description">%1$d-day moving average over daily weigh-ins, %2$s to %3$s, now %4$s kg</string>
 
