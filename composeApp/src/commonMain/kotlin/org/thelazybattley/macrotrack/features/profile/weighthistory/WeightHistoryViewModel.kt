@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
+import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageWindow
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryTimeRangeEnum
 
 class WeightHistoryViewModel(
@@ -74,14 +75,30 @@ class WeightHistoryViewModel(
         }
     }
 
+    override fun onMovingAverageWindowSelect(window: MovingAverageWindow) {
+        _state.update { currentState ->
+            val period = currentState.period ?: return@update currentState.copy(movingAverageWindow = window)
+            currentState.copy(movingAverageWindow = window).withPeriod(period = period)
+        }
+    }
+
     private fun WeightHistoryViewState.withPeriod(period: WeightPeriod): WeightHistoryViewState {
         val today = getCurrentDate()
         val earliest = allWeights.firstOrNull()?.date
         val isAll = period.range == WeightHistoryTimeRangeEnum.ALL
         val previousPeriod = if (isAll) null else period.shift(steps = -1)
+        val periodWeights = allWeights.inPeriod(period = period)
+        val latestDate = periodWeights.lastOrNull()?.date
+        // Averaged over all weigh-ins so the period's first days include the ones just before it.
+        val movingAverage = allWeights.movingAverage(windowDays = movingAverageWindow.days)
         return copy(
             period = period,
-            periodWeights = allWeights.inPeriod(period = period),
+            periodWeights = periodWeights,
+            periodMovingAverage = movingAverage.inPeriod(period = period),
+            periodMovingAverageChanges = movingAverage.changesFromPrevious().filterKeys { it in period },
+            movingAverageSummaries = latestDate?.let { date ->
+                MovingAverageWindow.entries.mapNotNull { allWeights.movingAverageSummary(date = date, window = it) }
+            }.orEmpty(),
             previousPeriod = previousPeriod,
             previousWeights = previousPeriod?.let { allWeights.inPeriod(period = it) }.orEmpty(),
             canGoBack = !isAll && earliest != null && earliest < period.start,

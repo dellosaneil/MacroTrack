@@ -2,6 +2,8 @@ package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,10 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,14 +33,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.change_since_you_started
+import macrotrack.composeapp.generated.resources.ic_chevron_right
+import macrotrack.composeapp.generated.resources.ic_moving_average
 import macrotrack.composeapp.generated.resources.log
 import macrotrack.composeapp.generated.resources.monthly_change
+import macrotrack.composeapp.generated.resources.moving_average
+import macrotrack.composeapp.generated.resources.moving_average_link_description
 import macrotrack.composeapp.generated.resources.no_weight_logged_for_period
 import macrotrack.composeapp.generated.resources.three_month_change
 import macrotrack.composeapp.generated.resources.value_kg_unit
 import macrotrack.composeapp.generated.resources.weekly_change
 import macrotrack.composeapp.generated.resources.weight_entries
 import macrotrack.composeapp.generated.resources.weight_history
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -64,7 +75,8 @@ fun WeightHistoryScreen(
         viewState = viewState,
         callbacks = viewModel,
         onBack = onPopBackStack,
-        onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) }
+        onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) },
+        onOpenMovingAverage = { onNavigate(AppDestinations.Root.MovingAverage.route) }
     )
 }
 
@@ -74,7 +86,8 @@ private fun WeightHistoryScreen(
     viewState: WeightHistoryViewState,
     callbacks: WeightHistoryCallbacks,
     onBack: () -> Unit,
-    onLogWeight: () -> Unit
+    onLogWeight: () -> Unit,
+    onOpenMovingAverage: () -> Unit
 ) {
 
     Scaffold(
@@ -119,7 +132,11 @@ private fun WeightHistoryScreen(
                 EmptyPeriod()
                 return@Column
             }
-            ChartCard(period = period, weightList = viewState.periodWeights)
+            ChartCard(
+                period = period,
+                weightList = viewState.periodWeights,
+                onOpenMovingAverage = onOpenMovingAverage
+            )
             WeightHistoryAverageCard(modifier = Modifier.fillMaxWidth(), viewState = viewState)
             WeightHistoryStatistics(modifier = Modifier.fillMaxWidth(), weightList = viewState.periodWeights)
             WeightHistoryEntries(
@@ -134,7 +151,8 @@ private fun WeightHistoryScreen(
 @Composable
 private fun ChartCard(
     period: WeightPeriod,
-    weightList: List<Weight>
+    weightList: List<Weight>,
+    onOpenMovingAverage: () -> Unit
 ) {
     val change = weightList.last().weight - weightList.first().weight
     val changeLabel = when (period.range) {
@@ -185,11 +203,62 @@ private fun ChartCard(
             weightList = weightList,
             period = period
         )
+        MovingAverageLink(onClick = onOpenMovingAverage)
     }
 }
 
 @Composable
-private fun EmptyPeriod() {
+private fun MovingAverageLink(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clip(shape = RoundedCornerShape(size = 14.dp))
+            .background(color = colors.hero)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(size = 36.dp)
+                .background(color = colors.surface, shape = RoundedCornerShape(size = 10.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_moving_average),
+                contentDescription = null,
+                tint = colors.accentInk,
+                modifier = Modifier.size(size = 20.dp)
+            )
+        }
+        Column(
+            modifier = Modifier.weight(weight = 1f),
+            verticalArrangement = Arrangement.spacedBy(space = 2.dp)
+        ) {
+            Text(
+                text = stringResource(resource = Res.string.moving_average),
+                style = typography.bold14,
+                color = colors.ink
+            )
+            Text(
+                text = stringResource(resource = Res.string.moving_average_link_description),
+                style = typography.regular11,
+                color = colors.muted
+            )
+        }
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_chevron_right),
+            contentDescription = null,
+            tint = colors.faint,
+            modifier = Modifier.size(size = 16.dp)
+        )
+    }
+}
+
+@Composable
+internal fun EmptyPeriod() {
     Text(
         text = stringResource(resource = Res.string.no_weight_logged_for_period),
         style = typography.regular13,
@@ -223,7 +292,8 @@ private fun PreviewWeightHistoryScreen() {
             ),
             callbacks = WeightHistoryCallbacks.default(),
             onBack = {},
-            onLogWeight = {}
+            onLogWeight = {},
+            onOpenMovingAverage = {}
         )
     }
 }

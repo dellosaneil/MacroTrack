@@ -27,6 +27,7 @@ import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingScreen
 import org.thelazybattley.macrotrack.features.profile.nutritiongoals.ui.NutritionGoalsScreen
 import org.thelazybattley.macrotrack.features.profile.pastgoal.ui.PastGoalScreen
 import org.thelazybattley.macrotrack.features.profile.personalinformation.ui.PersonalInformationScreen
+import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageScreen
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
@@ -209,6 +210,19 @@ fun AppBottomNav() {
                 route = AppDestinations.Profile.WeightHistory.route
             ) {
                 WeightHistoryScreen(
+                    modifier = Modifier,
+                    onPopBackStack = {
+                        navController.popBackStack()
+                    },
+                    onNavigate = { route ->
+                        navController.navigate(route = route)
+                    }
+                )
+            }
+            composable(
+                route = AppDestinations.Root.MovingAverage.route
+            ) {
+                MovingAverageScreen(
                     modifier = Modifier,
                     onPopBackStack = {
                         navController.popBackStack()

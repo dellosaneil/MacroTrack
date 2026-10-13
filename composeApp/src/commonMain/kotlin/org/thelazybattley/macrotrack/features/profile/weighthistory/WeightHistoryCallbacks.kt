@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory
 
+import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageWindow
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryTimeRangeEnum
 
 interface WeightHistoryCallbacks {
@@ -10,6 +11,8 @@ interface WeightHistoryCallbacks {
 
     fun onNextPeriod()
 
+    fun onMovingAverageWindowSelect(window: MovingAverageWindow)
+
     companion object {
         fun default() = object : WeightHistoryCallbacks {
             override fun onTimePeriodSelect(timeRange: WeightHistoryTimeRangeEnum) {
@@ -19,6 +22,9 @@ interface WeightHistoryCallbacks {
             }
 
             override fun onNextPeriod() {
+            }
+
+            override fun onMovingAverageWindowSelect(window: MovingAverageWindow) {
             }
         }
     }

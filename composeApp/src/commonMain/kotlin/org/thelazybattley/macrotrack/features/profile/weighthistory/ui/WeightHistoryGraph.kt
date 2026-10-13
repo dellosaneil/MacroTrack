@@ -37,9 +37,9 @@ import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 
-private const val AXIS_LABEL_WIDTH_DP = 36
-private const val X_LABEL_HEIGHT_DP = 20
-private const val TOP_PADDING_DP = 8
+internal const val AXIS_LABEL_WIDTH_DP = 36
+internal const val X_LABEL_HEIGHT_DP = 20
+internal const val TOP_PADDING_DP = 8
 private const val TAP_RADIUS_DP = 24
 
 @Composable
@@ -161,7 +161,7 @@ fun WeightHistoryGraph(
     }
 }
 
-private fun pointsFor(
+internal fun pointsFor(
     weightList: List<Weight>,
     period: WeightPeriod,
     spanDays: Long,
@@ -182,7 +182,7 @@ private fun pointsFor(
     }
 }
 
-private fun Double.formatAxis(): String {
+internal fun Double.formatAxis(): String {
     val tenths = kotlin.math.round(this * 10).toInt()
     return "${tenths / 10}.${abs(tenths % 10)}"
 }

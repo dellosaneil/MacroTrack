@@ -322,7 +322,7 @@ internal fun Double.toSignedKg(): String = when {
     else -> "0.00"
 }
 
-private fun LocalDate.toEntryDate(): String {
+internal fun LocalDate.toEntryDate(): String {
     val dayName = dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }.take(n = 3)
     return "$dayName, ${toFullDate()}"
 }
