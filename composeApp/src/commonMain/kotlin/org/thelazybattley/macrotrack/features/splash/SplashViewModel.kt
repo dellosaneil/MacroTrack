@@ -19,7 +19,7 @@ class SplashViewModel(private val getUserDetailsUseCase: GetUserDetailsUseCase) 
         viewModelScope.launch {
             getUserDetailsUseCase().first().also { user ->
                 val destination = if (user == null) {
-                    AppDestinations.Root.Onboarding
+                    AppDestinations.Root.Walkthrough
                 } else {
                     AppDestinations.Root.MainScreen
                 }

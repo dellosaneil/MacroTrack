@@ -50,6 +50,7 @@ sealed class AppDestinations {
 
     sealed class Root(val route: String, val routeWithArgs: String? = null) : AppDestinations() {
         object Splash : Root(route = "splash")
+        object Walkthrough : Root(route = "walkthrough")
         object Onboarding : Root(route = "onboarding")
         object AddMeal : Root(route = "add_meal", routeWithArgs = "add_meal/{$MEAL_TYPE}") {
             fun createRoute(mealType: String): String {

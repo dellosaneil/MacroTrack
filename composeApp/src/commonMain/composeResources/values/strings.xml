@@ -486,4 +486,23 @@
     <string name="change_meal">Change meal</string>
     <string name="backspace">Backspace</string>
     <string name="edit_entry_value">Edit %1$s</string>
+    <string name="walkthrough_skip">Skip</string>
+    <string name="walkthrough_next">Next</string>
+    <string name="walkthrough_get_started">Get started</string>
+    <string name="walkthrough_page_of">Page %1$d of %2$d</string>
+    <string name="walkthrough_welcome_title">Hit your macros, every day</string>
+    <string name="walkthrough_welcome_description">MacroTrack builds calorie, protein, carb and fat targets from your stats and goal, then shows what's left as you eat.</string>
+    <string name="walkthrough_log_title">Log a meal in seconds</string>
+    <string name="walkthrough_log_description">Search foods, reuse the portion you logged last time, star favorites and build your own foods and recipes.</string>
+    <string name="walkthrough_insights_title">See how your week went</string>
+    <string name="walkthrough_insights_description">Weekly calories against your goal, average macros and a logging streak that keeps you coming back.</string>
+    <string name="walkthrough_progress_title">Follow the trend, not the scale</string>
+    <string name="walkthrough_progress_description">Log weight and body measurements. Moving averages smooth out daily swings so you see real progress.</string>
+    <string name="walkthrough_offline_note">No account needed. Your data stays on your device.</string>
+    <string name="walkthrough_sample_food_1">Greek yogurt</string>
+    <string name="walkthrough_sample_food_2">Rolled oats</string>
+    <string name="walkthrough_sample_food_3">Chicken rice bowl</string>
+    <string name="walkthrough_this_week">This week</string>
+    <string name="walkthrough_day_streak">day streak</string>
+    <string name="walkthrough_trend">7-day average</string>
 </resources>

@@ -30,6 +30,7 @@ import org.thelazybattley.macrotrack.features.profile.personalinformation.ui.Per
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageScreen
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
+import org.thelazybattley.macrotrack.features.walkthrough.ui.WalkthroughScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
@@ -54,6 +55,15 @@ fun AppBottomNav() {
                 }
             }
         ) {
+            composable(route = AppDestinations.Root.Walkthrough.route) {
+                WalkthroughScreen {
+                    navController.navigate(route = AppDestinations.Root.Onboarding.route) {
+                        popUpTo(route = AppDestinations.Root.Walkthrough.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            }
             composable(route = AppDestinations.Root.Onboarding.route) {
                 OnboardingScreen(
                     modifier = Modifier
