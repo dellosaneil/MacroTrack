@@ -65,6 +65,8 @@ import org.thelazybattley.macrotrack.features.measurements.formatMeasure
 import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.features.progress.ProgressViewModel
 import org.thelazybattley.macrotrack.features.progress.ProgressViewState
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -99,7 +101,10 @@ private fun ProgressScreen(
             style = typography.bold32,
             color = colors.ink
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        Row(
+            modifier = Modifier.tourTarget(target = TourTarget.PROGRESS_QUICK_ACTIONS),
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+        ) {
             QuickAction(
                 modifier = Modifier.weight(weight = 1f),
                 text = Res.string.log_weight,

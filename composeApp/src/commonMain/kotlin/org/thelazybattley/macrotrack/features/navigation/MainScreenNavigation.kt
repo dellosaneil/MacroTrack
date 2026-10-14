@@ -17,12 +17,19 @@ import org.thelazybattley.macrotrack.features.foodlog.ui.FoodLogTabScreen
 import org.thelazybattley.macrotrack.features.insights.ui.InsightsScreen
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileScreen
 import org.thelazybattley.macrotrack.features.progress.ui.ProgressScreen
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
+
+/** Asks the main screen to switch tabs. Each request is a new instance, so asking for the same tab twice still works. */
+class TabRequest(val tab: AppDestinations.BottomNavigation)
 
 @Composable
 fun MainScreenNavigation(
     modifier: Modifier = Modifier,
+    tabRequest: TabRequest? = null,
+    onReplayTour: () -> Unit = {},
     onNavigate: (String) -> Unit
 ) {
     val navController = rememberNavController()
@@ -34,12 +41,21 @@ fun MainScreenNavigation(
             } ?: AppDestinations.BottomNavigation.Log
         }
     }
+    LaunchedEffect(key1 = tabRequest) {
+        val tab = tabRequest?.tab ?: return@LaunchedEffect
+        if (currentDestination.route == tab.route) return@LaunchedEffect
+        navController.navigate(route = tab.route) {
+            popUpTo(route = AppDestinations.BottomNavigation.Log.route)
+            launchSingleTop = true
+        }
+    }
 
     Scaffold(
         modifier = modifier,
         containerColor = colors.background,
         bottomBar = {
             MacroBottomNavBar(
+                modifier = Modifier.tourTarget(target = TourTarget.BOTTOM_NAVIGATION),
                 selectedDestination = currentDestination,
             ) { destination ->
                 if (currentDestination.route == destination.route) return@MacroBottomNavBar
@@ -72,7 +88,8 @@ fun MainScreenNavigation(
                     modifier = Modifier.fillMaxSize(),
                     onNavigate = { route ->
                         onNavigate(route)
-                    }
+                    },
+                    onReplayTour = onReplayTour
                 )
             }
         }

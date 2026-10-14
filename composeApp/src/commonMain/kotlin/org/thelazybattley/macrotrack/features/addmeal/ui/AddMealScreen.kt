@@ -70,6 +70,8 @@ import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -142,7 +144,11 @@ private fun AddMealScreen(
                     .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(space = 12.dp)
             ) {
-                SearchField(query = viewState.searchQuery, onQueryChange = callbacks::onSearchQuery)
+                SearchField(
+                    modifier = Modifier.tourTarget(target = TourTarget.ADD_MEAL_SEARCH),
+                    query = viewState.searchQuery,
+                    onQueryChange = callbacks::onSearchQuery
+                )
                 Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                     CreateButton(
                         modifier = Modifier.weight(weight = 1f),
@@ -213,7 +219,15 @@ private fun AddMealScreen(
                 items(items = items, key = { it.key }) { item ->
                     val selectedItem = selectedItems[item.key]
                     CommonSwipeToDelete(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (item.key == items.first().key) {
+                                    Modifier.tourTarget(target = TourTarget.ADD_MEAL_FIRST_ITEM)
+                                } else {
+                                    Modifier
+                                }
+                            ),
                         onDelete = { callbacks.onDeleteItem(item = item) }
                     ) {
                         AddMealListItem(
@@ -289,6 +303,7 @@ private fun AddMealHeader(
         if (selectionCount > 0) {
             Row(
                 modifier = Modifier
+                    .tourTarget(target = TourTarget.ADD_MEAL_CONFIRM)
                     .height(height = 44.dp)
                     .clip(shape = RoundedCornerShape(size = 14.dp))
                     .background(color = colors.accent)
@@ -310,7 +325,10 @@ private fun AddMealHeader(
                 )
             }
         } else if (remainingCalories != null) {
-            Column(horizontalAlignment = Alignment.End) {
+            Column(
+                modifier = Modifier.tourTarget(target = TourTarget.ADD_MEAL_CONFIRM),
+                horizontalAlignment = Alignment.End
+            ) {
                 Text(
                     text = stringResource(resource = Res.string.remaining_title),
                     style = typography.regular11,
@@ -328,12 +346,13 @@ private fun AddMealHeader(
 
 @Composable
 private fun SearchField(
+    modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit
 ) {
     val shape = RoundedCornerShape(size = 14.dp)
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(height = 48.dp)
             .clip(shape = shape)

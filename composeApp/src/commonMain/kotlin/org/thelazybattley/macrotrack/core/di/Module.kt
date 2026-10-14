@@ -1,5 +1,10 @@
 package org.thelazybattley.macrotrack.core.di
 
+import org.thelazybattley.macrotrack.data.repository.AppFlagRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.AppFlagRepository
+import org.thelazybattley.macrotrack.domain.usecase.tour.IsTourCompletedUseCase
+import org.thelazybattley.macrotrack.domain.usecase.tour.SetTourCompletedUseCase
+import org.thelazybattley.macrotrack.features.tour.TourViewModel
 import org.thelazybattley.macrotrack.features.insights.InsightsViewModel
 import org.thelazybattley.macrotrack.data.repository.DailyGoalRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.DailyGoalRepository
@@ -90,6 +95,7 @@ val sharedModule = module {
     single { get<AppDatabase>().measurementDao() }
     single { get<AppDatabase>().dailyGoalDao() }
     single { get<AppDatabase>().favoriteDao() }
+    single { get<AppDatabase>().appFlagDao() }
     single { MeasurementUnitPreference() }
 }
 
@@ -103,6 +109,7 @@ val repositoryModule = module {
     singleOf(::MeasurementRepositoryImpl) { bind<MeasurementRepository>() }
     singleOf(::DailyGoalRepositoryImpl) { bind<DailyGoalRepository>() }
     singleOf(::FavoriteRepositoryImpl) { bind<FavoriteRepository>() }
+    singleOf(::AppFlagRepositoryImpl) { bind<AppFlagRepository>() }
 }
 
 val useCaseModule = module {
@@ -138,6 +145,8 @@ val useCaseModule = module {
     factoryOf(::SaveDailyGoalUseCase)
     factoryOf(::GetFavoriteKeysUseCase)
     factoryOf(::SetFavoriteUseCase)
+    factoryOf(::IsTourCompletedUseCase)
+    factoryOf(::SetTourCompletedUseCase)
 }
 
 val viewModelModule = module {
@@ -159,6 +168,7 @@ val viewModelModule = module {
     viewModelOf(::InsightsViewModel)
     viewModelOf(::CalendarViewModel)
     viewModelOf(::PastGoalViewModel)
+    viewModelOf(::TourViewModel)
 }
 
 fun initKoin() {

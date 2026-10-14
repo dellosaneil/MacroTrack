@@ -9,6 +9,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
+import org.thelazybattley.macrotrack.data.local.dao.AppFlagDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
@@ -17,6 +18,7 @@ import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
 import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
 import org.thelazybattley.macrotrack.data.local.dao.MeasurementDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
+import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
@@ -28,8 +30,8 @@ import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
-    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class],
-    version = 8, exportSchema = true,
+    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class],
+    version = 9, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -46,6 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun measurementDao(): MeasurementDao
     abstract fun dailyGoalDao(): DailyGoalDao
     abstract fun favoriteDao(): FavoriteDao
+    abstract fun appFlagDao(): AppFlagDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -98,6 +101,18 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL(
                     "CREATE TABLE IF NOT EXISTS `FavoriteEntity` (`key` TEXT NOT NULL, PRIMARY KEY(`key`))"
+                )
+            }
+        }
+
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `AppFlagEntity` (`key` TEXT NOT NULL, PRIMARY KEY(`key`))"
+                )
+                // People who already set up the app know their way around, so they skip the first-run tour.
+                connection.execSQL(
+                    "INSERT OR IGNORE INTO `AppFlagEntity` (`key`) SELECT 'tour_completed' FROM `UserDetailsEntity` LIMIT 1"
                 )
             }
         }

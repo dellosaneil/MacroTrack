@@ -89,6 +89,8 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -144,7 +146,9 @@ private fun FoodLogTabScreen(
         verticalArrangement = Arrangement.spacedBy(space = 14.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .tourTarget(target = TourTarget.TODAY_HEADER),
             verticalAlignment = Alignment.CenterVertically
         ) {
             FoodLogHeader(
@@ -162,7 +166,9 @@ private fun FoodLogTabScreen(
             callbacks.onDateFilterSelected(date = date)
         }
         FoodLogTotalMacros(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .tourTarget(target = TourTarget.TODAY_REMAINING),
             viewState = viewState
         )
         MealsHeader(
@@ -177,9 +183,10 @@ private fun FoodLogTabScreen(
                 color = colors.muted
             )
         }
-        meals.forEach { meal ->
+        meals.forEachIndexed { index, meal ->
             LoggedFoodMealType(
                 modifier = Modifier.fillMaxWidth(),
+                addButtonModifier = if (index == 0) Modifier.tourTarget(target = TourTarget.TODAY_ADD_MEAL) else Modifier,
                 foodList = meal,
                 isToday = isToday,
                 foodUnit = viewState.foodUnit,
@@ -356,6 +363,7 @@ private fun MealsHeader(
 @Composable
 private fun LoggedFoodMealType(
     modifier: Modifier = Modifier,
+    addButtonModifier: Modifier = Modifier,
     isToday: Boolean,
     foodList: FoodLogFoodListByMealType,
     foodUnit: Map<String, String>,
@@ -391,6 +399,7 @@ private fun LoggedFoodMealType(
     Column(modifier = cardModifier) {
         MealTypeHeader(
             modifier = Modifier.fillMaxWidth().padding(all = 14.dp),
+            addButtonModifier = addButtonModifier,
             foodList = foodList,
             isToday = isToday,
             onNavigate = onNavigate
@@ -431,6 +440,7 @@ private fun LoggedFoodMealType(
 @Composable
 private fun MealTypeHeader(
     modifier: Modifier = Modifier,
+    addButtonModifier: Modifier = Modifier,
     foodList: FoodLogFoodListByMealType,
     isToday: Boolean,
     onNavigate: () -> Unit
@@ -498,7 +508,7 @@ private fun MealTypeHeader(
         val addContentDescription = stringResource(resource = Res.string.add_to_value, mealName)
         if (isEmpty) {
             Box(
-                modifier = Modifier
+                modifier = addButtonModifier
                     .height(height = 44.dp)
                     .clip(shape = RoundedCornerShape(size = 12.dp))
                     .background(color = colors.accent)
@@ -514,7 +524,7 @@ private fun MealTypeHeader(
             }
         } else {
             Box(
-                modifier = Modifier
+                modifier = addButtonModifier
                     .size(size = 44.dp)
                     .clip(shape = RoundedCornerShape(size = 12.dp))
                     .background(color = colors.accentSoft)

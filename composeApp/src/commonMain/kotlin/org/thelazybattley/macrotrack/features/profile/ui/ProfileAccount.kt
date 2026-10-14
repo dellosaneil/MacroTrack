@@ -29,6 +29,7 @@ import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.not_set
 import macrotrack.composeapp.generated.resources.nutrition_goals
 import macrotrack.composeapp.generated.resources.personal_information
+import macrotrack.composeapp.generated.resources.replay_app_tour
 import macrotrack.composeapp.generated.resources.target_weight
 import macrotrack.composeapp.generated.resources.value_unit
 import macrotrack.composeapp.generated.resources.kg
@@ -39,6 +40,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -50,7 +53,8 @@ fun ProfileAccount(
     macroGoals: MacroGoals?,
     targetWeight: Double?,
     onNavigate: (ProfileSectionEnum) -> Unit,
-    onTargetWeightClick: () -> Unit
+    onTargetWeightClick: () -> Unit,
+    onReplayTour: () -> Unit = {}
 ) {
     Column(
         modifier = modifier,
@@ -74,6 +78,7 @@ fun ProfileAccount(
             )
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             AccountRow(
+                modifier = Modifier.tourTarget(target = TourTarget.PROFILE_NUTRITION_GOALS),
                 label = Res.string.nutrition_goals,
                 value = if (goal != null && macroGoals != null) {
                     stringResource(
@@ -108,18 +113,24 @@ fun ProfileAccount(
                 } ?: stringResource(resource = Res.string.not_set),
                 onClick = onTargetWeightClick
             )
+            HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            AccountRow(
+                label = Res.string.replay_app_tour,
+                onClick = onReplayTour
+            )
         }
     }
 }
 
 @Composable
 private fun AccountRow(
+    modifier: Modifier = Modifier,
     label: StringResource,
     value: String? = null,
     onClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp)
             .clickable(onClick = onClick)

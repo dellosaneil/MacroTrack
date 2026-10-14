@@ -82,6 +82,8 @@ import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightPeriod
 import org.thelazybattley.macrotrack.features.profile.weighthistory.changesFromPrevious
 import org.thelazybattley.macrotrack.features.profile.weighthistory.movingAverage
 import org.thelazybattley.macrotrack.features.profile.weighthistory.movingAverageSummary
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -200,6 +202,7 @@ private fun MovingAverageCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .tourTarget(target = TourTarget.MOVING_AVERAGE_CHART)
             .clip(shape = RoundedCornerShape(size = 24.dp))
             .background(color = colors.surface)
             .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 24.dp))

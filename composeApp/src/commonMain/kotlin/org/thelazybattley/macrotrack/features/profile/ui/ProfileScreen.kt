@@ -45,7 +45,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onReplayTour: () -> Unit = {}
 ) {
     val viewModel = koinViewModel<ProfileViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -60,7 +61,8 @@ fun ProfileScreen(
         modifier = modifier,
         viewState = viewState,
         callbacks = viewModel,
-        onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) }
+        onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) },
+        onReplayTour = onReplayTour
     )
 }
 
@@ -70,7 +72,8 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     viewState: ProfileViewState,
     callbacks: ProfileCallbacks,
-    onLogWeight: () -> Unit = {}
+    onLogWeight: () -> Unit = {},
+    onReplayTour: () -> Unit = {}
 ) {
     val showTargetWeightSheet = remember { mutableStateOf(value = false) }
     var showStartDatePicker by remember { mutableStateOf(value = false) }
@@ -104,7 +107,8 @@ fun ProfileScreen(
             macroGoals = viewState.macroGoals,
             targetWeight = viewState.userDetails?.targetWeight,
             onNavigate = callbacks::onNavigate,
-            onTargetWeightClick = { showTargetWeightSheet.value = true }
+            onTargetWeightClick = { showTargetWeightSheet.value = true },
+            onReplayTour = onReplayTour
         )
     }
 
