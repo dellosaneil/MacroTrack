@@ -2,9 +2,11 @@ package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,47 +28,72 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.change
+import macrotrack.composeapp.generated.resources.clear
+import macrotrack.composeapp.generated.resources.clear_selected_range
 import macrotrack.composeapp.generated.resources.daily_weigh_in
 import macrotrack.composeapp.generated.resources.date
+import macrotrack.composeapp.generated.resources.day_count
+import macrotrack.composeapp.generated.resources.difference
 import macrotrack.composeapp.generated.resources.entries
-import macrotrack.composeapp.generated.resources.ic_info
+import macrotrack.composeapp.generated.resources.goal_legend
+import macrotrack.composeapp.generated.resources.ic_compare_range
 import macrotrack.composeapp.generated.resources.ic_nav_progress
 import macrotrack.composeapp.generated.resources.ic_trend_down
+import macrotrack.composeapp.generated.resources.kg
+import macrotrack.composeapp.generated.resources.kg_avg
 import macrotrack.composeapp.generated.resources.log
 import macrotrack.composeapp.generated.resources.moving_average
 import macrotrack.composeapp.generated.resources.moving_average_change_vs_week_ago
 import macrotrack.composeapp.generated.resources.moving_average_chart_description
 import macrotrack.composeapp.generated.resources.moving_average_chip
+import macrotrack.composeapp.generated.resources.moving_average_compare_hint
 import macrotrack.composeapp.generated.resources.moving_average_days
 import macrotrack.composeapp.generated.resources.moving_average_days_short
-import macrotrack.composeapp.generated.resources.moving_average_note
 import macrotrack.composeapp.generated.resources.moving_average_on_date
+import macrotrack.composeapp.generated.resources.moving_average_range_end
+import macrotrack.composeapp.generated.resources.moving_average_range_start
+import macrotrack.composeapp.generated.resources.moving_average_rate_per_week
+import macrotrack.composeapp.generated.resources.moving_average_selected_range
+import macrotrack.composeapp.generated.resources.moving_average_selecting
 import macrotrack.composeapp.generated.resources.moving_average_today
 import macrotrack.composeapp.generated.resources.moving_average_window
 import macrotrack.composeapp.generated.resources.value_kg_unit
 import macrotrack.composeapp.generated.resources.weight
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
+import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.Weight
+import org.thelazybattley.macrotrack.features.profile.pastgoal.ui.tones
 import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
 import org.thelazybattley.macrotrack.features.profile.ui.formatKg
+import org.thelazybattley.macrotrack.features.profile.weighthistory.GoalPhase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.MovingAverageSummary
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
@@ -162,7 +189,6 @@ private fun MovingAverageScreen(
                 summary = summary,
                 onSelectWindow = callbacks::onMovingAverageWindowSelect
             )
-            MovingAverageNote(window = viewState.movingAverageWindow)
             MovingAverageEntries(
                 weightList = viewState.periodWeights,
                 movingAverage = viewState.periodMovingAverage,
@@ -181,6 +207,8 @@ private fun MovingAverageCard(
     onSelectWindow: (MovingAverageWindow) -> Unit
 ) {
     val days = summary.window.days
+    var selection by remember(period) { mutableStateOf<AverageRange?>(value = null) }
+    var isSelecting by remember(period) { mutableStateOf(value = false) }
     val latestDate = viewState.periodWeights.last().date
     val chartDescription = stringResource(
         resource = Res.string.moving_average_chart_description,
@@ -212,11 +240,20 @@ private fun MovingAverageCard(
                     style = typography.regular11,
                     color = colors.muted
                 )
-                Text(
-                    text = stringResource(resource = Res.string.value_kg_unit, summary.average.formatKg()),
-                    style = typography.bold32,
-                    color = colors.ink
-                )
+                Row(horizontalArrangement = Arrangement.spacedBy(space = 4.dp)) {
+                    Text(
+                        text = summary.average.formatKg(),
+                        style = typography.bold32,
+                        color = colors.ink,
+                        modifier = Modifier.alignByBaseline()
+                    )
+                    Text(
+                        text = stringResource(resource = Res.string.kg),
+                        style = typography.regular13,
+                        color = colors.muted,
+                        modifier = Modifier.alignByBaseline()
+                    )
+                }
             }
             summary.change?.let { ChangeBadge(change = it) }
         }
@@ -226,9 +263,33 @@ private fun MovingAverageCard(
             weightList = viewState.periodWeights,
             movingAverage = viewState.periodMovingAverage,
             period = period,
+            goalPhases = viewState.goalPhases,
+            selection = selection,
+            onSelectionStart = { date ->
+                selection = AverageRange(anchor = date, end = date)
+                isSelecting = true
+            },
+            onSelectionDrag = { date -> selection = selection?.copy(end = date) },
+            onSelectionEnd = { isSelecting = false },
             contentDescription = chartDescription
         )
         Legend(window = summary.window)
+        val range = selection
+        if (range == null) {
+            CompareHint()
+        } else {
+            SelectedRange(
+                range = range,
+                isSelecting = isSelecting,
+                window = summary.window,
+                movingAverage = viewState.periodMovingAverage,
+                goalPhases = viewState.goalPhases,
+                onClear = {
+                    selection = null
+                    isSelecting = false
+                }
+            )
+        }
     }
 }
 
@@ -307,7 +368,10 @@ private fun WindowChips(
 
 @Composable
 private fun Legend(window: MovingAverageWindow) {
-    Row(horizontalArrangement = Arrangement.spacedBy(space = 16.dp)) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(space = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 6.dp)
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
@@ -338,30 +402,201 @@ private fun Legend(window: MovingAverageWindow) {
                 color = colors.muted
             )
         }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
+        ) {
+            Text(
+                text = stringResource(resource = Res.string.goal_legend),
+                style = typography.regular11,
+                color = colors.muted
+            )
+            listOf(Goal.MAINTAIN_WEIGHT, Goal.LOSE_WEIGHT, Goal.GAIN_WEIGHT).forEach { goal ->
+                val (background, ink) = goal.tones()
+                Text(
+                    text = stringResource(resource = goal.title),
+                    style = typography.bold11,
+                    color = ink,
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(size = 6.dp))
+                        .background(color = background)
+                        .padding(horizontal = 6.dp, vertical = 1.dp)
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun MovingAverageNote(window: MovingAverageWindow) {
+private fun CompareHint() {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape = RoundedCornerShape(size = 16.dp))
-            .background(color = colors.hero)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Icon(
-            painter = painterResource(resource = Res.drawable.ic_info),
+            painter = painterResource(resource = Res.drawable.ic_compare_range),
             contentDescription = null,
-            tint = colors.accentInk,
-            modifier = Modifier.padding(top = 1.dp).size(size = 18.dp)
+            tint = colors.muted,
+            modifier = Modifier.size(size = 16.dp)
         )
         Text(
-            text = stringResource(resource = Res.string.moving_average_note, window.days),
-            style = typography.regular13,
-            color = colors.ink
+            text = stringResource(resource = Res.string.moving_average_compare_hint),
+            style = typography.regular11,
+            color = colors.muted
         )
+    }
+}
+
+/** The moving average at each end of [range], how far it moved, and the goals the range spanned. */
+@Composable
+private fun SelectedRange(
+    range: AverageRange,
+    isSelecting: Boolean,
+    window: MovingAverageWindow,
+    movingAverage: List<Weight>,
+    goalPhases: List<GoalPhase>,
+    onClear: () -> Unit
+) {
+    val startAverage = movingAverage.firstOrNull { it.date == range.first }?.weight ?: return
+    val endAverage = movingAverage.firstOrNull { it.date == range.last }?.weight ?: return
+    val difference = endAverage - startAverage
+    val days = (range.last.toEpochDays() - range.first.toEpochDays()).toInt()
+    val goals = goalPhases
+        .filter { it.end >= range.first && it.start <= range.last }
+        .map { stringResource(resource = it.goal.title) }
+        .distinct()
+    val dayCount = pluralStringResource(resource = Res.plurals.day_count, quantity = days, days)
+    val shape = RoundedCornerShape(size = 18.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .clip(shape = shape)
+            .background(color = colors.background)
+            .border(width = 1.5.dp, color = colors.accent, shape = shape)
+            .padding(all = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 10.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+        ) {
+            Column(modifier = Modifier.weight(weight = 1f)) {
+                Text(
+                    text = stringResource(
+                        resource = if (isSelecting) Res.string.moving_average_selecting else Res.string.moving_average_selected_range,
+                        dayCount,
+                        window.days
+                    ),
+                    style = typography.bold11,
+                    color = colors.muted
+                )
+                if (goals.isNotEmpty()) {
+                    Text(
+                        text = buildAnnotatedString {
+                            append(stringResource(resource = Res.string.goal_legend) + " ")
+                            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = colors.ink)) {
+                                append(goals.joinToString(separator = " → "))
+                            }
+                        },
+                        style = typography.regular11,
+                        color = colors.muted
+                    )
+                }
+            }
+            val clearLabel = stringResource(resource = Res.string.clear_selected_range)
+            val buttonShape = RoundedCornerShape(size = 12.dp)
+            Box(
+                modifier = Modifier
+                    .height(height = 44.dp)
+                    .clip(shape = buttonShape)
+                    .background(color = colors.surface)
+                    .border(width = 1.dp, color = colors.line, shape = buttonShape)
+                    .clickable(role = Role.Button, onClick = onClear)
+                    .semantics { contentDescription = clearLabel }
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.clear),
+                    style = typography.bold13,
+                    color = colors.ink
+                )
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+            RangeEnd(
+                modifier = Modifier.weight(weight = 1f),
+                label = stringResource(resource = Res.string.moving_average_range_start, range.first.toAbbreviatedMonthDay()),
+                average = startAverage
+            )
+            RangeEnd(
+                modifier = Modifier.weight(weight = 1f),
+                label = stringResource(resource = Res.string.moving_average_range_end, range.last.toAbbreviatedMonthDay()),
+                average = endAverage
+            )
+        }
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+            itemVerticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(resource = Res.string.difference),
+                style = typography.regular11,
+                color = colors.muted
+            )
+            Text(
+                text = stringResource(resource = Res.string.value_kg_unit, difference.toSignedKg()),
+                style = typography.bold24,
+                color = when {
+                    difference < -SAME_THRESHOLD_KG -> colors.accentInk
+                    difference > SAME_THRESHOLD_KG -> colors.fat
+                    else -> colors.ink
+                }
+            )
+            if (days >= 2) {
+                Text(
+                    text = stringResource(
+                        resource = Res.string.moving_average_rate_per_week,
+                        (difference / days * 7).toSignedKg()
+                    ),
+                    style = typography.regular11,
+                    color = colors.muted
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RangeEnd(
+    modifier: Modifier = Modifier,
+    label: String,
+    average: Double
+) {
+    val shape = RoundedCornerShape(size = 12.dp)
+    Column(
+        modifier = modifier
+            .clip(shape = shape)
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = shape)
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+    ) {
+        Text(text = label, style = typography.regular11, color = colors.muted)
+        Row(horizontalArrangement = Arrangement.spacedBy(space = 4.dp)) {
+            Text(
+                text = average.formatKg(),
+                style = typography.bold18,
+                color = colors.ink,
+                modifier = Modifier.alignByBaseline()
+            )
+            Text(
+                text = stringResource(resource = Res.string.kg_avg),
+                style = typography.regular11,
+                color = colors.muted,
+                modifier = Modifier.alignByBaseline()
+            )
+        }
     }
 }
 
@@ -485,6 +720,10 @@ private fun PreviewMovingAverageScreen() {
         MovingAverageScreen(
             viewState = WeightHistoryViewState(
                 allWeights = weights,
+                goalPhases = listOf(
+                    GoalPhase(start = LocalDate(2026, 3, 2), end = LocalDate(2026, 10, 4), goal = Goal.MAINTAIN_WEIGHT),
+                    GoalPhase(start = LocalDate(2026, 10, 5), end = LocalDate(2026, 10, 8), goal = Goal.LOSE_WEIGHT)
+                ),
                 period = period,
                 periodWeights = weights.drop(n = 1),
                 periodMovingAverage = weights.movingAverage(windowDays = 7).drop(n = 1),

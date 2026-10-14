@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageWindow
@@ -16,7 +17,8 @@ import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHis
 
 class WeightHistoryViewModel(
     private val getAllWeightUseCase: GetAllWeightUseCase,
-    private val getUserDetailsUseCase: GetUserDetailsUseCase
+    private val getUserDetailsUseCase: GetUserDetailsUseCase,
+    private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase
 ) : ViewModel(), WeightHistoryCallbacks {
 
     private val _state = MutableStateFlow(value = WeightHistoryViewState())
@@ -27,8 +29,9 @@ class WeightHistoryViewModel(
         viewModelScope.launch {
             combine(
                 flow = getAllWeightUseCase(),
-                flow2 = getUserDetailsUseCase()
-            ) { weights, userDetails ->
+                flow2 = getUserDetailsUseCase(),
+                flow3 = getAllDailyGoalsUseCase()
+            ) { weights, userDetails, goalRecords ->
                 _state.update { currentState ->
                     val sortedWeights = weights.sortedBy { it.date }
                     val period = currentState.period
@@ -40,7 +43,12 @@ class WeightHistoryViewModel(
                         )
                     currentState.copy(
                         userDetails = userDetails,
-                        allWeights = sortedWeights
+                        allWeights = sortedWeights,
+                        goalPhases = goalPhases(
+                            records = goalRecords,
+                            today = getCurrentDate(),
+                            currentGoal = userDetails?.goal
+                        )
                     ).withPeriod(period = period)
                 }
             }.collect()

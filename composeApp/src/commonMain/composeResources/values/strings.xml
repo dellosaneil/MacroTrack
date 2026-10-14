@@ -190,7 +190,17 @@
     <string name="moving_average_on_date">%1$d-day average · %2$s</string>
     <string name="moving_average_change_vs_week_ago">%1$s kg vs 7 days ago</string>
     <string name="moving_average_window">Moving average window</string>
-    <string name="moving_average_note">Daily weight moves with water, salt and meal timing. The %1$d-day average blends your weigh-ins from the last %1$d days so the real trend shows through. Shorter windows react faster; longer ones are steadier.</string>
+    <string name="moving_average_selecting">Selecting… %1$s · %2$d-day average</string>
+    <string name="moving_average_selected_range">Selected range · %1$s · %2$d-day average</string>
+    <string name="moving_average_range_start">Start · %1$s</string>
+    <string name="moving_average_range_end">End · %1$s</string>
+    <string name="moving_average_rate_per_week">≈ %1$s kg / week</string>
+    <string name="moving_average_compare_hint">Long-press the chart, then drag to compare two dates.</string>
+    <string name="kg_avg">kg avg</string>
+    <string name="difference">Difference</string>
+    <string name="clear">Clear</string>
+    <string name="clear_selected_range">Clear selected range</string>
+    <string name="goal_legend">Goal:</string>
     <string name="daily_weigh_in">Daily weigh-in</string>
     <string name="moving_average_chart_description">%1$d-day moving average over daily weigh-ins, %2$s to %3$s, now %4$s kg</string>
 
@@ -385,6 +395,10 @@
     <plurals name="save_measurements">
         <item quantity="one">Save %1$d measurement</item>
         <item quantity="other">Save %1$d measurements</item>
+    </plurals>
+    <plurals name="day_count">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
     </plurals>
     <plurals name="servings">
         <item quantity="one">%1$d serving</item>

@@ -9,6 +9,8 @@ import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHis
 data class WeightHistoryViewState(
     val userDetails: UserDetails? = null,
     val allWeights: List<Weight> = emptyList(),
+    /** Every goal the user has had, oldest first, for shading the moving average chart. */
+    val goalPhases: List<GoalPhase> = emptyList(),
     val timeRange: WeightHistoryTimeRangeEnum = WeightHistoryTimeRangeEnum.MONTH,
     val period: WeightPeriod? = null,
     val periodWeights: List<Weight> = emptyList(),
