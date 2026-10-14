@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -27,7 +27,9 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
+import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.Weight
+import org.thelazybattley.macrotrack.features.profile.weighthistory.GoalPhase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightPeriod
 import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -42,11 +44,21 @@ internal const val X_LABEL_HEIGHT_DP = 20
 internal const val TOP_PADDING_DP = 8
 private const val TAP_RADIUS_DP = 24
 
+/**
+ * Weigh-ins as a line, over bands for each goal in [goalPhases] or an area fill when there are none.
+ * Tapping a weigh-in shows its value; with [onSelectionStart] set, long-press then drag picks a
+ * [selection] between two weigh-ins.
+ */
 @Composable
 fun WeightHistoryGraph(
     modifier: Modifier = Modifier,
     weightList: List<Weight>,
     period: WeightPeriod,
+    goalPhases: List<GoalPhase> = emptyList(),
+    selection: WeightRange? = null,
+    onSelectionStart: ((LocalDate) -> Unit)? = null,
+    onSelectionDrag: (LocalDate) -> Unit = {},
+    onSelectionEnd: () -> Unit = {},
     unitLabel: String = "kg"
 ) {
     if (weightList.isEmpty()) return
@@ -56,6 +68,9 @@ fun WeightHistoryGraph(
     val gridColor = colors.divider
     val lineColor = colors.accent
     val areaColor = colors.accentSoft
+    val selectionLineColor = colors.accentInk
+    val changeMarkColor = colors.ink.copy(alpha = 0.45f)
+    val bandColors = goalBandColors()
     val markerFill = colors.surface
     var selectedIndex by remember(key1 = weightList) { mutableIntStateOf(value = -1) }
 
@@ -66,7 +81,25 @@ fun WeightHistoryGraph(
     val midDate = period.start.plus(period = DatePeriod(days = (spanDays / 2).toInt()))
 
     Canvas(
-        modifier = modifier.pointerInput(key1 = weightList, key2 = period) {
+        modifier = modifier
+            .then(
+                if (onSelectionStart == null) {
+                    Modifier
+                } else {
+                    Modifier.longPressRangeSelection(
+                        weightList = weightList,
+                        period = period,
+                        spanDays = spanDays,
+                        onSelectionStart = { date ->
+                            selectedIndex = -1
+                            onSelectionStart(date)
+                        },
+                        onSelectionDrag = onSelectionDrag,
+                        onSelectionEnd = onSelectionEnd
+                    )
+                }
+            )
+            .pointerInput(key1 = weightList, key2 = period) {
             detectTapGestures { tap ->
                 val points = pointsFor(
                     weightList = weightList,
@@ -90,6 +123,15 @@ fun WeightHistoryGraph(
         val top = TOP_PADDING_DP.dp.toPx()
         val bottom = size.height - X_LABEL_HEIGHT_DP.dp.toPx()
 
+        drawGoalBands(
+            goalPhases = goalPhases,
+            period = period,
+            spanDays = spanDays,
+            bottom = bottom,
+            bandColors = bandColors,
+            changeMarkColor = changeMarkColor
+        )
+
         listOf(high, (high + low) / 2, low).forEachIndexed { index, value ->
             val y = top + (bottom - top) * index / 2f
             drawLine(color = gridColor, start = Offset(x = left, y = y), end = Offset(x = size.width, y = y))
@@ -107,6 +149,17 @@ fun WeightHistoryGraph(
             drawText(textLayoutResult = label, topLeft = Offset(x = x, y = bottom + 4.dp.toPx()))
         }
 
+        if (selection != null) {
+            drawRangeSelection(
+                selection = selection,
+                period = period,
+                spanDays = spanDays,
+                bottom = bottom,
+                fillColor = lineColor,
+                lineColor = selectionLineColor
+            )
+        }
+
         val points = pointsFor(
             weightList = weightList,
             period = period,
@@ -117,13 +170,15 @@ fun WeightHistoryGraph(
             density = this
         )
 
-        val area = Path().apply {
-            moveTo(x = points.first().x, y = bottom)
-            points.forEach { lineTo(x = it.x, y = it.y) }
-            lineTo(x = points.last().x, y = bottom)
-            close()
+        if (goalPhases.isEmpty()) {
+            val area = Path().apply {
+                moveTo(x = points.first().x, y = bottom)
+                points.forEach { lineTo(x = it.x, y = it.y) }
+                lineTo(x = points.last().x, y = bottom)
+                close()
+            }
+            drawPath(path = area, color = areaColor)
         }
-        drawPath(path = area, color = areaColor)
         val line = Path().apply {
             moveTo(x = points.first().x, y = points.first().y)
             points.drop(n = 1).forEach { lineTo(x = it.x, y = it.y) }
@@ -137,6 +192,16 @@ fun WeightHistoryGraph(
         val marked = if (selectedIndex in points.indices) selectedIndex else points.lastIndex
         drawCircle(color = markerFill, radius = 5.dp.toPx(), center = points[marked])
         drawCircle(color = lineColor, radius = 5.dp.toPx(), center = points[marked], style = Stroke(width = 2.5.dp.toPx()))
+
+        if (selection != null) {
+            drawRangeEnds(
+                selection = selection,
+                weightList = weightList,
+                points = points,
+                fillColor = lineColor,
+                outlineColor = markerFill
+            )
+        }
 
         if (selectedIndex in points.indices) {
             val weight = weightList[selectedIndex]
@@ -170,13 +235,10 @@ internal fun pointsFor(
     size: Size,
     density: androidx.compose.ui.unit.Density
 ): List<Offset> = with(density) {
-    val left = AXIS_LABEL_WIDTH_DP.dp.toPx()
     val top = TOP_PADDING_DP.dp.toPx()
     val bottom = size.height - X_LABEL_HEIGHT_DP.dp.toPx()
-    val inset = 6.dp.toPx()
     weightList.map { weight ->
-        val dayIndex = weight.date.toEpochDays() - period.start.toEpochDays()
-        val x = left + inset + (size.width - left - inset * 2) * dayIndex / spanDays.toFloat()
+        val x = xForDate(date = weight.date, period = period, spanDays = spanDays, width = size.width, density = density)
         val y = bottom - (bottom - top) * ((weight.weight - low) / (high - low)).toFloat()
         Offset(x = x, y = y)
     }
@@ -203,7 +265,15 @@ private fun PreviewWeightHistoryGraph() {
                 range = WeightHistoryTimeRangeEnum.MONTH,
                 start = LocalDate(2026, 10, 1),
                 end = LocalDate(2026, 10, 31)
-            )
+            ),
+            goalPhases = listOf(
+                GoalPhase(start = LocalDate(2026, 3, 2), end = LocalDate(2026, 10, 4), goal = Goal.MAINTAIN_WEIGHT),
+                GoalPhase(start = LocalDate(2026, 10, 5), end = LocalDate(2026, 10, 8), goal = Goal.LOSE_WEIGHT)
+            ),
+            selection = null,
+            onSelectionStart = {},
+            onSelectionDrag = {},
+            onSelectionEnd = {}
         )
     }
 }

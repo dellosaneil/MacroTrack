@@ -22,6 +22,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +38,7 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.change_since_you_started
 import macrotrack.composeapp.generated.resources.ic_chevron_right
 import macrotrack.composeapp.generated.resources.ic_moving_average
+import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.log
 import macrotrack.composeapp.generated.resources.monthly_change
 import macrotrack.composeapp.generated.resources.moving_average
@@ -45,12 +49,15 @@ import macrotrack.composeapp.generated.resources.value_kg_unit
 import macrotrack.composeapp.generated.resources.weekly_change
 import macrotrack.composeapp.generated.resources.weight_entries
 import macrotrack.composeapp.generated.resources.weight_history
+import macrotrack.composeapp.generated.resources.weight_range_selected
+import macrotrack.composeapp.generated.resources.weight_range_selecting
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
+import org.thelazybattley.macrotrack.features.profile.weighthistory.GoalPhase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewState
@@ -135,6 +142,7 @@ private fun WeightHistoryScreen(
             ChartCard(
                 period = period,
                 weightList = viewState.periodWeights,
+                goalPhases = viewState.goalPhases,
                 onOpenMovingAverage = onOpenMovingAverage
             )
             WeightHistoryAverageCard(modifier = Modifier.fillMaxWidth(), viewState = viewState)
@@ -152,8 +160,11 @@ private fun WeightHistoryScreen(
 private fun ChartCard(
     period: WeightPeriod,
     weightList: List<Weight>,
+    goalPhases: List<GoalPhase>,
     onOpenMovingAverage: () -> Unit
 ) {
+    var selection by remember(period) { mutableStateOf<WeightRange?>(value = null) }
+    var isSelecting by remember(period) { mutableStateOf(value = false) }
     val change = weightList.last().weight - weightList.first().weight
     val changeLabel = when (period.range) {
         WeightHistoryTimeRangeEnum.WEEK -> Res.string.weekly_change
@@ -201,8 +212,38 @@ private fun ChartCard(
         WeightHistoryGraph(
             modifier = Modifier.fillMaxWidth().height(height = 170.dp),
             weightList = weightList,
-            period = period
+            period = period,
+            goalPhases = goalPhases,
+            selection = selection,
+            onSelectionStart = { date ->
+                selection = WeightRange(anchor = date, end = date)
+                isSelecting = true
+            },
+            onSelectionDrag = { date -> selection = selection?.copy(end = date) },
+            onSelectionEnd = { isSelecting = false }
         )
+        GoalLegend()
+        val range = selection
+        if (range == null) {
+            CompareHint()
+        } else {
+            SelectedRangeCard(
+                range = range,
+                values = weightList,
+                goalPhases = goalPhases,
+                unitLabel = stringResource(resource = Res.string.kg),
+                title = { dayCount ->
+                    stringResource(
+                        resource = if (isSelecting) Res.string.weight_range_selecting else Res.string.weight_range_selected,
+                        dayCount
+                    )
+                },
+                onClear = {
+                    selection = null
+                    isSelecting = false
+                }
+            )
+        }
         MovingAverageLink(onClick = onOpenMovingAverage)
     }
 }

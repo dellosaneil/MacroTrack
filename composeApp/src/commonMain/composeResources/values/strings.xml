@@ -192,10 +192,12 @@
     <string name="moving_average_window">Moving average window</string>
     <string name="moving_average_selecting">Selecting… %1$s · %2$d-day average</string>
     <string name="moving_average_selected_range">Selected range · %1$s · %2$d-day average</string>
-    <string name="moving_average_range_start">Start · %1$s</string>
-    <string name="moving_average_range_end">End · %1$s</string>
-    <string name="moving_average_rate_per_week">≈ %1$s kg / week</string>
-    <string name="moving_average_compare_hint">Long-press the chart, then drag to compare two dates.</string>
+    <string name="weight_range_selecting">Selecting… %1$s</string>
+    <string name="weight_range_selected">Selected range · %1$s</string>
+    <string name="range_start">Start · %1$s</string>
+    <string name="range_end">End · %1$s</string>
+    <string name="rate_per_week">≈ %1$s kg / week</string>
+    <string name="compare_range_hint">Long-press the chart, then drag to compare two dates.</string>
     <string name="kg_avg">kg avg</string>
     <string name="difference">Difference</string>
     <string name="clear">Clear</string>
