@@ -1,3 +1,10 @@
+buildscript {
+    dependencies {
+        // AGP's bundled R8 cannot read Kotlin 2.3 metadata; pin a newer R8 until AGP catches up.
+        classpath("com.android.tools:r8:8.13.25")
+    }
+}
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
