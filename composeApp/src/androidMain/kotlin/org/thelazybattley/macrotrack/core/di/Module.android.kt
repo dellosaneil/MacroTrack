@@ -5,12 +5,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import org.thelazybattley.macrotrack.core.billing.BillingService
+import org.thelazybattley.macrotrack.core.billing.PlayBillingService
 import org.thelazybattley.macrotrack.data.local.AppDatabase
 
 actual val platformModule: Module = module {
     single {
         getDatabaseBuilder(get())
     }
+    single<BillingService> { PlayBillingService(context = get()) }
 }
 
 fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
@@ -19,5 +22,5 @@ fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
     return Room.databaseBuilder<AppDatabase>(
         context = appContext,
         name = dbFile.absolutePath
-    ).addMigrations(AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9)
+    ).addMigrations(AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10)
 }

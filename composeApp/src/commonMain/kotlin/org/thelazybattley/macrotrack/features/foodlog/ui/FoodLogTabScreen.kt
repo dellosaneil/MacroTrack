@@ -89,6 +89,7 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
+import org.thelazybattley.macrotrack.features.pro.ui.ProTrialBanner
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
@@ -171,6 +172,7 @@ private fun FoodLogTabScreen(
                 .tourTarget(target = TourTarget.TODAY_REMAINING),
             viewState = viewState
         )
+        ProTrialBanner(modifier = Modifier.fillMaxWidth())
         MealsHeader(
             modifier = Modifier.fillMaxWidth(),
             itemCount = meals.sumOf { it.foodList.size },

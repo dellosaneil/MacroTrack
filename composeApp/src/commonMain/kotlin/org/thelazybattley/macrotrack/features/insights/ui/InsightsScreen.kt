@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,6 +72,10 @@ import org.thelazybattley.macrotrack.features.insights.Insights
 import org.thelazybattley.macrotrack.features.insights.InsightsRange
 import org.thelazybattley.macrotrack.features.insights.InsightsViewModel
 import org.thelazybattley.macrotrack.features.insights.MacroAverage
+import org.thelazybattley.macrotrack.features.pro.LocalProAccess
+import org.thelazybattley.macrotrack.features.pro.ProFeature
+import org.thelazybattley.macrotrack.features.pro.ui.ProBadge
+import org.thelazybattley.macrotrack.features.pro.ui.ProLockedCard
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -99,8 +104,23 @@ private fun InsightsScreen(
         modifier = modifier.verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(space = 14.dp)
     ) {
+        val pro = LocalProAccess.current
+        // The month view is Pro; drop back to the week if the trial ended while it was open.
+        LaunchedEffect(key1 = pro.isActive, key2 = insights?.range) {
+            if (!pro.isActive && insights?.range == InsightsRange.MONTH) onRangeSelected(InsightsRange.WEEK)
+        }
         Text(text = stringResource(resource = Res.string.insights), style = typography.bold32, color = colors.ink)
-        RangeTabs(selected = insights?.range ?: InsightsRange.WEEK, onSelected = onRangeSelected)
+        RangeTabs(
+            selected = insights?.range ?: InsightsRange.WEEK,
+            isMonthLocked = !pro.isActive,
+            onSelected = { range ->
+                if (range == InsightsRange.MONTH && !pro.isActive) {
+                    pro.openPaywall(ProFeature.INSIGHTS)
+                } else {
+                    onRangeSelected(range)
+                }
+            }
+        )
         insights ?: return@Column
         if (insights.loggedDays == 0) {
             Text(
@@ -117,8 +137,12 @@ private fun InsightsScreen(
         } else {
             CaloriesCard(insights = insights)
             MacrosCard(macros = insights.macros)
-            MealSplitCard(shares = insights.mealShares)
-            MostLoggedList(insights = insights, foodUnits = foodUnits)
+            if (pro.isActive) {
+                MealSplitCard(shares = insights.mealShares)
+                MostLoggedList(insights = insights, foodUnits = foodUnits)
+            } else {
+                ProLockedCard(feature = ProFeature.INSIGHTS, onClick = { pro.openPaywall(ProFeature.INSIGHTS) })
+            }
         }
     }
 }
@@ -126,6 +150,7 @@ private fun InsightsScreen(
 @Composable
 private fun RangeTabs(
     selected: InsightsRange,
+    isMonthLocked: Boolean,
     onSelected: (InsightsRange) -> Unit
 ) {
     Row(
@@ -148,11 +173,17 @@ private fun RangeTabs(
                     .clickable { onSelected(range) },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = stringResource(resource = label),
-                    style = typography.bold13,
-                    color = if (isSelected) colors.ink else colors.muted
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+                ) {
+                    Text(
+                        text = stringResource(resource = label),
+                        style = typography.bold13,
+                        color = if (isSelected) colors.ink else colors.muted
+                    )
+                    if (range == InsightsRange.MONTH && isMonthLocked) ProBadge()
+                }
             }
         }
     }

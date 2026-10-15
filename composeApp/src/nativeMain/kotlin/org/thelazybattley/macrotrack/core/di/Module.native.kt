@@ -4,6 +4,8 @@ import androidx.room.Room
 import kotlinx.cinterop.ExperimentalForeignApi
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import org.thelazybattley.macrotrack.core.billing.BillingService
+import org.thelazybattley.macrotrack.core.billing.UnavailableBillingService
 import org.thelazybattley.macrotrack.data.local.AppDatabase
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
@@ -14,8 +16,9 @@ actual val platformModule: Module = module {
         val dbFilePath = documentDirectory() + "/my_room.db"
         Room.databaseBuilder<AppDatabase>(
             name = dbFilePath,
-        ).addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9)
+        ).addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10)
     }
+    single<BillingService> { UnavailableBillingService() }
 }
 
 @OptIn(ExperimentalForeignApi::class)

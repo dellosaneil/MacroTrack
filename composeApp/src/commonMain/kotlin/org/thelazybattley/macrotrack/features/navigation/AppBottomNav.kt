@@ -22,6 +22,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.features.pro.LocalProAccess
+import org.thelazybattley.macrotrack.features.pro.ProAccess
+import org.thelazybattley.macrotrack.features.pro.ProFeature
+import org.thelazybattley.macrotrack.features.pro.ProViewModel
+import org.thelazybattley.macrotrack.features.pro.proFeatureFor
+import org.thelazybattley.macrotrack.features.pro.ui.PaywallScreen
 import org.thelazybattley.macrotrack.features.tour.LocalTourTargets
 import org.thelazybattley.macrotrack.features.tour.TourScreen
 import org.thelazybattley.macrotrack.features.tour.TourTargetRegistry
@@ -52,6 +58,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEASUREMENT_TYPE
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PRO_FEATURE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
@@ -65,6 +72,20 @@ fun AppBottomNav() {
     val tourState by tourViewModel.state.collectAsStateWithLifecycle()
     val tourTargets = remember { TourTargetRegistry() }
     var tabRequest by remember { mutableStateOf<TabRequest?>(value = null) }
+    val proViewModel = koinViewModel<ProViewModel>()
+    val proState by proViewModel.state.collectAsStateWithLifecycle()
+    val openPaywall: (ProFeature?) -> Unit = { feature ->
+        navController.navigate(route = AppDestinations.Root.Paywall.createRoute(feature = feature?.name))
+    }
+    // Every screen-to-screen move goes through here, so a Pro screen opens the paywall once the trial is over.
+    val navigate: (String) -> Unit = { route ->
+        val feature = proFeatureFor(route = route, recipeCount = proState.recipeCount)
+        if (feature != null && !proState.status.isActive) {
+            openPaywall(feature)
+        } else {
+            navController.navigate(route = route)
+        }
+    }
     SideEffect {
         tourTargets.activeTarget = tourState.step?.target
     }
@@ -77,7 +98,10 @@ fun AppBottomNav() {
         navController.showTourScreen(screen = TourScreen.LOG) { tab -> tabRequest = TabRequest(tab = tab) }
     }
     MacroTrackTheme {
-        CompositionLocalProvider(LocalTourTargets provides tourTargets) {
+        CompositionLocalProvider(
+            LocalTourTargets provides tourTargets,
+            LocalProAccess provides ProAccess(state = proState, openPaywall = openPaywall, callbacks = proViewModel)
+        ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 NavHost(
                     navController = navController,
@@ -118,7 +142,7 @@ fun AppBottomNav() {
                             tabRequest = tabRequest,
                             onReplayTour = tourViewModel::onReplayClicked
                         ) { destination ->
-                            navController.navigate(route = destination)
+                            navigate(destination)
                         }
                     }
                     composable(route = AppDestinations.Root.Splash.route) {
@@ -146,7 +170,7 @@ fun AppBottomNav() {
                                 navController.popBackStack()
                             }
                         ) { route ->
-                            navController.navigate(route = route)
+                            navigate(route)
                         }
                     }
                     composable(
@@ -222,9 +246,7 @@ fun AppBottomNav() {
                             onPopBackStack = {
                                 navController.popBackStack()
                             },
-                            onNavigate = { route ->
-                                navController.navigate(route = route)
-                            }
+                            onNavigate = navigate
                         )
                     }
                     composable(
@@ -250,9 +272,7 @@ fun AppBottomNav() {
                             onPopBackStack = {
                                 navController.popBackStack()
                             },
-                            onNavigate = { route ->
-                                navController.navigate(route = route)
-                            }
+                            onNavigate = navigate
                         )
                     }
                     composable(
@@ -263,9 +283,7 @@ fun AppBottomNav() {
                             onPopBackStack = {
                                 navController.popBackStack()
                             },
-                            onNavigate = { route ->
-                                navController.navigate(route = route)
-                            }
+                            onNavigate = navigate
                         )
                     }
                     composable(
@@ -276,9 +294,7 @@ fun AppBottomNav() {
                             onPopBackStack = {
                                 navController.popBackStack()
                             },
-                            onNavigate = { route ->
-                                navController.navigate(route = route)
-                            }
+                            onNavigate = navigate
                         )
                     }
                     composable(
@@ -289,6 +305,24 @@ fun AppBottomNav() {
                             onPopBackStack = {
                                 navController.popBackStack()
                             }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.Paywall.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = PRO_FEATURE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) { entry ->
+                        val featureName = entry.savedStateHandle.get<String>(key = PRO_FEATURE)
+                        PaywallScreen(
+                            feature = ProFeature.entries.find { it.name == featureName },
+                            viewState = proState,
+                            callbacks = proViewModel,
+                            onBack = { navController.popBackStack() }
                         )
                     }
                     composable(

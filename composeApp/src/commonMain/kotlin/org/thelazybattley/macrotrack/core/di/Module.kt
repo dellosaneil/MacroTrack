@@ -1,6 +1,14 @@
 package org.thelazybattley.macrotrack.core.di
 
 import org.thelazybattley.macrotrack.data.repository.AppFlagRepositoryImpl
+import org.thelazybattley.macrotrack.data.repository.ProRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.ProRepository
+import org.thelazybattley.macrotrack.domain.usecase.pro.DismissTrialEndedNoticeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.pro.GetProStatusUseCase
+import org.thelazybattley.macrotrack.domain.usecase.pro.IsTrialEndedNoticeDismissedUseCase
+import org.thelazybattley.macrotrack.domain.usecase.pro.SetProPurchasedUseCase
+import org.thelazybattley.macrotrack.domain.usecase.pro.StartProTrialUseCase
+import org.thelazybattley.macrotrack.features.pro.ProViewModel
 import org.thelazybattley.macrotrack.domain.repository.AppFlagRepository
 import org.thelazybattley.macrotrack.domain.usecase.tour.IsTourCompletedUseCase
 import org.thelazybattley.macrotrack.domain.usecase.tour.SetTourCompletedUseCase
@@ -110,6 +118,7 @@ val repositoryModule = module {
     singleOf(::DailyGoalRepositoryImpl) { bind<DailyGoalRepository>() }
     singleOf(::FavoriteRepositoryImpl) { bind<FavoriteRepository>() }
     singleOf(::AppFlagRepositoryImpl) { bind<AppFlagRepository>() }
+    singleOf(::ProRepositoryImpl) { bind<ProRepository>() }
 }
 
 val useCaseModule = module {
@@ -147,6 +156,11 @@ val useCaseModule = module {
     factoryOf(::SetFavoriteUseCase)
     factoryOf(::IsTourCompletedUseCase)
     factoryOf(::SetTourCompletedUseCase)
+    factoryOf(::GetProStatusUseCase)
+    factoryOf(::StartProTrialUseCase)
+    factoryOf(::SetProPurchasedUseCase)
+    factoryOf(::IsTrialEndedNoticeDismissedUseCase)
+    factoryOf(::DismissTrialEndedNoticeUseCase)
 }
 
 val viewModelModule = module {
@@ -169,6 +183,7 @@ val viewModelModule = module {
     viewModelOf(::CalendarViewModel)
     viewModelOf(::PastGoalViewModel)
     viewModelOf(::TourViewModel)
+    viewModelOf(::ProViewModel)
 }
 
 fun initKoin() {

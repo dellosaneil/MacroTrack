@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.pro_compare_locked_hint
+import macrotrack.composeapp.generated.resources.ic_compare_range
 import macrotrack.composeapp.generated.resources.change_since_you_started
 import macrotrack.composeapp.generated.resources.ic_chevron_right
 import macrotrack.composeapp.generated.resources.ic_moving_average
@@ -57,6 +59,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
+import org.thelazybattley.macrotrack.features.pro.LocalProAccess
+import org.thelazybattley.macrotrack.features.pro.ProFeature
+import org.thelazybattley.macrotrack.features.pro.ui.ProBadge
 import org.thelazybattley.macrotrack.features.profile.weighthistory.GoalPhase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
@@ -165,6 +170,9 @@ private fun ChartCard(
 ) {
     var selection by remember(period) { mutableStateOf<WeightRange?>(value = null) }
     var isSelecting by remember(period) { mutableStateOf(value = false) }
+    val pro = LocalProAccess.current
+    // Goal shading and range comparison are Pro; the plain weight line stays free.
+    val goalPhases = if (pro.isActive) goalPhases else emptyList()
     val change = weightList.last().weight - weightList.first().weight
     val changeLabel = when (period.range) {
         WeightHistoryTimeRangeEnum.WEEK -> Res.string.weekly_change
@@ -216,15 +224,21 @@ private fun ChartCard(
             goalPhases = goalPhases,
             selection = selection,
             onSelectionStart = { date ->
-                selection = WeightRange(anchor = date, end = date)
-                isSelecting = true
+                if (pro.isActive) {
+                    selection = WeightRange(anchor = date, end = date)
+                    isSelecting = true
+                } else {
+                    pro.openPaywall(ProFeature.RANGE_COMPARISON)
+                }
             },
             onSelectionDrag = { date -> selection = selection?.copy(end = date) },
             onSelectionEnd = { isSelecting = false }
         )
-        GoalLegend()
+        if (pro.isActive) GoalLegend()
         val range = selection
-        if (range == null) {
+        if (!pro.isActive) {
+            LockedCompareHint(onClick = { pro.openPaywall(ProFeature.RANGE_COMPARISON) })
+        } else if (range == null) {
             CompareHint()
         } else {
             SelectedRangeCard(
@@ -244,12 +258,37 @@ private fun ChartCard(
                 }
             )
         }
-        MovingAverageLink(onClick = onOpenMovingAverage)
+        MovingAverageLink(isLocked = !pro.isActive, onClick = onOpenMovingAverage)
     }
 }
 
 @Composable
-private fun MovingAverageLink(onClick: () -> Unit) {
+private fun LockedCompareHint(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(shape = RoundedCornerShape(size = 10.dp))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_compare_range),
+            contentDescription = null,
+            tint = colors.muted,
+            modifier = Modifier.size(size = 16.dp)
+        )
+        Text(
+            text = stringResource(resource = Res.string.pro_compare_locked_hint),
+            style = typography.regular11,
+            color = colors.muted
+        )
+        ProBadge()
+    }
+}
+
+@Composable
+private fun MovingAverageLink(isLocked: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -278,11 +317,17 @@ private fun MovingAverageLink(onClick: () -> Unit) {
             modifier = Modifier.weight(weight = 1f),
             verticalArrangement = Arrangement.spacedBy(space = 2.dp)
         ) {
-            Text(
-                text = stringResource(resource = Res.string.moving_average),
-                style = typography.bold14,
-                color = colors.ink
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.moving_average),
+                    style = typography.bold14,
+                    color = colors.ink
+                )
+                if (isLocked) ProBadge()
+            }
             Text(
                 text = stringResource(resource = Res.string.moving_average_link_description),
                 style = typography.regular11,

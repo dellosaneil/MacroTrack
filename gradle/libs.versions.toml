@@ -22,6 +22,7 @@ sqlite = "2.6.2"
 ksp = "2.3.6"
 kotlinx-serialization = "1.10.0"
 clock = "0.7.1"
+billing = "9.1.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
@@ -54,6 +55,7 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 clock = {module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "clock"}
 
+billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

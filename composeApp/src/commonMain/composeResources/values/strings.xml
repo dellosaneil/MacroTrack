@@ -547,4 +547,52 @@
     <string name="tour_finished_message">Tour complete. Happy logging!</string>
     <string name="tour_replay">Replay</string>
     <string name="replay_app_tour">Replay app tour</string>
+    <string name="pro_name">MacroTrack Pro</string>
+    <string name="pro_badge">PRO</string>
+    <string name="pro_subtitle">Everything you need to log stays free. Pro adds the deeper tools.</string>
+    <string name="pro_locked_title">%1$s is part of Pro</string>
+    <string name="pro_feature_moving_average">Moving average</string>
+    <string name="pro_feature_moving_average_body">See the real trend behind the daily ups and downs.</string>
+    <string name="pro_feature_goal_phases">Goal phases</string>
+    <string name="pro_feature_goal_phases_body">Shade your weight chart by the goal you had each day.</string>
+    <string name="pro_feature_range_comparison">Range comparison</string>
+    <string name="pro_feature_range_comparison_body">Drag across a weight chart to compare any two days.</string>
+    <string name="pro_feature_measurements">Body measurements</string>
+    <string name="pro_feature_measurements_body">Log waist, chest, arms and more, and see how they change.</string>
+    <string name="pro_feature_insights">Full insights</string>
+    <string name="pro_feature_insights_body">The monthly view, your meal split and your most-logged foods.</string>
+    <string name="pro_feature_recipes">Unlimited recipes</string>
+    <string name="pro_feature_recipes_body">Save as many recipes as you like. Free includes %1$d.</string>
+    <plurals name="pro_trial_days_left">
+        <item quantity="one">%1$d day left in your free Pro trial.</item>
+        <item quantity="other">%1$d days left in your free Pro trial.</item>
+    </plurals>
+    <string name="pro_trial_ended">Your free month of Pro has ended. Logging, goals and all your history stay free.</string>
+    <string name="pro_owned">You have Pro. Thanks for supporting MacroTrack!</string>
+    <string name="pro_unlock">Unlock Pro</string>
+    <string name="pro_unlock_with_price">Unlock Pro · %1$s</string>
+    <string name="pro_one_time">One-time purchase. No subscription.</string>
+    <string name="pro_restore">Restore purchase</string>
+    <string name="pro_store_unsupported">Purchases aren't available on this device yet.</string>
+    <string name="pro_message_unavailable">Couldn't reach the store. Check your connection and try again.</string>
+    <string name="pro_message_pending">Your payment is pending. Pro unlocks as soon as it clears.</string>
+    <string name="pro_message_unlocked">Pro unlocked. Thank you!</string>
+    <string name="pro_message_restored">Pro restored.</string>
+    <string name="pro_message_nothing_to_restore">No Pro purchase found for this account.</string>
+    <plurals name="pro_banner_days_left">
+        <item quantity="one">%1$d day of Pro left</item>
+        <item quantity="other">%1$d days of Pro left</item>
+    </plurals>
+    <string name="pro_banner_days_left_body">Keep the moving average, measurements and full insights.</string>
+    <string name="pro_banner_ended">Your free month of Pro has ended</string>
+    <string name="pro_banner_ended_body">Logging stays free. Upgrade anytime to get the Pro tools back.</string>
+    <string name="pro_upgrade">Upgrade</string>
+    <string name="pro_dismiss">Dismiss</string>
+    <string name="pro_status_active">Active</string>
+    <plurals name="pro_status_trial">
+        <item quantity="one">Trial · %1$d day left</item>
+        <item quantity="other">Trial · %1$d days left</item>
+    </plurals>
+    <string name="pro_compare_locked_hint">Compare any two days with Pro</string>
+    <string name="pro_locked_card_action">Unlock with Pro</string>
 </resources>

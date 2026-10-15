@@ -31,7 +31,7 @@ import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
     entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class],
-    version = 9, exportSchema = true,
+    version = 10, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -114,6 +114,12 @@ abstract class AppDatabase : RoomDatabase() {
                 connection.execSQL(
                     "INSERT OR IGNORE INTO `AppFlagEntity` (`key`) SELECT 'tour_completed' FROM `UserDetailsEntity` LIMIT 1"
                 )
+            }
+        }
+
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE `AppFlagEntity` ADD COLUMN `value` TEXT")
             }
         }
     }

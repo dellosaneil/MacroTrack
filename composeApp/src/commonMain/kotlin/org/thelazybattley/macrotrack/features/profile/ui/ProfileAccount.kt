@@ -29,6 +29,10 @@ import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.not_set
 import macrotrack.composeapp.generated.resources.nutrition_goals
 import macrotrack.composeapp.generated.resources.personal_information
+import macrotrack.composeapp.generated.resources.pro_name
+import macrotrack.composeapp.generated.resources.pro_status_active
+import macrotrack.composeapp.generated.resources.pro_status_trial
+import macrotrack.composeapp.generated.resources.pro_upgrade
 import macrotrack.composeapp.generated.resources.replay_app_tour
 import macrotrack.composeapp.generated.resources.target_weight
 import macrotrack.composeapp.generated.resources.value_unit
@@ -36,10 +40,12 @@ import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.weight_history
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
+import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -72,6 +78,22 @@ fun ProfileAccount(
                 .background(color = colors.surface)
                 .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 20.dp))
         ) {
+            val pro = LocalProAccess.current
+            val proStatus = pro.state.status
+            AccountRow(
+                label = Res.string.pro_name,
+                value = when {
+                    proStatus.isPurchased -> stringResource(resource = Res.string.pro_status_active)
+                    proStatus.isTrialActive -> pluralStringResource(
+                        resource = Res.plurals.pro_status_trial,
+                        quantity = proStatus.trialDaysLeft,
+                        proStatus.trialDaysLeft
+                    )
+                    else -> stringResource(resource = Res.string.pro_upgrade)
+                },
+                onClick = { pro.openPaywall(null) }
+            )
+            HorizontalDivider(thickness = 1.dp, color = colors.divider)
             AccountRow(
                 label = Res.string.personal_information,
                 onClick = { onNavigate(ProfileSectionEnum.PERSONAL_INFO) }

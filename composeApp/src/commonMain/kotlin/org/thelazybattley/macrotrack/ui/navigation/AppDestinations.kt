@@ -82,6 +82,12 @@ sealed class AppDestinations {
 
         object MovingAverage : Root(route = "moving_average")
 
+        object Paywall : Root(route = "paywall", routeWithArgs = "paywall?$PRO_FEATURE={$PRO_FEATURE}") {
+            fun createRoute(feature: String?): String {
+                return if (feature == null) route else "$route?$PRO_FEATURE=$feature"
+            }
+        }
+
         object MeasurementDetail :
             Root(route = "measurement_detail", routeWithArgs = "measurement_detail/{$MEASUREMENT_TYPE}") {
             fun createRoute(type: String): String {
@@ -102,5 +108,6 @@ sealed class AppDestinations {
         const val RECIPE_NAME = "recipeName"
         const val FOOD_NAME = "foodName"
         const val MEASUREMENT_TYPE = "measurementType"
+        const val PRO_FEATURE = "proFeature"
     }
 }

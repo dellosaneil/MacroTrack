@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -62,6 +64,8 @@ import org.thelazybattley.macrotrack.features.measurements.MeasurementSummary
 import org.thelazybattley.macrotrack.features.measurements.MeasurementUnit
 import org.thelazybattley.macrotrack.features.measurements.formatChange
 import org.thelazybattley.macrotrack.features.measurements.formatMeasure
+import org.thelazybattley.macrotrack.features.pro.LocalProAccess
+import org.thelazybattley.macrotrack.features.pro.ui.ProBadge
 import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.features.progress.ProgressViewModel
 import org.thelazybattley.macrotrack.features.progress.ProgressViewState
@@ -92,6 +96,7 @@ private fun ProgressScreen(
     viewState: ProgressViewState,
     onNavigate: (String) -> Unit
 ) {
+    val isMeasuringLocked = !LocalProAccess.current.isActive
     Column(
         modifier = modifier.verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(space = 14.dp)
@@ -115,6 +120,7 @@ private fun ProgressScreen(
                 modifier = Modifier.weight(weight = 1f),
                 text = Res.string.log_measurements,
                 isPrimary = false,
+                isLocked = isMeasuringLocked,
                 onClick = { onNavigate(AppDestinations.Root.MeasurementsLog.route) }
             )
         }
@@ -124,6 +130,7 @@ private fun ProgressScreen(
         )
         MeasurementsCard(
             viewState = viewState,
+            isMeasuringLocked = isMeasuringLocked,
             onOpenAll = { onNavigate(AppDestinations.Profile.BodyMeasurements.route) },
             onOpenType = { type -> onNavigate(AppDestinations.Root.MeasurementDetail.createRoute(type = type.name)) },
             onLog = { onNavigate(AppDestinations.Root.MeasurementsLog.route) }
@@ -136,25 +143,33 @@ private fun QuickAction(
     modifier: Modifier = Modifier,
     text: StringResource,
     isPrimary: Boolean,
+    isLocked: Boolean = false,
     onClick: () -> Unit
 ) {
     val content = if (isPrimary) colors.onAccent else colors.accentInk
-    Row(
-        modifier = modifier
-            .height(height = 48.dp)
-            .clip(shape = RoundedCornerShape(size = 14.dp))
-            .background(color = if (isPrimary) colors.accent else colors.accentSoft)
-            .clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterHorizontally)
-    ) {
-        Icon(
-            painter = painterResource(resource = Res.drawable.ic_plus),
-            contentDescription = null,
-            tint = content,
-            modifier = Modifier.size(size = 18.dp)
-        )
-        Text(text = stringResource(resource = text), style = typography.bold14, color = content)
+    Box(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(height = 48.dp)
+                .clip(shape = RoundedCornerShape(size = 14.dp))
+                .background(color = if (isPrimary) colors.accent else colors.accentSoft)
+                .clickable(onClick = onClick),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterHorizontally)
+        ) {
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_plus),
+                contentDescription = null,
+                tint = content,
+                modifier = Modifier.size(size = 18.dp)
+            )
+            Text(text = stringResource(resource = text), style = typography.bold14, color = content)
+        }
+        // A half-wide button has no room for the tag beside its label, so it sits on the corner.
+        if (isLocked) {
+            ProBadge(modifier = Modifier.align(alignment = Alignment.TopEnd).offset(x = (-8).dp, y = (-7).dp))
+        }
     }
 }
 
@@ -272,6 +287,7 @@ private fun Sparkline(weights: List<Weight>) {
 @Composable
 private fun MeasurementsCard(
     viewState: ProgressViewState,
+    isMeasuringLocked: Boolean,
     onOpenAll: () -> Unit,
     onOpenType: (MeasurementType) -> Unit,
     onLog: () -> Unit
@@ -282,7 +298,7 @@ private fun MeasurementsCard(
         if (lastMeasured == null) {
             Text(text = stringResource(resource = Res.string.no_measurements_yet), style = typography.bold18, color = colors.ink)
             Text(text = stringResource(resource = Res.string.no_measurements_prompt), style = typography.regular13, color = colors.muted)
-            LinkRow(text = stringResource(resource = Res.string.log_measurements), onClick = onLog)
+            LinkRow(text = stringResource(resource = Res.string.log_measurements), isLocked = isMeasuringLocked, onClick = onLog)
             return@ProgressCard
         }
         Column {
@@ -355,7 +371,7 @@ private fun MeasurementTile(
 }
 
 @Composable
-private fun LinkRow(text: String, onClick: () -> Unit) {
+private fun LinkRow(text: String, isLocked: Boolean = false, onClick: () -> Unit) {
     val shape = RoundedCornerShape(size = 12.dp)
     Row(
         modifier = Modifier
@@ -374,6 +390,7 @@ private fun LinkRow(text: String, onClick: () -> Unit) {
             textAlign = TextAlign.Start,
             modifier = Modifier.weight(weight = 1f)
         )
+        if (isLocked) ProBadge(modifier = Modifier.padding(end = 8.dp))
         Icon(
             painter = painterResource(resource = Res.drawable.ic_chevron_left),
             contentDescription = null,
