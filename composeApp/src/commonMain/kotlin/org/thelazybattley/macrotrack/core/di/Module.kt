@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.core.di
 
+import org.thelazybattley.macrotrack.core.isPaywallEnabled
 import org.thelazybattley.macrotrack.data.repository.AppFlagRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.ProRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.ProRepository
@@ -156,7 +157,7 @@ val useCaseModule = module {
     factoryOf(::SetFavoriteUseCase)
     factoryOf(::IsTourCompletedUseCase)
     factoryOf(::SetTourCompletedUseCase)
-    factoryOf(::GetProStatusUseCase)
+    factory { GetProStatusUseCase(repository = get(), isPaywallEnabled = isPaywallEnabled) }
     factoryOf(::StartProTrialUseCase)
     factoryOf(::SetProPurchasedUseCase)
     factoryOf(::IsTrialEndedNoticeDismissedUseCase)
