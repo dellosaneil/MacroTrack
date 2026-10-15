@@ -7,6 +7,7 @@ import org.thelazybattley.macrotrack.domain.repository.ProductRepository
 import org.thelazybattley.macrotrack.domain.usecase.food.LookUpBarcodeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
 import org.thelazybattley.macrotrack.features.scanbarcode.ScanBarcodeViewModel
+import org.thelazybattley.macrotrack.features.scanbarcode.ScannedFoodRequest
 import org.thelazybattley.macrotrack.core.isPaywallEnabled
 import org.thelazybattley.macrotrack.data.repository.AppFlagRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.ProRepositoryImpl
@@ -128,6 +129,7 @@ val repositoryModule = module {
     singleOf(::UserDetailsRepositoryImpl) { bind<UserDetailsRepository>() }
     singleOf(::FoodLogRepositoryImpl) { bind<FoodLogRepository>() }
     singleOf(::LogDateRequest)
+    singleOf(::ScannedFoodRequest)
     singleOf(::WeightRepositoryImpl) { bind<WeightRepository>() }
     singleOf(::MeasurementRepositoryImpl) { bind<MeasurementRepository>() }
     singleOf(::DailyGoalRepositoryImpl) { bind<DailyGoalRepository>() }

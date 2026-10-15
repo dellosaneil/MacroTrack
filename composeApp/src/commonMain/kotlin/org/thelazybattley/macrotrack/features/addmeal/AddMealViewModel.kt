@@ -24,6 +24,7 @@ import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
+import org.thelazybattley.macrotrack.features.scanbarcode.ScannedFoodRequest
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 class AddMealViewModel(
@@ -37,6 +38,7 @@ class AddMealViewModel(
     private val getRemainingCaloriesTodayUseCase: GetRemainingCaloriesTodayUseCase,
     private val getFavoriteKeysUseCase: GetFavoriteKeysUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
+    private val scannedFoodRequest: ScannedFoodRequest,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks {
 
@@ -68,6 +70,14 @@ class AddMealViewModel(
                     )
                 }
             }.collect()
+        }
+
+        viewModelScope.launch {
+            scannedFoodRequest.foodName.collect { foodName ->
+                if (foodName == null) return@collect
+                _state.update { currentState -> currentState.copy(justScannedName = foodName, selectedMealFilter = null, searchQuery = "") }
+                scannedFoodRequest.clear()
+            }
         }
 
         viewModelScope.launch {

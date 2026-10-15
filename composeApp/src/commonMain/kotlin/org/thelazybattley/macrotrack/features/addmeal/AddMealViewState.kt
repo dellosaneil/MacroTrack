@@ -18,6 +18,8 @@ data class AddMealViewState(
     val searchQuery: String = "",
     val selection: List<SelectedMealItem> = emptyList(),
     val focusedKey: String? = null,
+    /** A food the barcode scanner just saved; it's pinned to the top of the list and called out until logged. */
+    val justScannedName: String? = null,
     val remainingCalories: Int? = null,
     val destinationRoute: String? = null,
     val isSaved: Boolean = false
@@ -38,7 +40,8 @@ data class AddMealViewState(
             val recipes = recipeList.map { mealListItem(food = it.food, isRecipe = true) }
             val items = (foods + recipes).filter { it.food.name.contains(other = searchQuery.trim(), ignoreCase = true) }
             val byName = compareBy<MealListItem> { it.food.name.lowercase() }
-            return when (activeFilter) {
+            val justScanned = items.find { !it.isRecipe && it.food.name == justScannedName }
+            val list = when (activeFilter) {
                 MealFilter.RECENT -> items
                     .filter { it.lastLogged != null }
                     .sortedByDescending { it.lastLogged?.order }
@@ -46,6 +49,7 @@ data class AddMealViewState(
                 MealFilter.FAVORITES -> items.filter { it.isFavorite }.sortedWith(byName)
                 MealFilter.ALL -> items.sortedWith(byName)
             }
+            return if (justScanned == null) list else listOf(justScanned) + (list - justScanned)
         }
 
     val favoriteCount: Int get() = (completeFoodList.map { mealItemKey(name = it.name, isRecipe = false) } +
@@ -61,7 +65,8 @@ data class AddMealViewState(
             food = food,
             isRecipe = isRecipe,
             isFavorite = key in favoriteKeys,
-            lastLogged = lastLogged[key]
+            lastLogged = lastLogged[key],
+            isJustScanned = !isRecipe && food.name == justScannedName
         )
     }
 
@@ -74,7 +79,8 @@ data class MealListItem(
     val food: Food,
     val isRecipe: Boolean,
     val isFavorite: Boolean = false,
-    val lastLogged: LastLogged? = null
+    val lastLogged: LastLogged? = null,
+    val isJustScanned: Boolean = false
 ) {
     val key: String get() = mealItemKey(name = food.name, isRecipe = isRecipe)
 }

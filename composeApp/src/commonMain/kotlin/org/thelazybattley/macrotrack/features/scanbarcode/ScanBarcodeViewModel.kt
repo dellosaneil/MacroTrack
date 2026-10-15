@@ -29,6 +29,7 @@ class ScanBarcodeViewModel(
     private val insertFoodLogUseCase: InsertFoodLogUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val getRemainingCaloriesTodayUseCase: GetRemainingCaloriesTodayUseCase,
+    private val scannedFoodRequest: ScannedFoodRequest,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), ScanBarcodeCallbacks {
 
@@ -108,7 +109,7 @@ class ScanBarcodeViewModel(
         val scanned = currentState.scanned ?: return
         if (currentState.isSaved) return
         viewModelScope.launch {
-            val food = savedFood(scanned = scanned)
+            val food = scanned.food
             val macros = portionMacros(food = food, amount = currentState.amount)
             insertFoodLogUseCase(
                 foodName = food.name,
@@ -124,12 +125,14 @@ class ScanBarcodeViewModel(
         }
     }
 
+    override fun onLater() {
+        val scanned = _state.value.scanned ?: return
+        scannedFoodRequest.request(foodName = scanned.food.name)
+    }
+
     override fun onEditFood() {
         val scanned = _state.value.scanned ?: return
-        viewModelScope.launch {
-            val food = savedFood(scanned = scanned)
-            _state.update { it.copy(destinationRoute = AppDestinations.Root.CreateFood.createRoute(foodName = food.name)) }
-        }
+        _state.update { it.copy(destinationRoute = AppDestinations.Root.CreateFood.createRoute(foodName = scanned.food.name)) }
     }
 
     override fun onCreateFood() {
@@ -150,9 +153,10 @@ class ScanBarcodeViewModel(
             val scanned = when (val result = lookUpBarcodeUseCase(barcode = barcode)) {
                 is BarcodeLookup.Saved -> savedScannedFood(food = result.food)
                 is BarcodeLookup.Product -> ScannedFood(
-                    food = result.product.food,
+                    // Saved straight away, so it's in the user's foods whether they log it now or later.
+                    food = saveProduct(food = result.product.food, brand = result.product.brand),
                     brand = result.product.brand,
-                    isSaved = false,
+                    isNewlySaved = true,
                     servingLabel = result.product.servingLabel,
                     servings = productServings(
                         servingLabel = result.product.servingLabel,
@@ -183,8 +187,8 @@ class ScanBarcodeViewModel(
         val saved = foods.find { it.barcode == barcode } ?: return
         when (currentState.mode) {
             ScanMode.NOT_FOUND, ScanMode.UNAVAILABLE -> showFound(scanned = savedScannedFood(food = saved), amount = saved.weight)
-            ScanMode.FOUND -> if (currentState.scanned?.food != saved) {
-                showFound(scanned = savedScannedFood(food = saved), amount = currentState.amount)
+            ScanMode.FOUND -> currentState.scanned?.takeIf { it.food != saved }?.let { scanned ->
+                showFound(scanned = scanned.copy(food = saved), amount = currentState.amount)
             }
             else -> Unit
         }
@@ -204,7 +208,7 @@ class ScanBarcodeViewModel(
     private fun savedScannedFood(food: Food) = ScannedFood(
         food = food,
         brand = null,
-        isSaved = true,
+        isNewlySaved = false,
         servingLabel = null,
         servings = listOfNotNull(
             ServingOption(amount = food.weight),
@@ -230,13 +234,12 @@ class ScanBarcodeViewModel(
     private fun portionMacros(food: Food, amount: Double) =
         calculateAdjustMacrosUseCase(portionSize = amount, originalFood = food)
 
-    /** A product from Open Food Facts is saved the first time it's logged or edited, so the next scan finds it offline. */
-    private suspend fun savedFood(scanned: ScannedFood): Food {
-        if (scanned.isSaved) return scanned.food
-        savedFoods.find { it.barcode == scanned.food.barcode }?.let { return it }
-        val food = scanned.food.copy(name = uniqueName(name = scanned.food.name, brand = scanned.brand, barcode = scanned.food.barcode))
-        insertFoodUseCase(food = food)
-        return food
+    /** Saves an Open Food Facts product to the user's foods, so the next scan finds it offline. */
+    private suspend fun saveProduct(food: Food, brand: String?): Food {
+        savedFoods.find { it.barcode == food.barcode }?.let { return it }
+        val saved = food.copy(name = uniqueName(name = food.name, brand = brand, barcode = food.barcode))
+        insertFoodUseCase(food = saved)
+        return saved
     }
 
     /** Foods are keyed by name, so a product never replaces a saved food that happens to share its name. */

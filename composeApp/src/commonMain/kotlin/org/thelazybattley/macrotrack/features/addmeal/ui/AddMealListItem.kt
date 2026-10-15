@@ -24,9 +24,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.daysUntil
 import macrotrack.composeapp.generated.resources.Res
@@ -44,6 +52,7 @@ import macrotrack.composeapp.generated.resources.percent_of_serving
 import macrotrack.composeapp.generated.resources.recipe
 import macrotrack.composeapp.generated.resources.remove_from_favorites
 import macrotrack.composeapp.generated.resources.remove_value
+import macrotrack.composeapp.generated.resources.scan_new_tag
 import macrotrack.composeapp.generated.resources.today
 import macrotrack.composeapp.generated.resources.value_unit
 import macrotrack.composeapp.generated.resources.yesterday
@@ -79,11 +88,19 @@ fun AddMealListItem(
     // On Recent, an unselected row shows the portion logged last time and when.
     val lastLogged = item.lastLogged?.takeIf { showLastLogged && !isSelected }
     val food = selectedItem?.food ?: lastLogged?.food ?: item.food
+    // A food the scanner just saved gets a dashed outline until it's picked.
+    val isDashed = item.isJustScanned && !isSelected
     Column(
         modifier = modifier
             .clip(shape = shape)
             .background(color = colors.surface)
-            .border(width = 1.5.dp, color = if (isSelected) colors.accent else colors.line, shape = shape)
+            .then(
+                if (isDashed) {
+                    Modifier.dashedBorder(color = colors.accent, cornerRadius = 16.dp)
+                } else {
+                    Modifier.border(width = 1.5.dp, color = if (isSelected) colors.accent else colors.line, shape = shape)
+                }
+            )
     ) {
         Row(
             modifier = Modifier
@@ -124,6 +141,17 @@ fun AddMealListItem(
                             color = colors.accentInk,
                             modifier = Modifier
                                 .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 6.dp))
+                                .padding(horizontal = 6.dp, vertical = 1.dp)
+                        )
+                    }
+                    if (item.isJustScanned) {
+                        Text(
+                            text = stringResource(resource = Res.string.scan_new_tag),
+                            style = typography.bold10,
+                            color = colors.warmInk,
+                            maxLines = 1,
+                            modifier = Modifier
+                                .background(color = colors.warmSoft, shape = RoundedCornerShape(size = 6.dp))
                                 .padding(horizontal = 6.dp, vertical = 1.dp)
                         )
                     }
@@ -216,6 +244,18 @@ fun AddMealListItem(
             )
         }
     }
+}
+
+private fun Modifier.dashedBorder(color: Color, cornerRadius: Dp): Modifier = drawWithContent {
+    drawContent()
+    val stroke = 1.5.dp.toPx()
+    drawRoundRect(
+        color = color,
+        topLeft = Offset(x = stroke / 2, y = stroke / 2),
+        size = Size(width = size.width - stroke, height = size.height - stroke),
+        cornerRadius = CornerRadius(x = cornerRadius.toPx()),
+        style = Stroke(width = stroke, pathEffect = PathEffect.dashPathEffect(intervals = floatArrayOf(6.dp.toPx(), 4.dp.toPx())))
+    )
 }
 
 @Composable

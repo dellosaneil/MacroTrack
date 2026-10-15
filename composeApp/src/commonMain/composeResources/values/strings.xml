@@ -613,14 +613,13 @@
     <string name="scan_hint">Line up the barcode inside the frame</string>
     <string name="scan_subhint">It scans on its own. Hold steady.</string>
     <string name="scan_read">Barcode read</string>
-    <string name="scan_looking_up">Looking it up…</string>
     <string name="scan_type_number">Type the barcode number</string>
     <string name="scan_search_instead">Search by name instead</string>
     <string name="scan_permission_title">Allow camera access</string>
     <string name="scan_permission_body">MacroTrack uses your camera only to read barcodes. Nothing is recorded or saved.</string>
     <string name="scan_allow_camera">Allow camera</string>
     <string name="scan_open_settings">Open settings</string>
-    <string name="scan_found">Found</string>
+    <string name="scan_saved">Saved</string>
     <string name="scan_brand_barcode">%1$s · Barcode %2$s</string>
     <string name="scan_barcode_number">Barcode %1$s</string>
     <string name="scan_serving_half">½ serving · %1$s %2$s</string>
@@ -629,10 +628,8 @@
     <string name="scan_after_adding">%1$s after adding</string>
     <string name="scan_kcal_left_today">%1$s kcal left today</string>
     <string name="scan_another">Scan another</string>
-    <string name="scan_add_to_meal">Add to %1$s</string>
-    <string name="scan_source_product">Nutrition from Open Food Facts.</string>
-    <string name="scan_source_saved">From your saved foods.</string>
-    <string name="scan_edit_it">Doesn't match? Edit it</string>
+    <string name="scan_add_to_meal_log">Add to %1$s log</string>
+    <string name="scan_edit_label">Label doesn't match? Edit</string>
     <string name="scan_not_found_title">We don't know this one yet</string>
     <string name="scan_not_found_body">No food matches barcode %1$s. Add it once from the label and it'll come up every time you scan it.</string>
     <string name="scan_unavailable_title">Couldn't look this up</string>
@@ -643,4 +640,11 @@
     <string name="scan_manual_label">The digits under the bars</string>
     <string name="scan_manual_placeholder">e.g. 4800016642507</string>
     <string name="scan_look_up">Look up</string>
+    <string name="scan_button">Scan</string>
+    <string name="scan_looking_title">Looking up this barcode…</string>
+    <string name="scan_looking_body">Checking packaged foods and the foods you've saved</string>
+    <string name="scan_added_to_foods">Added to your foods. Log it now, or find it in your list anytime.</string>
+    <string name="scan_later">Later</string>
+    <string name="scan_just_added">%1$s was added to your foods. Tap + to log it to %2$s.</string>
+    <string name="scan_new_tag">NEW · SCANNED</string>
 </resources>

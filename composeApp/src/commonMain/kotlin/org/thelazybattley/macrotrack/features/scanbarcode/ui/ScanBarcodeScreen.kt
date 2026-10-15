@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -52,6 +54,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -72,6 +75,7 @@ import macrotrack.composeapp.generated.resources.cancel
 import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.decrease_portion
 import macrotrack.composeapp.generated.resources.fat
+import macrotrack.composeapp.generated.resources.ic_bookmark
 import macrotrack.composeapp.generated.resources.ic_camera
 import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_close
@@ -85,7 +89,8 @@ import macrotrack.composeapp.generated.resources.increase_portion
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.portion_size
 import macrotrack.composeapp.generated.resources.protein
-import macrotrack.composeapp.generated.resources.scan_add_to_meal
+import macrotrack.composeapp.generated.resources.scan_add_to_meal_log
+import macrotrack.composeapp.generated.resources.scan_added_to_foods
 import macrotrack.composeapp.generated.resources.scan_adding_to
 import macrotrack.composeapp.generated.resources.scan_after_adding
 import macrotrack.composeapp.generated.resources.scan_again
@@ -95,14 +100,16 @@ import macrotrack.composeapp.generated.resources.scan_barcode_number
 import macrotrack.composeapp.generated.resources.scan_brand_barcode
 import macrotrack.composeapp.generated.resources.scan_close
 import macrotrack.composeapp.generated.resources.scan_create_with_barcode
-import macrotrack.composeapp.generated.resources.scan_edit_it
+import macrotrack.composeapp.generated.resources.scan_edit_label
 import macrotrack.composeapp.generated.resources.scan_flashlight
-import macrotrack.composeapp.generated.resources.scan_found
 import macrotrack.composeapp.generated.resources.scan_hint
 import macrotrack.composeapp.generated.resources.scan_kcal_left_today
 import macrotrack.composeapp.generated.resources.scan_label_serving
 import macrotrack.composeapp.generated.resources.scan_look_up
-import macrotrack.composeapp.generated.resources.scan_looking_up
+import macrotrack.composeapp.generated.resources.scan_later
+import macrotrack.composeapp.generated.resources.scan_looking_body
+import macrotrack.composeapp.generated.resources.scan_looking_title
+import macrotrack.composeapp.generated.resources.scan_saved
 import macrotrack.composeapp.generated.resources.scan_manual_label
 import macrotrack.composeapp.generated.resources.scan_manual_placeholder
 import macrotrack.composeapp.generated.resources.scan_not_found_body
@@ -115,8 +122,6 @@ import macrotrack.composeapp.generated.resources.scan_search_by_name
 import macrotrack.composeapp.generated.resources.scan_search_instead
 import macrotrack.composeapp.generated.resources.scan_serving_amount
 import macrotrack.composeapp.generated.resources.scan_serving_half
-import macrotrack.composeapp.generated.resources.scan_source_product
-import macrotrack.composeapp.generated.resources.scan_source_saved
 import macrotrack.composeapp.generated.resources.scan_subhint
 import macrotrack.composeapp.generated.resources.scan_title
 import macrotrack.composeapp.generated.resources.scan_type_number
@@ -232,11 +237,19 @@ private fun ScanBarcodeScreen(
             )
             ScanSheet(modifier = Modifier.align(alignment = Alignment.BottomCenter)) {
                 when (viewState.mode) {
+                    ScanMode.LOOKING_UP -> LookingUpContent(
+                        barcode = viewState.barcode.orEmpty(),
+                        onCancel = callbacks::onScanAgain
+                    )
                     ScanMode.FOUND -> viewState.scanned?.let { scanned ->
                         FoundContent(
                             viewState = viewState,
                             scanned = scanned,
-                            callbacks = callbacks
+                            callbacks = callbacks,
+                            onLater = {
+                                callbacks.onLater()
+                                onBack()
+                            }
                         )
                     }
                     ScanMode.NOT_FOUND, ScanMode.UNAVAILABLE -> NotFoundContent(
@@ -254,7 +267,7 @@ private fun ScanBarcodeScreen(
                         // Without a camera there's nothing to go back to but the food list.
                         onCancel = if (isCameraScanSupported) callbacks::onScanAgain else onBack
                     )
-                    else -> Unit
+                    ScanMode.SCANNING -> Unit
                 }
             }
         }
@@ -405,10 +418,10 @@ private fun ScanGuide(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = when {
-                    isScanning -> stringResource(resource = Res.string.scan_subhint)
-                    mode == ScanMode.LOOKING_UP -> stringResource(resource = Res.string.scan_looking_up)
-                    else -> barcode?.let(::formatBarcode).orEmpty()
+                text = if (isScanning) {
+                    stringResource(resource = Res.string.scan_subhint)
+                } else {
+                    barcode?.let(::formatBarcode).orEmpty()
                 },
                 style = typography.regular13,
                 color = OnCameraMuted,
@@ -573,7 +586,8 @@ private fun ScanSheet(
 private fun FoundContent(
     viewState: ScanBarcodeViewState,
     scanned: ScannedFood,
-    callbacks: ScanBarcodeCallbacks
+    callbacks: ScanBarcodeCallbacks,
+    onLater: () -> Unit
 ) {
     val food = scanned.food
     val barcode = food.barcode?.let(::formatBarcode) ?: viewState.barcode?.let(::formatBarcode).orEmpty()
@@ -624,7 +638,30 @@ private fun FoundContent(
                 tint = colors.accentInk,
                 modifier = Modifier.size(size = 12.dp)
             )
-            Text(text = stringResource(resource = Res.string.scan_found), style = typography.bold12, color = colors.accentInk)
+            Text(text = stringResource(resource = Res.string.scan_saved), style = typography.bold12, color = colors.accentInk)
+        }
+    }
+
+    if (scanned.isNewlySaved) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 14.dp))
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+        ) {
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_bookmark),
+                contentDescription = null,
+                tint = colors.accentInk,
+                modifier = Modifier.size(size = 18.dp)
+            )
+            Text(
+                text = stringResource(resource = Res.string.scan_added_to_foods),
+                style = typography.bold13,
+                color = colors.accentInk
+            )
         }
     }
 
@@ -709,13 +746,14 @@ private fun FoundContent(
 
     Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         SheetButton(
-            text = stringResource(resource = Res.string.scan_another),
+            text = stringResource(resource = Res.string.scan_later),
             isPrimary = false,
-            onClick = callbacks::onScanAgain
+            onClick = onLater
         )
         SheetButton(
             modifier = Modifier.weight(weight = 1f),
-            text = stringResource(Res.string.scan_add_to_meal, stringResource(resource = viewState.mealType.title)),
+            text = stringResource(Res.string.scan_add_to_meal_log, stringResource(resource = viewState.mealType.title)),
+            icon = Res.drawable.ic_plus,
             isPrimary = true,
             onClick = callbacks::onAddToMeal
         )
@@ -723,26 +761,107 @@ private fun FoundContent(
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.spacedBy(space = 16.dp, alignment = Alignment.CenterHorizontally)
     ) {
-        Text(
-            text = stringResource(
-                resource = if (scanned.isSaved) Res.string.scan_source_saved else Res.string.scan_source_product
-            ),
-            style = typography.regular11,
-            color = colors.muted
-        )
-        Text(
-            text = stringResource(resource = Res.string.scan_edit_it),
-            style = typography.bold11,
-            color = colors.accentInk,
-            modifier = Modifier
-                .clip(shape = RoundedCornerShape(size = 6.dp))
-                .clickable(role = Role.Button, onClick = callbacks::onEditFood)
-                .padding(horizontal = 4.dp, vertical = 6.dp)
-        )
+        TextLink(text = stringResource(resource = Res.string.scan_another), onClick = callbacks::onScanAgain)
+        TextLink(text = stringResource(resource = Res.string.scan_edit_label), onClick = callbacks::onEditFood)
     }
+}
+
+@Composable
+private fun TextLink(text: String, onClick: () -> Unit) {
+    Text(
+        text = text,
+        style = typography.bold12,
+        color = colors.accentInk,
+        modifier = Modifier
+            .clip(shape = RoundedCornerShape(size = 8.dp))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 6.dp, vertical = 9.dp)
+    )
+}
+
+/** Shown while the barcode is looked up: the sheet's shape, with pulsing placeholders where the food will appear. */
+@Composable
+private fun LookingUpContent(
+    barcode: String,
+    onCancel: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(size = 28.dp),
+            color = colors.accent,
+            trackColor = colors.line,
+            strokeWidth = 3.5.dp,
+            strokeCap = StrokeCap.Round
+        )
+        Column(modifier = Modifier.weight(weight = 1f)) {
+            Text(text = stringResource(resource = Res.string.scan_looking_title), style = typography.bold18, color = colors.ink)
+            Text(
+                text = stringResource(Res.string.scan_barcode_number, formatBarcode(digits = barcode)),
+                style = typography.regular13,
+                color = colors.muted
+            )
+        }
+    }
+    val pulse by rememberInfiniteTransition().animateFloat(
+        initialValue = 1f,
+        targetValue = 0.45f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 700),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    val placeholder = Modifier.graphicsLayer { alpha = pulse }
+    Column(
+        modifier = Modifier.clearAndSetSemantics {},
+        verticalArrangement = Arrangement.spacedBy(space = 14.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+        ) {
+            Placeholder(modifier = placeholder.size(size = 56.dp), radius = 16)
+            Column(
+                modifier = Modifier.weight(weight = 1f),
+                verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+            ) {
+                Placeholder(modifier = placeholder.fillMaxWidth(fraction = 0.75f).height(height = 16.dp), radius = 8)
+                Placeholder(modifier = placeholder.fillMaxWidth(fraction = 0.5f).height(height = 12.dp), radius = 6)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
+            repeat(times = 3) {
+                Placeholder(modifier = placeholder.weight(weight = 1f).height(height = 40.dp), radius = 12)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
+            repeat(times = 4) {
+                Placeholder(modifier = placeholder.weight(weight = 1f).height(height = 54.dp), radius = 12)
+            }
+        }
+    }
+    Text(
+        text = stringResource(resource = Res.string.scan_looking_body),
+        style = typography.regular11,
+        color = colors.muted,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
+    )
+    SheetButton(
+        modifier = Modifier.fillMaxWidth(),
+        text = stringResource(resource = Res.string.cancel),
+        isPrimary = false,
+        onClick = onCancel
+    )
+}
+
+@Composable
+private fun Placeholder(modifier: Modifier, radius: Int) {
+    Box(modifier = modifier.background(color = colors.line, shape = RoundedCornerShape(size = radius.dp)))
 }
 
 @Composable

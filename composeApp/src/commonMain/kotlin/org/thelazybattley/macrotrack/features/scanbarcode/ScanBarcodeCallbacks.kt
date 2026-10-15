@@ -9,6 +9,7 @@ interface ScanBarcodeCallbacks {
     fun onToggleTorch()
     fun onAmountChanged(amount: Double)
     fun onAddToMeal()
+    fun onLater()
     fun onEditFood()
     fun onCreateFood()
     fun resetNavigateScreen()
@@ -23,6 +24,7 @@ interface ScanBarcodeCallbacks {
             override fun onToggleTorch() {}
             override fun onAmountChanged(amount: Double) {}
             override fun onAddToMeal() {}
+            override fun onLater() {}
             override fun onEditFood() {}
             override fun onCreateFood() {}
             override fun resetNavigateScreen() {}

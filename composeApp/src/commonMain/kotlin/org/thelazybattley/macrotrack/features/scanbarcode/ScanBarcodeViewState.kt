@@ -32,8 +32,7 @@ data class ScanBarcodeViewState(
     val destinationRoute: String? = null,
     val isSaved: Boolean = false
 ) {
-    val isSheetOpen: Boolean
-        get() = mode == ScanMode.FOUND || mode == ScanMode.NOT_FOUND || mode == ScanMode.UNAVAILABLE || mode == ScanMode.MANUAL
+    val isSheetOpen: Boolean get() = mode != ScanMode.SCANNING
 
     val isManualBarcodeValid: Boolean get() = normalizeBarcode(raw = manualBarcode) != null
 
@@ -46,13 +45,13 @@ data class ScanBarcodeViewState(
 }
 
 /**
- * A barcode that matched a food. [food] holds the macros for [Food.weight]; it's either one of the user's saved
- * foods or an Open Food Facts product that gets saved when it's logged or edited.
+ * A barcode that matched a saved food. [food] holds the macros for [Food.weight]. [isNewlySaved] marks an
+ * Open Food Facts product that was added to the user's foods by this scan.
  */
 data class ScannedFood(
     val food: Food,
     val brand: String?,
-    val isSaved: Boolean,
+    val isNewlySaved: Boolean,
     val servingLabel: String?,
     val servings: List<ServingOption>
 )

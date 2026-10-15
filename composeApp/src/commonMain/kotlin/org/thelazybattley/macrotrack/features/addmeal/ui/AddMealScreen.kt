@@ -29,7 +29,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,6 +69,8 @@ import macrotrack.composeapp.generated.resources.recent_portion_hint
 import macrotrack.composeapp.generated.resources.recently_logged
 import macrotrack.composeapp.generated.resources.remaining_title
 import macrotrack.composeapp.generated.resources.scan_barcode
+import macrotrack.composeapp.generated.resources.scan_button
+import macrotrack.composeapp.generated.resources.scan_just_added
 import macrotrack.composeapp.generated.resources.search_or_scan
 import macrotrack.composeapp.generated.resources.selected_summary
 import macrotrack.composeapp.generated.resources.your_favorites
@@ -204,6 +216,11 @@ private fun AddMealScreen(
                 contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(space = 8.dp)
             ) {
+                viewState.justScannedName?.takeIf { name -> items.any { it.isJustScanned } }?.let { name ->
+                    item(key = "just_scanned") {
+                        JustScannedBanner(foodName = name, mealType = viewState.selectedMealType)
+                    }
+                }
                 if (items.isEmpty() && !viewState.isSearching && viewState.activeFilter == MealFilter.FAVORITES) {
                     item(key = "empty") {
                         EmptyFavorites(modifier = Modifier.fillMaxWidth())
@@ -411,22 +428,71 @@ private fun SearchField(
                 )
             }
         } else {
-            Box(
+            val scanLabel = stringResource(resource = Res.string.scan_barcode)
+            Row(
                 modifier = Modifier
-                    .size(size = 40.dp)
+                    .padding(end = 2.dp)
+                    .height(height = 36.dp)
                     .clip(shape = RoundedCornerShape(size = 10.dp))
-                    .background(color = colors.accentSoft)
-                    .clickable(onClick = onScan),
-                contentAlignment = Alignment.Center
+                    .background(color = colors.accent)
+                    .clickable(role = Role.Button, onClick = onScan)
+                    .semantics(mergeDescendants = true) { contentDescription = scanLabel }
+                    .padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
             ) {
                 Icon(
                     painter = painterResource(resource = Res.drawable.ic_barcode_scan),
-                    contentDescription = stringResource(resource = Res.string.scan_barcode),
-                    tint = colors.accentInk,
-                    modifier = Modifier.size(size = 20.dp)
+                    contentDescription = null,
+                    tint = colors.onAccent,
+                    modifier = Modifier.size(size = 18.dp)
+                )
+                Text(
+                    text = stringResource(resource = Res.string.scan_button),
+                    style = typography.bold13,
+                    color = colors.onAccent,
+                    modifier = Modifier.clearAndSetSemantics {}
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun JustScannedBanner(
+    foodName: String,
+    mealType: MealType
+) {
+    val text = stringResource(Res.string.scan_just_added, foodName, stringResource(resource = mealType.title))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 14.dp))
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+    ) {
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_check),
+            contentDescription = null,
+            tint = colors.accentInk,
+            modifier = Modifier.size(size = 18.dp)
+        )
+        Text(
+            text = buildAnnotatedString {
+                val start = text.indexOf(string = foodName)
+                if (start < 0) {
+                    append(text)
+                } else {
+                    append(text.substring(startIndex = 0, endIndex = start))
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) { append(foodName) }
+                    append(text.substring(startIndex = start + foodName.length))
+                }
+            },
+            style = typography.regular13,
+            color = colors.accentInk
+        )
     }
 }
 
