@@ -6,24 +6,23 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -42,39 +41,36 @@ fun CommonSwipeToDelete(
 ) {
     var offsetX by remember { mutableFloatStateOf(value = 0f) }
     var iconWidth by remember { mutableFloatStateOf(value = 0f) }
-    var contentHeight by remember { mutableFloatStateOf(value = 0f) }
-    var iconHeightDp by remember { mutableStateOf(value = 0.dp) }
-    val localDensity = LocalDensity.current
-    LaunchedEffect(key1 = contentHeight) {
-        with(receiver = localDensity) {
-            iconHeightDp = contentHeight.toDp()
-        }
-    }
     Box(
         modifier = modifier
             .clipToBounds()
     ) {
-        Icon(
-            painter = painterResource(resource = Res.drawable.ic_trash),
-            contentDescription = null,
-            modifier = Modifier
-                .background(color = colors.lightRed)
-                .align(alignment = Alignment.CenterEnd)
-                .height(height = iconHeightDp)
-                .onGloballyPositioned {
-                    iconWidth = it.size.width.toFloat()
-                }
-                .clickable(enabled = offsetX == -iconWidth) {
-                    onDelete()
-                }
-                .padding(12.dp),
-            tint = colors.crimsonRed
-        )
+        // Sized to the row itself, so it never lags behind a row that grows or shrinks, and only drawn once the
+        // row moves, so it can't show through the row's rounded corners.
         Box(
             modifier = Modifier
-                .onGloballyPositioned {
-                    contentHeight = it.size.height.toFloat()
-                }
+                .matchParentSize()
+                .graphicsLayer { alpha = if (offsetX < 0f) 1f else 0f }
+        ) {
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_trash),
+                contentDescription = null,
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .background(color = colors.lightRed)
+                    .onGloballyPositioned {
+                        iconWidth = it.size.width.toFloat()
+                    }
+                    .clickable(enabled = offsetX == -iconWidth) {
+                        onDelete()
+                    }
+                    .padding(12.dp),
+                tint = colors.crimsonRed
+            )
+        }
+        Box(
+            modifier = Modifier
                 .offset { IntOffset(x = offsetX.roundToInt(), y = 0) }
                 .pointerInput(key1 = Unit) {
                     detectHorizontalDragGestures(
