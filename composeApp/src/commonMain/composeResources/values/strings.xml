@@ -647,4 +647,11 @@
     <string name="scan_later">Later</string>
     <string name="scan_just_added">%1$s was added to your foods. Tap + to log it to %2$s.</string>
     <string name="scan_new_tag">NEW · SCANNED</string>
+    <string name="your_recipes">Your recipes</string>
+    <string name="favorites_hint">Starred foods and recipes, A to Z.</string>
+    <string name="all_items_hint">Tap the star to add a food to your favorites.</string>
+    <string name="recipes_hint">Recipes you built, A to Z. Portions are a % of one serving.</string>
+    <string name="no_recipes_yet">Recipes you build will show up here.</string>
+    <string name="portion_last_time">Last time %1$s %2$s · base %3$s %2$s</string>
+    <string name="recipe_last_time">1 serving = 100% · last time %1$s%</string>
 </resources>

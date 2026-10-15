@@ -37,7 +37,9 @@ import macrotrack.composeapp.generated.resources.increase_portion
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.percentage_eaten
 import macrotrack.composeapp.generated.resources.portion_size
+import macrotrack.composeapp.generated.resources.portion_last_time
 import macrotrack.composeapp.generated.resources.recipe_full_serving
+import macrotrack.composeapp.generated.resources.recipe_last_time
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.core.text
 import org.thelazybattley.macrotrack.core.toCleanString
@@ -108,10 +110,17 @@ fun AddMealPortionEditor(
                     color = colors.ink
                 )
                 Text(
-                    text = if (item.isRecipe) {
-                        stringResource(resource = Res.string.recipe_full_serving)
-                    } else {
-                        stringResource(
+                    text = when {
+                        item.isRecipe && item.lastAmount != null ->
+                            stringResource(Res.string.recipe_last_time, item.lastAmount.toCleanString())
+                        item.isRecipe -> stringResource(resource = Res.string.recipe_full_serving)
+                        item.lastAmount != null -> stringResource(
+                            Res.string.portion_last_time,
+                            item.lastAmount.toCleanString(),
+                            item.baseFood.unit,
+                            item.baseFood.weight.toCleanString()
+                        )
+                        else -> stringResource(
                             resource = Res.string.base_serving,
                             item.baseFood.weight.toCleanString(),
                             item.baseFood.unit

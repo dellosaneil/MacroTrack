@@ -31,8 +31,8 @@ data class AddMealViewState(
     val isSearching: Boolean get() = searchQuery.isNotBlank()
 
     /**
-     * The list for the active tab, narrowed by the search: Recent is newest first, Favorites and
-     * All are A to Z.
+     * The list for the active tab, narrowed by the search: Recent is newest first, Favorites, All
+     * and Recipes are A to Z.
      */
     val visibleItems: List<MealListItem>
         get() {
@@ -48,6 +48,7 @@ data class AddMealViewState(
                     .take(n = RECENT_LIMIT)
                 MealFilter.FAVORITES -> items.filter { it.isFavorite }.sortedWith(byName)
                 MealFilter.ALL -> items.sortedWith(byName)
+                MealFilter.RECIPES -> items.filter { it.isRecipe }.sortedWith(byName)
             }
             return if (justScanned == null) list else listOf(justScanned) + (list - justScanned)
         }
@@ -106,7 +107,9 @@ data class SelectedMealItem(
     val isRecipe: Boolean,
     val baseFood: Food,
     val amount: Double,
-    val food: Food
+    val food: Food,
+    /** The portion logged last time, if this was logged before. */
+    val lastAmount: Double? = null
 )
 
 data class RecipeMeal(

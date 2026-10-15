@@ -85,8 +85,8 @@ fun AddMealListItem(
 ) {
     val shape = RoundedCornerShape(size = 16.dp)
     val isSelected = selectedItem != null
-    // On Recent, an unselected row shows the portion logged last time and when.
-    val lastLogged = item.lastLogged?.takeIf { showLastLogged && !isSelected }
+    // An unselected row shows the portion logged last time; on Recent it also says when.
+    val lastLogged = item.lastLogged?.takeIf { !isSelected }
     val food = selectedItem?.food ?: lastLogged?.food ?: item.food
     // A food the scanner just saved gets a dashed outline until it's picked.
     val isDashed = item.isJustScanned && !isSelected
@@ -165,7 +165,7 @@ fun AddMealListItem(
                     item.isRecipe -> stringResource(resource = Res.string.one_serving)
                     else -> stringResource(resource = Res.string.value_unit, food.weight.toCleanString(), food.unit)
                 }
-                val detail = if (lastLogged != null) {
+                val detail = if (lastLogged != null && showLastLogged) {
                     lastLogged.relativeDay()
                 } else {
                     stringResource(

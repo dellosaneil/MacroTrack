@@ -73,7 +73,12 @@ import macrotrack.composeapp.generated.resources.scan_button
 import macrotrack.composeapp.generated.resources.scan_just_added
 import macrotrack.composeapp.generated.resources.search_or_scan
 import macrotrack.composeapp.generated.resources.selected_summary
+import macrotrack.composeapp.generated.resources.all_items_hint
+import macrotrack.composeapp.generated.resources.favorites_hint
+import macrotrack.composeapp.generated.resources.no_recipes_yet
+import macrotrack.composeapp.generated.resources.recipes_hint
 import macrotrack.composeapp.generated.resources.your_favorites
+import macrotrack.composeapp.generated.resources.your_recipes
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -202,10 +207,14 @@ private fun AddMealScreen(
                         MealFilter.RECENT -> Res.string.recently_logged
                         MealFilter.FAVORITES -> Res.string.your_favorites
                         MealFilter.ALL -> Res.string.all_foods_and_recipes
+                        MealFilter.RECIPES -> Res.string.your_recipes
                     },
-                    hint = Res.string.recent_portion_hint.takeIf {
-                        viewState.activeFilter == MealFilter.RECENT && items.isNotEmpty()
-                    }
+                    hint = when (viewState.activeFilter) {
+                        MealFilter.RECENT -> Res.string.recent_portion_hint
+                        MealFilter.FAVORITES -> Res.string.favorites_hint
+                        MealFilter.ALL -> Res.string.all_items_hint
+                        MealFilter.RECIPES -> Res.string.recipes_hint
+                    }.takeIf { items.isNotEmpty() }
                 )
             }
             LazyColumn(
@@ -231,6 +240,7 @@ private fun AddMealScreen(
                             text = when {
                                 viewState.isSearching -> stringResource(resource = Res.string.no_items_match, viewState.searchQuery)
                                 viewState.activeFilter == MealFilter.RECENT -> stringResource(resource = Res.string.no_recent_items)
+                                viewState.activeFilter == MealFilter.RECIPES -> stringResource(resource = Res.string.no_recipes_yet)
                                 else -> stringResource(resource = Res.string.no_saved_items)
                             },
                             style = typography.regular13,

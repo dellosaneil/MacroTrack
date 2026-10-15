@@ -111,7 +111,8 @@ class AddMealViewModel(
                     isRecipe = item.isRecipe,
                     baseFood = item.food,
                     amount = amount,
-                    food = adjustedFood(baseFood = item.food, isRecipe = item.isRecipe, amount = amount)
+                    food = adjustedFood(baseFood = item.food, isRecipe = item.isRecipe, amount = amount),
+                    lastAmount = item.lastLogged?.amount
                 )
                 currentState.copy(selection = currentState.selection + selected, focusedKey = item.key)
             }
