@@ -5,6 +5,8 @@ import macrotrack.composeapp.generated.resources.walkthrough_insights_descriptio
 import macrotrack.composeapp.generated.resources.walkthrough_insights_title
 import macrotrack.composeapp.generated.resources.walkthrough_log_description
 import macrotrack.composeapp.generated.resources.walkthrough_log_title
+import macrotrack.composeapp.generated.resources.walkthrough_pro_description
+import macrotrack.composeapp.generated.resources.walkthrough_pro_title
 import macrotrack.composeapp.generated.resources.walkthrough_progress_description
 import macrotrack.composeapp.generated.resources.walkthrough_progress_title
 import macrotrack.composeapp.generated.resources.walkthrough_welcome_description
@@ -30,5 +32,9 @@ enum class WalkthroughPage(
     PROGRESS(
         titleRes = Res.string.walkthrough_progress_title,
         descriptionRes = Res.string.walkthrough_progress_description
+    ),
+    PRO(
+        titleRes = Res.string.walkthrough_pro_title,
+        descriptionRes = Res.string.walkthrough_pro_description
     )
 }

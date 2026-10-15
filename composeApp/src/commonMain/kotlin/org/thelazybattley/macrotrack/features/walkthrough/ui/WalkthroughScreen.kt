@@ -55,8 +55,13 @@ import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.fat
 import macrotrack.composeapp.generated.resources.ic_flame
 import macrotrack.composeapp.generated.resources.ic_meal_breakfast
+import macrotrack.composeapp.generated.resources.ic_check
+import macrotrack.composeapp.generated.resources.ic_lock
+import macrotrack.composeapp.generated.resources.ic_star
 import macrotrack.composeapp.generated.resources.ic_star_filled
 import macrotrack.composeapp.generated.resources.kg
+import macrotrack.composeapp.generated.resources.pro_feature_measurements
+import macrotrack.composeapp.generated.resources.pro_name
 import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.remaining_today
 import macrotrack.composeapp.generated.resources.walkthrough_day_streak
@@ -64,6 +69,13 @@ import macrotrack.composeapp.generated.resources.walkthrough_get_started
 import macrotrack.composeapp.generated.resources.walkthrough_next
 import macrotrack.composeapp.generated.resources.walkthrough_offline_note
 import macrotrack.composeapp.generated.resources.walkthrough_page_of
+import macrotrack.composeapp.generated.resources.walkthrough_pro_day_one
+import macrotrack.composeapp.generated.resources.walkthrough_pro_feature_compare
+import macrotrack.composeapp.generated.resources.walkthrough_pro_feature_insights
+import macrotrack.composeapp.generated.resources.walkthrough_pro_feature_trends
+import macrotrack.composeapp.generated.resources.walkthrough_pro_free_for
+import macrotrack.composeapp.generated.resources.walkthrough_pro_note
+import macrotrack.composeapp.generated.resources.walkthrough_pro_trial_ends
 import macrotrack.composeapp.generated.resources.walkthrough_sample_food_1
 import macrotrack.composeapp.generated.resources.walkthrough_sample_food_2
 import macrotrack.composeapp.generated.resources.walkthrough_sample_food_3
@@ -73,6 +85,7 @@ import macrotrack.composeapp.generated.resources.walkthrough_trend
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.domain.model.PRO_TRIAL_DAYS
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -169,6 +182,7 @@ private fun WalkthroughPageContent(page: WalkthroughPage) {
                     WalkthroughPage.LOG -> MealIllustration()
                     WalkthroughPage.INSIGHTS -> InsightsIllustration()
                     WalkthroughPage.PROGRESS -> WeightTrendIllustration()
+                    WalkthroughPage.PRO -> ProTrialIllustration()
                 }
             }
         }
@@ -177,11 +191,17 @@ private fun WalkthroughPageContent(page: WalkthroughPage) {
             modifier = Modifier.heightIn(min = 168.dp),
             verticalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
-            Text(text = stringResource(resource = page.titleRes), style = typography.bold32, color = colors.ink)
-            Text(text = stringResource(resource = page.descriptionRes), style = typography.regular13, color = colors.muted)
-            if (page == WalkthroughPage.WELCOME) {
+            // Only the Pro page has a placeholder; extra format args are ignored by the other strings.
+            Text(text = stringResource(page.titleRes, PRO_TRIAL_DAYS), style = typography.bold32, color = colors.ink)
+            Text(text = stringResource(page.descriptionRes, PRO_TRIAL_DAYS), style = typography.regular13, color = colors.muted)
+            val note = when (page) {
+                WalkthroughPage.WELCOME -> Res.string.walkthrough_offline_note
+                WalkthroughPage.PRO -> Res.string.walkthrough_pro_note
+                else -> null
+            }
+            if (note != null) {
                 Text(
-                    text = stringResource(resource = Res.string.walkthrough_offline_note),
+                    text = stringResource(resource = note),
                     style = typography.bold12,
                     color = colors.accentInk,
                     modifier = Modifier.padding(top = 4.dp)
@@ -520,6 +540,93 @@ private fun WeightTrendIllustration() {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
             Box(modifier = Modifier.width(width = 14.dp).height(height = 3.dp).background(color = colors.accent, shape = CircleShape))
             Text(text = stringResource(resource = Res.string.walkthrough_trend), style = typography.regular11, color = colors.muted)
+        }
+    }
+}
+
+@Composable
+private fun ProTrialIllustration() {
+    IllustrationCard {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(size = 40.dp)
+                    .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_star),
+                    contentDescription = null,
+                    tint = colors.accentInk,
+                    modifier = Modifier.size(size = 20.dp)
+                )
+            }
+            Text(
+                text = stringResource(resource = Res.string.pro_name),
+                style = typography.bold16,
+                color = colors.ink,
+                modifier = Modifier.weight(weight = 1f)
+            )
+            Text(
+                text = stringResource(Res.string.walkthrough_pro_free_for, PRO_TRIAL_DAYS),
+                style = typography.bold11,
+                color = colors.warmInk,
+                modifier = Modifier
+                    .background(color = colors.warmSoft, shape = RoundedCornerShape(size = 8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(height = 14.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(weight = 1f)
+                    .height(height = 8.dp)
+                    .background(color = colors.accent, shape = CircleShape)
+            )
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_lock),
+                contentDescription = null,
+                tint = colors.muted,
+                modifier = Modifier.size(size = 16.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(height = 6.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(text = stringResource(resource = Res.string.walkthrough_pro_day_one), style = typography.regular11, color = colors.muted)
+            Text(
+                text = stringResource(Res.string.walkthrough_pro_trial_ends, PRO_TRIAL_DAYS),
+                style = typography.regular11,
+                color = colors.muted
+            )
+        }
+        Spacer(modifier = Modifier.height(height = 14.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+            listOf(
+                Res.string.walkthrough_pro_feature_trends,
+                Res.string.walkthrough_pro_feature_compare,
+                Res.string.pro_feature_measurements,
+                Res.string.walkthrough_pro_feature_insights
+            ).forEach { feature ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_check),
+                        contentDescription = null,
+                        tint = colors.accent,
+                        modifier = Modifier.size(size = 16.dp)
+                    )
+                    Text(text = stringResource(resource = feature), style = typography.bold13, color = colors.ink)
+                }
+            }
         }
     }
 }
