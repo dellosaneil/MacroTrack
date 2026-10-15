@@ -40,6 +40,7 @@ import macrotrack.composeapp.generated.resources.adding_to
 import macrotrack.composeapp.generated.resources.clear_search
 import macrotrack.composeapp.generated.resources.after_adding_left
 import macrotrack.composeapp.generated.resources.back
+import macrotrack.composeapp.generated.resources.ic_barcode_scan
 import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.ic_close
@@ -57,7 +58,8 @@ import macrotrack.composeapp.generated.resources.no_saved_items
 import macrotrack.composeapp.generated.resources.recent_portion_hint
 import macrotrack.composeapp.generated.resources.recently_logged
 import macrotrack.composeapp.generated.resources.remaining_title
-import macrotrack.composeapp.generated.resources.search_foods_and_recipes
+import macrotrack.composeapp.generated.resources.scan_barcode
+import macrotrack.composeapp.generated.resources.search_or_scan
 import macrotrack.composeapp.generated.resources.selected_summary
 import macrotrack.composeapp.generated.resources.your_favorites
 import org.jetbrains.compose.resources.StringResource
@@ -147,7 +149,12 @@ private fun AddMealScreen(
                 SearchField(
                     modifier = Modifier.tourTarget(target = TourTarget.ADD_MEAL_SEARCH),
                     query = viewState.searchQuery,
-                    onQueryChange = callbacks::onSearchQuery
+                    onQueryChange = callbacks::onSearchQuery,
+                    onScan = {
+                        callbacks.onNavigateScreen(
+                            route = AppDestinations.Root.ScanBarcode.createRoute(mealType = viewState.selectedMealType.name)
+                        )
+                    }
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                     CreateButton(
@@ -348,7 +355,8 @@ private fun AddMealHeader(
 private fun SearchField(
     modifier: Modifier = Modifier,
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    onScan: () -> Unit
 ) {
     val shape = RoundedCornerShape(size = 14.dp)
     Row(
@@ -358,8 +366,8 @@ private fun SearchField(
             .clip(shape = shape)
             .background(color = colors.surface)
             .border(width = 1.dp, color = colors.line, shape = shape)
-            // The clear button brings its own padding.
-            .padding(start = 14.dp, end = if (query.isEmpty()) 14.dp else 4.dp),
+            // The clear and scan buttons bring their own padding.
+            .padding(start = 14.dp, end = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
     ) {
@@ -379,7 +387,7 @@ private fun SearchField(
             decorationBox = { innerTextField ->
                 if (query.isEmpty()) {
                     Text(
-                        text = stringResource(resource = Res.string.search_foods_and_recipes),
+                        text = stringResource(resource = Res.string.search_or_scan),
                         style = typography.regular13,
                         color = colors.muted
                     )
@@ -400,6 +408,22 @@ private fun SearchField(
                     contentDescription = stringResource(resource = Res.string.clear_search),
                     tint = colors.muted,
                     modifier = Modifier.size(size = 16.dp)
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(size = 40.dp)
+                    .clip(shape = RoundedCornerShape(size = 10.dp))
+                    .background(color = colors.accentSoft)
+                    .clickable(onClick = onScan),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_barcode_scan),
+                    contentDescription = stringResource(resource = Res.string.scan_barcode),
+                    tint = colors.accentInk,
+                    modifier = Modifier.size(size = 20.dp)
                 )
             }
         }

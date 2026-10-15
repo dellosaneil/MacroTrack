@@ -11,6 +11,8 @@ interface FoodRepository {
 
     suspend fun getFoodByName(name: String): Flow<List<Food>>
 
+    suspend fun getFoodByBarcode(barcode: String): Food?
+
     suspend fun updateFood(food: Food)
 
     suspend fun deleteFood(name: String)

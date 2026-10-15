@@ -41,6 +41,7 @@ import androidx.navigation.navArgument
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.calendar.ui.CalendarScreen
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodScreen
+import org.thelazybattley.macrotrack.features.scanbarcode.ui.ScanBarcodeScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
 import org.thelazybattley.macrotrack.features.logweight.ui.LogWeightScreen
 import org.thelazybattley.macrotrack.features.measurements.detail.MeasurementDetailScreen
@@ -57,6 +58,7 @@ import org.thelazybattley.macrotrack.features.walkthrough.ui.WalkthroughScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.BARCODE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEASUREMENT_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PRO_FEATURE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
@@ -174,10 +176,35 @@ fun AppBottomNav() {
                         }
                     }
                     composable(
+                        route = AppDestinations.Root.ScanBarcode.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = MEAL_TYPE) {
+                                type = NavType.StringType
+                            }
+                        )
+                    ) {
+                        ScanBarcodeScreen(
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                            onNavigate = { route ->
+                                navigate(route)
+                            },
+                            onSaved = {
+                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                            }
+                        )
+                    }
+                    composable(
                         route = AppDestinations.Root.CreateFood.routeWithArgs!!,
                         arguments = listOf(
                             navArgument(name = FOOD_NAME) {
                                 type = NavType.StringType
+                            },
+                            navArgument(name = BARCODE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
                             }
                         )
                     ) {

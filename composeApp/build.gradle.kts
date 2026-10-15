@@ -36,6 +36,15 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.billing.ktx)
+            implementation(libs.ktor.client.android)
+            implementation(libs.androidx.camera.camera2)
+            implementation(libs.androidx.camera.lifecycle)
+            implementation(libs.androidx.camera.view)
+            implementation(libs.androidx.camera.mlkit.vision)
+            implementation(libs.mlkit.barcode.scanning)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -57,6 +66,7 @@ kotlin {
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.clock)
+            implementation(libs.ktor.client.core)
 
         }
         commonTest.dependencies {

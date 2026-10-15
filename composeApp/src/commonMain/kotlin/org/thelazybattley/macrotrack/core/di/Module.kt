@@ -1,5 +1,12 @@
 package org.thelazybattley.macrotrack.core.di
 
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
+import org.thelazybattley.macrotrack.data.repository.OpenFoodFactsRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.ProductRepository
+import org.thelazybattley.macrotrack.domain.usecase.food.LookUpBarcodeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
+import org.thelazybattley.macrotrack.features.scanbarcode.ScanBarcodeViewModel
 import org.thelazybattley.macrotrack.core.isPaywallEnabled
 import org.thelazybattley.macrotrack.data.repository.AppFlagRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.ProRepositoryImpl
@@ -106,6 +113,13 @@ val sharedModule = module {
     single { get<AppDatabase>().favoriteDao() }
     single { get<AppDatabase>().appFlagDao() }
     single { MeasurementUnitPreference() }
+    single {
+        HttpClient {
+            install(plugin = HttpTimeout) {
+                requestTimeoutMillis = 10_000
+            }
+        }
+    }
 }
 
 val repositoryModule = module {
@@ -120,6 +134,7 @@ val repositoryModule = module {
     singleOf(::FavoriteRepositoryImpl) { bind<FavoriteRepository>() }
     singleOf(::AppFlagRepositoryImpl) { bind<AppFlagRepository>() }
     singleOf(::ProRepositoryImpl) { bind<ProRepository>() }
+    singleOf(::OpenFoodFactsRepositoryImpl) { bind<ProductRepository>() }
 }
 
 val useCaseModule = module {
@@ -162,6 +177,8 @@ val useCaseModule = module {
     factoryOf(::SetProPurchasedUseCase)
     factoryOf(::IsTrialEndedNoticeDismissedUseCase)
     factoryOf(::DismissTrialEndedNoticeUseCase)
+    factoryOf(::LookUpBarcodeUseCase)
+    factoryOf(::GetRemainingCaloriesTodayUseCase)
 }
 
 val viewModelModule = module {
@@ -185,6 +202,7 @@ val viewModelModule = module {
     viewModelOf(::PastGoalViewModel)
     viewModelOf(::TourViewModel)
     viewModelOf(::ProViewModel)
+    viewModelOf(::ScanBarcodeViewModel)
 }
 
 fun initKoin() {

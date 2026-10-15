@@ -9,22 +9,20 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
-import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.favorite.GetFavoriteKeysUseCase
 import org.thelazybattley.macrotrack.domain.usecase.favorite.SetFavoriteUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.DeleteFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
-import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
@@ -36,8 +34,7 @@ class AddMealViewModel(
     private val deleteRecipeUseCase: DeleteRecipeUseCase,
     private val deleteFoodUseCase: DeleteFoodUseCase,
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
-    private val getUserDetailsUseCase: GetUserDetailsUseCase,
-    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    private val getRemainingCaloriesTodayUseCase: GetRemainingCaloriesTodayUseCase,
     private val getFavoriteKeysUseCase: GetFavoriteKeysUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
     savedStateHandle: SavedStateHandle
@@ -74,28 +71,9 @@ class AddMealViewModel(
         }
 
         viewModelScope.launch {
-            combine(
-                flow = getAllFoodLogUseCase(),
-                flow2 = getUserDetailsUseCase()
-            ) { foodLogs, userDetails ->
-                val today = getCurrentDate()
-                val eatenToday = foodLogs.filter { it.date == today }.sumOf { it.calories }
-                val goal = userDetails?.let {
-                    calculateMacrosGoalUseCase(
-                        height = it.height,
-                        weight = it.weight,
-                        age = it.age,
-                        gender = it.sex,
-                        activityLevel = it.activityLevel,
-                        goal = it.goal
-                    ).calories
-                }
-                _state.update { currentState ->
-                    currentState.copy(
-                        remainingCalories = goal?.let { it - eatenToday }
-                    )
-                }
-            }.collect()
+            getRemainingCaloriesTodayUseCase().collect { remainingCalories ->
+                _state.update { currentState -> currentState.copy(remainingCalories = remainingCalories) }
+            }
         }
     }
 

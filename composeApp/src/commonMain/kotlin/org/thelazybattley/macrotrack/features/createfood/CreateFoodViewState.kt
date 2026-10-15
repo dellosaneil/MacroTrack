@@ -15,5 +15,6 @@ data class CreateFoodViewState(
     val duplicateFood: Boolean = false,
     val foodSaved: Boolean = false,
     val unit: String = "",
-    val isUpdating: Boolean = false
+    val isUpdating: Boolean = false,
+    val barcode: String? = null
 )

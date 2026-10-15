@@ -23,6 +23,9 @@ ksp = "2.3.6"
 kotlinx-serialization = "1.10.0"
 clock = "0.7.1"
 billing = "9.1.0"
+ktor = "3.6.0"
+camerax = "1.4.2"
+mlkit-barcode = "17.3.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
@@ -56,6 +59,16 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 clock = {module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "clock"}
 
 billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+androidx-camera-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision", version.ref = "camerax" }
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkit-barcode" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

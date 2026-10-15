@@ -16,6 +16,7 @@ import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.UpdateFoodUseCase
 import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.BARCODE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
 
 class CreateFoodViewModel(
@@ -32,6 +33,7 @@ class CreateFoodViewModel(
 
     init {
         val foodName: String? = savedStateHandle[FOOD_NAME]
+        val scannedBarcode: String? = savedStateHandle[BARCODE]
         viewModelScope.launch {
             getAllFoodUseCase().collect { foodList ->
                 val foodDetails = foodList.find { food ->
@@ -48,6 +50,8 @@ class CreateFoodViewModel(
                         unit = foodDetails?.unit ?: "",
                         weight = foodDetails?.weight ?: 0.0,
                         calories = foodDetails?.macros?.calories ?: 0,
+                        // Editing keeps the food's barcode; a new food can arrive with the one that was just scanned.
+                        barcode = foodDetails?.barcode ?: scannedBarcode
                     )
                 }
                 calculateMacroPercentage()
@@ -75,7 +79,8 @@ class CreateFoodViewModel(
                     name = state.value.name,
                     weight = state.value.weight,
                     dominantMacro = dominantMacro,
-                    unit = state.value.unit
+                    unit = state.value.unit,
+                    barcode = state.value.barcode
                 )
                 if (isUpdating) {
                     updateFoodUseCase(

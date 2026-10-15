@@ -58,9 +58,16 @@ sealed class AppDestinations {
             }
         }
 
-        object CreateFood : Root(route = "create_food", routeWithArgs = "create_food/{$FOOD_NAME}") {
-            fun createRoute(foodName: String): String {
-                return "$route/$foodName"
+        object CreateFood : Root(route = "create_food", routeWithArgs = "create_food/{$FOOD_NAME}?$BARCODE={$BARCODE}") {
+            /** [barcode] links a new food to a scanned barcode that wasn't found. */
+            fun createRoute(foodName: String, barcode: String? = null): String {
+                return if (barcode == null) "$route/$foodName" else "$route/$foodName?$BARCODE=$barcode"
+            }
+        }
+
+        object ScanBarcode : Root(route = "scan_barcode", routeWithArgs = "scan_barcode/{$MEAL_TYPE}") {
+            fun createRoute(mealType: String): String {
+                return "$route/$mealType"
             }
         }
         object CreateRecipe :
@@ -107,6 +114,7 @@ sealed class AppDestinations {
         const val MEAL_TYPE = "mealType"
         const val RECIPE_NAME = "recipeName"
         const val FOOD_NAME = "foodName"
+        const val BARCODE = "barcode"
         const val MEASUREMENT_TYPE = "measurementType"
         const val PRO_FEATURE = "proFeature"
     }

@@ -31,6 +31,9 @@ class FoodRepositoryImpl(
         }
     }
 
+    override suspend fun getFoodByBarcode(barcode: String): Food? =
+        dao.getFoodByBarcode(barcode = barcode)?.toFood()
+
     override suspend fun updateFood(food: Food) {
         dao.updateFood(food = food.toEntity())
     }

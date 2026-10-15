@@ -7,7 +7,8 @@ data class Food(
     val name: String,
     val weight: Double,
     val dominantMacro: MacroType,
-    val unit: String
+    val unit: String,
+    val barcode: String? = null
 )
 
 fun Food.toEntity() = FoodEntity(
@@ -18,7 +19,8 @@ fun Food.toEntity() = FoodEntity(
     calories = macros.calories,
     weight = weight,
     dominantMacro = dominantMacro.name,
-    unit = unit
+    unit = unit,
+    barcode = barcode
 )
 
 

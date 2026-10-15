@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.auto_calculated
 import macrotrack.composeapp.generated.resources.chicken_breast
+import macrotrack.composeapp.generated.resources.create_food_barcode_linked
 import macrotrack.composeapp.generated.resources.food_name
 import macrotrack.composeapp.generated.resources.g
 import macrotrack.composeapp.generated.resources.macros_per_serving
@@ -57,6 +58,7 @@ import org.thelazybattley.macrotrack.features.addmeal.ui.stripeColor
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodCallbacks
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewModel
 import org.thelazybattley.macrotrack.features.createfood.CreateFoodViewState
+import org.thelazybattley.macrotrack.features.scanbarcode.formatBarcode
 import org.thelazybattley.macrotrack.ui.common.CommonInputField
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
@@ -132,6 +134,13 @@ private fun CreateFoodScreen(
                         text = stringResource(resource = Res.string.this_food_is_already_saved),
                         style = typography.regular11,
                         color = colors.fat
+                    )
+                }
+                viewState.barcode?.let { barcode ->
+                    Text(
+                        text = stringResource(Res.string.create_food_barcode_linked, formatBarcode(digits = barcode)),
+                        style = typography.regular11,
+                        color = colors.muted
                     )
                 }
             }

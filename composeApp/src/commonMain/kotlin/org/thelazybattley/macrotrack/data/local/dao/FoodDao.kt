@@ -19,6 +19,9 @@ interface FoodDao {
     @Query(value = "SELECT * FROM FoodEntity WHERE name = :name")
     fun getFoodByName(name: String): Flow<List<FoodEntity>>
 
+    @Query(value = "SELECT * FROM FoodEntity WHERE barcode = :barcode LIMIT 1")
+    suspend fun getFoodByBarcode(barcode: String): FoodEntity?
+
     @Update
     suspend fun updateFood(food: FoodEntity)
 

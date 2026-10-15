@@ -19,7 +19,9 @@ data class FoodEntity(
     val weight: Double,
     val dominantMacro: String,
     @ColumnInfo(defaultValue = "g")
-    val unit: String
+    val unit: String,
+    /** The package barcode, so scanning it again finds this food. */
+    val barcode: String? = null
 )
 
 fun FoodEntity.toFood() = Food(
@@ -32,5 +34,6 @@ fun FoodEntity.toFood() = Food(
     name = name,
     weight = weight,
     dominantMacro = MacroType.valueOf(value = dominantMacro),
-    unit = unit
+    unit = unit,
+    barcode = barcode
 )
