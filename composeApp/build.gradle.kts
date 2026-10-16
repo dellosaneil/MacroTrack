@@ -109,7 +109,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
         // Debug builds never send analytics, even on their first launch. Crash reports come from every build.
         manifestPlaceholders["analyticsEnabled"] = "true"
     }
