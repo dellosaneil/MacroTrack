@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.domain.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.domain.model.ReviewHistory
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 
 interface AppFlagRepository {
@@ -18,4 +20,9 @@ interface AppFlagRepository {
     fun isTelemetryEnabled(): Flow<Boolean>
 
     suspend fun setTelemetryEnabled(isEnabled: Boolean)
+
+    /** When the user was last asked to rate the app, and how many times. */
+    fun getReviewHistory(): Flow<ReviewHistory>
+
+    suspend fun recordReviewAsked(date: LocalDate)
 }

@@ -78,6 +78,8 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.core.platform.rememberReviewPrompt
+import kotlinx.coroutines.delay
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import org.thelazybattley.macrotrack.domain.model.FoodLog
@@ -111,6 +113,16 @@ fun FoodLogTabScreen(
         viewModel.onScreenShown()
     }
 
+    val reviewPrompt = rememberReviewPrompt()
+    LaunchedEffect(key1 = viewState.isReviewDue) {
+        if (viewState.isReviewDue) {
+            // Lets the updated streak land on screen first, so the ask follows the moment it rewards.
+            delay(timeMillis = REVIEW_PROMPT_DELAY_MILLIS)
+            viewModel.onReviewAsked()
+            reviewPrompt.request()
+        }
+    }
+
     LaunchedEffect(key1 = viewState.navigateMealTypeParameter) {
         if (viewState.navigateMealTypeParameter != null) {
             onNavigate(
@@ -129,6 +141,8 @@ fun FoodLogTabScreen(
         onOpenCalendar = { onNavigate(AppDestinations.Root.Calendar.route) }
     )
 }
+
+private const val REVIEW_PROMPT_DELAY_MILLIS = 1_500L
 
 @Composable
 private fun FoodLogTabScreen(

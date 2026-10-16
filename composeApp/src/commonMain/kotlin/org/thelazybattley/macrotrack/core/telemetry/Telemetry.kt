@@ -47,6 +47,7 @@ object TelemetryEvent {
     const val PRO_UNLOCKED = "pro_unlocked"
     const val BACKUP_CREATED = "backup_created"
     const val BACKUP_RESTORED = "backup_restored"
+    const val REVIEW_ASKED = "review_asked"
 
     const val PARAM_GOAL = "goal"
     const val PARAM_MEAL_TYPE = "meal_type"

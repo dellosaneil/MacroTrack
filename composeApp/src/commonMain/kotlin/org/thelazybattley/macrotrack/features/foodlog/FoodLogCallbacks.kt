@@ -23,6 +23,8 @@ interface FoodLogCallbacks {
     fun onSaveEntry()
     fun onDeleteEntry()
 
+    /** The store rating dialog was requested, so it isn't asked for again until it's due. */
+    fun onReviewAsked()
 
     companion object {
         fun default() = object : FoodLogCallbacks {
@@ -54,6 +56,7 @@ interface FoodLogCallbacks {
             override fun onCloseEntry() = Unit
             override fun onSaveEntry() = Unit
             override fun onDeleteEntry() = Unit
+            override fun onReviewAsked() = Unit
         }
     }
 }

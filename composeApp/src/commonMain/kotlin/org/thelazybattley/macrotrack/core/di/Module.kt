@@ -56,6 +56,8 @@ import getRoomDatabase
 import org.koin.core.context.startKoin
 import org.thelazybattley.macrotrack.domain.usecase.telemetry.IsTelemetryEnabledUseCase
 import org.thelazybattley.macrotrack.domain.usecase.telemetry.SetTelemetryEnabledUseCase
+import org.thelazybattley.macrotrack.domain.usecase.review.GetReviewHistoryUseCase
+import org.thelazybattley.macrotrack.domain.usecase.review.RecordReviewAskedUseCase
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
@@ -211,6 +213,8 @@ val useCaseModule = module {
     factoryOf(::GetFoodLibraryUseCase)
     factoryOf(::IsTelemetryEnabledUseCase)
     factoryOf(::SetTelemetryEnabledUseCase)
+    factoryOf(::GetReviewHistoryUseCase)
+    factoryOf(::RecordReviewAskedUseCase)
 }
 
 val viewModelModule = module {

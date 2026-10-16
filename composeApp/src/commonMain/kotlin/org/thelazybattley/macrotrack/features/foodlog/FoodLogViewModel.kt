@@ -29,6 +29,8 @@ import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCas
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.model.PortionUnit
 import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.review.GetReviewHistoryUseCase
+import org.thelazybattley.macrotrack.domain.usecase.review.RecordReviewAskedUseCase
 import org.thelazybattley.macrotrack.features.addmeal.FULL_RECIPE_PERCENT
 import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import org.thelazybattley.macrotrack.features.addmeal.toRecipeMeals
@@ -48,7 +50,9 @@ class FoodLogViewModel(
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val updateFoodLogUseCase: UpdateFoodLogUseCase,
     private val getFoodLibraryUseCase: GetFoodLibraryUseCase,
+    private val recordReviewAskedUseCase: RecordReviewAskedUseCase,
     getUnitSystemUseCase: GetUnitSystemUseCase,
+    getReviewHistoryUseCase: GetReviewHistoryUseCase,
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -85,6 +89,15 @@ class FoodLogViewModel(
                     filterFoodLogsByDate(foodLog = logs.filter { it.date == selectedDate })
                 }
             }.collect()
+        }
+        viewModelScope.launch {
+            combine(flow = getAllFoodLogUseCase(), flow2 = getReviewHistoryUseCase()) { logs, history ->
+                val today = getCurrentDate()
+                val streak = currentStreak(loggedDates = logs.map { it.date }.toSet(), today = today)
+                history.isDue(currentStreak = streak, today = today)
+            }.collect { isReviewDue ->
+                _state.update { it.copy(isReviewDue = isReviewDue) }
+            }
         }
         updateMacroGoals()
     }
@@ -289,6 +302,13 @@ class FoodLogViewModel(
             currentState.copy(
                 selectedDate = date,
             ).withDayGoal()
+        }
+    }
+
+    override fun onReviewAsked() {
+        _state.update { it.copy(isReviewDue = false) }
+        viewModelScope.launch {
+            recordReviewAskedUseCase(date = getCurrentDate())
         }
     }
 }

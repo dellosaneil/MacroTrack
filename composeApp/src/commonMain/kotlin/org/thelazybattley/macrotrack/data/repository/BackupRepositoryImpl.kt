@@ -108,7 +108,10 @@ class BackupRepositoryImpl(
             ProRepositoryImpl.PRO_PURCHASED,
             ProRepositoryImpl.TRIAL_ENDED_NOTICE_DISMISSED,
             LAST_BACKUP_AT,
-            LAST_BACKUP_SIZE
+            LAST_BACKUP_SIZE,
+            // The stores count rating prompts per install, so a restore must not reset or copy them.
+            AppFlagRepositoryImpl.REVIEW_LAST_ASKED,
+            AppFlagRepositoryImpl.REVIEW_TIMES_ASKED
         )
     }
 }

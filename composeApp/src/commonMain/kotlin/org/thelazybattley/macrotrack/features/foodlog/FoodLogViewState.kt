@@ -40,7 +40,9 @@ data class FoodLogViewState(
     /** Calories in one full serving of each recipe, to work out the percentage a log ate. */
     val recipeCalories: Map<String, Int> = emptyMap(),
     /** The logged entry open in the edit sheet. */
-    val entryEdit: EntryEdit? = null
+    val entryEdit: EntryEdit? = null,
+    /** True when the streak has earned asking for a store rating and the user hasn't been asked lately. */
+    val isReviewDue: Boolean = false
 )
 
 data class FoodLogFoodListByMealType(
