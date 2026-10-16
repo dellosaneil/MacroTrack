@@ -1,8 +1,7 @@
 package org.thelazybattley.macrotrack.features.measurements
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.unit_cm
@@ -10,6 +9,9 @@ import macrotrack.composeapp.generated.resources.unit_in
 import org.jetbrains.compose.resources.StringResource
 import org.thelazybattley.macrotrack.domain.model.Measurement
 import org.thelazybattley.macrotrack.domain.model.MeasurementType
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.units.SetUnitSystemUseCase
 import kotlin.math.abs
 import kotlin.math.round
 
@@ -22,13 +24,20 @@ enum class MeasurementUnit(val label: StringResource, private val perCm: Double)
     fun toCm(value: Double): Double = value / perCm
 }
 
-/** In-memory unit choice shared by every measurement screen for the session. */
-class MeasurementUnitPreference {
-    private val _unit = MutableStateFlow(value = MeasurementUnit.CM)
-    val unit: StateFlow<MeasurementUnit> = _unit.asStateFlow()
+/**
+ * The measurement unit, which follows the app's unit system: inches for imperial, cm for metric.
+ * Picking a unit on a measurement screen switches the whole app's units.
+ */
+class MeasurementUnitPreference(
+    getUnitSystemUseCase: GetUnitSystemUseCase,
+    private val setUnitSystemUseCase: SetUnitSystemUseCase
+) {
+    val unit: Flow<MeasurementUnit> = getUnitSystemUseCase().map { unitSystem ->
+        if (unitSystem == UnitSystem.IMPERIAL) MeasurementUnit.INCH else MeasurementUnit.CM
+    }
 
-    fun set(unit: MeasurementUnit) {
-        _unit.value = unit
+    suspend fun set(unit: MeasurementUnit) {
+        setUnitSystemUseCase(unitSystem = if (unit == MeasurementUnit.INCH) UnitSystem.IMPERIAL else UnitSystem.METRIC)
     }
 }
 

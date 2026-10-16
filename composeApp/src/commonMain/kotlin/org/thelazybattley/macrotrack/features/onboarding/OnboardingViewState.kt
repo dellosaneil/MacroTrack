@@ -12,7 +12,9 @@ data class OnboardingViewState(
     val selectedGender: UserSex? = null,
     val currentStep: OnboardingStep = OnboardingStep.GOAL_AND_STATS,
     val age: Int = 0,
+    /** In cm, whichever unit it was typed in. */
     val height: Double = 0.0,
+    /** In kg, whichever unit it was typed in. */
     val weight: Double = 0.0,
     val macroGoals: MacroGoals? = null,
     val maintenanceCalories: Int? = null,

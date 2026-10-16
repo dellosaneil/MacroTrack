@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.features.foodlog
 import org.thelazybattley.macrotrack.core.KEY_BACKSPACE
 import org.thelazybattley.macrotrack.core.KEY_DECIMAL
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.dummyFoodLog
 import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import kotlin.test.Test
@@ -112,5 +113,18 @@ class EntryEditTest {
     fun recipePercentageComesFromCalories() {
         assertEquals(50.0, recipePercentEaten(loggedCalories = 310, fullCalories = 620))
         assertEquals(100.0, recipePercentEaten(loggedCalories = 310, fullCalories = 0))
+    }
+
+    @Test
+    fun imperialEditsGramsInOunces() {
+        val ounces = UnitSystem.IMPERIAL.portionUnit(storedUnit = "g")
+        val edit = EntryEdit(log = yogurt, originalAmount = 200.0, unit = "g", portionUnit = ounces)
+        assertEquals("7.05", edit.amountText)
+        assertEquals("oz", edit.unitLabel)
+        assertFalse(edit.hasChanges)
+        assertEquals(0.5, edit.step)
+        val halved = edit.withAmount(value = 3.5)
+        assertEquals(99.22, halved.weight, absoluteTolerance = 0.01)
+        assertEquals(94, halved.calories)
     }
 }

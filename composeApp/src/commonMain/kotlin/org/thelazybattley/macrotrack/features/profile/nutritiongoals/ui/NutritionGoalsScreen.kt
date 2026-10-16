@@ -1,6 +1,11 @@
 package org.thelazybattley.macrotrack.features.profile.nutritiongoals.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.ui.common.formatWeightWithUnit
+import org.thelazybattley.macrotrack.ui.common.formatHeightWithUnit
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,8 +51,8 @@ import macrotrack.composeapp.generated.resources.ic_nav_progress
 import macrotrack.composeapp.generated.resources.ic_trend_down
 import macrotrack.composeapp.generated.resources.ic_trend_flat
 import macrotrack.composeapp.generated.resources.kcal_per_day_label
-import macrotrack.composeapp.generated.resources.kg_per_week
-import macrotrack.composeapp.generated.resources.kg_per_week_stays_the_same
+import macrotrack.composeapp.generated.resources.unit_per_week
+import macrotrack.composeapp.generated.resources.unit_per_week_stays_the_same
 import macrotrack.composeapp.generated.resources.maintenance_tdee
 import macrotrack.composeapp.generated.resources.nutrition_goals
 import macrotrack.composeapp.generated.resources.percent_value
@@ -56,12 +61,12 @@ import macrotrack.composeapp.generated.resources.save_goal
 import macrotrack.composeapp.generated.resources.signed_kcal
 import macrotrack.composeapp.generated.resources.surplus_to_gain_weight
 import macrotrack.composeapp.generated.resources.weight_change_estimate_note
+import macrotrack.composeapp.generated.resources.weight_change_estimate_note_imperial
 import macrotrack.composeapp.generated.resources.your_goal
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.text
-import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
@@ -281,8 +286,9 @@ private fun CalorieGoalCard(
 
 @Composable
 private fun ExpectedWeightChange(dailyCalorieAdjust: Int) {
-    val weeklyKg = dailyCalorieAdjust * DAYS_PER_WEEK / KCAL_PER_KG
-    val monthlyKg = dailyCalorieAdjust * DAYS_PER_MONTH / KCAL_PER_KG
+    val unitSystem = LocalUnitSystem.current
+    val weeklyChange = unitSystem.weightFromKg(kg = dailyCalorieAdjust * DAYS_PER_WEEK / KCAL_PER_KG)
+    val monthlyChange = unitSystem.weightFromKg(kg = dailyCalorieAdjust * DAYS_PER_MONTH / KCAL_PER_KG)
     val icon = when {
         dailyCalorieAdjust < 0 -> Res.drawable.ic_trend_down
         dailyCalorieAdjust > 0 -> Res.drawable.ic_nav_progress
@@ -318,17 +324,18 @@ private fun ExpectedWeightChange(dailyCalorieAdjust: Int) {
                     horizontalArrangement = Arrangement.spacedBy(space = 5.dp)
                 ) {
                     Text(
-                        text = if (dailyCalorieAdjust == 0) "±0" else weeklyKg.toSignedDecimal(decimals = 2),
+                        text = if (dailyCalorieAdjust == 0) "±0" else weeklyChange.toSignedDecimal(decimals = 2),
                         style = typography.bold24,
                         color = colors.accentInk
                     )
                     Text(
                         text = stringResource(
                             resource = if (dailyCalorieAdjust == 0) {
-                                Res.string.kg_per_week_stays_the_same
+                                Res.string.unit_per_week_stays_the_same
                             } else {
-                                Res.string.kg_per_week
-                            }
+                                Res.string.unit_per_week
+                            },
+                            weightUnitLabel()
                         ),
                         style = typography.regular13,
                         color = colors.muted,
@@ -340,7 +347,8 @@ private fun ExpectedWeightChange(dailyCalorieAdjust: Int) {
                 Text(
                     text = stringResource(
                         resource = Res.string.about_kg_per_month,
-                        monthlyKg.toSignedDecimal(decimals = 1)
+                        monthlyChange.toSignedDecimal(decimals = 1),
+                        weightUnitLabel()
                     ),
                     style = typography.regular11,
                     color = colors.muted,
@@ -350,7 +358,13 @@ private fun ExpectedWeightChange(dailyCalorieAdjust: Int) {
             }
         }
         Text(
-            text = stringResource(resource = Res.string.weight_change_estimate_note),
+            text = stringResource(
+                resource = if (unitSystem == UnitSystem.IMPERIAL) {
+                    Res.string.weight_change_estimate_note_imperial
+                } else {
+                    Res.string.weight_change_estimate_note
+                }
+            ),
             style = typography.regular11,
             color = colors.muted
         )
@@ -506,8 +520,8 @@ private fun PersonalInformationLink(
                 text = stringResource(
                     resource = Res.string.personal_info_summary,
                     userDetails.age,
-                    userDetails.height.toCleanString(),
-                    userDetails.weight.toCleanString(),
+                    userDetails.height.formatHeightWithUnit(),
+                    userDetails.weight.formatWeightWithUnit(),
                     stringResource(resource = userDetails.activityLevel.titleRes()).lowercase()
                 ),
                 style = typography.regular11,

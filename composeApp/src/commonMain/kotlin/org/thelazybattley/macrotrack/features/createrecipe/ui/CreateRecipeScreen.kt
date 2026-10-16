@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.features.createrecipe.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.portionUnit
+import org.thelazybattley.macrotrack.ui.common.formatPortion
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +66,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.ui.stripeColor
@@ -258,7 +259,9 @@ private fun SelectedIngredientRow(
     onAmountChanged: (Double) -> Unit,
     onRemove: () -> Unit
 ) {
-    var amount by remember(key1 = food.name) { mutableStateOf(value = food.weight.toCleanString()) }
+    // Typed in the shown unit (oz for an ingredient stored in grams when imperial), kept in the stored one.
+    val portionUnit = portionUnit(storedUnit = food.unit)
+    var amount by remember(food.name, portionUnit) { mutableStateOf(value = portionUnit.format(amount = food.weight)) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -298,7 +301,7 @@ private fun SelectedIngredientRow(
             onValueChange = { value ->
                 if (value.length <= 6 && value.count { it == '.' } <= 1 && value.all { it.isDigit() || it == '.' }) {
                     amount = value
-                    value.toDoubleOrNull()?.takeIf { it > 0 }?.let(onAmountChanged)
+                    value.toDoubleOrNull()?.takeIf { it > 0 }?.let { onAmountChanged(portionUnit.toStored(value = it)) }
                 }
             },
             keyboardType = KeyboardType.Decimal,
@@ -309,11 +312,11 @@ private fun SelectedIngredientRow(
             horizontalPadding = 8.dp
         )
         Text(
-            text = food.unit,
+            text = portionUnit.label,
             style = typography.regular11,
             color = colors.muted,
             maxLines = 1,
-            modifier = Modifier.width(width = 26.dp)
+            modifier = Modifier.width(width = 30.dp)
         )
         Box(
             modifier = Modifier
@@ -394,7 +397,7 @@ private fun AvailableIngredientRow(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = stringResource(resource = Res.string.value_unit, food.weight.toCleanString(), food.unit) +
+                text = formatPortion(amount = food.weight, storedUnit = food.unit) +
                     " · " + stringResource(resource = Res.string.kcal, food.macros.calories),
                 style = typography.regular11,
                 color = colors.muted

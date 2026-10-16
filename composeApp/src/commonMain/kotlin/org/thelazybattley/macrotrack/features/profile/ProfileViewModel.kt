@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.features.profile
 
 import androidx.lifecycle.ViewModel
+import org.thelazybattley.macrotrack.domain.usecase.units.SetUnitSystemUseCase
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +25,8 @@ class ProfileViewModel(
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
     private val getAllWeightUseCase: GetAllWeightUseCase,
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
-    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase
+    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    private val setUnitSystemUseCase: SetUnitSystemUseCase
 ) : ViewModel(), ProfileCallbacks {
 
     private val _state = MutableStateFlow(value = ProfileViewState())
@@ -80,8 +83,12 @@ class ProfileViewModel(
         }
     }
 
-    override fun onSaveTargetWeight(targetWeight: String) {
-        val newTarget = targetWeight.toDoubleOrNull()?.takeIf { it > 0 } ?: return
+    override fun onUnitSystemSelected(unitSystem: UnitSystem) {
+        viewModelScope.launch { setUnitSystemUseCase(unitSystem = unitSystem) }
+    }
+
+    override fun onSaveTargetWeight(targetKg: Double) {
+        val newTarget = targetKg.takeIf { it > 0 } ?: return
         val userDetails = _state.value.userDetails ?: return
         viewModelScope.launch {
             insertUserDetailsUseCase(

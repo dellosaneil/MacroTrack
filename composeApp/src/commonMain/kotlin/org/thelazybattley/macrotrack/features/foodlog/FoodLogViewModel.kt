@@ -27,6 +27,8 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.UpdateFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
+import org.thelazybattley.macrotrack.domain.model.PortionUnit
+import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
 import org.thelazybattley.macrotrack.features.addmeal.FULL_RECIPE_PERCENT
 import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import org.thelazybattley.macrotrack.features.addmeal.toRecipeMeals
@@ -46,6 +48,7 @@ class FoodLogViewModel(
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val updateFoodLogUseCase: UpdateFoodLogUseCase,
     private val getFoodLibraryUseCase: GetFoodLibraryUseCase,
+    getUnitSystemUseCase: GetUnitSystemUseCase,
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -58,13 +61,15 @@ class FoodLogViewModel(
                 flow = getAllFoodLogUseCase(),
                 flow2 = getAllFoodUseCase(),
                 flow3 = getAllRecipeUseCase(),
-                flow4 = getFoodLibraryUseCase()
-            ) { logs, food, recipes, libraryFoods ->
+                flow4 = getFoodLibraryUseCase(),
+                flow5 = getUnitSystemUseCase()
+            ) { logs, food, recipes, libraryFoods, unitSystem ->
                 val dates = logs.map { it.date }.toMutableSet()
                 dates.add(element = getCurrentDate())
                 _state.update { currentState ->
                     currentState.copy(
                         allFoodLog = logs,
+                        unitSystem = unitSystem,
                         availableDates = dates.toList(),
                         currentStreak = currentStreak(loggedDates = logs.map { it.date }.toSet(), today = getCurrentDate()),
                         // Library foods are logged by name too; a saved food with the same name takes precedence.
@@ -219,11 +224,13 @@ class FoodLogViewModel(
             } else {
                 log.weight
             }
+            val unit = if (isRecipe) "%" else currentState.foodUnit[log.foodName].orEmpty()
             currentState.copy(
                 entryEdit = EntryEdit(
                     log = log,
                     originalAmount = originalAmount,
-                    unit = if (isRecipe) "%" else currentState.foodUnit[log.foodName].orEmpty()
+                    unit = unit,
+                    portionUnit = if (isRecipe) PortionUnit(label = unit) else currentState.unitSystem.portionUnit(storedUnit = unit)
                 )
             )
         }

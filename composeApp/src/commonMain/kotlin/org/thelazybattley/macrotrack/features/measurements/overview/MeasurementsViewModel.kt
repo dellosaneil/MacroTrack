@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.features.measurements.overview
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -48,6 +49,6 @@ class MeasurementsViewModel(
     )
 
     fun onUnitSelected(unit: MeasurementUnit) {
-        unitPreference.set(unit = unit)
+        viewModelScope.launch { unitPreference.set(unit = unit) }
     }
 }

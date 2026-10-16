@@ -1,6 +1,11 @@
 package org.thelazybattley.macrotrack.features.logweight.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.core.toCleanString
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.ui.common.formatTwoDecimals
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +53,6 @@ import macrotrack.composeapp.generated.resources.goal_lost_to_go
 import macrotrack.composeapp.generated.resources.goal_progress
 import macrotrack.composeapp.generated.resources.ic_nav_progress
 import macrotrack.composeapp.generated.resources.increase_weight
-import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.last_weight_on
 import macrotrack.composeapp.generated.resources.log_weight
 import macrotrack.composeapp.generated.resources.month_change_with_entry
@@ -66,7 +70,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.features.logweight.LogWeightViewModel
 import org.thelazybattley.macrotrack.features.logweight.LogWeightViewState
-import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.ui.common.CommonDateButton
 import org.thelazybattley.macrotrack.ui.common.CommonDatePickerDialog
 import org.thelazybattley.macrotrack.ui.common.CommonInputField
@@ -78,8 +81,11 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
 import macrotrack.composeapp.generated.resources.ic_trend_down
 import macrotrack.composeapp.generated.resources.ic_trend_flat
+import org.thelazybattley.macrotrack.ui.common.formatWeight
 
 private const val SAME_THRESHOLD_KG = 0.005
+
+/** Quick-adjust steps from the last weigh-in, in whichever unit the weight is typed in. */
 private val QUICK_ADJUSTMENTS = listOf(-0.5, -0.25, 0.0, 0.25, 0.5)
 
 @Composable
@@ -193,7 +199,7 @@ private fun WeightCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
         ) {
-            StepButton(label = "−", description = stringResource(resource = Res.string.decrease_weight)) { onStep(false) }
+            StepButton(label = "−", description = stringResource(resource = Res.string.decrease_weight, weightUnitLabel())) { onStep(false) }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CommonInputField(
                     modifier = Modifier.width(width = 150.dp).height(height = 64.dp),
@@ -207,9 +213,9 @@ private fun WeightCard(
                     horizontalPadding = 8.dp
                 )
             }
-            StepButton(label = "+", description = stringResource(resource = Res.string.increase_weight)) { onStep(true) }
+            StepButton(label = "+", description = stringResource(resource = Res.string.increase_weight, weightUnitLabel())) { onStep(true) }
         }
-        Text(text = stringResource(resource = Res.string.kg), style = typography.regular13, color = colors.muted)
+        Text(text = weightUnitLabel(), style = typography.regular13, color = colors.muted)
         if (difference != null) {
             Text(
                 text = if (abs(difference) < SAME_THRESHOLD_KG) {
@@ -217,7 +223,8 @@ private fun WeightCard(
                 } else {
                     stringResource(
                         resource = Res.string.change_from_last_time,
-                        (if (difference < 0) "↓ " else "↑ ") + abs(difference).formatKg()
+                        (if (difference < 0) "↓ " else "↑ ") + abs(difference).formatWeight(),
+                        weightUnitLabel()
                     )
                 },
                 style = typography.bold13,
@@ -230,7 +237,7 @@ private fun WeightCard(
         }
         viewState.existing?.let { existing ->
             Text(
-                text = stringResource(resource = Res.string.replaces_entry, existing.weight.formatKg()),
+                text = stringResource(resource = Res.string.replaces_entry, existing.weight.formatWeight(), weightUnitLabel()),
                 style = typography.regular11,
                 color = colors.muted,
                 textAlign = TextAlign.Center
@@ -277,17 +284,21 @@ private fun QuickAdjust(
             Text(
                 text = stringResource(
                     resource = Res.string.last_weight_on,
-                    previousWeight.formatKg(),
-                    previousDate.toAbbreviatedMonthDay()
+                    previousWeight.formatWeight(),
+                    previousDate.toAbbreviatedMonthDay(),
+                    weightUnitLabel()
                 ),
                 style = typography.regular11,
                 color = colors.muted
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
+            val unitSystem = LocalUnitSystem.current
+            val previousValue = unitSystem.weightFromKg(kg = previousWeight)
+            val currentValue = current?.let { unitSystem.weightFromKg(kg = it) }
             QUICK_ADJUSTMENTS.forEach { adjustment ->
-                val value = previousWeight + adjustment
-                val isSelected = current != null && abs(current - value) < SAME_THRESHOLD_KG
+                val value = previousValue + adjustment
+                val isSelected = currentValue != null && abs(currentValue - value) < SAME_THRESHOLD_KG
                 val shape = RoundedCornerShape(size = 12.dp)
                 Column(
                     modifier = Modifier
@@ -304,13 +315,13 @@ private fun QuickAdjust(
                     Text(
                         text = when {
                             adjustment == 0.0 -> stringResource(resource = Res.string.same)
-                            adjustment > 0 -> "+${adjustment.trimmed()}"
-                            else -> "−${(-adjustment).trimmed()}"
+                            adjustment > 0 -> "+${adjustment.toCleanString()}"
+                            else -> "−${(-adjustment).toCleanString()}"
                         },
                         style = typography.bold13,
                         color = if (isSelected) colors.accentInk else adjustment.changeColor()
                     )
-                    Text(text = value.formatKg(), style = typography.regular10, color = colors.muted)
+                    Text(text = value.formatTwoDecimals(), style = typography.regular10, color = colors.muted)
                 }
             }
         }
@@ -330,9 +341,10 @@ private fun ContextCard(viewState: LogWeightViewState) {
         val toGo = (if (isGaining) target - weight else weight - target).coerceAtLeast(minimumValue = 0.0)
         stringResource(
             resource = if (isGaining) Res.string.goal_gained_to_go else Res.string.goal_lost_to_go,
-            achieved.formatKg(),
-            total.formatKg(),
-            toGo.formatKg()
+            achieved.formatWeight(),
+            total.formatWeight(),
+            toGo.formatWeight(),
+            weightUnitLabel()
         )
     } else {
         null
@@ -342,8 +354,9 @@ private fun ContextCard(viewState: LogWeightViewState) {
         val change = weight - it.weight
         stringResource(
             resource = Res.string.month_change_with_entry,
-            (if (change < 0) "↓ " else if (change > 0) "↑ " else "") + abs(change).formatKg(),
-            it.date.toAbbreviatedMonthDay()
+            (if (change < 0) "↓ " else if (change > 0) "↑ " else "") + abs(change).formatWeight(),
+            it.date.toAbbreviatedMonthDay(),
+            weightUnitLabel()
         )
     }
     if (goalText == null && monthText == null) return
@@ -416,7 +429,6 @@ private fun Double.changeColor(): Color = when {
     else -> colors.ink
 }
 
-private fun Double.trimmed(): String = if (this == 0.5) "0.5" else "0.25"
 
 @Preview(showBackground = true)
 @Composable

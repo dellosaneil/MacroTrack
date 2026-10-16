@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -39,6 +40,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,7 +60,10 @@ import macrotrack.composeapp.generated.resources.female
 import macrotrack.composeapp.generated.resources.goal
 import macrotrack.composeapp.generated.resources.height
 import macrotrack.composeapp.generated.resources.kcal_per_day
-import macrotrack.composeapp.generated.resources.kg
+import macrotrack.composeapp.generated.resources.ft
+import macrotrack.composeapp.generated.resources.height_feet
+import macrotrack.composeapp.generated.resources.height_inches
+import macrotrack.composeapp.generated.resources.unit_in
 import macrotrack.composeapp.generated.resources.lets_go
 import macrotrack.composeapp.generated.resources.maintenance_tdee
 import macrotrack.composeapp.generated.resources.male
@@ -72,9 +78,12 @@ import macrotrack.composeapp.generated.resources.yrs
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.round
 import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
+import org.thelazybattley.macrotrack.domain.model.FeetInches
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.UserSex
 import org.thelazybattley.macrotrack.domain.model.titleRes
 import org.thelazybattley.macrotrack.features.createfood.ui.MacroPreviewCard
@@ -84,6 +93,10 @@ import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.common.CommonActivityLevelOption
 import org.thelazybattley.macrotrack.ui.common.CommonInputField
+import org.thelazybattley.macrotrack.ui.common.CommonUnitSystemToggle
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
+import org.thelazybattley.macrotrack.ui.common.weightInputText
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -196,7 +209,13 @@ private fun GoalAndStatsStep(
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-            SectionLabel(text = Res.string.your_stats_title)
+            val unitSystem = LocalUnitSystem.current
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.weight(weight = 1f)) {
+                    SectionLabel(text = Res.string.your_stats_title)
+                }
+                CommonUnitSystemToggle(selected = unitSystem, onSelected = callbacks::onUnitSystemSelected)
+            }
             Row(
                 modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
@@ -204,7 +223,7 @@ private fun GoalAndStatsStep(
                 StatField(
                     modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
                     label = Res.string.age,
-                    unit = Res.string.yrs,
+                    unit = stringResource(resource = Res.string.yrs),
                     initial = viewState.age.takeIf { it > 0 }?.toString().orEmpty(),
                     keyboardType = KeyboardType.Number,
                     onValue = { callbacks.onAgeUpdated(age = it.toIntOrNull() ?: 0) }
@@ -215,23 +234,37 @@ private fun GoalAndStatsStep(
                     onSelected = callbacks::onGenderSelected
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-                StatField(
-                    modifier = Modifier.weight(weight = 1f),
-                    label = Res.string.height,
-                    unit = Res.string.cm,
-                    initial = viewState.height.takeIf { it > 0 }?.toCleanString().orEmpty(),
-                    keyboardType = KeyboardType.Decimal,
-                    onValue = { callbacks.onHeightUpdated(height = it.toDoubleOrNull() ?: 0.0) }
-                )
-                StatField(
-                    modifier = Modifier.weight(weight = 1f),
-                    label = Res.string.weight_kg_label,
-                    unit = Res.string.kg,
-                    initial = viewState.weight.takeIf { it > 0 }?.toCleanString().orEmpty(),
-                    keyboardType = KeyboardType.Decimal,
-                    onValue = { callbacks.onWeightUpdated(weight = it.toDoubleOrNull() ?: 0.0) }
-                )
+            Row(
+                modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+            ) {
+                if (unitSystem == UnitSystem.IMPERIAL) {
+                    FeetInchesField(
+                        modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                        initialCm = viewState.height,
+                        onHeightCm = { callbacks.onHeightUpdated(height = it) }
+                    )
+                } else {
+                    StatField(
+                        modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                        label = Res.string.height,
+                        unit = stringResource(resource = Res.string.cm),
+                        initial = viewState.height.takeIf { it > 0 }?.let { (round(it * 10) / 10).toCleanString() }.orEmpty(),
+                        keyboardType = KeyboardType.Decimal,
+                        onValue = { callbacks.onHeightUpdated(height = it.toDoubleOrNull() ?: 0.0) }
+                    )
+                }
+                // Keyed on the unit so switching units shows the typed weight converted.
+                key(unitSystem) {
+                    StatField(
+                        modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                        label = Res.string.weight_kg_label,
+                        unit = weightUnitLabel(),
+                        initial = viewState.weight.takeIf { it > 0 }?.let { unitSystem.weightInputText(kg = it) }.orEmpty(),
+                        keyboardType = KeyboardType.Decimal,
+                        onValue = { callbacks.onWeightUpdated(weight = unitSystem.weightToKg(value = it.toDoubleOrNull() ?: 0.0)) }
+                    )
+                }
             }
         }
     }
@@ -292,7 +325,7 @@ private fun RadioDot(isSelected: Boolean) {
 private fun StatField(
     modifier: Modifier = Modifier,
     label: StringResource,
-    unit: StringResource,
+    unit: String,
     initial: String,
     keyboardType: KeyboardType,
     onValue: (String) -> Unit
@@ -328,7 +361,81 @@ private fun StatField(
                 horizontalPadding = 0.dp,
                 showBorder = false
             )
-            Text(text = stringResource(resource = unit), style = typography.regular13, color = colors.muted)
+            Text(text = unit, style = typography.regular13, color = colors.muted)
+        }
+    }
+}
+
+/** Height typed as whole feet plus inches; reports the height in cm, or 0 until the feet are typed. */
+@Composable
+private fun FeetInchesField(
+    modifier: Modifier = Modifier,
+    initialCm: Double,
+    onHeightCm: (Double) -> Unit
+) {
+    val initial = initialCm.takeIf { it > 0 }?.let { FeetInches.fromCm(cm = it) }
+    var feet by rememberSaveable { mutableStateOf(value = initial?.feet?.toString().orEmpty()) }
+    var inches by rememberSaveable { mutableStateOf(value = initial?.inches?.toCleanString().orEmpty()) }
+    fun report() {
+        val wholeFeet = feet.toIntOrNull()
+        val extraInches = inches.ifEmpty { "0" }.toDoubleOrNull()
+        onHeightCm(if (wholeFeet == null || extraInches == null) 0.0 else FeetInches(feet = wholeFeet, inches = extraInches).cm)
+    }
+    val feetDescription = stringResource(resource = Res.string.height_feet)
+    val inchesDescription = stringResource(resource = Res.string.height_inches)
+    Column(
+        modifier = modifier
+            .clip(shape = RoundedCornerShape(size = 16.dp))
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 16.dp))
+            .padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 8.dp)
+    ) {
+        Text(text = stringResource(resource = Res.string.height), style = typography.regular11, color = colors.muted)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
+        ) {
+            CommonInputField(
+                modifier = Modifier
+                    .weight(weight = 1f)
+                    .height(height = 36.dp)
+                    .semantics { contentDescription = feetDescription },
+                value = feet,
+                onValueChange = { value ->
+                    if (value.length <= 1 && value.all { it.isDigit() }) {
+                        feet = value
+                        report()
+                    }
+                },
+                placeholder = "0",
+                keyboardType = KeyboardType.Number,
+                textStyle = typography.bold24,
+                cornerRadius = 0.dp,
+                horizontalPadding = 0.dp,
+                showBorder = false
+            )
+            Text(text = stringResource(resource = Res.string.ft), style = typography.regular13, color = colors.muted)
+            CommonInputField(
+                modifier = Modifier
+                    .weight(weight = 1f)
+                    .height(height = 36.dp)
+                    .semantics { contentDescription = inchesDescription },
+                value = inches,
+                onValueChange = { value ->
+                    val isValid = value.count { it == '.' } <= 1 && value.all { it.isDigit() || it == '.' } && value.length <= 4
+                    if (isValid && (value.toDoubleOrNull() ?: 0.0) < UnitSystem.INCHES_PER_FOOT) {
+                        inches = value
+                        report()
+                    }
+                },
+                placeholder = "0",
+                keyboardType = KeyboardType.Decimal,
+                textStyle = typography.bold24,
+                cornerRadius = 0.dp,
+                horizontalPadding = 0.dp,
+                showBorder = false
+            )
+            Text(text = stringResource(resource = Res.string.unit_in), style = typography.regular13, color = colors.muted)
         }
     }
 }

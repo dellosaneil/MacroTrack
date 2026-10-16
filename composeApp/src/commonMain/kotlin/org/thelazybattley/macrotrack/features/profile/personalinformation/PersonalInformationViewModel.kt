@@ -9,18 +9,22 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.UserSex
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.units.SetUnitSystemUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
-import org.thelazybattley.macrotrack.core.toCleanString
 
 class PersonalInformationViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
     private val getAllWeightUseCase: GetAllWeightUseCase,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    getUnitSystemUseCase: GetUnitSystemUseCase,
+    private val setUnitSystemUseCase: SetUnitSystemUseCase,
 ) : ViewModel(), PersonalInformationCallbacks {
 
     private val _state = MutableStateFlow(value = PersonalInformationViewState())
@@ -31,18 +35,27 @@ class PersonalInformationViewModel(
         viewModelScope.launch {
             combine(
                 flow = getUserDetailsUseCase(),
-                flow2 = getAllWeightUseCase()
-            ) { userDetails, weights ->
+                flow2 = getAllWeightUseCase(),
+                flow3 = getUnitSystemUseCase()
+            ) { userDetails, weights, unitSystem ->
                 _state.update { currentState ->
                     val isFirstLoad = currentState.userDetails == null && userDetails != null
-                    currentState.copy(
+                    // Switching units keeps whatever height was typed, shown in the new unit.
+                    val heightCm = if (isFirstLoad) userDetails.height else currentState.parsedHeight
+                    val updated = currentState.copy(
                         userDetails = userDetails,
                         latestWeight = weights.maxByOrNull { it.date },
+                        unitSystem = unitSystem,
                         age = if (isFirstLoad) userDetails.age.toString() else currentState.age,
-                        height = if (isFirstLoad) userDetails.height.toCleanString() else currentState.height,
                         sex = if (isFirstLoad) userDetails.sex else currentState.sex,
                         activityLevel = if (isFirstLoad) userDetails.activityLevel else currentState.activityLevel
-                    ).withDailyCalories()
+                    )
+                    val isUnitChanged = unitSystem != currentState.unitSystem
+                    when {
+                        heightCm == null -> updated
+                        isFirstLoad || isUnitChanged -> updated.withHeightFields(cm = heightCm)
+                        else -> updated
+                    }.withDailyCalories()
                 }
             }.collect()
         }
@@ -56,6 +69,20 @@ class PersonalInformationViewModel(
     override fun onHeightChanged(height: String) {
         if (height.length > 5 || height.count { it == '.' } > 1 || height.any { !it.isDigit() && it != '.' }) return
         _state.update { currentState -> currentState.copy(height = height).withDailyCalories() }
+    }
+
+    override fun onHeightFeetChanged(feet: String) {
+        if (feet.length > 1 || feet.any { !it.isDigit() }) return
+        _state.update { currentState -> currentState.copy(heightFeet = feet).withDailyCalories() }
+    }
+
+    override fun onHeightInchesChanged(inches: String) {
+        if (inches.length > 4 || inches.count { it == '.' } > 1 || inches.any { !it.isDigit() && it != '.' }) return
+        _state.update { currentState -> currentState.copy(heightInches = inches).withDailyCalories() }
+    }
+
+    override fun onUnitSystemSelected(unitSystem: UnitSystem) {
+        viewModelScope.launch { setUnitSystemUseCase(unitSystem = unitSystem) }
     }
 
     override fun onSexSelected(sex: UserSex) {
@@ -78,7 +105,8 @@ class PersonalInformationViewModel(
             insertUserDetailsUseCase(
                 userDetails = userDetails.copy(
                     age = age,
-                    height = height,
+                    // Keep the saved height when only feet-and-inches rounding moved it.
+                    height = if (currentState.isHeightChanged) height else userDetails.height,
                     sex = currentState.sex ?: userDetails.sex,
                     activityLevel = currentState.activityLevel ?: userDetails.activityLevel
                 )

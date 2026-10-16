@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.features.scanbarcode.ui
 
 import androidx.compose.animation.core.LinearEasing
+import org.thelazybattley.macrotrack.domain.model.PortionUnit
+import org.thelazybattley.macrotrack.ui.common.portionUnit
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -684,12 +686,14 @@ private fun FoundContent(
         }
     }
 
+    // Grams show as oz and ml as fl oz when imperial; the amount itself stays in the food's unit.
+    val portionUnit = portionUnit(storedUnit = food.unit)
     if (scanned.servings.size > 1) {
         Row(horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
             scanned.servings.forEach { serving ->
                 ServingChip(
                     modifier = Modifier.weight(weight = 1f),
-                    text = servingText(serving = serving, unit = food.unit),
+                    text = servingText(serving = serving, portionUnit = portionUnit),
                     isSelected = viewState.amount == serving.amount,
                     onClick = { callbacks.onAmountChanged(amount = serving.amount) }
                 )
@@ -705,19 +709,20 @@ private fun FoundContent(
             Text(text = stringResource(resource = Res.string.portion_size), style = typography.bold14, color = colors.ink)
             Text(
                 text = scanned.servingLabel?.let { stringResource(Res.string.scan_label_serving, it) }
-                    ?: stringResource(Res.string.base_serving, food.weight.toCleanString(), food.unit),
+                    ?: stringResource(Res.string.base_serving, portionUnit.format(amount = food.weight), portionUnit.label),
                 style = typography.regular11,
                 color = colors.muted,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
-        val step = viewState.amountStep
+        val step = if (portionUnit.isConverted) OUNCE_STEP else viewState.amountStep
+        val shownAmount = portionUnit.fromStored(amount = viewState.amount)
         StepperButton(
             label = "−",
             contentDescription = stringResource(resource = Res.string.decrease_portion),
-            enabled = viewState.amount - step > 0,
-            onClick = { callbacks.onAmountChanged(amount = viewState.amount - step) }
+            enabled = shownAmount - step > 0,
+            onClick = { callbacks.onAmountChanged(amount = portionUnit.toStored(value = (shownAmount - step).roundToStep(step = step))) }
         )
         Row(
             modifier = Modifier
@@ -729,14 +734,14 @@ private fun FoundContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 3.dp, alignment = Alignment.CenterHorizontally)
         ) {
-            Text(text = viewState.amount.toCleanString(), style = typography.bold18, color = colors.ink)
-            Text(text = food.unit, style = typography.regular11, color = colors.muted)
+            Text(text = portionUnit.format(amount = viewState.amount), style = typography.bold18, color = colors.ink)
+            Text(text = portionUnit.label, style = typography.regular11, color = colors.muted)
         }
         StepperButton(
             label = "+",
             contentDescription = stringResource(resource = Res.string.increase_portion),
             enabled = true,
-            onClick = { callbacks.onAmountChanged(amount = viewState.amount + step) }
+            onClick = { callbacks.onAmountChanged(amount = portionUnit.toStored(value = (shownAmount + step).roundToStep(step = step))) }
         )
     }
 
@@ -937,8 +942,9 @@ private fun Placeholder(modifier: Modifier, radius: Int) {
 }
 
 @Composable
-private fun servingText(serving: ServingOption, unit: String): String {
-    val amount = serving.amount.toCleanString()
+private fun servingText(serving: ServingOption, portionUnit: PortionUnit): String {
+    val amount = portionUnit.format(amount = serving.amount)
+    val unit = portionUnit.label
     return when {
         serving.label != null -> serving.label
         serving.isHalf -> stringResource(Res.string.scan_serving_half, amount, unit)
@@ -1215,3 +1221,9 @@ private fun SheetButton(
         )
     }
 }
+
+/** Imperial portions of foods stored in grams or ml move in half ounces. */
+private const val OUNCE_STEP = 0.5
+
+/** Snaps to the step so ounce amounts converted from grams stay on whole half ounces. */
+private fun Double.roundToStep(step: Double): Double = kotlin.math.round(this / step) * step

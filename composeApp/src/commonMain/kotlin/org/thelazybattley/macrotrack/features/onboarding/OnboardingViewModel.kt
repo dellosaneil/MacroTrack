@@ -8,10 +8,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.UserSex
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateTDEEUseCase
+import org.thelazybattley.macrotrack.domain.usecase.units.SetUnitSystemUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingStep
 
@@ -19,6 +21,7 @@ class OnboardingViewModel(
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
     private val calculateTDEEUseCase: CalculateTDEEUseCase,
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
+    private val setUnitSystemUseCase: SetUnitSystemUseCase,
 ) : ViewModel(), OnboardingCallbacks {
 
     private val _state = MutableStateFlow(value = OnboardingViewState())
@@ -46,6 +49,10 @@ class OnboardingViewModel(
 
     override fun onWeightUpdated(weight: Double) {
         _state.update { it.copy(weight = weight).withPlan() }
+    }
+
+    override fun onUnitSystemSelected(unitSystem: UnitSystem) {
+        viewModelScope.launch { setUnitSystemUseCase(unitSystem = unitSystem) }
     }
 
     override fun onContinueClicked() {

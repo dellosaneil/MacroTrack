@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.portionUnit
+import org.thelazybattley.macrotrack.domain.model.PortionUnit
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +55,7 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.round
 
 private const val RECIPE_STEP_PERCENT = 25.0
+private const val OUNCE_STEP = 0.5
 
 @Composable
 fun AddMealPortionEditor(
@@ -60,12 +63,16 @@ fun AddMealPortionEditor(
     item: SelectedMealItem,
     onAmountChanged: (key: String, amount: Double) -> Unit
 ) {
+    // Recipes are portioned in %, which no unit system changes.
+    val portionUnit = if (item.isRecipe) PortionUnit(label = "%") else portionUnit(storedUnit = item.baseFood.unit)
+    val shownAmount = portionUnit.fromStored(amount = item.amount)
     val step = when {
         item.isRecipe -> RECIPE_STEP_PERCENT
+        portionUnit.isConverted -> OUNCE_STEP
         item.baseFood.weight > 10 -> 10.0
         else -> 0.5
     }
-    val unit = if (item.isRecipe) "%" else item.baseFood.unit
+    val unit = portionUnit.label
     var isKeypadOpen by rememberSaveable(item.key) { mutableStateOf(value = false) }
 
     Column(
@@ -114,22 +121,22 @@ fun AddMealPortionEditor(
                     text = when {
                         item.isLibrary -> stringResource(
                             Res.string.library_portion,
-                            item.baseFood.weight.toCleanString(),
-                            item.baseFood.unit
+                            portionUnit.format(amount = item.baseFood.weight),
+                            unit
                         )
                         item.isRecipe && item.lastAmount != null ->
                             stringResource(Res.string.recipe_last_time, item.lastAmount.toCleanString())
                         item.isRecipe -> stringResource(resource = Res.string.recipe_full_serving)
                         item.lastAmount != null -> stringResource(
                             Res.string.portion_last_time,
-                            item.lastAmount.toCleanString(),
-                            item.baseFood.unit,
-                            item.baseFood.weight.toCleanString()
+                            portionUnit.format(amount = item.lastAmount),
+                            unit,
+                            portionUnit.format(amount = item.baseFood.weight)
                         )
                         else -> stringResource(
                             resource = Res.string.base_serving,
-                            item.baseFood.weight.toCleanString(),
-                            item.baseFood.unit
+                            portionUnit.format(amount = item.baseFood.weight),
+                            unit
                         )
                     },
                     style = typography.regular11,
@@ -147,8 +154,8 @@ fun AddMealPortionEditor(
                 StepperButton(
                     label = "−",
                     contentDescription = stringResource(resource = Res.string.decrease_portion),
-                    enabled = item.amount - step > 0,
-                    onClick = { onAmountChanged(item.key, (item.amount - step).roundTo(step = step)) }
+                    enabled = shownAmount - step > 0,
+                    onClick = { onAmountChanged(item.key, portionUnit.toStored(value = (shownAmount - step).roundTo(step = step))) }
                 )
                 val editAmountText = stringResource(resource = Res.string.edit_amount)
                 Row(
@@ -164,14 +171,14 @@ fun AddMealPortionEditor(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(space = 3.dp, alignment = Alignment.CenterHorizontally)
                 ) {
-                    Text(text = item.amount.toCleanString(), style = typography.bold16, color = colors.ink, maxLines = 1)
+                    Text(text = portionUnit.format(amount = item.amount), style = typography.bold16, color = colors.ink, maxLines = 1)
                     Text(text = unit, style = typography.regular13, color = colors.muted, maxLines = 1)
                 }
                 StepperButton(
                     label = "+",
                     contentDescription = stringResource(resource = Res.string.increase_portion),
                     enabled = true,
-                    onClick = { onAmountChanged(item.key, (item.amount + step).roundTo(step = step)) }
+                    onClick = { onAmountChanged(item.key, portionUnit.toStored(value = (shownAmount + step).roundTo(step = step))) }
                 )
             }
         }
@@ -179,7 +186,7 @@ fun AddMealPortionEditor(
     if (isKeypadOpen) {
         AddMealKeypadSheet(
             item = item,
-            unit = unit,
+            portionUnit = portionUnit,
             onAmountChanged = { amount -> onAmountChanged(item.key, amount) },
             onDismiss = { isKeypadOpen = false }
         )

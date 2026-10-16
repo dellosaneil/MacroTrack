@@ -1,6 +1,9 @@
 package org.thelazybattley.macrotrack.features.profile.pastgoal.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
+import org.thelazybattley.macrotrack.ui.common.weightInputText
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -72,7 +75,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
-import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.Goal
@@ -292,8 +294,9 @@ private fun GoalSection(
             Text(
                 text = stringResource(
                     resource = Res.string.targets_from_weight,
-                    weight.toCleanString(),
-                    start.toShortDate(today = viewState.today)
+                    LocalUnitSystem.current.weightInputText(kg = weight),
+                    start.toShortDate(today = viewState.today),
+                    weightUnitLabel()
                 ),
                 style = typography.regular11,
                 color = colors.muted

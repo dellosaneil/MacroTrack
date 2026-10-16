@@ -217,7 +217,7 @@ private fun Header(edit: EntryEdit, onMealClick: () -> Unit, onClose: () -> Unit
                 } else {
                     stringResource(
                         resource = Res.string.logged_portion_kcal,
-                        edit.originalAmount.toCleanString() + edit.unit.asSuffix(),
+                        edit.portionUnit.format(amount = edit.originalAmount) + edit.unitLabel.asSuffix(),
                         edit.log.calories
                     )
                 },
@@ -340,7 +340,7 @@ private fun Readout(edit: EntryEdit, isTyping: Boolean, onClick: () -> Unit) {
                 )
                 if (isTyping) KeypadCaret()
                 Text(
-                    text = edit.unit,
+                    text = edit.unitLabel,
                     style = typography.bold14,
                     color = colors.muted,
                     modifier = Modifier.padding(start = 4.dp)
@@ -416,7 +416,7 @@ private fun QuickPicks(edit: EntryEdit, onAmountChanged: (Double) -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = preset.toCleanString() + edit.unit.asSuffix(),
+                    text = preset.toCleanString() + edit.unitLabel.asSuffix(),
                     style = typography.bold13,
                     color = if (isSelected) colors.accentInk else colors.ink,
                     maxLines = 1

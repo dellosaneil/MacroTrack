@@ -1,6 +1,9 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import org.thelazybattley.macrotrack.ui.common.weightInputText
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,11 +28,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.profile
 import macrotrack.composeapp.generated.resources.save_target
-import macrotrack.composeapp.generated.resources.target_weight
+import macrotrack.composeapp.generated.resources.target_weight_in_unit
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
-import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.features.profile.ProfileCallbacks
 import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
 import org.thelazybattley.macrotrack.features.profile.ProfileViewState
@@ -108,6 +110,7 @@ fun ProfileScreen(
             targetWeight = viewState.userDetails?.targetWeight,
             onNavigate = callbacks::onNavigate,
             onTargetWeightClick = { showTargetWeightSheet.value = true },
+            onUnitSystemSelected = callbacks::onUnitSystemSelected,
             onReplayTour = onReplayTour
         )
     }
@@ -134,7 +137,7 @@ fun ProfileScreen(
             currentWeight = viewState.userDetails?.weight,
             onSave = { target ->
                 showTargetWeightSheet.value = false
-                callbacks.onSaveTargetWeight(targetWeight = target)
+                callbacks.onSaveTargetWeight(targetKg = target)
             }
         )
     }
@@ -145,23 +148,26 @@ private fun TargetWeightSheetContent(
     modifier: Modifier = Modifier,
     currentTarget: Double?,
     currentWeight: Double?,
-    onSave: (String) -> Unit
+    onSave: (targetKg: Double) -> Unit
 ) {
-    var input by rememberSaveable { mutableStateOf(value = currentTarget?.toCleanString().orEmpty()) }
-    val isValid = input.toDoubleOrNull()?.let { it > 0 } == true
+    val unitSystem = LocalUnitSystem.current
+    var input by rememberSaveable(unitSystem) {
+        mutableStateOf(value = currentTarget?.let { unitSystem.weightInputText(kg = it) }.orEmpty())
+    }
+    val typedValue = input.toDoubleOrNull()?.takeIf { it > 0 }
 
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
         Text(
-            text = stringResource(resource = Res.string.target_weight),
+            text = stringResource(resource = Res.string.target_weight_in_unit, weightUnitLabel()),
             style = typography.bold18,
             color = colors.ink
         )
         CommonTextField(
             modifier = Modifier.fillMaxWidth(),
-            placeholder = currentWeight?.toCleanString().orEmpty(),
+            placeholder = currentWeight?.let { unitSystem.weightInputText(kg = it) }.orEmpty(),
             textValue = input,
             onValueChanged = { value ->
                 if (value.length <= 5 && value.count { it == '.' } <= 1 && value.all { it.isDigit() || it == '.' }) {
@@ -174,8 +180,8 @@ private fun TargetWeightSheetContent(
         CommonPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
             text = Res.string.save_target,
-            enabled = isValid,
-            onClick = { onSave(input) }
+            enabled = typedValue != null,
+            onClick = { typedValue?.let { onSave(unitSystem.weightToKg(value = it)) } }
         )
     }
 }

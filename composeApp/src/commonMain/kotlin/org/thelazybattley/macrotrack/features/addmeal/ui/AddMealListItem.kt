@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import org.thelazybattley.macrotrack.ui.common.formatPortion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -169,7 +170,7 @@ fun AddMealListItem(
                         recipeAmount.toCleanString()
                     )
                     item.isRecipe -> stringResource(resource = Res.string.one_serving)
-                    else -> stringResource(resource = Res.string.value_unit, food.weight.toCleanString(), food.unit)
+                    else -> formatPortion(amount = food.weight, storedUnit = food.unit)
                 }
                 val detail = if (lastLogged != null && showLastLogged) {
                     lastLogged.relativeDay()

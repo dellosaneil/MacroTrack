@@ -66,7 +66,7 @@ class MeasurementsLogViewModel(
     }
 
     fun onUnitSelected(unit: MeasurementUnit) {
-        unitPreference.set(unit = unit)
+        viewModelScope.launch { unitPreference.set(unit = unit) }
     }
 
     fun onValueChanged(type: MeasurementType, value: String) {

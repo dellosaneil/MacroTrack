@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.domain.model.PortionUnit
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +65,7 @@ import kotlin.math.roundToInt
 @Composable
 fun AddMealKeypadSheet(
     item: SelectedMealItem,
-    unit: String,
+    portionUnit: PortionUnit,
     onAmountChanged: (Double) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -79,7 +80,7 @@ fun AddMealKeypadSheet(
                 .navigationBarsPadding()
                 .padding(start = 16.dp, end = 16.dp, bottom = 18.dp),
             item = item,
-            unit = unit,
+            portionUnit = portionUnit,
             onAmountChanged = onAmountChanged,
             onDismiss = onDismiss
         )
@@ -90,11 +91,13 @@ fun AddMealKeypadSheet(
 private fun AddMealKeypadContent(
     modifier: Modifier = Modifier,
     item: SelectedMealItem,
-    unit: String,
+    portionUnit: PortionUnit,
     onAmountChanged: (Double) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var input by remember(item.key) { mutableStateOf(value = AmountInput.of(value = item.amount)) }
+    // Typed in the shown unit (oz for a food stored in grams when imperial) and logged in the stored one.
+    var input by remember(item.key) { mutableStateOf(value = AmountInput.of(value = portionUnit.fromStored(amount = item.amount))) }
+    val unit = portionUnit.label
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
             Column(modifier = Modifier.weight(weight = 1f)) {
@@ -122,7 +125,7 @@ private fun AddMealKeypadContent(
                     text = if (item.isRecipe) {
                         stringResource(resource = Res.string.recipe_full_serving)
                     } else {
-                        stringResource(resource = Res.string.base_serving, item.baseFood.weight.toCleanString(), item.baseFood.unit)
+                        stringResource(resource = Res.string.base_serving, portionUnit.format(amount = item.baseFood.weight), unit)
                     },
                     style = typography.regular11,
                     color = colors.muted
@@ -205,7 +208,7 @@ private fun AddMealKeypadContent(
         CommonKeypad(
             onKey = { key ->
                 input = input.typed(key = key)
-                input.value.takeIf { it > 0 }?.let(onAmountChanged)
+                input.value.takeIf { it > 0 }?.let { onAmountChanged(portionUnit.toStored(value = it)) }
             }
         )
         CommonPrimaryButton(
@@ -238,7 +241,7 @@ private fun PreviewAddMealKeypadSheet() {
                 amount = 150.0,
                 food = dummyFood
             ),
-            unit = "g",
+            portionUnit = PortionUnit(label = "g"),
             onAmountChanged = {},
             onDismiss = {}
         )

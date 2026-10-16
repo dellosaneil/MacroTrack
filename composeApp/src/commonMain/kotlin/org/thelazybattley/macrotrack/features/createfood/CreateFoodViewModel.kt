@@ -17,6 +17,7 @@ import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.UpdateFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
+import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
 import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.BARCODE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
@@ -30,6 +31,7 @@ class CreateFoodViewModel(
     private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
     private val updateFoodUseCase: UpdateFoodUseCase,
     private val getFoodLibraryUseCase: GetFoodLibraryUseCase,
+    private val getUnitSystemUseCase: GetUnitSystemUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), CreateFoodCallbacks {
 
@@ -42,6 +44,7 @@ class CreateFoodViewModel(
         val prefillName: String? = savedStateHandle[PREFILL_NAME]
         val libraryFoodName: String? = savedStateHandle[LIBRARY_FOOD]
         viewModelScope.launch {
+            val unitSystem = getUnitSystemUseCase().first()
             // "Make my own version" starts a new food from a library entry's values.
             val libraryFood = libraryFoodName?.let { name ->
                 getFoodLibraryUseCase().first().find { it.food.name == name }?.food
@@ -51,6 +54,11 @@ class CreateFoodViewModel(
                     food.name == foodName
                 } ?: libraryFood
                 val name = foodName?.ifEmpty { null } ?: libraryFood?.name ?: prefillName?.trim() ?: ""
+                // Grams and ml are shown as oz and fl oz in imperial units.
+                val portionUnit = unitSystem.portionUnit(storedUnit = foodDetails?.unit.orEmpty())
+                val shownServing = foodDetails?.takeIf { portionUnit.isConverted }?.let {
+                    portionUnit.format(amount = it.weight).toDouble() to portionUnit.label
+                }
                 _state.update { currentState ->
                     currentState.copy(
                         foodNameList = foodList.map { food -> food.name },
@@ -60,8 +68,11 @@ class CreateFoodViewModel(
                         protein = foodDetails?.macros?.protein?.toString(),
                         carbs = foodDetails?.macros?.carbs?.toString(),
                         fat = foodDetails?.macros?.fat?.toString(),
-                        unit = foodDetails?.unit ?: "",
-                        weight = foodDetails?.weight ?: 0.0,
+                        unit = shownServing?.second ?: foodDetails?.unit ?: "",
+                        weight = shownServing?.first ?: foodDetails?.weight ?: 0.0,
+                        unitSystem = unitSystem,
+                        storedServing = foodDetails?.takeIf { shownServing != null }?.let { it.weight to it.unit },
+                        shownServing = shownServing,
                         calories = foodDetails?.macros?.calories ?: 0,
                         // Editing keeps the food's barcode; a new food can arrive with the one that was just scanned.
                         barcode = foodDetails?.barcode ?: scannedBarcode
@@ -78,6 +89,7 @@ class CreateFoodViewModel(
     override fun onSaveFood() {
         viewModelScope.launch {
             with(receiver = state.value) {
+                val (weight, unit) = servingToSave
                 val dominantMacro = listOf(
                     MacroType.PROTEIN to proteinPercentage,
                     MacroType.CARBS to carbsPercentage,
@@ -93,9 +105,9 @@ class CreateFoodViewModel(
                         fat = fat?.toDoubleOrNull() ?: 0.0
                     ),
                     name = state.value.name,
-                    weight = state.value.weight,
+                    weight = weight,
                     dominantMacro = dominantMacro,
-                    unit = state.value.unit,
+                    unit = unit,
                     barcode = state.value.barcode
                 )
                 if (isUpdating) {

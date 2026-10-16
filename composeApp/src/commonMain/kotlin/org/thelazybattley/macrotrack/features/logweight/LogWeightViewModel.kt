@@ -13,25 +13,33 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toCleanString
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.Weight
+import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import kotlin.math.round
 
-private const val STEP_KG = 0.1
+/** One tap of − or + moves the typed weight by this much, in whichever unit it's typed in. */
+private const val STEP = 0.1
 
 data class LogWeightViewState(
     val date: LocalDate = getCurrentDate(),
+    /** The typed weight, in [unitSystem]'s unit. */
     val input: String = "",
+    val unitSystem: UnitSystem = UnitSystem.METRIC,
     val weights: List<Weight> = emptyList(),
     val userDetails: UserDetails? = null,
     val isLoaded: Boolean = false,
     val isSaved: Boolean = false
 ) {
-    val weight: Double? get() = input.toDoubleOrNull()?.takeIf { it > 0 }
+    /** The typed weight in kg. */
+    val weight: Double? get() = inputValue?.let { unitSystem.weightToKg(value = it) }
+
+    private val inputValue: Double? get() = input.toDoubleOrNull()?.takeIf { it > 0 }
 
     /** The most recent entry before the selected date. */
     val previous: Weight? get() = weights.lastOrNull { it.date < date }
@@ -49,6 +57,7 @@ data class LogWeightViewState(
 class LogWeightViewModel(
     getAllWeightUseCase: GetAllWeightUseCase,
     getUserDetailsUseCase: GetUserDetailsUseCase,
+    getUnitSystemUseCase: GetUnitSystemUseCase,
     private val insertWeightUseCase: InsertWeightUseCase,
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase
 ) : ViewModel() {
@@ -60,12 +69,14 @@ class LogWeightViewModel(
         viewModelScope.launch {
             combine(
                 flow = getAllWeightUseCase(),
-                flow2 = flow { emitAll(getUserDetailsUseCase()) }
-            ) { weights, userDetails ->
+                flow2 = flow { emitAll(getUserDetailsUseCase()) },
+                flow3 = getUnitSystemUseCase()
+            ) { weights, userDetails, unitSystem ->
                 _state.update { currentState ->
                     val updated = currentState.copy(
                         weights = weights.sortedBy { it.date },
-                        userDetails = userDetails
+                        userDetails = userDetails,
+                        unitSystem = unitSystem
                     )
                     if (currentState.isLoaded) updated else updated.withDefaultInput().copy(isLoaded = true)
                 }
@@ -85,13 +96,16 @@ class LogWeightViewModel(
 
     fun onStep(up: Boolean) {
         _state.update { currentState ->
-            val base = currentState.weight ?: currentState.previous?.weight ?: return@update currentState
-            val next = base + if (up) STEP_KG else -STEP_KG
+            val base = currentState.input.toDoubleOrNull()?.takeIf { it > 0 }
+                ?: currentState.previous?.weight?.let { currentState.unitSystem.weightFromKg(kg = it) }
+                ?: return@update currentState
+            val next = base + if (up) STEP else -STEP
             if (next <= 0) return@update currentState
             currentState.copy(input = next.roundTo2().toCleanString())
         }
     }
 
+    /** [value] is in the unit the weight is typed in. */
     fun onQuickAdjust(value: Double) {
         if (value <= 0) return
         _state.update { it.copy(input = value.roundTo2().toCleanString()) }
@@ -115,7 +129,7 @@ class LogWeightViewModel(
 
     private fun LogWeightViewState.withDefaultInput(): LogWeightViewState {
         val default = existing?.weight ?: previous?.weight ?: weights.lastOrNull()?.weight ?: userDetails?.weight
-        return copy(input = default?.roundTo2()?.toCleanString().orEmpty())
+        return copy(input = default?.let { unitSystem.weightFromKg(kg = it).roundTo2().toCleanString() }.orEmpty())
     }
 
     private fun Double.roundTo2(): Double = round(this * 100) / 100

@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
 import androidx.compose.animation.core.animateFloatAsState
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -53,6 +54,7 @@ import org.thelazybattley.macrotrack.features.profile.GoalStatus
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.formatWeight
 
 @Composable
 fun ProfileGoalProgress(
@@ -82,14 +84,15 @@ fun ProfileGoalProgress(
                         horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
                     ) {
                         Text(
-                            text = goalProgress.achievedKg.coerceAtLeast(minimumValue = 0.0).formatKg(),
+                            text = goalProgress.achievedKg.coerceAtLeast(minimumValue = 0.0).formatWeight(),
                             style = typography.bold32,
                             color = colors.ink
                         )
                         Text(
                             text = stringResource(
                                 resource = if (goalProgress.isGaining) Res.string.of_value_kg_gained else Res.string.of_value_kg_lost,
-                                goalProgress.totalKg.formatKg()
+                                goalProgress.totalKg.formatWeight(),
+                                weightUnitLabel()
                             ),
                             style = typography.regular13,
                             color = colors.muted,
@@ -149,19 +152,19 @@ private fun GoalProgressBar(goalProgress: GoalProgress, onStartDateClick: () -> 
                 verticalArrangement = Arrangement.spacedBy(space = 4.dp)
             ) {
                 Text(
-                    text = stringResource(resource = Res.string.start_value_kg, goalProgress.startWeight.formatKg()),
+                    text = stringResource(resource = Res.string.start_value_kg, goalProgress.startWeight.formatWeight(), weightUnitLabel()),
                     style = typography.regular11,
                     color = colors.muted
                 )
                 StartDateChip(startDate = goalProgress.startDate, onClick = onStartDateClick)
             }
             Text(
-                text = stringResource(resource = Res.string.now_value_kg, goalProgress.currentWeight.formatKg()),
+                text = stringResource(resource = Res.string.now_value_kg, goalProgress.currentWeight.formatWeight(), weightUnitLabel()),
                 style = typography.bold11,
                 color = colors.ink
             )
             Text(
-                text = stringResource(resource = Res.string.target_value_kg, goalProgress.targetWeight.formatKg()),
+                text = stringResource(resource = Res.string.target_value_kg, goalProgress.targetWeight.formatWeight(), weightUnitLabel()),
                 style = typography.regular11,
                 color = colors.muted,
                 textAlign = androidx.compose.ui.text.style.TextAlign.End,
@@ -211,8 +214,9 @@ private fun GoalStatusRow(goalProgress: GoalProgress) {
     val trend = goalProgress.weeklyChange?.takeIf { goalProgress.status != GoalStatus.REACHED }?.let { weeklyChange ->
         stringResource(
             resource = if (weeklyChange > 0) Res.string.gaining_kg_per_week_since else Res.string.losing_kg_per_week_since,
-            kotlin.math.abs(weeklyChange).formatKg(),
-            goalProgress.startDate?.toAbbreviatedMonthDay().orEmpty()
+            kotlin.math.abs(weeklyChange).formatWeight(),
+            goalProgress.startDate?.toAbbreviatedMonthDay().orEmpty(),
+            weightUnitLabel()
         )
     }
     Row(
@@ -270,12 +274,6 @@ internal fun ProfilePillButton(
             color = colors.onAccent
         )
     }
-}
-
-internal fun Double.formatKg(): String {
-    val hundredths = kotlin.math.round(kotlin.math.abs(this) * 100).toInt()
-    val sign = if (this < 0 && hundredths != 0) "−" else ""
-    return "$sign${hundredths / 100}.${(hundredths % 100).toString().padStart(length = 2, padChar = '0')}"
 }
 
 private fun LocalDate.toFullDate(): String = toAbbreviatedMonthDay() + ", " + year

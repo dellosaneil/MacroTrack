@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.inWeightUnit
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,8 +51,7 @@ import macrotrack.composeapp.generated.resources.date
 import macrotrack.composeapp.generated.resources.entries
 import macrotrack.composeapp.generated.resources.ic_nav_progress
 import macrotrack.composeapp.generated.resources.ic_trend_down
-import macrotrack.composeapp.generated.resources.kg
-import macrotrack.composeapp.generated.resources.kg_avg
+import macrotrack.composeapp.generated.resources.unit_avg
 import macrotrack.composeapp.generated.resources.log
 import macrotrack.composeapp.generated.resources.moving_average
 import macrotrack.composeapp.generated.resources.moving_average_change_vs_week_ago
@@ -72,7 +73,6 @@ import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
-import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.features.profile.weighthistory.GoalPhase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.MovingAverageSummary
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryCallbacks
@@ -90,6 +90,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
+import org.thelazybattley.macrotrack.ui.common.formatWeight
+import org.thelazybattley.macrotrack.ui.common.toSignedWeight
 
 private const val SAME_THRESHOLD_KG = 0.005
 private val WEIGHT_COLUMN_WIDTH = 60.dp
@@ -197,7 +199,8 @@ private fun MovingAverageCard(
         days,
         viewState.periodWeights.first().date.toAbbreviatedMonthDay(),
         latestDate.toAbbreviatedMonthDay(),
-        summary.average.formatKg()
+        summary.average.formatWeight(),
+        weightUnitLabel()
     )
     Column(
         modifier = Modifier
@@ -225,13 +228,13 @@ private fun MovingAverageCard(
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(space = 4.dp)) {
                     Text(
-                        text = summary.average.formatKg(),
+                        text = summary.average.formatWeight(),
                         style = typography.bold32,
                         color = colors.ink,
                         modifier = Modifier.alignByBaseline()
                     )
                     Text(
-                        text = stringResource(resource = Res.string.kg),
+                        text = weightUnitLabel(),
                         style = typography.regular13,
                         color = colors.muted,
                         modifier = Modifier.alignByBaseline()
@@ -243,8 +246,8 @@ private fun MovingAverageCard(
         WindowChips(selectedWindow = summary.window, onSelectWindow = onSelectWindow)
         MovingAverageGraph(
             modifier = Modifier.fillMaxWidth().height(height = 170.dp),
-            weightList = viewState.periodWeights,
-            movingAverage = viewState.periodMovingAverage,
+            weightList = viewState.periodWeights.inWeightUnit(),
+            movingAverage = viewState.periodMovingAverage.inWeightUnit(),
             period = period,
             goalPhases = viewState.goalPhases,
             selection = selection,
@@ -265,7 +268,7 @@ private fun MovingAverageCard(
                 range = range,
                 values = viewState.periodMovingAverage,
                 goalPhases = viewState.goalPhases,
-                unitLabel = stringResource(resource = Res.string.kg_avg),
+                unitLabel = stringResource(resource = Res.string.unit_avg, weightUnitLabel()),
                 title = { dayCount ->
                     stringResource(
                         resource = if (isSelecting) Res.string.moving_average_selecting else Res.string.moving_average_selected_range,
@@ -311,7 +314,7 @@ private fun ChangeBadge(change: Double) {
             )
         }
         Text(
-            text = stringResource(resource = Res.string.moving_average_change_vs_week_ago, change.toSignedKg()),
+            text = stringResource(resource = Res.string.moving_average_change_vs_week_ago, change.toSignedWeight(), weightUnitLabel()),
             style = typography.bold11,
             color = color,
             maxLines = 1
@@ -460,13 +463,13 @@ private fun MovingAverageEntries(
                         modifier = Modifier.weight(weight = 1f)
                     )
                     Text(
-                        text = weight.weight.formatKg(),
+                        text = weight.weight.formatWeight(),
                         style = typography.bold13,
                         color = colors.ink,
                         modifier = Modifier.width(width = WEIGHT_COLUMN_WIDTH)
                     )
                     Text(
-                        text = averageByDate[weight.date]?.formatKg() ?: "—",
+                        text = averageByDate[weight.date]?.formatWeight() ?: "—",
                         style = typography.bold13,
                         color = colors.accentInk,
                         textAlign = TextAlign.End,
@@ -476,8 +479,8 @@ private fun MovingAverageEntries(
                     Text(
                         text = when {
                             change == null -> "—"
-                            change < -SAME_THRESHOLD_KG -> "↓ " + abs(change).formatKg()
-                            change > SAME_THRESHOLD_KG -> "↑ " + change.formatKg()
+                            change < -SAME_THRESHOLD_KG -> "↓ " + abs(change).formatWeight()
+                            change > SAME_THRESHOLD_KG -> "↑ " + change.formatWeight()
                             else -> "0.00"
                         },
                         style = typography.bold13,

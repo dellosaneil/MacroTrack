@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.inWeightUnit
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -40,14 +41,13 @@ import macrotrack.composeapp.generated.resources.ic_compare_range
 import macrotrack.composeapp.generated.resources.change_since_you_started
 import macrotrack.composeapp.generated.resources.ic_chevron_right
 import macrotrack.composeapp.generated.resources.ic_moving_average
-import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.log
 import macrotrack.composeapp.generated.resources.monthly_change
 import macrotrack.composeapp.generated.resources.moving_average
 import macrotrack.composeapp.generated.resources.moving_average_link_description
 import macrotrack.composeapp.generated.resources.no_weight_logged_for_period
 import macrotrack.composeapp.generated.resources.three_month_change
-import macrotrack.composeapp.generated.resources.value_kg_unit
+import macrotrack.composeapp.generated.resources.value_unit
 import macrotrack.composeapp.generated.resources.weekly_change
 import macrotrack.composeapp.generated.resources.weight_entries
 import macrotrack.composeapp.generated.resources.weight_history
@@ -72,6 +72,8 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.toSignedWeight
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 
 @Composable
 fun WeightHistoryScreen(
@@ -197,7 +199,7 @@ private fun ChartCard(
                     color = colors.muted
                 )
                 Text(
-                    text = stringResource(resource = Res.string.value_kg_unit, change.toSignedKg()),
+                    text = stringResource(resource = Res.string.value_unit, change.toSignedWeight(), weightUnitLabel()),
                     style = typography.bold32,
                     color = when {
                         change < -0.005 -> colors.accentInk
@@ -219,7 +221,8 @@ private fun ChartCard(
         }
         WeightHistoryGraph(
             modifier = Modifier.fillMaxWidth().height(height = 170.dp),
-            weightList = weightList,
+            weightList = weightList.inWeightUnit(),
+            unitLabel = weightUnitLabel(),
             period = period,
             goalPhases = goalPhases,
             selection = selection,
@@ -245,7 +248,7 @@ private fun ChartCard(
                 range = range,
                 values = weightList,
                 goalPhases = goalPhases,
-                unitLabel = stringResource(resource = Res.string.kg),
+                unitLabel = weightUnitLabel(),
                 title = { dayCount ->
                     stringResource(
                         resource = if (isSelecting) Res.string.weight_range_selecting else Res.string.weight_range_selected,

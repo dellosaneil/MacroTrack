@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.createfood.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -151,7 +152,7 @@ private fun CreateFoodScreen(
                 label = stringResource(
                     resource = Res.string.preview_per_value,
                     viewState.weight.takeIf { it > 0 }?.toCleanString() ?: "–",
-                    viewState.unit.ifBlank { stringResource(resource = Res.string.g) }
+                    viewState.unit.ifBlank { if (viewState.unitSystem == UnitSystem.IMPERIAL) UnitSystem.OUNCE else stringResource(resource = Res.string.g) }
                 ).uppercase(),
                 calories = viewState.calories,
                 protein = viewState.protein?.toDoubleOrNull() ?: 0.0,

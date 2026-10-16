@@ -1,6 +1,10 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
+import org.thelazybattley.macrotrack.ui.common.CommonUnitSystemToggle
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,8 +39,10 @@ import macrotrack.composeapp.generated.resources.pro_status_trial
 import macrotrack.composeapp.generated.resources.pro_upgrade
 import macrotrack.composeapp.generated.resources.replay_app_tour
 import macrotrack.composeapp.generated.resources.target_weight
+import macrotrack.composeapp.generated.resources.units
+import macrotrack.composeapp.generated.resources.units_imperial_detail
+import macrotrack.composeapp.generated.resources.units_metric_detail
 import macrotrack.composeapp.generated.resources.value_unit
-import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.weight_history
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -51,6 +57,7 @@ import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.formatWeight
 
 @Composable
 fun ProfileAccount(
@@ -60,6 +67,7 @@ fun ProfileAccount(
     targetWeight: Double?,
     onNavigate: (ProfileSectionEnum) -> Unit,
     onTargetWeightClick: () -> Unit,
+    onUnitSystemSelected: (UnitSystem) -> Unit = {},
     onReplayTour: () -> Unit = {}
 ) {
     Column(
@@ -129,18 +137,46 @@ fun ProfileAccount(
                 value = targetWeight?.let {
                     stringResource(
                         resource = Res.string.value_unit,
-                        it.formatKg(),
-                        stringResource(resource = Res.string.kg)
+                        it.formatWeight(),
+                        weightUnitLabel()
                     )
                 } ?: stringResource(resource = Res.string.not_set),
                 onClick = onTargetWeightClick
             )
+            HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            UnitsRow(onSelected = onUnitSystemSelected)
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             AccountRow(
                 label = Res.string.replay_app_tour,
                 onClick = onReplayTour
             )
         }
+    }
+}
+
+/** Metric or imperial for the whole app: body weight, height, measurements and food amounts. */
+@Composable
+private fun UnitsRow(onSelected: (UnitSystem) -> Unit) {
+    val selected = LocalUnitSystem.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .padding(horizontal = 14.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        Column(modifier = Modifier.weight(weight = 1f)) {
+            Text(text = stringResource(resource = Res.string.units), style = typography.medium13, color = colors.ink)
+            Text(
+                text = stringResource(
+                    resource = if (selected == UnitSystem.IMPERIAL) Res.string.units_imperial_detail else Res.string.units_metric_detail
+                ),
+                style = typography.regular11,
+                color = colors.muted
+            )
+        }
+        CommonUnitSystemToggle(selected = selected, onSelected = onSelected)
     }
 }
 

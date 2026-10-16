@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,6 +46,7 @@ import org.thelazybattley.macrotrack.features.profile.WeekSummary
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.formatWeight
 
 @Composable
 fun ProfileThisWeek(
@@ -118,7 +120,7 @@ fun ProfileThisWeek(
                         modifier = Modifier.weight(weight = 1f),
                         label = stringResource(resource = Res.string.weight_change),
                         value = weightChange?.let { change ->
-                            (if (change > 0) "+" else "") + change.formatKg() + " kg"
+                            (if (change > 0) "+" else "") + change.formatWeight() + " " + weightUnitLabel()
                         } ?: "–",
                         valueColor = when {
                             weightChange == null || weightChange == 0.0 -> colors.ink

@@ -54,7 +54,7 @@ import macrotrack.composeapp.generated.resources.ic_compare_range
 import macrotrack.composeapp.generated.resources.range_end
 import macrotrack.composeapp.generated.resources.range_start
 import macrotrack.composeapp.generated.resources.rate_per_week
-import macrotrack.composeapp.generated.resources.value_kg_unit
+import macrotrack.composeapp.generated.resources.value_unit
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -62,7 +62,6 @@ import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.profile.pastgoal.ui.tones
-import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.features.profile.weighthistory.GoalPhase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightPeriod
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -70,6 +69,9 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import org.thelazybattley.macrotrack.ui.common.formatWeight
+import org.thelazybattley.macrotrack.ui.common.toSignedWeight
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 
 private const val SAME_THRESHOLD_KG = 0.005
 private const val BAND_ALPHA = 0.75f
@@ -345,7 +347,7 @@ internal fun SelectedRangeCard(
                 color = colors.muted
             )
             Text(
-                text = stringResource(resource = Res.string.value_kg_unit, difference.toSignedKg()),
+                text = stringResource(resource = Res.string.value_unit, difference.toSignedWeight(), weightUnitLabel()),
                 style = typography.bold24,
                 color = when {
                     difference < -SAME_THRESHOLD_KG -> colors.accentInk
@@ -355,7 +357,7 @@ internal fun SelectedRangeCard(
             )
             if (days >= 2) {
                 Text(
-                    text = stringResource(resource = Res.string.rate_per_week, (difference / days * 7).toSignedKg()),
+                    text = stringResource(resource = Res.string.rate_per_week, (difference / days * 7).toSignedWeight(), weightUnitLabel()),
                     style = typography.regular11,
                     color = colors.muted
                 )
@@ -382,7 +384,7 @@ private fun RangeEnd(
         Text(text = label, style = typography.regular11, color = colors.muted)
         Row(horizontalArrangement = Arrangement.spacedBy(space = 4.dp)) {
             Text(
-                text = value.formatKg(),
+                text = value.formatWeight(),
                 style = typography.bold18,
                 color = colors.ink,
                 modifier = Modifier.alignByBaseline()

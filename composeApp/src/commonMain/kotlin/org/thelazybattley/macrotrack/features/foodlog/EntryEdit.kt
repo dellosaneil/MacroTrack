@@ -4,11 +4,13 @@ import org.thelazybattley.macrotrack.core.AmountInput
 import org.thelazybattley.macrotrack.core.roundToHundredths
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.PortionUnit
 import org.thelazybattley.macrotrack.features.addmeal.FULL_RECIPE_PERCENT
 import kotlin.math.round
 import kotlin.math.roundToInt
 
 private const val RECIPE_STEP_PERCENT = 25.0
+private const val OUNCE_STEP = 0.5
 
 /**
  * A logged entry being changed. New macros are scaled from the log itself, so the edit matches
@@ -16,16 +18,25 @@ private const val RECIPE_STEP_PERCENT = 25.0
  */
 data class EntryEdit(
     val log: FoodLog,
-    /** The portion that was logged: grams/units, or the percentage eaten for a recipe. */
+    /** The portion that was logged, in the food's stored unit, or the percentage eaten for a recipe. */
     val originalAmount: Double,
-    val input: AmountInput = AmountInput.of(value = originalAmount),
-    val mealType: MealType = log.mealType,
-    /** The food's unit, or "%" for a recipe. */
-    val unit: String
+    /** The food's stored unit, or "%" for a recipe. */
+    val unit: String,
+    /** How the portion is shown and typed, e.g. oz for a food stored in grams when imperial. */
+    val portionUnit: PortionUnit = PortionUnit(label = unit),
+    val input: AmountInput = AmountInput.of(value = portionUnit.fromStored(amount = originalAmount)),
+    val mealType: MealType = log.mealType
 ) {
     val amountText: String get() = input.text
     val replaceOnType: Boolean get() = input.replaceOnType
+
+    /** The typed portion, in [portionUnit]. */
     val amount: Double get() = input.value
+
+    /** The logged portion in [portionUnit]. */
+    val shownOriginalAmount: Double get() = portionUnit.fromStored(amount = originalAmount)
+
+    val unitLabel: String get() = portionUnit.label
 
     val isRecipe: Boolean get() = log.weight == 0.0
 
@@ -37,7 +48,7 @@ data class EntryEdit(
             log.calories
         }
 
-    private val scale: Double get() = if (originalAmount > 0) amount / originalAmount else 1.0
+    private val scale: Double get() = if (shownOriginalAmount > 0) amount / shownOriginalAmount else 1.0
 
     val calories: Int get() = (log.calories * scale).roundToInt()
     val protein: Double get() = log.protein * scale
@@ -47,13 +58,14 @@ data class EntryEdit(
     val caloriesChange: Int get() = calories - log.calories
 
     /** The readout shows the logged amount to 2 decimal places, so that is what an unchanged amount looks like. */
-    val hasChanges: Boolean get() = amount != originalAmount.roundToHundredths() || mealType != log.mealType
+    val hasChanges: Boolean get() = amount != shownOriginalAmount.roundToHundredths() || mealType != log.mealType
 
     val canSave: Boolean get() = hasChanges && amount > 0
 
     val step: Double
         get() = when {
             isRecipe -> RECIPE_STEP_PERCENT
+            portionUnit.isConverted -> OUNCE_STEP
             originalAmount > 10 -> 10.0
             else -> 0.5
         }
@@ -63,11 +75,11 @@ data class EntryEdit(
         get() = if (isRecipe) {
             listOf(25.0, 50.0, 75.0, FULL_RECIPE_PERCENT)
         } else {
-            listOf(0.5, 1.0, 1.5, 2.0).map { (originalAmount * it).roundTo(step = step) }.distinct()
+            listOf(0.5, 1.0, 1.5, 2.0).map { (shownOriginalAmount * it).roundTo(step = step) }.distinct()
         }
 
     /** Weight to store: the new portion for a food; recipes keep 0.0, which marks them as recipes. */
-    val weight: Double get() = if (isRecipe) 0.0 else amount
+    val weight: Double get() = if (isRecipe) 0.0 else portionUnit.toStored(value = amount)
 
     fun stepped(up: Boolean): Double = (if (up) amount + step else amount - step).roundTo(step = step)
 

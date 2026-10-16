@@ -39,17 +39,19 @@ import macrotrack.composeapp.generated.resources.no_earlier_period_to_compare
 import macrotrack.composeapp.generated.resources.no_entries_to_compare
 import macrotrack.composeapp.generated.resources.same_as_value
 import macrotrack.composeapp.generated.resources.start
-import macrotrack.composeapp.generated.resources.value_kg_unit
+import macrotrack.composeapp.generated.resources.value_unit
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.Weight
-import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewState
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightPeriod
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
+import org.thelazybattley.macrotrack.ui.common.formatWeight
+import org.thelazybattley.macrotrack.ui.common.toSignedWeight
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 
 private const val SAME_THRESHOLD_KG = 0.005
 
@@ -128,7 +130,7 @@ private fun AverageTile(
             color = colors.muted
         )
         Text(
-            text = stringResource(resource = Res.string.value_kg_unit, value.formatKg()),
+            text = stringResource(resource = Res.string.value_unit, value.formatWeight(), weightUnitLabel()),
             style = typography.bold18,
             color = colors.ink
         )
@@ -163,7 +165,7 @@ private fun AverageDifference(
             )
         }
         Text(
-            text = stringResource(resource = Res.string.value_kg_unit, difference.toSignedKg()),
+            text = stringResource(resource = Res.string.value_unit, difference.toSignedWeight(), weightUnitLabel()),
             style = typography.bold18,
             color = color
         )
@@ -191,17 +193,17 @@ fun WeightHistoryStatistics(
         StatTile(
             modifier = Modifier.weight(weight = 1f),
             label = stringResource(resource = Res.string.start),
-            value = first.weight.formatKg()
+            value = first.weight.formatWeight()
         )
         StatTile(
             modifier = Modifier.weight(weight = 1f),
             label = stringResource(resource = Res.string.latest),
-            value = last.weight.formatKg()
+            value = last.weight.formatWeight()
         )
         StatTile(
             modifier = Modifier.weight(weight = 1f),
             label = stringResource(resource = Res.string.change),
-            value = change.toSignedKg(),
+            value = change.toSignedWeight(),
             valueColor = change.changeColor()
         )
     }
@@ -289,7 +291,7 @@ private fun EntryRow(
             modifier = Modifier.weight(weight = 1f)
         )
         Text(
-            text = stringResource(resource = Res.string.value_kg_unit, weight.weight.formatKg()),
+            text = stringResource(resource = Res.string.value_unit, weight.weight.formatWeight(), weightUnitLabel()),
             style = typography.bold13,
             color = colors.ink,
             modifier = Modifier.width(width = 84.dp)
@@ -297,8 +299,8 @@ private fun EntryRow(
         Text(
             text = when {
                 difference == null -> "—"
-                difference < -SAME_THRESHOLD_KG -> "↓ " + abs(difference).formatKg()
-                difference > SAME_THRESHOLD_KG -> "↑ " + difference.formatKg()
+                difference < -SAME_THRESHOLD_KG -> "↓ " + abs(difference).formatWeight()
+                difference > SAME_THRESHOLD_KG -> "↑ " + difference.formatWeight()
                 else -> "0.00"
             },
             style = typography.bold13,
@@ -314,12 +316,6 @@ private fun Double.changeColor(): Color = when {
     this < -SAME_THRESHOLD_KG -> colors.accentInk
     this > SAME_THRESHOLD_KG -> colors.fat
     else -> colors.muted
-}
-
-internal fun Double.toSignedKg(): String = when {
-    this > SAME_THRESHOLD_KG -> "+" + formatKg()
-    this < -SAME_THRESHOLD_KG -> formatKg()
-    else -> "0.00"
 }
 
 internal fun LocalDate.toEntryDate(): String {

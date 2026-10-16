@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.features.onboarding
 
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.UserSex
 
 interface OnboardingCallbacks {
@@ -21,6 +22,8 @@ interface OnboardingCallbacks {
     fun onHeightUpdated(height: Double)
 
     fun onWeightUpdated(weight: Double)
+
+    fun onUnitSystemSelected(unitSystem: UnitSystem)
 
 
     companion object {
@@ -55,6 +58,10 @@ interface OnboardingCallbacks {
                 }
 
                 override fun onWeightUpdated(weight: Double) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onUnitSystemSelected(unitSystem: UnitSystem) {
                     TODO("Not yet implemented")
                 }
 

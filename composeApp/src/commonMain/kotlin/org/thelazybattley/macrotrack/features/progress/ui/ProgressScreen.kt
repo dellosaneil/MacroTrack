@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.progress.ui
 
 import androidx.compose.foundation.Canvas
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,7 +41,6 @@ import macrotrack.composeapp.generated.resources.body_measurements
 import macrotrack.composeapp.generated.resources.compared_with_value
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.ic_plus
-import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.last_logged
 import macrotrack.composeapp.generated.resources.log_measurements
 import macrotrack.composeapp.generated.resources.log_weight
@@ -66,7 +66,6 @@ import org.thelazybattley.macrotrack.features.measurements.formatChange
 import org.thelazybattley.macrotrack.features.measurements.formatMeasure
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.pro.ui.ProBadge
-import org.thelazybattley.macrotrack.features.profile.ui.formatKg
 import org.thelazybattley.macrotrack.features.progress.ProgressViewModel
 import org.thelazybattley.macrotrack.features.progress.ProgressViewState
 import org.thelazybattley.macrotrack.features.tour.TourTarget
@@ -75,6 +74,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.formatWeight
 
 @Composable
 fun ProgressScreen(
@@ -203,12 +203,12 @@ private fun WeightCard(
                     horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
                 ) {
                     Text(
-                        text = weight?.formatKg() ?: "–",
+                        text = weight?.formatWeight() ?: "–",
                         style = typography.bold32,
                         color = colors.ink
                     )
                     Text(
-                        text = stringResource(resource = Res.string.kg),
+                        text = weightUnitLabel(),
                         style = typography.regular13,
                         color = colors.muted,
                         modifier = Modifier.padding(bottom = 6.dp)
@@ -220,8 +220,9 @@ private fun WeightCard(
                     Text(
                         text = stringResource(
                             resource = Res.string.weight_month_summary,
-                            (if (change > 0) "+" else "") + change.formatKg(),
-                            average.formatKg()
+                            (if (change > 0) "+" else "") + change.formatWeight(),
+                            average.formatWeight(),
+                            weightUnitLabel()
                         ),
                         style = typography.bold11,
                         color = if (change > 0) colors.fat else colors.accentInk

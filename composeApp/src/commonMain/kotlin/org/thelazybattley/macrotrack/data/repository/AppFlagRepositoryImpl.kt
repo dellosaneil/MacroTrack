@@ -1,8 +1,11 @@
 package org.thelazybattley.macrotrack.data.repository
 
+import androidx.compose.ui.text.intl.Locale
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import org.thelazybattley.macrotrack.data.local.dao.AppFlagDao
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.repository.AppFlagRepository
 
 class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
@@ -17,8 +20,17 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         }
     }
 
+    override fun getUnitSystem(): Flow<UnitSystem> = dao.getFlagValue(key = UNIT_SYSTEM).map { value ->
+        UnitSystem.entries.firstOrNull { it.name == value } ?: UnitSystem.defaultFor(region = Locale.current.region)
+    }
+
+    override suspend fun setUnitSystem(unitSystem: UnitSystem) {
+        dao.insertFlag(flag = AppFlagEntity(key = UNIT_SYSTEM, value = unitSystem.name))
+    }
+
     companion object {
         /** Also seeded by AppDatabase.MIGRATION_8_9 for people who set up the app before the tour existed. */
         const val TOUR_COMPLETED = "tour_completed"
+        const val UNIT_SYSTEM = "unit_system"
     }
 }

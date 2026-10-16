@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.foodlog
 
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.DailyGoal
@@ -35,6 +36,7 @@ data class FoodLogViewState(
     val selectedDate: LocalDate = getCurrentDate(),
     val currentStreak: Int = 0,
     val foodUnit: Map<String, String> = emptyMap(),
+    val unitSystem: UnitSystem = UnitSystem.METRIC,
     /** Calories in one full serving of each recipe, to work out the percentage a log ate. */
     val recipeCalories: Map<String, Int> = emptyMap(),
     /** The logged entry open in the edit sheet. */

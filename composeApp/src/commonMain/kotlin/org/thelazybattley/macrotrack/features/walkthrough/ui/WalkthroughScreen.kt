@@ -1,6 +1,10 @@
 package org.thelazybattley.macrotrack.features.walkthrough.ui
 
 import androidx.compose.animation.animateColorAsState
+import org.thelazybattley.macrotrack.ui.common.formatPortion
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
+import org.thelazybattley.macrotrack.ui.common.weightInputText
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -59,7 +63,6 @@ import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_lock
 import macrotrack.composeapp.generated.resources.ic_star
 import macrotrack.composeapp.generated.resources.ic_star_filled
-import macrotrack.composeapp.generated.resources.kg
 import macrotrack.composeapp.generated.resources.pro_feature_measurements
 import macrotrack.composeapp.generated.resources.pro_name
 import macrotrack.composeapp.generated.resources.protein
@@ -364,9 +367,9 @@ private fun MealIllustration() {
         }
         Spacer(modifier = Modifier.height(height = 12.dp))
         HorizontalDivider(thickness = 1.dp, color = colors.divider)
-        FoodRow(name = Res.string.walkthrough_sample_food_1, portion = "200 g", kcal = "194", isFavorite = true)
+        FoodRow(name = Res.string.walkthrough_sample_food_1, portion = formatPortion(amount = 200.0, storedUnit = "g"), kcal = "194", isFavorite = true)
         HorizontalDivider(thickness = 1.dp, color = colors.divider)
-        FoodRow(name = Res.string.walkthrough_sample_food_2, portion = "70 g", kcal = "265", isFavorite = false)
+        FoodRow(name = Res.string.walkthrough_sample_food_2, portion = formatPortion(amount = 70.0, storedUnit = "g"), kcal = "265", isFavorite = false)
         HorizontalDivider(thickness = 1.dp, color = colors.divider)
         FoodRow(name = Res.string.walkthrough_sample_food_3, portion = "1 serving", kcal = "621", isFavorite = false)
     }
@@ -492,15 +495,20 @@ private fun WeightTrendIllustration() {
     }
     IllustrationCard {
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(space = 4.dp)) {
-            Text(text = "69.0", style = typography.bold32, color = colors.ink)
+            val unitSystem = LocalUnitSystem.current
+            Text(text = unitSystem.weightInputText(kg = 69.0).withTenths(), style = typography.bold32, color = colors.ink)
             Text(
-                text = stringResource(resource = Res.string.kg),
+                text = weightUnitLabel(),
                 style = typography.regular13,
                 color = colors.muted,
                 modifier = Modifier.padding(bottom = 6.dp)
             )
         }
-        Text(text = "−1.4 kg", style = typography.bold12, color = colors.accentInk)
+        Text(
+            text = "−" + LocalUnitSystem.current.weightInputText(kg = 1.4).withTenths() + " " + weightUnitLabel(),
+            style = typography.bold12,
+            color = colors.accentInk
+        )
         Spacer(modifier = Modifier.height(height = 14.dp))
         val dot = colors.faint
         val accent = colors.accent
@@ -638,3 +646,6 @@ private fun PreviewWalkthroughScreen() {
         WalkthroughScreen(onFinished = {})
     }
 }
+
+/** "69" → "69.0", so the sample weights always show one decimal. */
+private fun String.withTenths(): String = if ('.' in this) this else "$this.0"

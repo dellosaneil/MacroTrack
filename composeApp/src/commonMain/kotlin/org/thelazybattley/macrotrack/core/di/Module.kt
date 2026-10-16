@@ -25,6 +25,8 @@ import org.thelazybattley.macrotrack.features.pro.ProViewModel
 import org.thelazybattley.macrotrack.domain.repository.AppFlagRepository
 import org.thelazybattley.macrotrack.domain.usecase.tour.IsTourCompletedUseCase
 import org.thelazybattley.macrotrack.domain.usecase.tour.SetTourCompletedUseCase
+import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.units.SetUnitSystemUseCase
 import org.thelazybattley.macrotrack.features.tour.TourViewModel
 import org.thelazybattley.macrotrack.features.insights.InsightsViewModel
 import org.thelazybattley.macrotrack.data.repository.DailyGoalRepositoryImpl
@@ -117,7 +119,7 @@ val sharedModule = module {
     single { get<AppDatabase>().dailyGoalDao() }
     single { get<AppDatabase>().favoriteDao() }
     single { get<AppDatabase>().appFlagDao() }
-    single { MeasurementUnitPreference() }
+    singleOf(::MeasurementUnitPreference)
     single {
         HttpClient {
             install(plugin = HttpTimeout) {
@@ -179,6 +181,8 @@ val useCaseModule = module {
     factoryOf(::SetFavoriteUseCase)
     factoryOf(::IsTourCompletedUseCase)
     factoryOf(::SetTourCompletedUseCase)
+    factoryOf(::GetUnitSystemUseCase)
+    factoryOf(::SetUnitSystemUseCase)
     factory { GetProStatusUseCase(repository = get(), isPaywallEnabled = isPaywallEnabled) }
     factoryOf(::StartProTrialUseCase)
     factoryOf(::SetProPurchasedUseCase)

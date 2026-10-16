@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.features.foodlibrary.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.portionUnit
+import org.thelazybattley.macrotrack.ui.common.formatPortion
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -494,7 +496,7 @@ private fun LibraryListItem(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = stringResource(resource = Res.string.value_unit, food.weight.toCleanString(), food.unit) + " · " +
+                text = formatPortion(amount = food.weight, storedUnit = food.unit) + " · " +
                     stringResource(
                         resource = Res.string.p_c_f,
                         food.macros.protein.roundToInt(),
@@ -792,7 +794,7 @@ private fun NutritionFacts(libraryFood: LibraryFood) {
                 modifier = Modifier.weight(weight = 1f)
             )
             Text(
-                text = stringResource(Res.string.per_amount_serving, food.weight.toCleanString(), food.unit),
+                text = portionUnit(storedUnit = food.unit).let { stringResource(Res.string.per_amount_serving, it.format(amount = food.weight), it.label) },
                 style = typography.bold12,
                 color = colors.muted
             )

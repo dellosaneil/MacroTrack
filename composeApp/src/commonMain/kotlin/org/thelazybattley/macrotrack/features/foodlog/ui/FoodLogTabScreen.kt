@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.foodlog.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.common.formatPortion
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -70,7 +71,6 @@ import macrotrack.composeapp.generated.resources.percent_value
 import macrotrack.composeapp.generated.resources.recipe
 import macrotrack.composeapp.generated.resources.streak_open_calendar
 import macrotrack.composeapp.generated.resources.today
-import macrotrack.composeapp.generated.resources.value_unit
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -78,7 +78,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
-import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.Goal
@@ -592,11 +591,7 @@ private fun FoodLogItem(
                     )
                 } else if (!isRecipe) {
                     Text(
-                        text = "· " + stringResource(
-                            resource = Res.string.value_unit,
-                            food.weight.toCleanString(),
-                            unit
-                        ),
+                        text = "· " + formatPortion(amount = food.weight, storedUnit = unit),
                         style = typography.regular13,
                         color = colors.muted
                     )

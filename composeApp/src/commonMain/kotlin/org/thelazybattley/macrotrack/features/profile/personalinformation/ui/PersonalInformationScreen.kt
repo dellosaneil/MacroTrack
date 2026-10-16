@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,7 +49,13 @@ import macrotrack.composeapp.generated.resources.female
 import macrotrack.composeapp.generated.resources.from_your_latest_log
 import macrotrack.composeapp.generated.resources.height
 import macrotrack.composeapp.generated.resources.kcal_text
-import macrotrack.composeapp.generated.resources.kg
+import macrotrack.composeapp.generated.resources.ft
+import macrotrack.composeapp.generated.resources.height_feet
+import macrotrack.composeapp.generated.resources.height_inches
+import macrotrack.composeapp.generated.resources.unit_in
+import macrotrack.composeapp.generated.resources.units
+import macrotrack.composeapp.generated.resources.units_imperial_detail
+import macrotrack.composeapp.generated.resources.units_metric_detail
 import macrotrack.composeapp.generated.resources.male
 import macrotrack.composeapp.generated.resources.personal_information
 import macrotrack.composeapp.generated.resources.save_changes
@@ -60,9 +68,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
-import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.UserSex
 import org.thelazybattley.macrotrack.domain.model.Weight
@@ -75,6 +83,10 @@ import org.thelazybattley.macrotrack.features.profile.personalinformation.Person
 import org.thelazybattley.macrotrack.ui.common.CommonActivityLevelOption
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
+import org.thelazybattley.macrotrack.ui.common.CommonUnitSystemToggle
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
+import org.thelazybattley.macrotrack.ui.common.weightInputText
+import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -131,6 +143,7 @@ private fun PersonalInformationScreen(
                 .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(space = 18.dp)
         ) {
+            UnitsSection(selected = viewState.unitSystem, onSelected = callbacks::onUnitSystemSelected)
             AboutYouSection(viewState = viewState, callbacks = callbacks)
             ActivityLevelSection(
                 selected = viewState.activityLevel,
@@ -158,7 +171,7 @@ private fun AboutYouSection(
             NumberRow(
                 label = Res.string.age,
                 value = viewState.age,
-                suffix = Res.string.yrs,
+                suffix = stringResource(resource = Res.string.yrs),
                 isError = viewState.parsedAge == null,
                 keyboardType = KeyboardType.Number,
                 onValueChange = callbacks::onAgeChanged
@@ -168,14 +181,24 @@ private fun AboutYouSection(
                 SexToggle(selected = viewState.sex, onSelected = callbacks::onSexSelected)
             }
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
-            NumberRow(
-                label = Res.string.height,
-                value = viewState.height,
-                suffix = Res.string.cm,
-                isError = viewState.parsedHeight == null,
-                keyboardType = KeyboardType.Decimal,
-                onValueChange = callbacks::onHeightChanged
-            )
+            if (viewState.unitSystem == UnitSystem.IMPERIAL) {
+                FeetInchesRow(
+                    feet = viewState.heightFeet,
+                    inches = viewState.heightInches,
+                    isError = viewState.parsedHeight == null,
+                    onFeetChange = callbacks::onHeightFeetChanged,
+                    onInchesChange = callbacks::onHeightInchesChanged
+                )
+            } else {
+                NumberRow(
+                    label = Res.string.height,
+                    value = viewState.height,
+                    suffix = stringResource(resource = Res.string.cm),
+                    isError = viewState.parsedHeight == null,
+                    keyboardType = KeyboardType.Decimal,
+                    onValueChange = callbacks::onHeightChanged
+                )
+            }
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             CurrentWeightRow(
                 weight = viewState.currentWeight,
@@ -212,41 +235,127 @@ private fun InfoRow(
 private fun NumberRow(
     label: StringResource,
     value: String,
-    suffix: StringResource,
+    suffix: String,
+    isError: Boolean,
+    keyboardType: KeyboardType,
+    onValueChange: (String) -> Unit
+) {
+    InfoRow(label = label) {
+        NumberField(
+            value = value,
+            isError = isError,
+            keyboardType = keyboardType,
+            onValueChange = onValueChange
+        )
+        UnitSuffix(text = suffix)
+    }
+}
+
+/** Height as whole feet plus inches, for imperial units. */
+@Composable
+private fun FeetInchesRow(
+    feet: String,
+    inches: String,
+    isError: Boolean,
+    onFeetChange: (String) -> Unit,
+    onInchesChange: (String) -> Unit
+) {
+    val feetDescription = stringResource(resource = Res.string.height_feet)
+    val inchesDescription = stringResource(resource = Res.string.height_inches)
+    InfoRow(label = Res.string.height) {
+        NumberField(
+            modifier = Modifier
+                .width(width = 48.dp)
+                .semantics { contentDescription = feetDescription },
+            value = feet,
+            isError = isError,
+            keyboardType = KeyboardType.Number,
+            onValueChange = onFeetChange
+        )
+        UnitSuffix(text = stringResource(resource = Res.string.ft))
+        NumberField(
+            modifier = Modifier
+                .width(width = 60.dp)
+                .semantics { contentDescription = inchesDescription },
+            value = inches,
+            isError = isError,
+            keyboardType = KeyboardType.Decimal,
+            onValueChange = onInchesChange
+        )
+        UnitSuffix(text = stringResource(resource = Res.string.unit_in))
+    }
+}
+
+@Composable
+private fun NumberField(
+    modifier: Modifier = Modifier.width(width = 72.dp),
+    value: String,
     isError: Boolean,
     keyboardType: KeyboardType,
     onValueChange: (String) -> Unit
 ) {
     val shape = RoundedCornerShape(size = 10.dp)
-    InfoRow(label = label) {
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            textStyle = typography.bold16.copy(color = colors.ink, textAlign = TextAlign.End),
-            cursorBrush = SolidColor(value = colors.accent),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            modifier = Modifier
-                .width(width = 72.dp)
-                .height(height = 40.dp)
-                .clip(shape = shape)
-                .background(color = colors.background)
-                .border(width = 1.dp, color = if (isError) colors.fat else colors.line, shape = shape),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier.padding(horizontal = 10.dp),
-                    contentAlignment = Alignment.CenterEnd
-                ) {
-                    innerTextField()
-                }
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        textStyle = typography.bold16.copy(color = colors.ink, textAlign = TextAlign.End),
+        cursorBrush = SolidColor(value = colors.accent),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        modifier = modifier
+            .height(height = 40.dp)
+            .clip(shape = shape)
+            .background(color = colors.background)
+            .border(width = 1.dp, color = if (isError) colors.fat else colors.line, shape = shape),
+        decorationBox = { innerTextField ->
+            Box(
+                modifier = Modifier.padding(horizontal = 10.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                innerTextField()
             }
-        )
-        Text(
-            text = stringResource(resource = suffix),
-            style = typography.regular13,
-            color = colors.muted,
-            modifier = Modifier.width(width = 24.dp)
-        )
+        }
+    )
+}
+
+@Composable
+private fun UnitSuffix(text: String) {
+    Text(
+        text = text,
+        style = typography.regular13,
+        color = colors.muted,
+        modifier = Modifier.width(width = 24.dp)
+    )
+}
+
+@Composable
+private fun UnitsSection(
+    selected: UnitSystem,
+    onSelected: (UnitSystem) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        SectionLabel(text = stringResource(resource = Res.string.units))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(size = 18.dp))
+                .background(color = colors.surface)
+                .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 18.dp))
+                .heightIn(min = 58.dp)
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+        ) {
+            Text(
+                text = stringResource(
+                    resource = if (selected == UnitSystem.IMPERIAL) Res.string.units_imperial_detail else Res.string.units_metric_detail
+                ),
+                style = typography.medium13,
+                color = colors.ink,
+                modifier = Modifier.weight(weight = 1f)
+            )
+            CommonUnitSystemToggle(selected = selected, onSelected = onSelected)
+        }
     }
 }
 
@@ -315,16 +424,11 @@ private fun CurrentWeightRow(
             }
         }
         Text(
-            text = weight?.toCleanString() ?: "–",
+            text = weight?.let { LocalUnitSystem.current.weightInputText(kg = it) } ?: "–",
             style = typography.bold16,
             color = colors.ink
         )
-        Text(
-            text = stringResource(resource = Res.string.kg),
-            style = typography.regular13,
-            color = colors.muted,
-            modifier = Modifier.width(width = 24.dp)
-        )
+        UnitSuffix(text = weightUnitLabel())
     }
 }
 

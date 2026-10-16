@@ -67,6 +67,11 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEA
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PRO_FEATURE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
+import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
+import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
+import org.koin.compose.koinInject
+import androidx.compose.ui.text.intl.Locale
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 
 @Composable
 @Preview(showBackground = true)
@@ -80,6 +85,11 @@ fun AppBottomNav() {
     var tabRequest by remember { mutableStateOf<TabRequest?>(value = null) }
     val proViewModel = koinViewModel<ProViewModel>()
     val proState by proViewModel.state.collectAsStateWithLifecycle()
+    val getUnitSystem = koinInject<GetUnitSystemUseCase>()
+    val unitSystemFlow = remember { getUnitSystem() }
+    val unitSystem by unitSystemFlow.collectAsStateWithLifecycle(
+        initialValue = UnitSystem.defaultFor(region = Locale.current.region)
+    )
     val openPaywall: (ProFeature?) -> Unit = { feature ->
         navController.navigate(route = AppDestinations.Root.Paywall.createRoute(feature = feature?.name))
     }
@@ -106,7 +116,8 @@ fun AppBottomNav() {
     MacroTrackTheme {
         CompositionLocalProvider(
             LocalTourTargets provides tourTargets,
-            LocalProAccess provides ProAccess(state = proState, openPaywall = openPaywall, callbacks = proViewModel)
+            LocalProAccess provides ProAccess(state = proState, openPaywall = openPaywall, callbacks = proViewModel),
+            LocalUnitSystem provides unitSystem
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 NavHost(

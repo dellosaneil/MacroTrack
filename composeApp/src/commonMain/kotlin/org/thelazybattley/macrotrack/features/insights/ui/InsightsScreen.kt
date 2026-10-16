@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.insights.ui
 
 import androidx.compose.foundation.Canvas
+import org.thelazybattley.macrotrack.ui.common.portionUnit
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -459,10 +460,11 @@ private fun MostLoggedList(insights: Insights, foodUnits: Map<String, String>) {
                         text = if (food.isRecipe) {
                             pluralStringResource(resource = Res.plurals.servings, quantity = food.count, food.count)
                         } else {
+                            val portionUnit = portionUnit(storedUnit = foodUnits[food.name].orEmpty())
                             stringResource(
                                 resource = Res.string.value_unit,
-                                food.totalAmount.formatAmount(),
-                                foodUnits[food.name].orEmpty()
+                                portionUnit.fromStored(amount = food.totalAmount).formatAmount(),
+                                portionUnit.label
                             )
                         },
                         style = typography.bold13,

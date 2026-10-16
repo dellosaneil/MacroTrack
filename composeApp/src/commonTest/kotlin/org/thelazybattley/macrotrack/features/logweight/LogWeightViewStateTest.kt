@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.logweight
 
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.Weight
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,5 +37,11 @@ class LogWeightViewStateTest {
     fun invalidInputHasNoWeight() {
         assertNull(LogWeightViewState(input = "").weight)
         assertNull(LogWeightViewState(input = "0").weight)
+    }
+
+    @Test
+    fun poundsAreSavedAsKilograms() {
+        val state = LogWeightViewState(input = "180", unitSystem = UnitSystem.IMPERIAL)
+        assertEquals(81.6466266, state.weight!!, absoluteTolerance = 0.000001)
     }
 }

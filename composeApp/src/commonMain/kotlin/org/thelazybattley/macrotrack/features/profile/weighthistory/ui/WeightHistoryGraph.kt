@@ -31,7 +31,7 @@ import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.profile.weighthistory.GoalPhase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightPeriod
-import org.thelazybattley.macrotrack.features.profile.ui.formatKg
+import org.thelazybattley.macrotrack.ui.common.formatTwoDecimals
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -59,7 +59,7 @@ fun WeightHistoryGraph(
     onSelectionStart: ((LocalDate) -> Unit)? = null,
     onSelectionDrag: (LocalDate) -> Unit = {},
     onSelectionEnd: () -> Unit = {},
-    unitLabel: String = "kg"
+    unitLabel: String
 ) {
     if (weightList.isEmpty()) return
     val textMeasurer = rememberTextMeasurer()
@@ -206,7 +206,7 @@ fun WeightHistoryGraph(
         if (selectedIndex in points.indices) {
             val weight = weightList[selectedIndex]
             val tooltip = textMeasurer.measure(
-                text = "${weight.weight.formatKg()} $unitLabel · ${weight.date.toAbbreviatedMonthDay()}",
+                text = "${weight.weight.formatTwoDecimals()} $unitLabel · ${weight.date.toAbbreviatedMonthDay()}",
                 style = tooltipStyle
             )
             val padding = 6.dp.toPx()
@@ -273,7 +273,8 @@ private fun PreviewWeightHistoryGraph() {
             selection = null,
             onSelectionStart = {},
             onSelectionDrag = {},
-            onSelectionEnd = {}
+            onSelectionEnd = {},
+            unitLabel = "kg"
         )
     }
 }
