@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile
 
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.domain.model.LastBackup
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 
@@ -10,6 +11,7 @@ data class ProfileViewState(
     val goalProgress: GoalProgress? = null,
     val weekSummary: WeekSummary? = null,
     val firstWeightDate: LocalDate? = null,
+    val lastBackup: LastBackup? = null,
     val route: String? = null
 )
 

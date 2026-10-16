@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile
 
 import androidx.lifecycle.ViewModel
+import org.thelazybattley.macrotrack.domain.usecase.backup.GetLastBackupUseCase
 import org.thelazybattley.macrotrack.domain.usecase.units.SetUnitSystemUseCase
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import androidx.lifecycle.viewModelScope
@@ -26,7 +27,8 @@ class ProfileViewModel(
     private val getAllWeightUseCase: GetAllWeightUseCase,
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
-    private val setUnitSystemUseCase: SetUnitSystemUseCase
+    private val setUnitSystemUseCase: SetUnitSystemUseCase,
+    getLastBackupUseCase: GetLastBackupUseCase
 ) : ViewModel(), ProfileCallbacks {
 
     private val _state = MutableStateFlow(value = ProfileViewState())
@@ -35,6 +37,9 @@ class ProfileViewModel(
     private var weights: List<Weight> = emptyList()
 
     init {
+        viewModelScope.launch {
+            getLastBackupUseCase().collect { lastBackup -> _state.update { it.copy(lastBackup = lastBackup) } }
+        }
         viewModelScope.launch {
             combine(
                 flow = getUserDetailsUseCase(),

@@ -10,6 +10,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 import org.thelazybattley.macrotrack.data.local.dao.AppFlagDao
+import org.thelazybattley.macrotrack.data.local.dao.BackupDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
@@ -49,6 +50,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dailyGoalDao(): DailyGoalDao
     abstract fun favoriteDao(): FavoriteDao
     abstract fun appFlagDao(): AppFlagDao
+    abstract fun backupDao(): BackupDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {

@@ -1,6 +1,14 @@
 package org.thelazybattley.macrotrack.core.di
 
 import io.ktor.client.HttpClient
+import org.thelazybattley.macrotrack.domain.usecase.backup.RecordBackupUseCase
+import org.thelazybattley.macrotrack.domain.usecase.backup.GetLastBackupUseCase
+import org.thelazybattley.macrotrack.domain.usecase.backup.RestoreBackupUseCase
+import org.thelazybattley.macrotrack.domain.usecase.backup.ReadBackupUseCase
+import org.thelazybattley.macrotrack.domain.usecase.backup.CreateBackupUseCase
+import org.thelazybattley.macrotrack.domain.repository.BackupRepository
+import org.thelazybattley.macrotrack.data.repository.BackupRepositoryImpl
+import org.thelazybattley.macrotrack.features.backup.BackupViewModel
 import org.thelazybattley.macrotrack.features.quickadd.QuickAddViewModel
 import io.ktor.client.plugins.HttpTimeout
 import org.thelazybattley.macrotrack.data.repository.FoodLibraryRepositoryImpl
@@ -120,6 +128,7 @@ val sharedModule = module {
     single { get<AppDatabase>().dailyGoalDao() }
     single { get<AppDatabase>().favoriteDao() }
     single { get<AppDatabase>().appFlagDao() }
+    single { get<AppDatabase>().backupDao() }
     singleOf(::MeasurementUnitPreference)
     single {
         HttpClient {
@@ -145,6 +154,7 @@ val repositoryModule = module {
     singleOf(::ProRepositoryImpl) { bind<ProRepository>() }
     singleOf(::OpenFoodFactsRepositoryImpl) { bind<ProductRepository>() }
     singleOf(::FoodLibraryRepositoryImpl) { bind<FoodLibraryRepository>() }
+    singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
 }
 
 val useCaseModule = module {
@@ -183,6 +193,11 @@ val useCaseModule = module {
     factoryOf(::IsTourCompletedUseCase)
     factoryOf(::SetTourCompletedUseCase)
     factoryOf(::GetUnitSystemUseCase)
+    factoryOf(::CreateBackupUseCase)
+    factoryOf(::ReadBackupUseCase)
+    factoryOf(::RestoreBackupUseCase)
+    factoryOf(::GetLastBackupUseCase)
+    factoryOf(::RecordBackupUseCase)
     factoryOf(::SetUnitSystemUseCase)
     factory { GetProStatusUseCase(repository = get(), isPaywallEnabled = isPaywallEnabled) }
     factoryOf(::StartProTrialUseCase)
@@ -218,6 +233,7 @@ val viewModelModule = module {
     viewModelOf(::ScanBarcodeViewModel)
     viewModelOf(::FoodLibraryViewModel)
     viewModelOf(::QuickAddViewModel)
+    viewModelOf(::BackupViewModel)
 }
 
 fun initKoin() {

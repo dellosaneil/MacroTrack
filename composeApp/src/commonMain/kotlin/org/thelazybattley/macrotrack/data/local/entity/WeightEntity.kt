@@ -1,12 +1,14 @@
 package org.thelazybattley.macrotrack.data.local.entity
 
 import androidx.room.Entity
+import kotlinx.serialization.Serializable
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Weight
 
 @Entity
+@Serializable
 data class WeightEntity(
     @PrimaryKey val date: LocalDate = getCurrentDate(),
     val weight: Double

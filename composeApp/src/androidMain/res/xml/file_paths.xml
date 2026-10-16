@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exports and backups are written here before they're shared. -->
+<paths>
+    <cache-path
+        name="shared"
+        path="shared/" />
+</paths>

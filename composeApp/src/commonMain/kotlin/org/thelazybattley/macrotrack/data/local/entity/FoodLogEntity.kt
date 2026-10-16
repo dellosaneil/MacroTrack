@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.data.local.entity
 
 import androidx.room.Entity
+import kotlinx.serialization.Serializable
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
@@ -9,6 +10,7 @@ import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 
 @Entity
+@Serializable
 data class FoodLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val date: LocalDate = getCurrentDate(),

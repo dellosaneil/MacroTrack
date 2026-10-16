@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.data.local.entity
 
 import androidx.room.Entity
+import kotlinx.serialization.Serializable
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.domain.MacroGoals
@@ -8,6 +9,7 @@ import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.Goal
 
 @Entity
+@Serializable
 data class DailyGoalEntity(
     @PrimaryKey val date: LocalDate,
     val goal: Goal,

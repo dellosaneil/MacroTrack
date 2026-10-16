@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.navigation
 
 import androidx.compose.foundation.gestures.detectTapGestures
+import org.thelazybattley.macrotrack.features.backup.ui.BackupScreen
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -261,6 +262,17 @@ fun AppBottomNav() {
                                 navigate(route)
                             },
                             onSaved = {
+                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                            }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.Backup.route) {
+                        BackupScreen(
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                            onGoToToday = {
+                                tabRequest = TabRequest(tab = AppDestinations.BottomNavigation.Log)
                                 navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
                             }
                         )
