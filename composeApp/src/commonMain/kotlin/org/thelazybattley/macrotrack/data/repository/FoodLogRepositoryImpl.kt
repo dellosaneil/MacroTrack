@@ -20,7 +20,8 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
         carbs: Double,
         protein: Double,
         weight: Double,
-        dominantMacro: MacroType
+        dominantMacro: MacroType,
+        isQuickAdd: Boolean
     ) = dao.insertFoodLog(
         foodLogEntity = FoodLogEntity(
             foodName = foodName,
@@ -30,7 +31,8 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
             carbs = carbs,
             protein = protein,
             weight = weight,
-            dominantMacro = dominantMacro.name
+            dominantMacro = dominantMacro.name,
+            isQuickAdd = isQuickAdd
         )
     )
 

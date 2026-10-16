@@ -1,6 +1,9 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
 import androidx.compose.foundation.background
+import org.jetbrains.compose.resources.DrawableResource
+import macrotrack.composeapp.generated.resources.quick_add
+import macrotrack.composeapp.generated.resources.ic_bolt
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -207,6 +210,16 @@ private fun AddMealScreen(
                     }
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                    CreateButton(
+                        modifier = Modifier.weight(weight = 1f),
+                        text = Res.string.quick_add,
+                        icon = Res.drawable.ic_bolt,
+                        onClick = {
+                            callbacks.onNavigateScreen(
+                                route = AppDestinations.Root.QuickAdd.createRoute(mealType = viewState.selectedMealType.name)
+                            )
+                        }
+                    )
                     CreateButton(
                         modifier = Modifier.weight(weight = 1f),
                         text = Res.string.new_food_button,
@@ -649,6 +662,7 @@ private fun JustScannedBanner(
 private fun CreateButton(
     modifier: Modifier = Modifier,
     text: StringResource,
+    icon: DrawableResource = Res.drawable.ic_plus,
     onClick: () -> Unit
 ) {
     Row(
@@ -656,20 +670,23 @@ private fun CreateButton(
             .height(height = 44.dp)
             .clip(shape = RoundedCornerShape(size = 12.dp))
             .background(color = colors.accentSoft)
-            .clickable(onClick = onClick),
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterHorizontally)
+        horizontalArrangement = Arrangement.spacedBy(space = 5.dp, alignment = Alignment.CenterHorizontally)
     ) {
         Icon(
-            painter = painterResource(resource = Res.drawable.ic_plus),
+            painter = painterResource(resource = icon),
             contentDescription = null,
             tint = colors.accentInk,
-            modifier = Modifier.size(size = 18.dp)
+            modifier = Modifier.size(size = 16.dp)
         )
         Text(
             text = stringResource(resource = text),
-            style = typography.bold14,
-            color = colors.accentInk
+            style = typography.bold13,
+            color = colors.accentInk,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

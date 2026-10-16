@@ -19,7 +19,9 @@ data class FoodLogEntity(
     val carbs: Double,
     val fat: Double,
     val weight: Double,
-    val dominantMacro: String
+    val dominantMacro: String,
+    /** Logged with Quick add: calories and macros typed in without a food. */
+    val isQuickAdd: Boolean = false
 )
 
 fun FoodLogEntity.toDomain() = FoodLog(
@@ -32,5 +34,6 @@ fun FoodLogEntity.toDomain() = FoodLog(
     carbs = carbs,
     weight = weight,
     dominantMacro = MacroType.valueOf(value = dominantMacro),
-    date = date
+    date = date,
+    isQuickAdd = isQuickAdd
 )

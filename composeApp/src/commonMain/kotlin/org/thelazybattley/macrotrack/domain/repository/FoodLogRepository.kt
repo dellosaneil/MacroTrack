@@ -16,7 +16,8 @@ interface FoodLogRepository {
         carbs: Double,
         protein: Double,
         weight: Double,
-        dominantMacro: MacroType
+        dominantMacro: MacroType,
+        isQuickAdd: Boolean = false
     ) : Long
 
     /** Changes a log's meal and portion; [weight] stays 0.0 for a recipe. */

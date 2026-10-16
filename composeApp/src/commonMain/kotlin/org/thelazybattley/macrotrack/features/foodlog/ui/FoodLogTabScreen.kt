@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.foodlog.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.features.quickadd.ui.QuickAddTag
 import org.thelazybattley.macrotrack.ui.common.formatPortion
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -551,7 +552,7 @@ private fun FoodLogItem(
     /** The share of a full recipe serving eaten; null for a food, or a recipe that no longer exists. */
     recipePercent: Double? = null
 ) {
-    val isRecipe = food.weight == 0.0
+    val isRecipe = food.isRecipe
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -583,13 +584,14 @@ private fun FoodLogItem(
                             .padding(horizontal = 6.dp, vertical = 1.dp)
                     )
                 }
+                if (food.isQuickAdd) QuickAddTag()
                 if (isRecipe && recipePercent != null) {
                     Text(
                         text = "· " + stringResource(resource = Res.string.percent_value, recipePercent.roundToInt()),
                         style = typography.regular13,
                         color = colors.muted
                     )
-                } else if (!isRecipe) {
+                } else if (!isRecipe && !food.isQuickAdd) {
                     Text(
                         text = "· " + formatPortion(amount = food.weight, storedUnit = unit),
                         style = typography.regular13,

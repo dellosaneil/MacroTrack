@@ -13,8 +13,13 @@ data class FoodLog(
     val foodName: String,
     val weight: Double,
     val dominantMacro: MacroType,
-    val date: LocalDate
-)
+    val date: LocalDate,
+    /** Calories and macros typed in with Quick add; [foodName] is the user's label, and no food or recipe has it. */
+    val isQuickAdd: Boolean = false
+) {
+    /** A recipe log keeps a weight of 0.0 and the percentage eaten is worked out from its calories. */
+    val isRecipe: Boolean get() = !isQuickAdd && weight == 0.0
+}
 
 val dummyFoodLog = FoodLog(
     mealType = MealType.BREAKFAST,

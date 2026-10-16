@@ -216,8 +216,11 @@ class FoodLogViewModel(
 
     override fun onOpenEntry(log: FoodLog) {
         _state.update { currentState ->
-            val isRecipe = log.weight == 0.0
-            val originalAmount = if (isRecipe) {
+            // Quick adds are changed by percentage like recipes, from 100% of what was typed.
+            val isRecipe = log.isRecipe || log.isQuickAdd
+            val originalAmount = if (log.isQuickAdd) {
+                FULL_RECIPE_PERCENT
+            } else if (isRecipe) {
                 currentState.recipeCalories[log.foodName]
                     ?.let { recipePercentEaten(loggedCalories = log.calories, fullCalories = it) }
                     ?: FULL_RECIPE_PERCENT

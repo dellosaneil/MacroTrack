@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.core.di
 
 import io.ktor.client.HttpClient
+import org.thelazybattley.macrotrack.features.quickadd.QuickAddViewModel
 import io.ktor.client.plugins.HttpTimeout
 import org.thelazybattley.macrotrack.data.repository.FoodLibraryRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.OpenFoodFactsRepositoryImpl
@@ -216,6 +217,7 @@ val viewModelModule = module {
     viewModelOf(::ProViewModel)
     viewModelOf(::ScanBarcodeViewModel)
     viewModelOf(::FoodLibraryViewModel)
+    viewModelOf(::QuickAddViewModel)
 }
 
 fun initKoin() {

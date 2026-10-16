@@ -127,4 +127,16 @@ class EntryEditTest {
         assertEquals(99.22, halved.weight, absoluteTolerance = 0.01)
         assertEquals(94, halved.calories)
     }
+
+    @Test
+    fun quickAddIsChangedByPercentage() {
+        val quickAdd = yogurt.copy(foodName = "Restaurant lunch", calories = 600, weight = 0.0, isQuickAdd = true)
+        assertFalse(quickAdd.isRecipe)
+        val edit = EntryEdit(log = quickAdd, originalAmount = 100.0, unit = "%").withAmount(value = 50.0)
+        assertTrue(edit.isPercentage)
+        assertFalse(edit.isRecipe)
+        assertEquals(300, edit.calories)
+        assertEquals(600, edit.baseCalories)
+        assertEquals(0.0, edit.weight)
+    }
 }

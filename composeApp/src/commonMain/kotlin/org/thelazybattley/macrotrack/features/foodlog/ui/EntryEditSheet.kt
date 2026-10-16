@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.features.foodlog.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import macrotrack.composeapp.generated.resources.quick_add_logged_kcal
+import org.thelazybattley.macrotrack.features.quickadd.ui.QuickAddTag
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -210,9 +212,12 @@ private fun Header(edit: EntryEdit, onMealClick: () -> Unit, onClose: () -> Unit
                             .padding(horizontal = 6.dp, vertical = 1.dp)
                     )
                 }
+                if (edit.isQuickAdd) QuickAddTag()
             }
             Text(
-                text = if (edit.isRecipe) {
+                text = if (edit.isQuickAdd) {
+                    stringResource(resource = Res.string.quick_add_logged_kcal, edit.baseCalories)
+                } else if (edit.isRecipe) {
                     stringResource(resource = Res.string.one_serving_is_kcal, edit.baseCalories)
                 } else {
                     stringResource(
@@ -349,7 +354,7 @@ private fun Readout(edit: EntryEdit, isTyping: Boolean, onClick: () -> Unit) {
             Text(
                 text = when {
                     isTyping -> stringResource(resource = Res.string.typing)
-                    edit.isRecipe -> edit.amount.servingsText()
+                    edit.isPercentage -> edit.amount.servingsText()
                     else -> stringResource(resource = Res.string.tap_to_type)
                 },
                 style = typography.regular11,

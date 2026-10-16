@@ -1,6 +1,8 @@
 package org.thelazybattley.macrotrack.ui.common
 
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -40,29 +42,43 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 private val keypadKeys = listOf('1', '2', '3', '4', '5', '6', '7', '8', '9', KEY_DECIMAL, '0', KEY_BACKSPACE)
 
-/** A number pad used in place of the system keyboard, so it never covers the screen it is typing into. */
+/**
+ * A number pad used in place of the system keyboard, so it never covers the screen it is typing into. With
+ * [fillHeight] the keys grow to share the height the pad is given; without [isDecimalEnabled] the decimal key
+ * is left blank, for whole numbers.
+ */
 @Composable
 fun CommonKeypad(
     modifier: Modifier = Modifier,
+    isDecimalEnabled: Boolean = true,
+    fillHeight: Boolean = false,
+    keyColor: Color = colors.background,
     onKey: (Char) -> Unit
 ) {
     val backspaceText = stringResource(resource = Res.string.backspace)
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 5.dp)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = if (fillHeight) 6.dp else 5.dp)) {
         keypadKeys.chunked(size = 3).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(space = 5.dp)) {
+            Row(
+                modifier = if (fillHeight) Modifier.weight(weight = 1f) else Modifier,
+                horizontalArrangement = Arrangement.spacedBy(space = if (fillHeight) 6.dp else 5.dp)
+            ) {
                 row.forEach { key ->
                     val isAction = key == KEY_DECIMAL || key == KEY_BACKSPACE
+                    val isEnabled = key != KEY_DECIMAL || isDecimalEnabled
                     Box(
                         modifier = Modifier
                             .weight(weight = 1f)
-                            .height(height = 46.dp)
-                            .clip(shape = RoundedCornerShape(size = 10.dp))
-                            .background(color = if (isAction) colors.divider else colors.background)
-                            .clickable(role = Role.Button) { onKey(key) }
+                            .then(if (fillHeight) Modifier.fillMaxHeight() else Modifier.height(height = 46.dp))
+                            .clip(shape = RoundedCornerShape(size = if (fillHeight) 12.dp else 10.dp))
+                            .background(color = if (isAction) colors.divider else keyColor)
+                            .alpha(alpha = if (isEnabled) 1f else 0.4f)
+                            .clickable(enabled = isEnabled, role = Role.Button) { onKey(key) }
                             .semantics { if (key == KEY_BACKSPACE) contentDescription = backspaceText },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = key.toString(), style = typography.bold18, color = colors.ink)
+                        if (isEnabled) {
+                            Text(text = key.toString(), style = if (fillHeight) typography.bold24 else typography.bold18, color = colors.ink)
+                        }
                     }
                 }
             }

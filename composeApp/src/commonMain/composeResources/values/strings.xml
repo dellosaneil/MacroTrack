@@ -730,4 +730,23 @@
     <string name="make_my_own_version_hint">Your copy is saved to My foods and can be edited. The library stays as it is.</string>
     <string name="library_data_source">Nutrition data: USDA FoodData Central</string>
     <string name="nutrition_of">%1$s nutrition</string>
+    <string name="quick_add">Quick add</string>
+    <string name="quick_add_tag">Quick add</string>
+    <string name="log_without_a_food">Log without a food</string>
+    <string name="back_to_add_meal">Back to Add meal</string>
+    <string name="quick_add_what_to_enter">What to enter</string>
+    <string name="quick_add_calories_only">Calories only</string>
+    <string name="quick_add_macros">Macros</string>
+    <string name="quick_add_kcal_left_today">%1$s kcal left today</string>
+    <string name="quick_add_kcal_left_after">%1$s kcal left today after this</string>
+    <string name="quick_add_kcal_over_after">%1$s kcal over today after this</string>
+    <string name="quick_add_calories_description">%1$s calories</string>
+    <string name="quick_add_grams_description">%1$s, %2$s grams</string>
+    <string name="quick_add_calories_from_macros">Calories from macros</string>
+    <string name="quick_add_label_placeholder">Label (optional), e.g. Restaurant lunch</string>
+    <string name="quick_add_label_description">Label, optional</string>
+    <string name="quick_add_add_to_meal">Add %1$s kcal to %2$s</string>
+    <string name="quick_add_enter_calories">Enter calories</string>
+    <string name="quick_add_enter_a_macro">Enter at least one macro</string>
+    <string name="quick_add_logged_kcal">Quick add · logged %1$d kcal</string>
 </resources>

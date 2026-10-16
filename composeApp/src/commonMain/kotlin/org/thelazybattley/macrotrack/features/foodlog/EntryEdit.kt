@@ -38,11 +38,16 @@ data class EntryEdit(
 
     val unitLabel: String get() = portionUnit.label
 
-    val isRecipe: Boolean get() = log.weight == 0.0
+    val isRecipe: Boolean get() = log.isRecipe
+
+    val isQuickAdd: Boolean get() = log.isQuickAdd
+
+    /** Recipes and quick adds are changed by the percentage eaten; foods by their portion. */
+    val isPercentage: Boolean get() = isRecipe || isQuickAdd
 
     /** Calories of a full recipe serving, or of the logged portion for a food. */
     val baseCalories: Int
-        get() = if (isRecipe && originalAmount > 0) {
+        get() = if (isPercentage && originalAmount > 0) {
             (log.calories * FULL_RECIPE_PERCENT / originalAmount).roundToInt()
         } else {
             log.calories
@@ -64,7 +69,7 @@ data class EntryEdit(
 
     val step: Double
         get() = when {
-            isRecipe -> RECIPE_STEP_PERCENT
+            isPercentage -> RECIPE_STEP_PERCENT
             portionUnit.isConverted -> OUNCE_STEP
             originalAmount > 10 -> 10.0
             else -> 0.5
@@ -72,14 +77,14 @@ data class EntryEdit(
 
     /** Quick picks: quarters of a recipe serving, or ½×, 1×, 1.5× and 2× the logged portion. */
     val presets: List<Double>
-        get() = if (isRecipe) {
+        get() = if (isPercentage) {
             listOf(25.0, 50.0, 75.0, FULL_RECIPE_PERCENT)
         } else {
             listOf(0.5, 1.0, 1.5, 2.0).map { (shownOriginalAmount * it).roundTo(step = step) }.distinct()
         }
 
-    /** Weight to store: the new portion for a food; recipes keep 0.0, which marks them as recipes. */
-    val weight: Double get() = if (isRecipe) 0.0 else portionUnit.toStored(value = amount)
+    /** Weight to store: the new portion for a food; recipes and quick adds keep 0.0. */
+    val weight: Double get() = if (isPercentage) 0.0 else portionUnit.toStored(value = amount)
 
     fun stepped(up: Boolean): Double = (if (up) amount + step else amount - step).roundTo(step = step)
 

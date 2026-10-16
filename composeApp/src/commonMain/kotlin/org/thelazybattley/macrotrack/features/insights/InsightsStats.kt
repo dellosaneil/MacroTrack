@@ -127,7 +127,8 @@ fun calculateInsights(
         if (totalCalories == 0) 0 else logsInRange.filter { it.mealType == mealType }.sumOf { it.calories } * 100 / totalCalories
     }
 
-    val mostLogged = logsInRange.groupBy { it.foodName }
+    // Quick adds are one-off labels, not foods, so they stay out of the most logged foods.
+    val mostLogged = logsInRange.filterNot { it.isQuickAdd }.groupBy { it.foodName }
         .map { (name, logs) ->
             LoggedFood(
                 name = name,

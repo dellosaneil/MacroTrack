@@ -42,6 +42,7 @@ import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.calendar.ui.CalendarScreen
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodScreen
 import org.thelazybattley.macrotrack.features.foodlibrary.ui.FoodLibraryScreen
+import org.thelazybattley.macrotrack.features.quickadd.ui.QuickAddScreen
 import org.thelazybattley.macrotrack.features.scanbarcode.ui.ScanBarcodeScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
 import org.thelazybattley.macrotrack.features.logweight.ui.LogWeightScreen
@@ -258,6 +259,23 @@ fun AppBottomNav() {
                             },
                             onNavigate = { route ->
                                 navigate(route)
+                            },
+                            onSaved = {
+                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                            }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.QuickAdd.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = MEAL_TYPE) {
+                                type = NavType.StringType
+                            }
+                        )
+                    ) {
+                        QuickAddScreen(
+                            onBack = {
+                                navController.popBackStack()
                             },
                             onSaved = {
                                 navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)

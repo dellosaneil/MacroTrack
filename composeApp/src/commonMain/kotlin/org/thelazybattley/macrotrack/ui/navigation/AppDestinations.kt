@@ -83,6 +83,10 @@ sealed class AppDestinations {
                 "$route/$mealType" + queryString(QUERY to query?.takeIf { it.isNotBlank() })
         }
 
+        object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}") {
+            fun createRoute(mealType: String): String = "$route/$mealType"
+        }
+
         object ScanBarcode : Root(route = "scan_barcode", routeWithArgs = "scan_barcode/{$MEAL_TYPE}") {
             fun createRoute(mealType: String): String {
                 return "$route/$mealType"

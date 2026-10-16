@@ -16,7 +16,8 @@ class InsertFoodLogUseCase(
         carbs: Double,
         protein: Double,
         weight: Double,
-        dominantMacro: MacroType
+        dominantMacro: MacroType,
+        isQuickAdd: Boolean = false
     ) = repository.insertFoodLog(
         foodName = foodName,
         mealType = mealType,
@@ -25,6 +26,7 @@ class InsertFoodLogUseCase(
         carbs = carbs,
         protein = protein,
         weight = weight,
-        dominantMacro = dominantMacro
+        dominantMacro = dominantMacro,
+        isQuickAdd = isQuickAdd
     )
 }

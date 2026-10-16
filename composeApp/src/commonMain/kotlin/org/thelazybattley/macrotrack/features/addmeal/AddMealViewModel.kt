@@ -246,16 +246,18 @@ class AddMealViewModel(
         val libraryByName = libraryFoods.associateBy { it.name }
         val kindOf = { log: FoodLog ->
             when {
-                log.weight == 0.0 -> MealItemKind.RECIPE
+                log.isRecipe -> MealItemKind.RECIPE
                 log.foodName !in foodsByName && log.foodName in libraryByName -> MealItemKind.LIBRARY
                 else -> MealItemKind.FOOD
             }
         }
+        // Quick adds carry the user's label rather than a food, so they never count as a food's last log.
         return foodLogs
+            .filterNot { it.isQuickAdd }
             .groupBy { mealItemKey(name = it.foodName, kind = kindOf(it)) }
             .mapNotNull { (key, logs) ->
                 val log = logs.maxBy { it.id }
-                val isRecipe = log.weight == 0.0
+                val isRecipe = log.isRecipe
                 val baseFood = when (kindOf(log)) {
                     MealItemKind.RECIPE -> recipesByName[log.foodName]?.food
                     MealItemKind.LIBRARY -> libraryByName[log.foodName]
