@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.features.navigation
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import org.thelazybattley.macrotrack.features.backup.ui.BackupScreen
+import org.thelazybattley.macrotrack.features.deletedata.ui.DeleteDataScreen
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -292,6 +293,24 @@ fun AppBottomNav() {
                             onGoToToday = {
                                 tabRequest = TabRequest(tab = AppDestinations.BottomNavigation.Log)
                                 navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                            }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.DeleteData.route) {
+                        DeleteDataScreen(
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                            onOpenBackup = {
+                                navigate(AppDestinations.Root.Backup.route)
+                            },
+                            onStartOver = {
+                                // Clears every screen, so nothing still shows the deleted data, and runs first launch again.
+                                navController.navigate(route = AppDestinations.Root.Splash.route) {
+                                    popUpTo(id = navController.graph.id) {
+                                        inclusive = true
+                                    }
+                                }
                             }
                         )
                     }

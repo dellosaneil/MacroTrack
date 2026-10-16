@@ -890,4 +890,31 @@
         <item quantity="one">Export %1$d item as %2$s</item>
         <item quantity="other">Export %1$d items as %2$s</item>
     </plurals>
+    <string name="delete_data_title">Delete all data</string>
+    <string name="delete_data_profile_detail">Erase everything on this phone</string>
+    <string name="delete_data_warning_title">This can't be undone</string>
+    <string name="delete_data_warning_body">Everything you've saved in MacroTrack is erased from this phone, and the app starts over as if it was just installed.</string>
+    <string name="delete_data_what">What will be deleted</string>
+    <string name="delete_data_item_settings">Profile &amp; settings</string>
+    <string name="delete_data_settings_detail">Body details, targets, units</string>
+    <string name="delete_data_entries_since">%1$s since %2$s</string>
+    <string name="delete_data_backups_note">Backup files you saved aren't touched. You can restore one from Backup &amp; export after you set up again.</string>
+    <string name="delete_data_pro_title">Your Pro purchase isn't affected.</string>
+    <string name="delete_data_pro_body">It belongs to your store account. Tap Restore purchase on the Pro screen after you start over.</string>
+    <string name="delete_data_copy_title">Want a copy first?</string>
+    <string name="delete_data_copy_detail">Back up or export your data before deleting it</string>
+    <string name="delete_data_type_to_confirm">Type %1$s to confirm</string>
+    <string name="delete_data_button">Delete all data</string>
+    <string name="delete_data_button_locked">Type %1$s to continue</string>
+    <string name="delete_data_failed">Some data couldn't be deleted. Try again to finish.</string>
+    <string name="delete_data_deleting_title">Deleting your data…</string>
+    <string name="delete_data_deleting_body">Keep the app open. This only takes a few seconds.</string>
+    <string name="delete_data_step_food_log">Food log</string>
+    <string name="delete_data_step_body">Weigh-ins &amp; measurements</string>
+    <string name="delete_data_step_foods">My foods &amp; recipes</string>
+    <string name="delete_data_step_settings">Goals, profile &amp; settings</string>
+    <string name="delete_data_done_title">All data deleted</string>
+    <string name="delete_data_done_body">MacroTrack is back to a fresh start on this phone.</string>
+    <string name="delete_data_done_backups">Any backup files you saved are still where you put them, ready to restore.</string>
+    <string name="delete_data_start_over">Start over</string>
 </resources>

@@ -63,4 +63,9 @@ data class MacroTrackColors(
     val warmInk: Color,
     val nightSoft: Color,
     val nightInk: Color,
+    /** Destructive actions, like deleting all data. */
+    val danger: Color,
+    val onDanger: Color,
+    val dangerSoft: Color,
+    val dangerTrack: Color,
 )

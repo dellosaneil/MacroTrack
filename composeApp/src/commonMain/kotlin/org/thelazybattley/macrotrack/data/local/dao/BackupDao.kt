@@ -15,7 +15,10 @@ import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 
-/** Reads every table at once for a backup, and swaps them all for a backup's contents in one transaction. */
+/**
+ * Reads every table at once for a backup, swaps them all for a backup's contents in one transaction, and empties
+ * them when the user deletes all their data.
+ */
 @Dao
 abstract class BackupDao {
 
@@ -56,7 +59,7 @@ abstract class BackupDao {
     protected abstract suspend fun deleteUserDetails()
 
     @Query("DELETE FROM FoodLogEntity")
-    protected abstract suspend fun deleteFoodLogs()
+    abstract suspend fun deleteFoodLogs()
 
     @Query("DELETE FROM WeightEntity")
     protected abstract suspend fun deleteWeights()
@@ -99,6 +102,27 @@ abstract class BackupDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     protected abstract suspend fun insertAppFlags(appFlags: List<AppFlagEntity>)
+
+    @Transaction
+    open suspend fun deleteBodyRecords() {
+        deleteWeights()
+        deleteMeasurements()
+    }
+
+    @Transaction
+    open suspend fun deleteSavedFoods() {
+        deleteFoods()
+        deleteRecipes()
+        deleteFavorites()
+    }
+
+    /** Goals, the user's details and app settings; flags named in [keepFlagKeys] stay. */
+    @Transaction
+    open suspend fun deleteGoalsAndSettings(keepFlagKeys: List<String>) {
+        deleteDailyGoals()
+        deleteUserDetails()
+        deleteAppFlagsExcept(keepKeys = keepFlagKeys)
+    }
 
     /**
      * Replaces everything with [snapshot]. App flags named in [deviceFlagKeys] (Pro, the trial and backup

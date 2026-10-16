@@ -95,7 +95,11 @@ val lightMacroTrackColors = MacroTrackColors(
     warmSoft = WarmSoft,
     warmInk = WarmInk,
     nightSoft = NightSoft,
-    nightInk = NightInk
+    nightInk = NightInk,
+    danger = Danger,
+    onDanger = OnDanger,
+    dangerSoft = DangerSoft,
+    dangerTrack = DangerTrack
 )
 
 val darkMacroTrackColors = MacroTrackColors(
@@ -158,7 +162,11 @@ val darkMacroTrackColors = MacroTrackColors(
     warmSoft = DarkWarmSoft,
     warmInk = DarkWarmInk,
     nightSoft = DarkNightSoft,
-    nightInk = DarkNightInk
+    nightInk = DarkNightInk,
+    danger = DarkDanger,
+    onDanger = DarkOnDanger,
+    dangerSoft = DarkDangerSoft,
+    dangerTrack = DarkDangerTrack
 )
 
 

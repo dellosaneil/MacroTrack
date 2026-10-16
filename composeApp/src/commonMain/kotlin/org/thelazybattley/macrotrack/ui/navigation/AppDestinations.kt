@@ -85,6 +85,8 @@ sealed class AppDestinations {
 
         object Backup : Root(route = "backup_export")
 
+        object DeleteData : Root(route = "delete_data")
+
         object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}") {
             fun createRoute(mealType: String): String = "$route/$mealType"
         }

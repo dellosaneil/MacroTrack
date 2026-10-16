@@ -9,6 +9,10 @@ import org.thelazybattley.macrotrack.domain.usecase.backup.CreateBackupUseCase
 import org.thelazybattley.macrotrack.domain.repository.BackupRepository
 import org.thelazybattley.macrotrack.data.repository.BackupRepositoryImpl
 import org.thelazybattley.macrotrack.features.backup.BackupViewModel
+import org.thelazybattley.macrotrack.data.repository.DeleteDataRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.DeleteDataRepository
+import org.thelazybattley.macrotrack.domain.usecase.deletedata.DeleteAllDataUseCase
+import org.thelazybattley.macrotrack.features.deletedata.DeleteDataViewModel
 import org.thelazybattley.macrotrack.features.quickadd.QuickAddViewModel
 import io.ktor.client.plugins.HttpTimeout
 import org.thelazybattley.macrotrack.data.repository.FoodLibraryRepositoryImpl
@@ -159,6 +163,7 @@ val repositoryModule = module {
     singleOf(::OpenFoodFactsRepositoryImpl) { bind<ProductRepository>() }
     singleOf(::FoodLibraryRepositoryImpl) { bind<FoodLibraryRepository>() }
     singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
+    singleOf(::DeleteDataRepositoryImpl) { bind<DeleteDataRepository>() }
 }
 
 val useCaseModule = module {
@@ -215,6 +220,7 @@ val useCaseModule = module {
     factoryOf(::SetTelemetryEnabledUseCase)
     factoryOf(::GetReviewHistoryUseCase)
     factoryOf(::RecordReviewAskedUseCase)
+    factoryOf(::DeleteAllDataUseCase)
 }
 
 val viewModelModule = module {
@@ -242,6 +248,7 @@ val viewModelModule = module {
     viewModelOf(::FoodLibraryViewModel)
     viewModelOf(::QuickAddViewModel)
     viewModelOf(::BackupViewModel)
+    viewModelOf(::DeleteDataViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

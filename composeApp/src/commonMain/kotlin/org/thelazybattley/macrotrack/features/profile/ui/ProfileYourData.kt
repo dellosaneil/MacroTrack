@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -32,6 +33,9 @@ import macrotrack.composeapp.generated.resources.backup_profile_trial
 import macrotrack.composeapp.generated.resources.ic_chevron_right
 import macrotrack.composeapp.generated.resources.ic_cloud_check
 import macrotrack.composeapp.generated.resources.ic_shield_check
+import macrotrack.composeapp.generated.resources.ic_trash
+import macrotrack.composeapp.generated.resources.delete_data_profile_detail
+import macrotrack.composeapp.generated.resources.delete_data_title
 import macrotrack.composeapp.generated.resources.share_usage_data
 import macrotrack.composeapp.generated.resources.share_usage_data_detail
 import macrotrack.composeapp.generated.resources.your_data
@@ -46,13 +50,17 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import org.jetbrains.compose.resources.painterResource
 
-/** The way into Backup & export, with when the last backup was saved, and the choice to share crash reports. */
+/**
+ * The ways into Backup & export, with when the last backup was saved, and into deleting all data; then the choice
+ * to share crash reports.
+ */
 @Composable
 fun ProfileYourData(
     modifier: Modifier = Modifier,
     lastBackup: LastBackup?,
     isTelemetryEnabled: Boolean,
     onClick: () -> Unit,
+    onDeleteDataClick: () -> Unit,
     onTelemetryToggled: (Boolean) -> Unit
 ) {
     val status = LocalProAccess.current.state.status
@@ -68,37 +76,69 @@ fun ProfileYourData(
     }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Text(text = stringResource(resource = Res.string.your_data), style = typography.bold12, color = colors.muted)
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape = RoundedCornerShape(size = 20.dp))
                 .background(color = colors.surface)
                 .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 20.dp))
-                .clickable(role = Role.Button, onClick = onClick)
-                .heightIn(min = 64.dp)
-                .padding(horizontal = 14.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
         ) {
-            IconTile(icon = Res.drawable.ic_cloud_check, tint = colors.accentInk, background = colors.accentSoft, size = 36)
-            Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
-                ) {
-                    Text(text = stringResource(resource = Res.string.backup_export), style = typography.medium13, color = colors.ink)
-                    if (!status.isPurchased) ProBadge()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(role = Role.Button, onClick = onClick)
+                    .heightIn(min = 64.dp)
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+            ) {
+                IconTile(icon = Res.drawable.ic_cloud_check, tint = colors.accentInk, background = colors.accentSoft, size = 36)
+                Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+                    ) {
+                        Text(text = stringResource(resource = Res.string.backup_export), style = typography.medium13, color = colors.ink)
+                        if (!status.isPurchased) ProBadge()
+                    }
+                    Text(text = detail, style = typography.regular11, color = colors.muted)
                 }
-                Text(text = detail, style = typography.regular11, color = colors.muted)
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_chevron_right),
+                    contentDescription = null,
+                    tint = colors.faint,
+                    modifier = Modifier.size(size = 16.dp)
+                )
             }
-            Icon(
-                painter = painterResource(resource = Res.drawable.ic_chevron_right),
-                contentDescription = null,
-                tint = colors.faint,
-                modifier = Modifier.size(size = 16.dp)
-            )
+            HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            DeleteDataRow(onClick = onDeleteDataClick)
         }
         ShareUsageRow(isEnabled = isTelemetryEnabled, onToggled = onTelemetryToggled)
+    }
+}
+
+@Composable
+private fun DeleteDataRow(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(role = Role.Button, onClick = onClick)
+            .heightIn(min = 64.dp)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        IconTile(icon = Res.drawable.ic_trash, tint = colors.danger, background = colors.dangerSoft, size = 36)
+        Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+            Text(text = stringResource(resource = Res.string.delete_data_title), style = typography.bold13, color = colors.danger)
+            Text(text = stringResource(resource = Res.string.delete_data_profile_detail), style = typography.regular11, color = colors.muted)
+        }
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_chevron_right),
+            contentDescription = null,
+            tint = colors.faint,
+            modifier = Modifier.size(size = 16.dp)
+        )
     }
 }
 
@@ -145,6 +185,7 @@ private fun PreviewProfileYourData() {
             lastBackup = null,
             isTelemetryEnabled = true,
             onClick = {},
+            onDeleteDataClick = {},
             onTelemetryToggled = {}
         )
     }

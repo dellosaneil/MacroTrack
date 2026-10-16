@@ -65,6 +65,7 @@ fun ProfileScreen(
         callbacks = viewModel,
         onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) },
         onOpenBackup = { onNavigate(AppDestinations.Root.Backup.route) },
+        onOpenDeleteData = { onNavigate(AppDestinations.Root.DeleteData.route) },
         onReplayTour = onReplayTour
     )
 }
@@ -77,6 +78,7 @@ fun ProfileScreen(
     callbacks: ProfileCallbacks,
     onLogWeight: () -> Unit = {},
     onOpenBackup: () -> Unit = {},
+    onOpenDeleteData: () -> Unit = {},
     onReplayTour: () -> Unit = {}
 ) {
     val showTargetWeightSheet = remember { mutableStateOf(value = false) }
@@ -120,6 +122,7 @@ fun ProfileScreen(
             lastBackup = viewState.lastBackup,
             isTelemetryEnabled = viewState.isTelemetryEnabled,
             onClick = onOpenBackup,
+            onDeleteDataClick = onOpenDeleteData,
             onTelemetryToggled = callbacks::onTelemetryToggled
         )
     }

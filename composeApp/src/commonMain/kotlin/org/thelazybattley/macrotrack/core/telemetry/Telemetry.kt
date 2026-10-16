@@ -48,6 +48,7 @@ object TelemetryEvent {
     const val BACKUP_CREATED = "backup_created"
     const val BACKUP_RESTORED = "backup_restored"
     const val REVIEW_ASKED = "review_asked"
+    const val DATA_DELETED = "data_deleted"
 
     const val PARAM_GOAL = "goal"
     const val PARAM_MEAL_TYPE = "meal_type"
