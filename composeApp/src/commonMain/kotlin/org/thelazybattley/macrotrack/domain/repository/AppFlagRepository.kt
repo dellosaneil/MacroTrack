@@ -13,4 +13,9 @@ interface AppFlagRepository {
     fun getUnitSystem(): Flow<UnitSystem>
 
     suspend fun setUnitSystem(unitSystem: UnitSystem)
+
+    /** Whether crash reports and usage analytics may be sent. On until the user turns it off. */
+    fun isTelemetryEnabled(): Flow<Boolean>
+
+    suspend fun setTelemetryEnabled(isEnabled: Boolean)
 }

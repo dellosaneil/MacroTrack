@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.onboarding
 
+import org.thelazybattley.macrotrack.core.telemetry.Telemetry
+import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +24,7 @@ class OnboardingViewModel(
     private val calculateTDEEUseCase: CalculateTDEEUseCase,
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
     private val setUnitSystemUseCase: SetUnitSystemUseCase,
+    private val telemetry: Telemetry
 ) : ViewModel(), OnboardingCallbacks {
 
     private val _state = MutableStateFlow(value = OnboardingViewState())
@@ -72,6 +75,10 @@ class OnboardingViewModel(
                         activityLevel = activityLevel,
                         goal = goal
                     )
+                )
+                telemetry.logEvent(
+                    name = TelemetryEvent.ONBOARDING_COMPLETE,
+                    params = mapOf(TelemetryEvent.PARAM_GOAL to goal.name.lowercase())
                 )
                 _state.update { it.copy(isFinished = true) }
             }

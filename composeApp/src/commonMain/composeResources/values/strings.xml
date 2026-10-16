@@ -751,6 +751,8 @@
     <string name="quick_add_logged_kcal">Quick add · logged %1$d kcal</string>
     <string name="backup_export">Backup &amp; export</string>
     <string name="your_data">Your data</string>
+    <string name="share_usage_data">Share crash reports &amp; usage</string>
+    <string name="share_usage_data_detail">Helps fix bugs. Never includes the foods or weights you log.</string>
     <string name="backup_profile_trial">Included in your trial · %1$s</string>
     <string name="backup_profile_backed_up">Backed up %1$s</string>
     <string name="backup_profile_not_yet">Not backed up yet</string>

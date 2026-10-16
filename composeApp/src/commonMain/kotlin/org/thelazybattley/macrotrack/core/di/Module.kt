@@ -54,6 +54,8 @@ import org.thelazybattley.macrotrack.domain.usecase.measurement.GetAllMeasuremen
 import org.thelazybattley.macrotrack.domain.usecase.measurement.InsertMeasurementsUseCase
 import getRoomDatabase
 import org.koin.core.context.startKoin
+import org.thelazybattley.macrotrack.domain.usecase.telemetry.IsTelemetryEnabledUseCase
+import org.thelazybattley.macrotrack.domain.usecase.telemetry.SetTelemetryEnabledUseCase
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
@@ -207,6 +209,8 @@ val useCaseModule = module {
     factoryOf(::LookUpBarcodeUseCase)
     factoryOf(::GetRemainingCaloriesTodayUseCase)
     factoryOf(::GetFoodLibraryUseCase)
+    factoryOf(::IsTelemetryEnabledUseCase)
+    factoryOf(::SetTelemetryEnabledUseCase)
 }
 
 val viewModelModule = module {
@@ -236,9 +240,9 @@ val viewModelModule = module {
     viewModelOf(::BackupViewModel)
 }
 
-fun initKoin() {
+fun initKoin(extraModules: List<Module> = emptyList()) {
     startKoin {
         printLogger()
-        modules(platformModule, sharedModule, viewModelModule, useCaseModule, repositoryModule)
+        modules(listOf(platformModule, sharedModule, viewModelModule, useCaseModule, repositoryModule) + extraModules)
     }
 }

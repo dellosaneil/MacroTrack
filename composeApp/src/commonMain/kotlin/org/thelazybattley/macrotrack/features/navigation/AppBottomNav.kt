@@ -74,6 +74,11 @@ import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import org.koin.compose.koinInject
 import androidx.compose.ui.text.intl.Locale
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.core.isAnalyticsAllowed
+import org.thelazybattley.macrotrack.core.telemetry.Telemetry
+import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
+import org.thelazybattley.macrotrack.core.telemetry.TrackScreenViews
+import org.thelazybattley.macrotrack.domain.usecase.telemetry.IsTelemetryEnabledUseCase
 
 @Composable
 @Preview(showBackground = true)
@@ -92,7 +97,20 @@ fun AppBottomNav() {
     val unitSystem by unitSystemFlow.collectAsStateWithLifecycle(
         initialValue = UnitSystem.defaultFor(region = Locale.current.region)
     )
+    val telemetry = koinInject<Telemetry>()
+    val isTelemetryEnabled = koinInject<IsTelemetryEnabledUseCase>()
+    LaunchedEffect(key1 = Unit) {
+        isTelemetryEnabled().collect { isEnabled ->
+            telemetry.setCollectionEnabled(crashReports = isEnabled, analytics = isEnabled && isAnalyticsAllowed)
+        }
+    }
+    // The tabs inside the main screen log their own views.
+    TrackScreenViews(navController = navController, ignore = setOf(AppDestinations.Root.MainScreen.route))
     val openPaywall: (ProFeature?) -> Unit = { feature ->
+        telemetry.logEvent(
+            name = TelemetryEvent.PAYWALL_SHOWN,
+            params = mapOf(TelemetryEvent.PARAM_FEATURE to (feature?.name?.lowercase() ?: "none"))
+        )
         navController.navigate(route = AppDestinations.Root.Paywall.createRoute(feature = feature?.name))
     }
     // Every screen-to-screen move goes through here, so a Pro screen opens the paywall once the trial is over.

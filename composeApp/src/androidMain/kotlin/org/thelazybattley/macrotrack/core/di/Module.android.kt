@@ -7,6 +7,8 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.core.billing.BillingService
 import org.thelazybattley.macrotrack.core.billing.PlayBillingService
+import org.thelazybattley.macrotrack.core.telemetry.FirebaseTelemetry
+import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.data.local.AppDatabase
 
 actual val platformModule: Module = module {
@@ -14,6 +16,7 @@ actual val platformModule: Module = module {
         getDatabaseBuilder(get())
     }
     single<BillingService> { PlayBillingService(context = get()) }
+    single<Telemetry> { FirebaseTelemetry.create(context = get()) }
 }
 
 fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {

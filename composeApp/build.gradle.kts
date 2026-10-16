@@ -12,6 +12,13 @@ plugins {
 
 }
 
+// Firebase reads its project settings from google-services.json (downloaded from the Firebase console). Without
+// it the app still builds and runs, and crash reports and analytics simply stay off.
+if (file("google-services.json").exists()) {
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -42,6 +49,9 @@ kotlin {
             implementation(libs.androidx.camera.view)
             implementation(libs.androidx.camera.mlkit.vision)
             implementation(libs.mlkit.barcode.scanning)
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.analytics)
+            implementation(libs.firebase.crashlytics)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -99,6 +109,8 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        // Debug builds never send analytics, even on their first launch. Crash reports come from every build.
+        manifestPlaceholders["analyticsEnabled"] = "true"
     }
     buildFeatures {
         buildConfig = true
@@ -119,6 +131,9 @@ android {
         }
     }
     buildTypes {
+        getByName("debug") {
+            manifestPlaceholders["analyticsEnabled"] = "false"
+        }
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true

@@ -28,9 +28,20 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         dao.insertFlag(flag = AppFlagEntity(key = UNIT_SYSTEM, value = unitSystem.name))
     }
 
+    override fun isTelemetryEnabled(): Flow<Boolean> = dao.isFlagSet(key = TELEMETRY_OPTED_OUT).map { !it }
+
+    override suspend fun setTelemetryEnabled(isEnabled: Boolean) {
+        if (isEnabled) {
+            dao.deleteFlag(key = TELEMETRY_OPTED_OUT)
+        } else {
+            dao.insertFlag(flag = AppFlagEntity(key = TELEMETRY_OPTED_OUT))
+        }
+    }
+
     companion object {
         /** Also seeded by AppDatabase.MIGRATION_8_9 for people who set up the app before the tour existed. */
         const val TOUR_COMPLETED = "tour_completed"
         const val UNIT_SYSTEM = "unit_system"
+        const val TELEMETRY_OPTED_OUT = "telemetry_opted_out"
     }
 }

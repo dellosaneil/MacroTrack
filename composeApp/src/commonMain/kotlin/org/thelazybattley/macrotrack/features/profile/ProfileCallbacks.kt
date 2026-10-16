@@ -10,6 +10,8 @@ interface ProfileCallbacks {
 
     fun onUnitSystemSelected(unitSystem: UnitSystem)
 
+    fun onTelemetryToggled(isEnabled: Boolean)
+
     fun onStartDateSelected(date: LocalDate)
 
     fun onNavigate(sectionEnum: ProfileSectionEnum)
@@ -19,6 +21,9 @@ interface ProfileCallbacks {
     companion object {
         fun default() = object : ProfileCallbacks {
             override fun onUnitSystemSelected(unitSystem: UnitSystem) {
+            }
+
+            override fun onTelemetryToggled(isEnabled: Boolean) {
             }
 
             override fun onSaveTargetWeight(targetKg: Double) {

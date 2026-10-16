@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import org.thelazybattley.macrotrack.core.telemetry.TrackScreenViews
 import org.thelazybattley.macrotrack.features.foodlog.ui.FoodLogTabScreen
 import org.thelazybattley.macrotrack.features.insights.ui.InsightsScreen
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileScreen
@@ -41,6 +42,7 @@ fun MainScreenNavigation(
             } ?: AppDestinations.BottomNavigation.Log
         }
     }
+    TrackScreenViews(navController = navController)
     LaunchedEffect(key1 = tabRequest) {
         val tab = tabRequest?.tab ?: return@LaunchedEffect
         if (currentDestination.route == tab.route) return@LaunchedEffect

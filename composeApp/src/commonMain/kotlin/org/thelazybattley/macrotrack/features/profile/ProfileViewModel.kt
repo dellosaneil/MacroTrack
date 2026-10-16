@@ -3,6 +3,8 @@ package org.thelazybattley.macrotrack.features.profile
 import androidx.lifecycle.ViewModel
 import org.thelazybattley.macrotrack.domain.usecase.backup.GetLastBackupUseCase
 import org.thelazybattley.macrotrack.domain.usecase.units.SetUnitSystemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.telemetry.IsTelemetryEnabledUseCase
+import org.thelazybattley.macrotrack.domain.usecase.telemetry.SetTelemetryEnabledUseCase
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +30,9 @@ class ProfileViewModel(
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
     private val setUnitSystemUseCase: SetUnitSystemUseCase,
-    getLastBackupUseCase: GetLastBackupUseCase
+    private val setTelemetryEnabledUseCase: SetTelemetryEnabledUseCase,
+    getLastBackupUseCase: GetLastBackupUseCase,
+    isTelemetryEnabledUseCase: IsTelemetryEnabledUseCase
 ) : ViewModel(), ProfileCallbacks {
 
     private val _state = MutableStateFlow(value = ProfileViewState())
@@ -39,6 +43,9 @@ class ProfileViewModel(
     init {
         viewModelScope.launch {
             getLastBackupUseCase().collect { lastBackup -> _state.update { it.copy(lastBackup = lastBackup) } }
+        }
+        viewModelScope.launch {
+            isTelemetryEnabledUseCase().collect { isEnabled -> _state.update { it.copy(isTelemetryEnabled = isEnabled) } }
         }
         viewModelScope.launch {
             combine(
@@ -90,6 +97,10 @@ class ProfileViewModel(
 
     override fun onUnitSystemSelected(unitSystem: UnitSystem) {
         viewModelScope.launch { setUnitSystemUseCase(unitSystem = unitSystem) }
+    }
+
+    override fun onTelemetryToggled(isEnabled: Boolean) {
+        viewModelScope.launch { setTelemetryEnabledUseCase(isEnabled = isEnabled) }
     }
 
     override fun onSaveTargetWeight(targetKg: Double) {

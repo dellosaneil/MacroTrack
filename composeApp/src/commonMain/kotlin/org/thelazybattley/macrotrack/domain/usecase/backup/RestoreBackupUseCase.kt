@@ -1,8 +1,13 @@
 package org.thelazybattley.macrotrack.domain.usecase.backup
 
+import org.thelazybattley.macrotrack.core.telemetry.Telemetry
+import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
 import org.thelazybattley.macrotrack.domain.repository.BackupRepository
 
-class RestoreBackupUseCase(private val repository: BackupRepository) {
+class RestoreBackupUseCase(private val repository: BackupRepository, private val telemetry: Telemetry) {
 
-    suspend operator fun invoke(bytes: ByteArray) = repository.restore(bytes = bytes)
+    suspend operator fun invoke(bytes: ByteArray) {
+        repository.restore(bytes = bytes)
+        telemetry.logEvent(name = TelemetryEvent.BACKUP_RESTORED)
+    }
 }

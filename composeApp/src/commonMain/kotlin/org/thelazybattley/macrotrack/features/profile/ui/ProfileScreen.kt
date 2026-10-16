@@ -118,7 +118,9 @@ fun ProfileScreen(
         ProfileYourData(
             modifier = Modifier.fillMaxWidth(),
             lastBackup = viewState.lastBackup,
-            onClick = onOpenBackup
+            isTelemetryEnabled = viewState.isTelemetryEnabled,
+            onClick = onOpenBackup,
+            onTelemetryToggled = callbacks::onTelemetryToggled
         )
     }
 

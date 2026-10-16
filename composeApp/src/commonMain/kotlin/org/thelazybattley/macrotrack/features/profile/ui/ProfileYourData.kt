@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +31,9 @@ import macrotrack.composeapp.generated.resources.backup_profile_not_yet
 import macrotrack.composeapp.generated.resources.backup_profile_trial
 import macrotrack.composeapp.generated.resources.ic_chevron_right
 import macrotrack.composeapp.generated.resources.ic_cloud_check
+import macrotrack.composeapp.generated.resources.ic_shield_check
+import macrotrack.composeapp.generated.resources.share_usage_data
+import macrotrack.composeapp.generated.resources.share_usage_data_detail
 import macrotrack.composeapp.generated.resources.your_data
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.LastBackup
@@ -40,12 +46,14 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import org.jetbrains.compose.resources.painterResource
 
-/** The way into Backup & export, with when the last backup was saved. */
+/** The way into Backup & export, with when the last backup was saved, and the choice to share crash reports. */
 @Composable
 fun ProfileYourData(
     modifier: Modifier = Modifier,
     lastBackup: LastBackup?,
-    onClick: () -> Unit
+    isTelemetryEnabled: Boolean,
+    onClick: () -> Unit,
+    onTelemetryToggled: (Boolean) -> Unit
 ) {
     val status = LocalProAccess.current.state.status
     val backupText = if (lastBackup != null) {
@@ -90,6 +98,41 @@ fun ProfileYourData(
                 modifier = Modifier.size(size = 16.dp)
             )
         }
+        ShareUsageRow(isEnabled = isTelemetryEnabled, onToggled = onTelemetryToggled)
+    }
+}
+
+@Composable
+private fun ShareUsageRow(isEnabled: Boolean, onToggled: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(size = 20.dp))
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 20.dp))
+            .toggleable(value = isEnabled, role = Role.Switch, onValueChange = onToggled)
+            .heightIn(min = 64.dp)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        IconTile(icon = Res.drawable.ic_shield_check, tint = colors.accentInk, background = colors.accentSoft, size = 36)
+        Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+            Text(text = stringResource(resource = Res.string.share_usage_data), style = typography.medium13, color = colors.ink)
+            Text(text = stringResource(resource = Res.string.share_usage_data_detail), style = typography.regular11, color = colors.muted)
+        }
+        // The whole row toggles, so the switch itself only shows the state.
+        Switch(
+            checked = isEnabled,
+            onCheckedChange = null,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = colors.onAccent,
+                checkedTrackColor = colors.accent,
+                uncheckedThumbColor = colors.faint,
+                uncheckedTrackColor = colors.surface,
+                uncheckedBorderColor = colors.line
+            )
+        )
     }
 }
 
@@ -97,6 +140,12 @@ fun ProfileYourData(
 @Composable
 private fun PreviewProfileYourData() {
     MacroTrackTheme {
-        ProfileYourData(modifier = Modifier.padding(all = 16.dp), lastBackup = null, onClick = {})
+        ProfileYourData(
+            modifier = Modifier.padding(all = 16.dp),
+            lastBackup = null,
+            isTelemetryEnabled = true,
+            onClick = {},
+            onTelemetryToggled = {}
+        )
     }
 }

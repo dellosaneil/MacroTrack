@@ -12,6 +12,7 @@ data class ProfileViewState(
     val weekSummary: WeekSummary? = null,
     val firstWeightDate: LocalDate? = null,
     val lastBackup: LastBackup? = null,
+    val isTelemetryEnabled: Boolean = true,
     val route: String? = null
 )
 

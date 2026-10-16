@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.pro
 
+import org.thelazybattley.macrotrack.core.telemetry.Telemetry
+import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +33,8 @@ class ProViewModel(
     startProTrialUseCase: StartProTrialUseCase,
     private val setProPurchasedUseCase: SetProPurchasedUseCase,
     private val dismissTrialEndedNoticeUseCase: DismissTrialEndedNoticeUseCase,
-    private val billingService: BillingService
+    private val billingService: BillingService,
+    private val telemetry: Telemetry
 ) : ViewModel(), ProCallbacks {
 
     private val ui = MutableStateFlow(value = UiState())
@@ -71,7 +74,10 @@ class ProViewModel(
             when (purchaseState) {
                 ProPurchaseState.OWNED -> {
                     setProPurchasedUseCase(isPurchased = true)
-                    if (isAwaitingPurchase) showMessage(message = ProMessage.UNLOCKED)
+                    if (isAwaitingPurchase) {
+                        telemetry.logEvent(name = TelemetryEvent.PRO_UNLOCKED)
+                        showMessage(message = ProMessage.UNLOCKED)
+                    }
                     isAwaitingPurchase = false
                 }
                 ProPurchaseState.PENDING -> if (isAwaitingPurchase) showMessage(message = ProMessage.PENDING)
@@ -87,6 +93,7 @@ class ProViewModel(
         viewModelScope.launch {
             ui.update { it.copy(isBusy = true) }
             isAwaitingPurchase = true
+            telemetry.logEvent(name = TelemetryEvent.PURCHASE_STARTED)
             when (billingService.launchPurchase()) {
                 PurchaseLaunchResult.STARTED -> Unit
                 PurchaseLaunchResult.ALREADY_OWNED -> showMessage(message = ProMessage.RESTORED)
