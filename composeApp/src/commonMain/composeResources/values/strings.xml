@@ -620,6 +620,12 @@
     <string name="scan_allow_camera">Allow camera</string>
     <string name="scan_open_settings">Open settings</string>
     <string name="scan_saved">Saved</string>
+    <string name="scan_found">Found</string>
+    <string name="scan_name_label">Food name · tap to rename</string>
+    <string name="scan_not_saved_yet">Not saved yet. It\'s added to My foods when you save or log it.</string>
+    <string name="scan_save_only">Save only</string>
+    <string name="scan_save_and_add">Save &amp; add to %1$s</string>
+    <string name="scan_discard_scan_another">Discard &amp; scan another</string>
     <string name="scan_brand_barcode">%1$s · Barcode %2$s</string>
     <string name="scan_barcode_number">Barcode %1$s</string>
     <string name="scan_serving_half">½ serving · %1$s %2$s</string>
@@ -643,7 +649,6 @@
     <string name="scan_button">Scan</string>
     <string name="scan_looking_title">Looking up this barcode…</string>
     <string name="scan_looking_body">Checking packaged foods and the foods you've saved</string>
-    <string name="scan_added_to_foods">Added to your foods. Log it now, or find it in your list anytime.</string>
     <string name="scan_later">Later</string>
     <string name="scan_just_added">%1$s was added to your foods. Tap + to log it to %2$s.</string>
     <string name="scan_new_tag">NEW · SCANNED</string>

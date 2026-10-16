@@ -44,6 +44,7 @@ class ScanBarcodeViewModel(
 
     private var savedFoods: List<Food> = emptyList()
     private var lookUpJob: Job? = null
+    private var saveJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -87,6 +88,7 @@ class ScanBarcodeViewModel(
                 barcode = null,
                 manualBarcode = "",
                 scanned = null,
+                name = "",
                 portionMacros = null
             )
         }
@@ -94,6 +96,11 @@ class ScanBarcodeViewModel(
 
     override fun onToggleTorch() {
         _state.update { it.copy(isTorchOn = !it.isTorchOn) }
+    }
+
+    override fun onNameChanged(value: String) {
+        if (_state.value.scanned?.isInMyFoods != false) return
+        _state.update { it.copy(name = value) }
     }
 
     override fun onAmountChanged(amount: Double) {
@@ -106,10 +113,8 @@ class ScanBarcodeViewModel(
 
     override fun onAddToMeal() {
         val currentState = _state.value
-        val scanned = currentState.scanned ?: return
         if (currentState.isSaved) return
-        viewModelScope.launch {
-            val food = scanned.food
+        saveScannedFood { food ->
             val macros = portionMacros(food = food, amount = currentState.amount)
             insertFoodLogUseCase(
                 foodName = food.name,
@@ -126,13 +131,16 @@ class ScanBarcodeViewModel(
     }
 
     override fun onLater() {
-        val scanned = _state.value.scanned ?: return
-        scannedFoodRequest.request(foodName = scanned.food.name)
+        saveScannedFood { food ->
+            scannedFoodRequest.request(foodName = food.name)
+            _state.update { it.copy(isClosed = true) }
+        }
     }
 
     override fun onEditFood() {
-        val scanned = _state.value.scanned ?: return
-        _state.update { it.copy(destinationRoute = AppDestinations.Root.CreateFood.createRoute(foodName = scanned.food.name)) }
+        saveScannedFood { food ->
+            _state.update { it.copy(destinationRoute = AppDestinations.Root.CreateFood.createRoute(foodName = food.name)) }
+        }
     }
 
     override fun onCreateFood() {
@@ -152,11 +160,11 @@ class ScanBarcodeViewModel(
         lookUpJob = viewModelScope.launch {
             val scanned = when (val result = lookUpBarcodeUseCase(barcode = barcode)) {
                 is BarcodeLookup.Saved -> savedScannedFood(food = result.food)
+                // Only added to the user's foods once they save or log it.
                 is BarcodeLookup.Product -> ScannedFood(
-                    // Saved straight away, so it's in the user's foods whether they log it now or later.
-                    food = saveProduct(food = result.product.food, brand = result.product.brand),
+                    food = result.product.food,
                     brand = result.product.brand,
-                    isNewlySaved = true,
+                    isInMyFoods = false,
                     servingLabel = result.product.servingLabel,
                     servings = productServings(
                         servingLabel = result.product.servingLabel,
@@ -187,8 +195,8 @@ class ScanBarcodeViewModel(
         val saved = foods.find { it.barcode == barcode } ?: return
         when (currentState.mode) {
             ScanMode.NOT_FOUND, ScanMode.UNAVAILABLE -> showFound(scanned = savedScannedFood(food = saved), amount = saved.weight)
-            ScanMode.FOUND -> currentState.scanned?.takeIf { it.food != saved }?.let { scanned ->
-                showFound(scanned = scanned.copy(food = saved), amount = currentState.amount)
+            ScanMode.FOUND -> currentState.scanned?.takeIf { it.food != saved || !it.isInMyFoods }?.let { scanned ->
+                showFound(scanned = scanned.copy(food = saved, isInMyFoods = true), amount = currentState.amount)
             }
             else -> Unit
         }
@@ -199,6 +207,7 @@ class ScanBarcodeViewModel(
             it.copy(
                 mode = ScanMode.FOUND,
                 scanned = scanned,
+                name = scanned.food.name,
                 amount = amount,
                 portionMacros = portionMacros(food = scanned.food, amount = amount)
             )
@@ -208,7 +217,7 @@ class ScanBarcodeViewModel(
     private fun savedScannedFood(food: Food) = ScannedFood(
         food = food,
         brand = null,
-        isNewlySaved = false,
+        isInMyFoods = true,
         servingLabel = null,
         servings = listOfNotNull(
             ServingOption(amount = food.weight),
@@ -234,12 +243,25 @@ class ScanBarcodeViewModel(
     private fun portionMacros(food: Food, amount: Double) =
         calculateAdjustMacrosUseCase(portionSize = amount, originalFood = food)
 
-    /** Saves an Open Food Facts product to the user's foods, so the next scan finds it offline. */
-    private suspend fun saveProduct(food: Food, brand: String?): Food {
-        savedFoods.find { it.barcode == food.barcode }?.let { return it }
-        val saved = food.copy(name = uniqueName(name = food.name, brand = brand, barcode = food.barcode))
-        insertFoodUseCase(food = saved)
-        return saved
+    /**
+     * Adds an Open Food Facts product to the user's foods under the name on the sheet, so the next scan finds it
+     * offline, then hands the saved food to [onSaved]. A food that's already saved goes straight to [onSaved].
+     */
+    private fun saveScannedFood(onSaved: suspend (Food) -> Unit) {
+        val currentState = _state.value
+        val scanned = currentState.scanned ?: return
+        if (!currentState.canSave || saveJob?.isActive == true) return
+        saveJob = viewModelScope.launch {
+            val food = if (scanned.isInMyFoods) {
+                scanned.food
+            } else {
+                savedFoods.find { it.barcode == scanned.food.barcode } ?: scanned.food.copy(
+                    name = uniqueName(name = currentState.name.trim(), brand = scanned.brand, barcode = scanned.food.barcode)
+                ).also { insertFoodUseCase(food = it) }
+            }
+            _state.update { it.copy(scanned = scanned.copy(food = food, isInMyFoods = true), name = food.name) }
+            onSaved(food)
+        }
     }
 
     /** Foods are keyed by name, so a product never replaces a saved food that happens to share its name. */

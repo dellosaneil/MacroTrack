@@ -7,6 +7,7 @@ interface ScanBarcodeCallbacks {
     fun onLookUpManualBarcode()
     fun onScanAgain()
     fun onToggleTorch()
+    fun onNameChanged(value: String)
     fun onAmountChanged(amount: Double)
     fun onAddToMeal()
     fun onLater()
@@ -22,6 +23,7 @@ interface ScanBarcodeCallbacks {
             override fun onLookUpManualBarcode() {}
             override fun onScanAgain() {}
             override fun onToggleTorch() {}
+            override fun onNameChanged(value: String) {}
             override fun onAmountChanged(amount: Double) {}
             override fun onAddToMeal() {}
             override fun onLater() {}

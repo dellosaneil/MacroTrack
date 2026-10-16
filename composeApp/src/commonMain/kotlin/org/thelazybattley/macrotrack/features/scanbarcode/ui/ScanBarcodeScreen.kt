@@ -42,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -52,7 +51,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,20 +71,23 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlin.math.roundToInt
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.base_serving
 import macrotrack.composeapp.generated.resources.cancel
 import macrotrack.composeapp.generated.resources.carbs
 import macrotrack.composeapp.generated.resources.decrease_portion
 import macrotrack.composeapp.generated.resources.fat
-import macrotrack.composeapp.generated.resources.ic_bookmark
+import macrotrack.composeapp.generated.resources.food_name
 import macrotrack.composeapp.generated.resources.ic_camera
 import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.ic_flashlight
 import macrotrack.composeapp.generated.resources.ic_flashlight_on
+import macrotrack.composeapp.generated.resources.ic_info
 import macrotrack.composeapp.generated.resources.ic_keyboard
 import macrotrack.composeapp.generated.resources.ic_package
+import macrotrack.composeapp.generated.resources.ic_pencil
 import macrotrack.composeapp.generated.resources.ic_plus
 import macrotrack.composeapp.generated.resources.ic_search_off
 import macrotrack.composeapp.generated.resources.increase_portion
@@ -90,7 +95,6 @@ import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.portion_size
 import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.scan_add_to_meal_log
-import macrotrack.composeapp.generated.resources.scan_added_to_foods
 import macrotrack.composeapp.generated.resources.scan_adding_to
 import macrotrack.composeapp.generated.resources.scan_after_adding
 import macrotrack.composeapp.generated.resources.scan_again
@@ -100,24 +104,30 @@ import macrotrack.composeapp.generated.resources.scan_barcode_number
 import macrotrack.composeapp.generated.resources.scan_brand_barcode
 import macrotrack.composeapp.generated.resources.scan_close
 import macrotrack.composeapp.generated.resources.scan_create_with_barcode
+import macrotrack.composeapp.generated.resources.scan_discard_scan_another
 import macrotrack.composeapp.generated.resources.scan_edit_label
 import macrotrack.composeapp.generated.resources.scan_flashlight
+import macrotrack.composeapp.generated.resources.scan_found
 import macrotrack.composeapp.generated.resources.scan_hint
 import macrotrack.composeapp.generated.resources.scan_kcal_left_today
 import macrotrack.composeapp.generated.resources.scan_label_serving
-import macrotrack.composeapp.generated.resources.scan_look_up
 import macrotrack.composeapp.generated.resources.scan_later
+import macrotrack.composeapp.generated.resources.scan_look_up
 import macrotrack.composeapp.generated.resources.scan_looking_body
 import macrotrack.composeapp.generated.resources.scan_looking_title
-import macrotrack.composeapp.generated.resources.scan_saved
 import macrotrack.composeapp.generated.resources.scan_manual_label
 import macrotrack.composeapp.generated.resources.scan_manual_placeholder
+import macrotrack.composeapp.generated.resources.scan_name_label
 import macrotrack.composeapp.generated.resources.scan_not_found_body
 import macrotrack.composeapp.generated.resources.scan_not_found_title
+import macrotrack.composeapp.generated.resources.scan_not_saved_yet
 import macrotrack.composeapp.generated.resources.scan_open_settings
 import macrotrack.composeapp.generated.resources.scan_permission_body
 import macrotrack.composeapp.generated.resources.scan_permission_title
 import macrotrack.composeapp.generated.resources.scan_read
+import macrotrack.composeapp.generated.resources.scan_save_and_add
+import macrotrack.composeapp.generated.resources.scan_save_only
+import macrotrack.composeapp.generated.resources.scan_saved
 import macrotrack.composeapp.generated.resources.scan_search_by_name
 import macrotrack.composeapp.generated.resources.scan_search_instead
 import macrotrack.composeapp.generated.resources.scan_serving_amount
@@ -144,7 +154,6 @@ import org.thelazybattley.macrotrack.features.scanbarcode.ServingOption
 import org.thelazybattley.macrotrack.features.scanbarcode.formatBarcode
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
-import kotlin.math.roundToInt
 
 // The camera view stays dark in both themes; the sheets on top of it follow the app theme.
 private val CameraBackground = Color(color = 0xFF0D0E10)
@@ -171,6 +180,9 @@ fun ScanBarcodeScreen(
     }
     LaunchedEffect(key1 = viewState.isSaved) {
         if (viewState.isSaved) onSaved()
+    }
+    LaunchedEffect(key1 = viewState.isClosed) {
+        if (viewState.isClosed) onBack()
     }
     ScanBarcodeScreen(
         modifier = modifier,
@@ -245,11 +257,7 @@ private fun ScanBarcodeScreen(
                         FoundContent(
                             viewState = viewState,
                             scanned = scanned,
-                            callbacks = callbacks,
-                            onLater = {
-                                callbacks.onLater()
-                                onBack()
-                            }
+                            callbacks = callbacks
                         )
                     }
                     ScanMode.NOT_FOUND, ScanMode.UNAVAILABLE -> NotFoundContent(
@@ -586,10 +594,10 @@ private fun ScanSheet(
 private fun FoundContent(
     viewState: ScanBarcodeViewState,
     scanned: ScannedFood,
-    callbacks: ScanBarcodeCallbacks,
-    onLater: () -> Unit
+    callbacks: ScanBarcodeCallbacks
 ) {
     val food = scanned.food
+    val isInMyFoods = scanned.isInMyFoods
     val barcode = food.barcode?.let(::formatBarcode) ?: viewState.barcode?.let(::formatBarcode).orEmpty()
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -609,13 +617,18 @@ private fun FoundContent(
             )
         }
         Column(modifier = Modifier.weight(weight = 1f)) {
-            Text(
-                text = food.name,
-                style = typography.bold18,
-                color = colors.ink,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+            if (isInMyFoods) {
+                Text(
+                    text = food.name,
+                    style = typography.bold18,
+                    color = colors.ink,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            } else {
+                FoodNameField(value = viewState.name, onValueChange = callbacks::onNameChanged)
+                Spacer(modifier = Modifier.height(height = 4.dp))
+            }
             Text(
                 text = scanned.brand?.let { stringResource(Res.string.scan_brand_barcode, it, barcode) }
                     ?: stringResource(Res.string.scan_barcode_number, barcode),
@@ -638,29 +651,35 @@ private fun FoundContent(
                 tint = colors.accentInk,
                 modifier = Modifier.size(size = 12.dp)
             )
-            Text(text = stringResource(resource = Res.string.scan_saved), style = typography.bold12, color = colors.accentInk)
+            Text(
+                text = stringResource(resource = if (isInMyFoods) Res.string.scan_saved else Res.string.scan_found),
+                style = typography.bold12,
+                color = colors.accentInk
+            )
         }
     }
 
-    if (scanned.isNewlySaved) {
+    if (!isInMyFoods) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 14.dp))
+                .clip(shape = RoundedCornerShape(size = 14.dp))
+                .background(color = colors.surface)
+                .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 14.dp))
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
         ) {
             Icon(
-                painter = painterResource(resource = Res.drawable.ic_bookmark),
+                painter = painterResource(resource = Res.drawable.ic_info),
                 contentDescription = null,
-                tint = colors.accentInk,
-                modifier = Modifier.size(size = 18.dp)
+                tint = colors.muted,
+                modifier = Modifier.size(size = 16.dp)
             )
             Text(
-                text = stringResource(resource = Res.string.scan_added_to_foods),
-                style = typography.bold13,
-                color = colors.accentInk
+                text = stringResource(resource = Res.string.scan_not_saved_yet),
+                style = typography.regular11,
+                color = colors.muted
             )
         }
     }
@@ -745,16 +764,23 @@ private fun FoundContent(
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        val mealTitle = stringResource(resource = viewState.mealType.title)
         SheetButton(
-            text = stringResource(resource = Res.string.scan_later),
+            text = stringResource(resource = if (isInMyFoods) Res.string.scan_later else Res.string.scan_save_only),
             isPrimary = false,
-            onClick = onLater
+            enabled = viewState.canSave,
+            onClick = callbacks::onLater
         )
         SheetButton(
             modifier = Modifier.weight(weight = 1f),
-            text = stringResource(Res.string.scan_add_to_meal_log, stringResource(resource = viewState.mealType.title)),
+            text = if (isInMyFoods) {
+                stringResource(Res.string.scan_add_to_meal_log, mealTitle)
+            } else {
+                stringResource(Res.string.scan_save_and_add, mealTitle)
+            },
             icon = Res.drawable.ic_plus,
             isPrimary = true,
+            enabled = viewState.canSave,
             onClick = callbacks::onAddToMeal
         )
     }
@@ -763,8 +789,54 @@ private fun FoundContent(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(space = 16.dp, alignment = Alignment.CenterHorizontally)
     ) {
-        TextLink(text = stringResource(resource = Res.string.scan_another), onClick = callbacks::onScanAgain)
+        TextLink(
+            text = stringResource(resource = if (isInMyFoods) Res.string.scan_another else Res.string.scan_discard_scan_another),
+            onClick = callbacks::onScanAgain
+        )
         TextLink(text = stringResource(resource = Res.string.scan_edit_label), onClick = callbacks::onEditFood)
+    }
+}
+
+/** The product's name from Open Food Facts, which the user can fix before it's saved to their foods. */
+@Composable
+private fun FoodNameField(value: String, onValueChange: (String) -> Unit) {
+    val focusManager = LocalFocusManager.current
+    val label = stringResource(resource = Res.string.food_name)
+    Column(verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+        Text(text = stringResource(resource = Res.string.scan_name_label), style = typography.bold11, color = colors.muted)
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            textStyle = typography.bold16.copy(color = colors.ink),
+            cursorBrush = SolidColor(value = colors.accent),
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = label },
+            decorationBox = { innerTextField ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(height = 40.dp)
+                        .clip(shape = RoundedCornerShape(size = 12.dp))
+                        .background(color = colors.surface)
+                        .border(width = 1.5.dp, color = colors.accent, shape = RoundedCornerShape(size = 12.dp))
+                        .padding(horizontal = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+                ) {
+                    Box(modifier = Modifier.weight(weight = 1f)) { innerTextField() }
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_pencil),
+                        contentDescription = null,
+                        tint = colors.accentInk,
+                        modifier = Modifier.size(size = 16.dp)
+                    )
+                }
+            }
+        )
     }
 }
 

@@ -23,6 +23,8 @@ data class ScanBarcodeViewState(
     val barcode: String? = null,
     val manualBarcode: String = "",
     val scanned: ScannedFood? = null,
+    /** The name the food is saved under; editable until it's in the user's foods. */
+    val name: String = "",
     /** The portion being logged, in [Food.unit]. */
     val amount: Double = 0.0,
     /** Macros for [amount]. */
@@ -30,9 +32,14 @@ data class ScanBarcodeViewState(
     val remainingCalories: Int? = null,
     val isTorchOn: Boolean = false,
     val destinationRoute: String? = null,
-    val isSaved: Boolean = false
+    /** The portion was logged. */
+    val isSaved: Boolean = false,
+    /** The food was kept for later, so the scanner closes back to the food list. */
+    val isClosed: Boolean = false
 ) {
     val isSheetOpen: Boolean get() = mode != ScanMode.SCANNING
+
+    val canSave: Boolean get() = scanned?.isInMyFoods == true || name.isNotBlank()
 
     val isManualBarcodeValid: Boolean get() = normalizeBarcode(raw = manualBarcode) != null
 
@@ -45,13 +52,13 @@ data class ScanBarcodeViewState(
 }
 
 /**
- * A barcode that matched a saved food. [food] holds the macros for [Food.weight]. [isNewlySaved] marks an
- * Open Food Facts product that was added to the user's foods by this scan.
+ * A food the barcode matched. [food] holds the macros for [Food.weight]. [isInMyFoods] is false for an Open Food
+ * Facts product until the user saves or logs it.
  */
 data class ScannedFood(
     val food: Food,
     val brand: String?,
-    val isNewlySaved: Boolean,
+    val isInMyFoods: Boolean,
     val servingLabel: String?,
     val servings: List<ServingOption>
 )
