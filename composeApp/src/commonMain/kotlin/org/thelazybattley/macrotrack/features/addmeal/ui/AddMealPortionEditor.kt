@@ -35,6 +35,7 @@ import macrotrack.composeapp.generated.resources.decrease_portion
 import macrotrack.composeapp.generated.resources.edit_amount
 import macrotrack.composeapp.generated.resources.increase_portion
 import macrotrack.composeapp.generated.resources.kcal_text
+import macrotrack.composeapp.generated.resources.library_portion
 import macrotrack.composeapp.generated.resources.percentage_eaten
 import macrotrack.composeapp.generated.resources.portion_size
 import macrotrack.composeapp.generated.resources.portion_last_time
@@ -111,6 +112,11 @@ fun AddMealPortionEditor(
                 )
                 Text(
                     text = when {
+                        item.isLibrary -> stringResource(
+                            Res.string.library_portion,
+                            item.baseFood.weight.toCleanString(),
+                            item.baseFood.unit
+                        )
                         item.isRecipe && item.lastAmount != null ->
                             stringResource(Res.string.recipe_last_time, item.lastAmount.toCleanString())
                         item.isRecipe -> stringResource(resource = Res.string.recipe_full_serving)

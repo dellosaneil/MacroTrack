@@ -42,10 +42,12 @@ import macrotrack.composeapp.generated.resources.add_to_favorites
 import macrotrack.composeapp.generated.resources.add_value
 import macrotrack.composeapp.generated.resources.days_ago
 import macrotrack.composeapp.generated.resources.ic_check
+import macrotrack.composeapp.generated.resources.ic_book
 import macrotrack.composeapp.generated.resources.ic_plus
 import macrotrack.composeapp.generated.resources.ic_star_filled
 import macrotrack.composeapp.generated.resources.ic_star_outline
 import macrotrack.composeapp.generated.resources.kcal_text
+import macrotrack.composeapp.generated.resources.library_tag
 import macrotrack.composeapp.generated.resources.one_serving
 import macrotrack.composeapp.generated.resources.p_c_f
 import macrotrack.composeapp.generated.resources.percent_of_serving
@@ -62,6 +64,7 @@ import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.LastLogged
+import org.thelazybattley.macrotrack.features.addmeal.MealItemKind
 import org.thelazybattley.macrotrack.features.addmeal.MealListItem
 import org.thelazybattley.macrotrack.features.addmeal.SelectedMealItem
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
@@ -80,7 +83,7 @@ fun AddMealListItem(
     onToggle: () -> Unit,
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit,
-    onLongPress: () -> Unit,
+    onLongPress: (() -> Unit)?,
     onAmountChanged: (key: String, amount: Double) -> Unit
 ) {
     val shape = RoundedCornerShape(size = 16.dp)
@@ -143,6 +146,9 @@ fun AddMealListItem(
                                 .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 6.dp))
                                 .padding(horizontal = 6.dp, vertical = 1.dp)
                         )
+                    }
+                    if (item.isLibrary) {
+                        LibraryTag()
                     }
                     if (item.isJustScanned) {
                         Text(
@@ -246,6 +252,31 @@ fun AddMealListItem(
     }
 }
 
+/** Marks a built-in food library entry. */
+@Composable
+fun LibraryTag(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .background(color = colors.nightSoft, shape = RoundedCornerShape(size = 6.dp))
+            .padding(horizontal = 6.dp, vertical = 1.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 3.dp)
+    ) {
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_book),
+            contentDescription = null,
+            tint = colors.nightInk,
+            modifier = Modifier.size(size = 9.dp)
+        )
+        Text(
+            text = stringResource(resource = Res.string.library_tag),
+            style = typography.bold10,
+            color = colors.nightInk,
+            maxLines = 1
+        )
+    }
+}
+
 private fun Modifier.dashedBorder(color: Color, cornerRadius: Dp): Modifier = drawWithContent {
     drawContent()
     val stroke = 1.5.dp.toPx()
@@ -276,7 +307,7 @@ private fun PreviewAddMealListItem() {
         ) {
             AddMealListItem(
                 modifier = Modifier.fillMaxWidth(),
-                item = MealListItem(food = dummyFood, isRecipe = false),
+                item = MealListItem(food = dummyFood, kind = MealItemKind.FOOD),
                 selectedItem = null,
                 isExpanded = false,
                 showLastLogged = false,
@@ -288,7 +319,7 @@ private fun PreviewAddMealListItem() {
             )
             AddMealListItem(
                 modifier = Modifier.fillMaxWidth(),
-                item = MealListItem(food = dummyFood.copy(name = "Chicken rice bowl"), isRecipe = true),
+                item = MealListItem(food = dummyFood.copy(name = "Chicken rice bowl"), kind = MealItemKind.RECIPE),
                 selectedItem = SelectedMealItem(
                     key = "recipe:Chicken rice bowl",
                     isRecipe = true,

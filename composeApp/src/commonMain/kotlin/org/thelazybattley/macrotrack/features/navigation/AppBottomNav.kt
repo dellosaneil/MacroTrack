@@ -41,6 +41,7 @@ import androidx.navigation.navArgument
 import org.thelazybattley.macrotrack.features.addmeal.ui.AddMealScreen
 import org.thelazybattley.macrotrack.features.calendar.ui.CalendarScreen
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodScreen
+import org.thelazybattley.macrotrack.features.foodlibrary.ui.FoodLibraryScreen
 import org.thelazybattley.macrotrack.features.scanbarcode.ui.ScanBarcodeScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
 import org.thelazybattley.macrotrack.features.logweight.ui.LogWeightScreen
@@ -59,6 +60,9 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.BARCODE
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LIBRARY_FOOD
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PREFILL_NAME
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.QUERY
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEASUREMENT_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PRO_FEATURE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
@@ -205,6 +209,16 @@ fun AppBottomNav() {
                                 type = NavType.StringType
                                 nullable = true
                                 defaultValue = null
+                            },
+                            navArgument(name = PREFILL_NAME) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            },
+                            navArgument(name = LIBRARY_FOOD) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
                             }
                         )
                     ) {
@@ -213,6 +227,31 @@ fun AppBottomNav() {
                         ) {
                             navController.popBackStack()
                         }
+                    }
+                    composable(
+                        route = AppDestinations.Root.FoodLibrary.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = MEAL_TYPE) {
+                                type = NavType.StringType
+                            },
+                            navArgument(name = QUERY) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        FoodLibraryScreen(
+                            onBack = {
+                                navController.popBackStack()
+                            },
+                            onNavigate = { route ->
+                                navigate(route)
+                            },
+                            onSaved = {
+                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                            }
+                        )
                     }
                     composable(
                         route = AppDestinations.Root.CreateRecipe.routeWithArgs!!,

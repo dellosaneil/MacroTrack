@@ -2,7 +2,11 @@ package org.thelazybattley.macrotrack.core.di
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
+import org.thelazybattley.macrotrack.data.repository.FoodLibraryRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.OpenFoodFactsRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.FoodLibraryRepository
+import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
+import org.thelazybattley.macrotrack.features.foodlibrary.FoodLibraryViewModel
 import org.thelazybattley.macrotrack.domain.repository.ProductRepository
 import org.thelazybattley.macrotrack.domain.usecase.food.LookUpBarcodeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
@@ -137,6 +141,7 @@ val repositoryModule = module {
     singleOf(::AppFlagRepositoryImpl) { bind<AppFlagRepository>() }
     singleOf(::ProRepositoryImpl) { bind<ProRepository>() }
     singleOf(::OpenFoodFactsRepositoryImpl) { bind<ProductRepository>() }
+    singleOf(::FoodLibraryRepositoryImpl) { bind<FoodLibraryRepository>() }
 }
 
 val useCaseModule = module {
@@ -181,6 +186,7 @@ val useCaseModule = module {
     factoryOf(::DismissTrialEndedNoticeUseCase)
     factoryOf(::LookUpBarcodeUseCase)
     factoryOf(::GetRemainingCaloriesTodayUseCase)
+    factoryOf(::GetFoodLibraryUseCase)
 }
 
 val viewModelModule = module {
@@ -205,6 +211,7 @@ val viewModelModule = module {
     viewModelOf(::TourViewModel)
     viewModelOf(::ProViewModel)
     viewModelOf(::ScanBarcodeViewModel)
+    viewModelOf(::FoodLibraryViewModel)
 }
 
 fun initKoin() {

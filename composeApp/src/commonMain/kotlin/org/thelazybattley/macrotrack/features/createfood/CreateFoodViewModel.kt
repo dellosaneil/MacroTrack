@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
@@ -15,9 +16,12 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateMacroPercentageUseC
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.UpdateFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
 import org.thelazybattley.macrotrack.features.createfood.ui.AddFoodTextFieldType
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.BARCODE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOOD_NAME
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LIBRARY_FOOD
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PREFILL_NAME
 
 class CreateFoodViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
@@ -25,6 +29,7 @@ class CreateFoodViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val calculateMacroPercentageUseCase: CalculateMacroPercentageUseCase,
     private val updateFoodUseCase: UpdateFoodUseCase,
+    private val getFoodLibraryUseCase: GetFoodLibraryUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), CreateFoodCallbacks {
 
@@ -34,16 +39,24 @@ class CreateFoodViewModel(
     init {
         val foodName: String? = savedStateHandle[FOOD_NAME]
         val scannedBarcode: String? = savedStateHandle[BARCODE]
+        val prefillName: String? = savedStateHandle[PREFILL_NAME]
+        val libraryFoodName: String? = savedStateHandle[LIBRARY_FOOD]
         viewModelScope.launch {
+            // "Make my own version" starts a new food from a library entry's values.
+            val libraryFood = libraryFoodName?.let { name ->
+                getFoodLibraryUseCase().first().find { it.food.name == name }?.food
+            }
             getAllFoodUseCase().collect { foodList ->
                 val foodDetails = foodList.find { food ->
                     food.name == foodName
-                }
+                } ?: libraryFood
+                val name = foodName?.ifEmpty { null } ?: libraryFood?.name ?: prefillName?.trim() ?: ""
                 _state.update { currentState ->
                     currentState.copy(
                         foodNameList = foodList.map { food -> food.name },
                         isUpdating = !foodName.isNullOrEmpty(),
-                        name = foodName ?: "",
+                        name = name,
+                        duplicateFood = foodName.isNullOrEmpty() && foodList.any { it.name.equals(other = name, ignoreCase = true) },
                         protein = foodDetails?.macros?.protein?.toString(),
                         carbs = foodDetails?.macros?.carbs?.toString(),
                         fat = foodDetails?.macros?.fat?.toString(),
@@ -53,6 +66,9 @@ class CreateFoodViewModel(
                         // Editing keeps the food's barcode; a new food can arrive with the one that was just scanned.
                         barcode = foodDetails?.barcode ?: scannedBarcode
                     )
+                }
+                if (libraryFood != null) {
+                    _state.update { currentState -> currentState.copy(buttonEnabled = currentState.canSave) }
                 }
                 calculateMacroPercentage()
             }
@@ -154,16 +170,17 @@ class CreateFoodViewModel(
                 )
             }
         }
-        val isButtonEnabled = with(receiver = state.value) {
-            name.isNotBlank() && weight > 0 && calories > 0 && fat != null && protein != null && carbs != null && !duplicateFood && unit.isNotBlank()
-        }
         _state.update { currentState ->
-            currentState.copy(buttonEnabled = isButtonEnabled)
+            currentState.copy(buttonEnabled = currentState.canSave)
         }
         if (type != AddFoodTextFieldType.FOOD_NAME && type != AddFoodTextFieldType.AMOUNT) {
             calculateMacroPercentage()
         }
     }
+
+    private val CreateFoodViewState.canSave: Boolean
+        get() = name.isNotBlank() && weight > 0 && calories > 0 && fat != null && protein != null && carbs != null &&
+            !duplicateFood && unit.isNotBlank()
 
     private fun calculateMacroPercentage() {
         _state.update { updatedState ->

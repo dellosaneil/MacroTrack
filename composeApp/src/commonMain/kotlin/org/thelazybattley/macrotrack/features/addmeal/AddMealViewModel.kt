@@ -21,6 +21,7 @@ import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
@@ -39,6 +40,7 @@ class AddMealViewModel(
     private val getFavoriteKeysUseCase: GetFavoriteKeysUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val scannedFoodRequest: ScannedFoodRequest,
+    private val getFoodLibraryUseCase: GetFoodLibraryUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks {
 
@@ -58,14 +60,21 @@ class AddMealViewModel(
                 flow = getAllFoodUseCase(),
                 flow2 = getAllRecipeUseCase(),
                 flow3 = getAllFoodLogUseCase(),
-                flow4 = getFavoriteKeysUseCase()
-            ) { foodList, recipeList, foodLogs, favoriteKeys ->
+                flow4 = getFavoriteKeysUseCase(),
+                flow5 = getFoodLibraryUseCase()
+            ) { foodList, recipeList, foodLogs, favoriteKeys, libraryFoods ->
                 val recipeMeals = recipeList.toRecipeMeals(foods = foodList, calculateAdjustMacros = calculateAdjustMacrosUseCase)
                 _state.update { currentState ->
                     currentState.copy(
                         completeFoodList = foodList,
                         recipeList = recipeMeals,
-                        lastLogged = lastLogged(foodLogs = foodLogs, foods = foodList, recipes = recipeMeals),
+                        libraryFoods = libraryFoods,
+                        lastLogged = lastLogged(
+                            foodLogs = foodLogs,
+                            foods = foodList,
+                            recipes = recipeMeals,
+                            libraryFoods = libraryFoods.map { it.food }
+                        ),
                         favoriteKeys = favoriteKeys
                     )
                 }
@@ -109,6 +118,7 @@ class AddMealViewModel(
                 val selected = SelectedMealItem(
                     key = item.key,
                     isRecipe = item.isRecipe,
+                    isLibrary = item.isLibrary,
                     baseFood = item.food,
                     amount = amount,
                     food = adjustedFood(baseFood = item.food, isRecipe = item.isRecipe, amount = amount),
@@ -169,6 +179,7 @@ class AddMealViewModel(
     }
 
     override fun onEditItem(item: MealListItem) {
+        if (item.isLibrary) return
         val route = if (item.isRecipe) {
             AppDestinations.Root.CreateRecipe.createRoute(recipeName = item.food.name)
         } else {
@@ -178,6 +189,7 @@ class AddMealViewModel(
     }
 
     override fun onDeleteItem(item: MealListItem) {
+        if (item.isLibrary) return
         _state.update { currentState ->
             currentState.copy(selection = currentState.selection.filterNot { it.key == item.key })
         }
@@ -219,22 +231,36 @@ class AddMealViewModel(
     }
 
     /**
-     * The newest log of each saved food and recipe, with its portion. Recipes are logged with
-     * weight 0.0, so their portion is worked out from the calories eaten.
+     * The newest log of each saved food, recipe and library food, with its portion. Recipes are logged with
+     * weight 0.0, so their portion is worked out from the calories eaten. Logs only store a name, so a saved food
+     * takes precedence over a library food with the same name.
      */
     private fun lastLogged(
         foodLogs: List<FoodLog>,
         foods: List<Food>,
-        recipes: List<RecipeMeal>
+        recipes: List<RecipeMeal>,
+        libraryFoods: List<Food>
     ): Map<String, LastLogged> {
         val foodsByName = foods.associateBy { it.name }
         val recipesByName = recipes.associateBy { it.name }
+        val libraryByName = libraryFoods.associateBy { it.name }
+        val kindOf = { log: FoodLog ->
+            when {
+                log.weight == 0.0 -> MealItemKind.RECIPE
+                log.foodName !in foodsByName && log.foodName in libraryByName -> MealItemKind.LIBRARY
+                else -> MealItemKind.FOOD
+            }
+        }
         return foodLogs
-            .groupBy { mealItemKey(name = it.foodName, isRecipe = it.weight == 0.0) }
+            .groupBy { mealItemKey(name = it.foodName, kind = kindOf(it)) }
             .mapNotNull { (key, logs) ->
                 val log = logs.maxBy { it.id }
                 val isRecipe = log.weight == 0.0
-                val baseFood = if (isRecipe) recipesByName[log.foodName]?.food else foodsByName[log.foodName]
+                val baseFood = when (kindOf(log)) {
+                    MealItemKind.RECIPE -> recipesByName[log.foodName]?.food
+                    MealItemKind.LIBRARY -> libraryByName[log.foodName]
+                    MealItemKind.FOOD -> foodsByName[log.foodName]
+                }
                 if (baseFood == null) return@mapNotNull null
                 val amount = if (isRecipe) {
                     recipePercentEaten(loggedCalories = log.calories, fullCalories = baseFood.macros.calories)

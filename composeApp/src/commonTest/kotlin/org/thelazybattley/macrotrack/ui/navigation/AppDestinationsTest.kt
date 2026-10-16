@@ -1,0 +1,38 @@
+package org.thelazybattley.macrotrack.ui.navigation
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class AppDestinationsTest {
+
+    @Test
+    fun createFoodRouteEncodesNames() {
+        assertEquals(
+            "create_food/?libraryFood=Milk%2C%202%25",
+            AppDestinations.Root.CreateFood.createRoute(foodName = "", libraryFood = "Milk, 2%")
+        )
+        assertEquals(
+            "create_food/Greek%20yogurt%2C%202%25",
+            AppDestinations.Root.CreateFood.createRoute(foodName = "Greek yogurt, 2%")
+        )
+    }
+
+    @Test
+    fun createFoodRouteLeavesOutMissingArguments() {
+        assertEquals("create_food/", AppDestinations.Root.CreateFood.createRoute(foodName = ""))
+        assertEquals(
+            "create_food/?barcode=4800016642507",
+            AppDestinations.Root.CreateFood.createRoute(foodName = "", barcode = "4800016642507")
+        )
+        assertEquals(
+            "create_food/?prefillName=Jalape%C3%B1o%20%26%20rice",
+            AppDestinations.Root.CreateFood.createRoute(foodName = "", prefillName = "Jalapeño & rice")
+        )
+    }
+
+    @Test
+    fun foodLibraryRouteSkipsABlankQuery() {
+        assertEquals("food_library/DINNER", AppDestinations.Root.FoodLibrary.createRoute(mealType = "DINNER", query = " "))
+        assertEquals("food_library/DINNER?query=chicken", AppDestinations.Root.FoodLibrary.createRoute(mealType = "DINNER", query = "chicken"))
+    }
+}

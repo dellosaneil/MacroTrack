@@ -26,10 +26,10 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.all
 import macrotrack.composeapp.generated.resources.favorites
 import macrotrack.composeapp.generated.resources.ic_clock
 import macrotrack.composeapp.generated.resources.ic_star_filled
+import macrotrack.composeapp.generated.resources.my_foods
 import macrotrack.composeapp.generated.resources.recent
 import macrotrack.composeapp.generated.resources.recipes
 import org.jetbrains.compose.resources.DrawableResource
@@ -107,7 +107,7 @@ enum class MealFilter(
 ) {
     RECENT(text = Res.string.recent, icon = Res.drawable.ic_clock),
     FAVORITES(text = Res.string.favorites, icon = Res.drawable.ic_star_filled),
-    ALL(text = Res.string.all, icon = null),
+    MY_FOODS(text = Res.string.my_foods, icon = null),
     RECIPES(text = Res.string.recipes, icon = null)
 }
 

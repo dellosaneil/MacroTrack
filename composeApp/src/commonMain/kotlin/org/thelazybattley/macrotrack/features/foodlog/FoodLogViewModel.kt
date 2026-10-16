@@ -25,6 +25,7 @@ import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.UpdateFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.features.addmeal.FULL_RECIPE_PERCENT
 import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
@@ -44,6 +45,7 @@ class FoodLogViewModel(
     private val getAllRecipeUseCase: GetAllRecipeUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val updateFoodLogUseCase: UpdateFoodLogUseCase,
+    private val getFoodLibraryUseCase: GetFoodLibraryUseCase,
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -55,8 +57,9 @@ class FoodLogViewModel(
             combine(
                 flow = getAllFoodLogUseCase(),
                 flow2 = getAllFoodUseCase(),
-                flow3 = getAllRecipeUseCase()
-            ) { logs, food, recipes ->
+                flow3 = getAllRecipeUseCase(),
+                flow4 = getFoodLibraryUseCase()
+            ) { logs, food, recipes, libraryFoods ->
                 val dates = logs.map { it.date }.toMutableSet()
                 dates.add(element = getCurrentDate())
                 _state.update { currentState ->
@@ -64,7 +67,8 @@ class FoodLogViewModel(
                         allFoodLog = logs,
                         availableDates = dates.toList(),
                         currentStreak = currentStreak(loggedDates = logs.map { it.date }.toSet(), today = getCurrentDate()),
-                        foodUnit = food.associate {
+                        // Library foods are logged by name too; a saved food with the same name takes precedence.
+                        foodUnit = libraryFoods.associate { it.food.name to it.food.unit } + food.associate {
                             it.name to it.unit
                         },
                         recipeCalories = recipes

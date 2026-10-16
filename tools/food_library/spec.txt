@@ -1,0 +1,292 @@
+# name | category | SR description | serving | * = popular
+# serving: g:<grams> | p:<portion text> | ml:<ml>@p:<portion text>
+Chicken breast, roasted | Protein | Chicken, broilers or fryers, breast, meat only, cooked, roasted | g:100 | *
+Chicken breast, raw | Protein | Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw | g:100
+Chicken thigh, roasted | Protein | Chicken, broilers or fryers, thigh, meat only, cooked, roasted | g:100 | *
+Chicken thigh, raw | Protein | Chicken, broilers or fryers, dark meat, thigh, meat only, raw | g:100
+Chicken drumstick, roasted | Protein | Chicken, broilers or fryers, dark meat, drumstick, meat only, cooked, roasted | p:drumstick without skin
+Chicken wing, roasted | Protein | Chicken, broilers or fryers, wing, meat and skin, cooked, roasted | p:1 piece
+Ground chicken, cooked | Protein | Chicken, ground, crumbles, cooked, pan-browned | g:100
+Turkey breast, roasted | Protein | Turkey, retail parts, breast, meat only, cooked, roasted | g:100
+Ground turkey, cooked | Protein | Turkey, Ground, cooked | g:100
+Beef sirloin steak, grilled | Protein | Beef, top sirloin, steak, separable lean and fat, trimmed to 1/8" fat, all grades, cooked, broiled | g:100
+Beef ribeye steak, grilled | Protein | Beef, rib eye, small end (ribs 10-12), separable lean and fat, trimmed to 0" fat, all grades, cooked, broiled | g:100
+Ground beef 90% lean, cooked | Protein | Beef, ground, 90% lean meat / 10% fat, crumbles, cooked, pan-browned | g:100 | *
+Ground beef 80% lean, cooked | Protein | Beef, ground, 80% lean meat / 20% fat, crumbles, cooked, pan-browned | g:100
+Pork chop, cooked | Protein | Pork, fresh, loin, center loin (chops), bone-in, separable lean and fat, cooked, broiled | g:100
+Pork tenderloin, roasted | Protein | Pork, fresh, loin, tenderloin, separable lean only, cooked, roasted | g:100
+Bacon, cooked | Protein | Pork, cured, bacon, cooked, baked | p:slice
+Ham, sliced | Protein | Ham, sliced, regular (approximately 11% fat) | p:slice
+Lamb chop, cooked | Protein | Lamb, loin, separable lean and fat, trimmed to 1/4" fat, choice, cooked, broiled | p:1 chop
+Salmon, cooked | Protein | Fish, salmon, Atlantic, farmed, cooked, dry heat | g:100 | *
+Tuna, canned in water | Protein | Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program) | p:1 can
+Tilapia, cooked | Protein | Fish, tilapia, cooked, dry heat | p:fillet
+Cod, cooked | Protein | Fish, cod, Atlantic, cooked, dry heat | p:fillet
+Shrimp, cooked | Protein | Crustaceans, shrimp, cooked | g:100
+Sardines, canned in oil | Protein | Fish, sardine, Atlantic, canned in oil, drained solids with bone | p:1 can
+Mackerel, cooked | Protein | Fish, mackerel, Atlantic, cooked, dry heat | g:100
+Egg, large | Protein | Egg, whole, raw, fresh | p:large | *
+Egg, hard-boiled | Protein | Egg, whole, cooked, hard-boiled | p:large
+Egg, fried | Protein | Egg, whole, cooked, fried | p:large
+Eggs, scrambled | Protein | Egg, whole, cooked, scrambled | p:large
+Egg white, large | Protein | Egg, white, raw, fresh | p:large
+Tofu, firm | Protein | Tofu, raw, firm, prepared with calcium sulfate | g:100
+Tempeh | Protein | Tempeh | g:100
+Hot dog, beef | Protein | Frankfurter, beef, unheated | p:hot dog
+Pork sausage, cooked | Protein | Pork sausage, link/patty, fully cooked, microwaved | p:link
+Pepperoni | Protein | Pepperoni, beef and pork, sliced | g:28
+Deli turkey, sliced | Protein | Turkey, white, rotisserie, deli cut | g:56
+Milk, whole | Dairy | Milk, whole, 3.25% milkfat, with added vitamin D | ml:240@p:1 cup
+Milk, 2% | Dairy | Milk, reduced fat, fluid, 2% milkfat, with added vitamin A and vitamin D | ml:240@p:1 cup | *
+Milk, skim | Dairy | Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim) | ml:240@p:1 cup
+Chocolate milk | Dairy | Milk, chocolate, fluid, commercial, reduced fat, with added vitamin A and vitamin D | ml:240@p:1 cup
+Greek yogurt, plain nonfat | Dairy | Yogurt, Greek, plain, nonfat (Includes foods for USDA's Food Distribution Program) | p:container | *
+Greek yogurt, plain whole milk | Dairy | Yogurt, Greek, plain, whole milk | g:170
+Yogurt, plain low-fat | Dairy | Yogurt, plain, low fat | p:container (6 oz)
+Cheddar cheese | Dairy | Cheese, cheddar (Includes foods for USDA's Food Distribution Program) | g:28 | *
+Mozzarella, part-skim | Dairy | Cheese, mozzarella, part skim milk | g:28
+Parmesan, grated | Dairy | Cheese, parmesan, grated | p:1 tbsp
+Swiss cheese | Dairy | Cheese, swiss | g:28
+Feta cheese | Dairy | Cheese, feta | g:28
+Cottage cheese, low-fat | Dairy | Cheese, cottage, lowfat, 2% milkfat | p:1 cup
+Cream cheese | Dairy | Cheese, cream | p:1 tbsp
+Butter | Fats & oils | Butter, salted | p:1 tbsp
+Heavy cream | Dairy | Cream, fluid, heavy whipping | p:1 tbsp
+Sour cream | Dairy | Cream, sour, cultured | p:1 tbsp
+Ice cream, vanilla | Sweets & snacks | Ice creams, vanilla | p:1/2 cup
+Apple, medium | Fruit | Apples, raw, with skin (Includes foods for USDA's Food Distribution Program) | p:medium | *
+Banana, medium | Fruit | Bananas, raw | p:medium | *
+Orange, medium | Fruit | Oranges, raw, all commercial varieties | p:1 fruit
+Strawberries | Fruit | Strawberries, raw | p:1 cup, halves
+Blueberries | Fruit | Blueberries, raw | p:1 cup
+Raspberries | Fruit | Raspberries, raw | p:1 cup
+Blackberries | Fruit | Blackberries, raw | p:1 cup
+Grapes | Fruit | Grapes, red or green (European type, such as Thompson seedless), raw | p:1 cup
+Watermelon | Fruit | Watermelon, raw | p:1 cup, diced
+Cantaloupe | Fruit | Melons, cantaloupe, raw | p:1 cup, diced
+Pineapple | Fruit | Pineapple, raw, all varieties | p:1 cup, chunks
+Mango | Fruit | Mangos, raw | p:1 cup pieces
+Pear, medium | Fruit | Pears, raw | p:medium
+Peach, medium | Fruit | Peaches, yellow, raw | p:medium
+Plum | Fruit | Plums, raw | p:1 fruit
+Cherries | Fruit | Cherries, sweet, raw | p:1 cup, with pits
+Kiwi | Fruit | Kiwifruit, green, raw | p:1 fruit
+Avocado | Fruit | Avocados, raw, all commercial varieties | p:1 avocado | *
+Grapefruit, half | Fruit | Grapefruit, raw, pink and red, all areas | p:0.5 fruit
+Papaya | Fruit | Papayas, raw | p:1 cup 1" pieces
+Pomegranate seeds | Fruit | Pomegranates, raw | p:cup arils
+Lemon juice | Fruit | Lemon juice, raw | p:1 fl oz
+Raisins | Fruit | Raisins, dark, seedless (Includes foods for USDA's Food Distribution Program) | p:1 small box
+Dates, Medjool | Fruit | Dates, medjool | p:1 date
+Dried cranberries | Fruit | Cranberries, dried, sweetened (Includes foods for USDA's Food Distribution Program) | g:40
+Applesauce, unsweetened | Fruit | Applesauce, canned, unsweetened, without added ascorbic acid (Includes foods for USDA's Food Distribution Program) | p:1 cup
+Broccoli, raw | Vegetables | Broccoli, raw | p:1 cup chopped | *
+Broccoli, steamed | Vegetables | Broccoli, cooked, boiled, drained, without salt | g:156
+Spinach, raw | Vegetables | Spinach, raw | p:1 cup
+Spinach, cooked | Vegetables | Spinach, cooked, boiled, drained, without salt | p:1 cup
+Kale, raw | Vegetables | Kale, raw | p:1 cup
+Romaine lettuce | Vegetables | Lettuce, cos or romaine, raw | p:1 cup shredded
+Iceberg lettuce | Vegetables | Lettuce, iceberg (includes crisphead types), raw | p:1 cup shredded
+Mixed salad greens | Vegetables | Lettuce, green leaf, raw | p:1 cup shredded
+Carrot, medium | Vegetables | Carrots, raw | p:medium
+Baby carrots | Vegetables | Carrots, baby, raw | g:85
+Cucumber | Vegetables | Cucumber, with peel, raw | g:104
+Tomato, medium | Vegetables | Tomatoes, red, ripe, raw, year round average | p:medium whole
+Cherry tomatoes | Vegetables | Tomatoes, red, ripe, raw, year round average | p:cherry
+Bell pepper, red | Vegetables | Peppers, sweet, red, raw | p:medium
+Bell pepper, green | Vegetables | Peppers, sweet, green, raw | p:medium
+Onion | Vegetables | Onions, raw | p:medium
+Garlic, clove | Vegetables | Garlic, raw | p:1 clove
+Mushrooms, white | Vegetables | Mushrooms, white, raw | p:1 cup, pieces or slices
+Zucchini | Vegetables | Squash, summer, zucchini, includes skin, raw | p:1 cup, chopped
+Cauliflower | Vegetables | Cauliflower, raw | p:1 cup chopped
+Green beans, cooked | Vegetables | Beans, snap, green, cooked, boiled, drained, without salt | p:1 cup
+Asparagus, cooked | Vegetables | Asparagus, cooked, boiled, drained | p:4 spears
+Brussels sprouts, cooked | Vegetables | Brussels sprouts, cooked, boiled, drained, without salt | g:156
+Cabbage | Vegetables | Cabbage, raw | p:1 cup, chopped
+Celery | Vegetables | Celery, raw | p:1 cup chopped
+Corn, sweet, cooked | Vegetables | Corn, sweet, yellow, cooked, boiled, drained, without salt | p:1 cup
+Corn on the cob | Vegetables | Corn, sweet, yellow, cooked, boiled, drained, without salt | p:1 ear medium
+Peas, green, cooked | Vegetables | Peas, green, frozen, cooked, boiled, drained, without salt | g:160
+Potato, baked | Vegetables | Potatoes, baked, flesh and skin, without salt | p:medium | *
+Potatoes, mashed | Vegetables | Potatoes, mashed, home-prepared, whole milk and butter added | p:1 cup
+Sweet potato, baked | Vegetables | Sweet potato, cooked, baked in skin, flesh, without salt | p:medium | *
+French fries | Vegetables | Potatoes, french fried, crinkle or regular cut, salt added in processing, frozen, oven-heated | g:100
+Eggplant, cooked | Vegetables | Eggplant, cooked, boiled, drained, without salt | p:1 cup
+Butternut squash, baked | Vegetables | Squash, winter, butternut, cooked, baked, without salt | p:1 cup
+Beets, cooked | Vegetables | Beets, cooked, boiled, drained | g:170
+Bok choy, cooked | Vegetables | Cabbage, chinese (pak-choi), cooked, boiled, drained, without salt | p:1 cup
+Salsa | Vegetables | Sauce, salsa, ready-to-serve | p:2 tbsp
+Rolled oats | Grains | Cereals, oats, regular and quick, not fortified, dry | g:40 | *
+Oatmeal, cooked | Grains | Cereals, oats, regular and quick, unenriched, cooked with water (includes boiling and microwaving), without salt | p:1 cup
+White rice, cooked | Grains | Rice, white, long-grain, regular, enriched, cooked | p:1 cup | *
+Brown rice, cooked | Grains | Rice, brown, long-grain, cooked (Includes foods for USDA's Food Distribution Program) | p:1 cup | *
+Jasmine rice, cooked | Grains | Rice, white, long-grain, regular, enriched, cooked | p:1 cup
+Quinoa, cooked | Grains | Quinoa, cooked | p:1 cup
+Pasta, cooked | Grains | Pasta, cooked, enriched, without added salt | p:1 cup spaghetti
+Whole wheat pasta, cooked | Grains | Pasta, whole-wheat, cooked (Includes foods for USDA's Food Distribution Program) | p:1 cup spaghetti
+Egg noodles, cooked | Grains | Noodles, egg, cooked, enriched, with added salt | p:1 cup
+Rice noodles, cooked | Grains | Rice noodles, cooked | p:1 cup
+Couscous, cooked | Grains | Couscous, cooked | p:1 cup
+White bread | Grains | Bread, white, commercially prepared (includes soft bread crumbs) | p:1 slice | *
+Whole wheat bread | Grains | Bread, whole-wheat, commercially prepared | p:1 slice
+Sourdough bread | Grains | Bread, french or vienna (includes sourdough) | g:50
+Bagel, plain | Grains | Bagels, plain, enriched, with calcium propionate (includes onion, poppy, sesame) | p:medium
+English muffin | Grains | English muffins, plain, enriched, without calcium propionate(includes sourdough) | p:1 muffin
+Flour tortilla | Grains | Tortillas, ready-to-bake or -fry, flour, refrigerated | p:1 tortilla
+Corn tortilla | Grains | Tortillas, ready-to-bake or -fry, corn | p:1 tortilla
+Pita bread | Grains | Bread, pita, white, enriched | p:pita, large
+Hamburger bun | Grains | Rolls, hamburger or hotdog, plain | p:1 roll
+Croissant | Grains | Croissants, butter | p:medium
+Pancakes | Grains | Pancakes, plain, prepared from recipe | p:pancake (6" dia)
+Waffle, frozen | Grains | Waffles, plain, frozen, ready -to-heat, toasted | p:waffle, round
+Corn flakes | Grains | Cereals ready-to-eat, RALSTON Corn Flakes | p:1 cup
+Granola | Grains | Cereals ready-to-eat, granola, homemade | g:50
+Crackers, saltine | Sweets & snacks | Crackers, saltines (includes oyster, soda, soup) | p:cracker
+Popcorn, air-popped | Sweets & snacks | Snacks, popcorn, air-popped | p:1 cup
+Black beans, cooked | Legumes & nuts | Beans, black, mature seeds, cooked, boiled, without salt | p:1 cup | *
+Chickpeas, cooked | Legumes & nuts | Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt | p:1 cup
+Lentils, cooked | Legumes & nuts | Lentils, mature seeds, cooked, boiled, without salt | p:1 cup
+Kidney beans, cooked | Legumes & nuts | Beans, kidney, all types, mature seeds, cooked, boiled, without salt | p:1 cup
+Pinto beans, cooked | Legumes & nuts | Beans, pinto, mature seeds, cooked, boiled, without salt | p:1 cup
+Edamame | Legumes & nuts | Edamame, frozen, prepared | p:1 cup
+Hummus | Legumes & nuts | Hummus, commercial | p:1 tbsp
+Refried beans | Legumes & nuts | Refried beans, canned, traditional style | g:120
+Baked beans | Legumes & nuts | Beans, baked, canned, plain or vegetarian | p:1 cup
+Peanut butter | Legumes & nuts | Peanut butter, smooth style, without salt | p:2 tbsp | *
+Peanuts, roasted | Legumes & nuts | Peanuts, all types, dry-roasted, without salt | g:28
+Almonds | Legumes & nuts | Nuts, almonds | g:28 | *
+Almond butter | Legumes & nuts | Nuts, almond butter, plain, without salt added | p:1 tbsp
+Cashews, roasted | Legumes & nuts | Nuts, cashew nuts, dry roasted, without salt added | g:28
+Walnuts | Legumes & nuts | Nuts, walnuts, english | g:28
+Pistachios | Legumes & nuts | Nuts, pistachio nuts, dry roasted, without salt added | g:28
+Pecans | Legumes & nuts | Nuts, pecans | g:28
+Chia seeds | Legumes & nuts | Seeds, chia seeds, dried | g:28
+Flaxseed, ground | Legumes & nuts | Seeds, flaxseed | p:1 tbsp, ground
+Sunflower seeds | Legumes & nuts | Seeds, sunflower seed kernels, dry roasted, without salt | g:28
+Pumpkin seeds | Legumes & nuts | Seeds, pumpkin and squash seed kernels, dried | g:28
+Olive oil | Fats & oils | Oil, olive, salad or cooking | p:1 tablespoon | *
+Vegetable oil | Fats & oils | Oil, canola | p:1 tbsp
+Coconut oil | Fats & oils | Oil, coconut | p:1 tbsp
+Mayonnaise | Fats & oils | Salad dressing, mayonnaise, regular | p:1 tbsp
+Ranch dressing | Fats & oils | Salad dressing, ranch dressing, regular | p:1 tablespoon
+Italian dressing | Fats & oils | Salad dressing, italian dressing, commercial, regular | p:1 tbsp
+Ketchup | Fats & oils | Catsup | p:1 tbsp
+Mustard | Fats & oils | Mustard, prepared, yellow | p:1 tsp
+Soy sauce | Fats & oils | Soy sauce made from soy and wheat (shoyu) | p:1 tbsp
+Barbecue sauce | Fats & oils | Sauce, barbecue | p:1 tbsp
+Honey | Sweets & snacks | Honey | p:1 tbsp
+Maple syrup | Sweets & snacks | Syrups, maple | p:1 tbsp
+Sugar | Sweets & snacks | Sugars, granulated | p:1 tsp
+Jam | Sweets & snacks | Jams and preserves | p:1 tbsp
+Dark chocolate 70-85% | Sweets & snacks | Chocolate, dark, 70-85% cacao solids | g:28
+Milk chocolate | Sweets & snacks | Candies, milk chocolate | g:28
+Potato chips | Sweets & snacks | Snacks, potato chips, plain, salted | g:28
+Tortilla chips | Sweets & snacks | Snacks, tortilla chips, plain, white corn, salted | g:28
+Pretzels | Sweets & snacks | Snacks, pretzels, hard, plain, salted | g:28
+Chocolate chip cookies | Sweets & snacks | Cookies, chocolate chip, commercially prepared, regular, lower fat | p:cookie
+Brownie | Sweets & snacks | Cookies, brownies, commercially prepared | p:square
+Glazed doughnut | Sweets & snacks | Doughnuts, yeast-leavened, glazed, enriched (includes honey buns) | p:medium
+Blueberry muffin | Sweets & snacks | Muffins, blueberry, commercially prepared (Includes mini-muffins) | p:medium
+Rice cakes | Sweets & snacks | Snacks, rice cakes, brown rice, plain, unsalted | p:1 cake
+Granola bar | Sweets & snacks | Snacks, granola bars, hard, plain | p:bar
+Water | Drinks | Beverages, water, tap, drinking | ml:240@g:240
+Coffee, black | Drinks | Beverages, coffee, brewed, prepared with tap water | ml:240@p:1 cup
+Espresso | Drinks | Beverages, coffee, brewed, espresso, restaurant-prepared | ml:30@p:1 fl oz
+Tea, brewed | Drinks | Beverages, tea, black, brewed, prepared with tap water | ml:240@p:1 cup
+Orange juice | Drinks | Orange juice, chilled, includes from concentrate | ml:240@p:1 cup | *
+Apple juice | Drinks | Apple juice, canned or bottled, unsweetened, without added ascorbic acid | ml:240@p:1 cup
+Cola | Drinks | Beverages, carbonated, cola, regular | ml:355@p:1 can
+Almond milk, unsweetened | Drinks | Beverages, almond milk, unsweetened, shelf stable | ml:240@p:1 cup
+Soy milk | Drinks | Soymilk, original and vanilla, with added calcium, vitamins A and D | ml:240@p:1 cup
+Coconut water | Drinks | Nuts, coconut water (liquid from coconuts) | ml:240@p:1 cup
+Beer | Drinks | Alcoholic beverage, beer, regular, all | ml:355@p:1 can
+Red wine | Drinks | Alcoholic beverage, wine, table, red | ml:150@p:5 fl oz
+White wine | Drinks | Alcoholic beverage, wine, table, white | ml:150@p:5 fl oz
+Beef jerky | Protein | Snacks, beef jerky, chopped and formed | g:28
+Flank steak, grilled | Protein | Beef, flank, steak, separable lean and fat, trimmed to 0" fat, all grades, cooked, broiled | g:100
+Pork spareribs, cooked | Protein | Pork, fresh, spareribs, separable lean and fat, cooked, braised | g:100
+Salami | Protein | Salami, cooked, beef and pork | g:28
+Chicken nuggets | Protein | Chicken, nuggets, dark and white meat, precooked, frozen, not reheated | p:1 serving
+Crab, cooked | Protein | Crustaceans, crab, blue, cooked, moist heat | g:85
+Scallops, steamed | Protein | Mollusks, scallop, (bay and sea), cooked, steamed | g:85
+Rotisserie chicken thigh | Protein | Chicken, broilers or fryers, rotisserie, original seasoning, thigh, meat only, cooked | p:1 thigh
+Ricotta, part-skim | Dairy | Cheese, ricotta, part skim milk | p:0.5 cup
+Goat cheese | Dairy | Cheese, goat, soft type | g:28
+Half and half | Dairy | Cream, fluid, half and half | p:1 tbsp
+Kefir, plain low-fat | Dairy | Kefir, lowfat, plain, LIFEWAY | ml:240@p:1 cup
+Frozen yogurt | Sweets & snacks | Frozen yogurts, flavors other than chocolate | g:87
+Lime | Fruit | Limes, raw | p:1 fruit
+Mandarin orange | Fruit | Tangerines, (mandarin oranges), raw | p:medium
+Apricot | Fruit | Apricots, raw | p:1 apricot
+Dried figs | Fruit | Figs, dried, uncooked | g:40
+Nectarine | Fruit | Nectarines, raw | p:medium
+Honeydew melon | Fruit | Melons, honeydew, raw | p:1 cup, diced
+Prunes | Fruit | Plums, dried (prunes), uncooked | g:40
+Coconut, shredded sweetened | Fruit | Nuts, coconut meat, dried (desiccated), sweetened, shredded | g:15
+Arugula | Vegetables | Arugula, raw | g:20
+Radishes | Vegetables | Radishes, raw | p:1 cup slices
+Okra, cooked | Vegetables | Okra, cooked, boiled, drained, without salt | p:8 pods
+Green onions | Vegetables | Onions, spring or scallions (includes tops and bulb), raw | p:1 tbsp chopped
+Jalapeño | Vegetables | Peppers, jalapeno, raw | p:1 pepper
+Dill pickle | Vegetables | Pickles, cucumber, dill or kosher dill | p:1 spear, small
+Sauerkraut | Vegetables | Sauerkraut, canned, solids and liquids | g:71
+Tomato sauce | Vegetables | Tomato sauce, canned, no salt added | g:61
+Pumpkin, canned | Vegetables | Pumpkin, canned, without salt | g:122
+Artichoke, cooked | Vegetables | Artichokes, (globe or french), cooked, boiled, drained, without salt | p:1 artichoke
+Leeks, cooked | Vegetables | Leeks, (bulb and lower leaf-portion), cooked, boiled, drained, without salt | p:1 leek
+Bulgur, cooked | Grains | Bulgur, cooked | p:1 cup
+Barley, cooked | Grains | Barley, pearled, cooked | p:1 cup
+Wild rice, cooked | Grains | Wild rice, cooked | p:1 cup
+Rye bread | Grains | Bread, rye | p:1 slice, regular
+Multigrain bread | Grains | Bread, multi-grain (includes whole-grain) | p:1 slice regular
+Naan | Grains | Bread, naan, plain, commercially prepared, refrigerated | p:1 piece
+Biscuit | Grains | Biscuits, plain or buttermilk, frozen, baked | p:medium
+Dinner roll | Grains | Rolls, dinner, plain, commercially prepared (includes brown-and-serve) | p:1 roll (1 oz)
+Instant ramen noodles | Grains | Soup, ramen noodle, any flavor, dry | p:1 package without flavor packet
+Toasted oat cereal | Grains | Cereals ready-to-eat, GENERAL MILLS, CHEERIOS | p:1 cup
+Grits, cooked | Grains | Cereals, corn grits, white, regular and quick, enriched, cooked with water, without salt | p:1 cup
+Cream of wheat, cooked | Grains | Cereals, farina, enriched, assorted brands including CREAM OF WHEAT, quick (1-3 minutes), cooked with water, without salt | p:1 cup
+Rye crispbread | Grains | Crackers, crispbread, rye | p:1 crispbread
+Navy beans, cooked | Legumes & nuts | Beans, navy, mature seeds, cooked, boiled, without salt | p:1 cup
+Split peas, cooked | Legumes & nuts | Peas, split, mature seeds, cooked, boiled, without salt | p:1 cup
+Lima beans, cooked | Legumes & nuts | Lima beans, immature seeds, cooked, boiled, drained, without salt | p:1 cup
+Macadamia nuts | Legumes & nuts | Nuts, macadamia nuts, raw | g:28
+Hazelnuts | Legumes & nuts | Nuts, hazelnuts or filberts | g:28
+Brazil nuts | Legumes & nuts | Nuts, brazilnuts, dried, unblanched | g:28
+Sesame seeds | Legumes & nuts | Seeds, sesame seeds, whole, dried | p:1 tbsp
+Tahini | Legumes & nuts | Seeds, sesame butter, tahini, from roasted and toasted kernels (most common type) | p:1 tbsp
+Mixed nuts | Legumes & nuts | Nuts, mixed nuts, dry roasted, with peanuts, without salt added | g:28
+Trail mix | Sweets & snacks | Snacks, trail mix, regular | g:42
+Ghee | Fats & oils | Butter oil, anhydrous | p:1 tbsp
+Margarine | Fats & oils | Margarine, regular, 80% fat, composite, tub, with salt, with added vitamin D | p:1 tbsp
+Pesto | Fats & oils | Sauce, pesto, ready-to-serve, refrigerated | g:16
+Sesame oil | Fats & oils | Oil, sesame, salad or cooking | p:1 tablespoon
+Avocado oil | Fats & oils | Oil, avocado | p:1 tbsp
+Chocolate cake | Sweets & snacks | Cake, chocolate, commercially prepared with chocolate frosting, in-store bakery | p:1/8 of 18 oz cake
+Cheesecake | Sweets & snacks | Cake, cheesecake, commercially prepared | p:1/6 of 17 oz cake
+Apple pie | Sweets & snacks | Pie, apple, commercially prepared, enriched flour | p:1/8 of 9" dia
+Marshmallows | Sweets & snacks | Candies, marshmallows | p:1 regular
+Chocolate pudding | Sweets & snacks | Puddings, chocolate, ready-to-eat | p:4 oz
+Jelly beans | Sweets & snacks | Candies, jellybeans | p:10 large
+Gummy bears | Sweets & snacks | Candies, gumdrops, starch jelly pieces | p:10 gummy bears
+Oatmeal cookie | Sweets & snacks | Cookies, oatmeal, commercially prepared, regular | p:cookie, big
+Cranberry juice cocktail | Drinks | Cranberry juice cocktail, bottled | ml:240@p:1 cup
+Tomato juice | Drinks | Tomato juice, canned, with salt added | ml:240@p:1 cup
+Vodka, gin, rum or whiskey | Drinks | Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 86 proof | ml:44@p:1.5 fl oz
+Hot cocoa | Drinks | Beverages, Cocoa mix, powder, prepared with water | ml:180@p:6 fl oz
+Cheese pizza, slice | Meals | Pizza, cheese topping, thin crust, frozen, cooked | p:1 slice
+Pepperoni pizza, slice | Meals | Fast Food, Pizza Chain, 14" pizza, pepperoni topping, thin crust | p:1 slice
+Cheeseburger | Meals | Fast foods, cheeseburger, double, regular patty and bun, with condiments | p:1 sandwich
+Hamburger | Meals | Fast foods, hamburger; single, regular patty; with condiments | p:1 sandwich
+Bean and cheese burrito | Meals | Fast foods, burrito, with beans and cheese | p:1 each
+Beef taco, hard shell | Meals | Fast foods, taco with beef, cheese and lettuce, hard shell | p:1 each
+Chicken taco, soft | Meals | Fast foods, taco with chicken, lettuce and cheese, soft | p:1 each
+Fried chicken sandwich | Meals | Fast foods, chicken fillet sandwich, plain with pickles | p:1 sandwich
+Vegetable fried rice | Meals | Restaurant, Chinese, fried rice, without meat | p:1 cup
+Macaroni and cheese | Meals | Macaroni and cheese, box mix with cheese sauce, prepared | p:1 cup
+Chili with beans | Meals | Chili con carne with beans, canned entree | p:1 cup
+Beef stew | Meals | Beef stew, canned entree | p:1 cup
+Chicken noodle soup | Meals | Soup, chicken noodle, canned, prepared with equal volume water | p:1 serving
+Tomato soup | Meals | Soup, tomato, canned, prepared with equal volume water, commercial | p:1 serving
+Minestrone soup | Meals | Soup, minestrone, canned, prepared with equal volume water | p:1 cup

@@ -58,11 +58,29 @@ sealed class AppDestinations {
             }
         }
 
-        object CreateFood : Root(route = "create_food", routeWithArgs = "create_food/{$FOOD_NAME}?$BARCODE={$BARCODE}") {
-            /** [barcode] links a new food to a scanned barcode that wasn't found. */
-            fun createRoute(foodName: String, barcode: String? = null): String {
-                return if (barcode == null) "$route/$foodName" else "$route/$foodName?$BARCODE=$barcode"
-            }
+        object CreateFood : Root(
+            route = "create_food",
+            routeWithArgs = "create_food/{$FOOD_NAME}?$BARCODE={$BARCODE}&$PREFILL_NAME={$PREFILL_NAME}&$LIBRARY_FOOD={$LIBRARY_FOOD}"
+        ) {
+            /**
+             * [foodName] opens a saved food for editing. A new food can start from [barcode] (scanned but not found),
+             * [prefillName] (a search that found nothing) or [libraryFood] (a copy of a food library entry).
+             */
+            fun createRoute(
+                foodName: String,
+                barcode: String? = null,
+                prefillName: String? = null,
+                libraryFood: String? = null
+            ): String = "$route/${foodName.encodeRouteArg()}" + queryString(
+                BARCODE to barcode,
+                PREFILL_NAME to prefillName,
+                LIBRARY_FOOD to libraryFood
+            )
+        }
+
+        object FoodLibrary : Root(route = "food_library", routeWithArgs = "food_library/{$MEAL_TYPE}?$QUERY={$QUERY}") {
+            fun createRoute(mealType: String, query: String? = null): String =
+                "$route/$mealType" + queryString(QUERY to query?.takeIf { it.isNotBlank() })
         }
 
         object ScanBarcode : Root(route = "scan_barcode", routeWithArgs = "scan_barcode/{$MEAL_TYPE}") {
@@ -115,7 +133,26 @@ sealed class AppDestinations {
         const val RECIPE_NAME = "recipeName"
         const val FOOD_NAME = "foodName"
         const val BARCODE = "barcode"
+        const val PREFILL_NAME = "prefillName"
+        const val LIBRARY_FOOD = "libraryFood"
+        const val QUERY = "query"
         const val MEASUREMENT_TYPE = "measurementType"
         const val PRO_FEATURE = "proFeature"
+    }
+}
+
+/** Optional route arguments as "?a=1&b=2", leaving out the null ones. Values are percent-encoded, so names like "Milk, 2%" survive. */
+private fun queryString(vararg args: Pair<String, String?>): String =
+    args.filter { it.second != null }
+        .joinToString(separator = "&", prefix = "?") { (name, value) -> "$name=${value.orEmpty().encodeRouteArg()}" }
+        .takeIf { it.length > 1 }
+        .orEmpty()
+
+private fun String.encodeRouteArg(): String = encodeToByteArray().joinToString(separator = "") { byte ->
+    val char = (byte.toInt() and 0xFF).toChar()
+    if (char.isLetterOrDigit() && char.code < 128 || char in "-_.~") {
+        char.toString()
+    } else {
+        "%" + (byte.toInt() and 0xFF).toString(radix = 16).uppercase().padStart(length = 2, padChar = '0')
     }
 }
