@@ -20,8 +20,16 @@ import androidx.compose.ui.layout.onGloballyPositioned
 /** Where each on-screen [TourTarget] sits, in root coordinates, so the overlay can cut a spotlight around it. */
 @Stable
 class TourTargetRegistry {
-    var activeTarget: TourTarget? by mutableStateOf(value = null)
+    /** The tour step on screen; its first target that is laid out becomes [activeTarget]. */
+    var step: TourStep? by mutableStateOf(value = null)
     private val bounds = mutableStateMapOf<TourTarget, Rect>()
+
+    /**
+     * The target the current step spotlights: the first of [TourStep.targets] that is laid out, even when scrolled
+     * out of view, so an empty list or chart falls back to the next target instead of to nothing.
+     */
+    val activeTarget: TourTarget?
+        get() = step?.targets?.firstOrNull { target -> target in bounds }
 
     /** The visible bounds of [target], or null when it is not on screen. */
     fun boundsOf(target: TourTarget): Rect? = bounds[target]?.takeIf { it.width > 0f && it.height > 0f }

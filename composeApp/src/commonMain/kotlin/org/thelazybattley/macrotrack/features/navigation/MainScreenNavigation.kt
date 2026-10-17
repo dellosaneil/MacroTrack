@@ -30,6 +30,7 @@ class TabRequest(val tab: AppDestinations.BottomNavigation)
 fun MainScreenNavigation(
     modifier: Modifier = Modifier,
     tabRequest: TabRequest? = null,
+    onTabRequestHandled: () -> Unit = {},
     onReplayTour: () -> Unit = {},
     onNavigate: (String) -> Unit
 ) {
@@ -43,8 +44,11 @@ fun MainScreenNavigation(
         }
     }
     TrackScreenViews(navController = navController)
+    // Clear the request once handled; otherwise it runs again whenever this screen comes back (say, after Back from
+    // Nutrition goals) and jumps to that tab.
     LaunchedEffect(key1 = tabRequest) {
         val tab = tabRequest?.tab ?: return@LaunchedEffect
+        onTabRequestHandled()
         if (currentDestination.route == tab.route) return@LaunchedEffect
         navController.navigate(route = tab.route) {
             popUpTo(route = AppDestinations.BottomNavigation.Log.route)

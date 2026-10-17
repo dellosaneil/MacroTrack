@@ -161,17 +161,21 @@ private fun FoodLogTabScreen(
         verticalArrangement = Arrangement.spacedBy(space = 14.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .tourTarget(target = TourTarget.TODAY_HEADER),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             FoodLogHeader(
-                modifier = Modifier.weight(weight = 1f),
+                modifier = Modifier
+                    .weight(weight = 1f)
+                    .tourTarget(target = TourTarget.TODAY_HEADER),
                 viewState = viewState,
                 isToday = isToday
             )
-            StreakCalendarButton(streak = viewState.currentStreak, onClick = onOpenCalendar)
+            StreakCalendarButton(
+                modifier = Modifier.tourTarget(target = TourTarget.TODAY_STREAK),
+                streak = viewState.currentStreak,
+                onClick = onOpenCalendar
+            )
         }
         FoodLogDateChips(
             modifier = Modifier.fillMaxWidth(),
@@ -265,13 +269,14 @@ private fun FoodLogHeader(
 /** Today's logging streak; opens the calendar. */
 @Composable
 private fun StreakCalendarButton(
+    modifier: Modifier = Modifier,
     streak: Int,
     onClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(size = 14.dp)
     val description = stringResource(resource = Res.string.streak_open_calendar, streak)
     Row(
-        modifier = Modifier
+        modifier = modifier
             .height(height = 44.dp)
             .clip(shape = shape)
             .background(color = colors.surface)

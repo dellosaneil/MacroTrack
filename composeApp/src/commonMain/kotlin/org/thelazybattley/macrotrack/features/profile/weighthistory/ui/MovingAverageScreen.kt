@@ -149,7 +149,9 @@ private fun MovingAverageScreen(
             verticalArrangement = Arrangement.spacedBy(space = 14.dp)
         ) {
             WeightHistoryTimeRange(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tourTarget(target = TourTarget.MOVING_AVERAGE_RANGE),
                 selectedTimeRange = viewState.timeRange,
                 onSelectTimeRange = callbacks::onTimePeriodSelect
             )

@@ -81,6 +81,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.features.tour.TourCallbacks
 import org.thelazybattley.macrotrack.features.tour.TourOutcome
 import org.thelazybattley.macrotrack.features.tour.TourStep
+import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.TourTargetRegistry
 import org.thelazybattley.macrotrack.features.tour.TourViewState
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
@@ -108,9 +109,11 @@ fun TourOverlay(
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         viewState.step?.let { step ->
+            val target = targets.activeTarget
             TourSpotlight(
                 step = step,
-                targetBounds = step.target?.let { target -> targets.boundsOf(target = target) },
+                target = target,
+                targetBounds = target?.let { targets.boundsOf(target = it) },
                 callbacks = callbacks
             )
         }
@@ -130,6 +133,7 @@ fun TourOverlay(
 @Composable
 private fun TourSpotlight(
     step: TourStep,
+    target: TourTarget?,
     targetBounds: Rect?,
     callbacks: TourCallbacks
 ) {
@@ -140,7 +144,7 @@ private fun TourSpotlight(
     val spot = targetBounds?.let { bounds ->
         with(density) { bounds.inflate(delta = SpotPadding.toPx()) }
     }
-    val cornerRadius = step.target?.cornerRadius ?: 0.dp
+    val cornerRadius = target?.cornerRadius ?: 0.dp
 
     // Glide the cut-out from one target to the next instead of jumping.
     val animatedSpot = remember { Animatable(initialValue = Rect.Zero, typeConverter = Rect.VectorConverter) }
@@ -397,14 +401,12 @@ private fun SecondaryButton(
     }
 }
 
-/** Top-right, unless the spotlight sits there; then bottom-right. */
+/** Top-right, unless the spotlight sits near the top; then bottom-right. */
 @Composable
 private fun SkipButton(spot: Rect?, onClick: () -> Unit) {
     val density = LocalDensity.current
     Box(modifier = Modifier.fillMaxSize()) {
-        val coversTopRight = spot != null && with(density) {
-            spot.top < 140.dp.toPx() && spot.right > 220.dp.toPx()
-        }
+        val coversTopRight = spot != null && with(density) { spot.top < 140.dp.toPx() }
         val shape = RoundedCornerShape(size = 22.dp)
         Row(
             modifier = Modifier

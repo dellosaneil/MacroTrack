@@ -124,7 +124,7 @@ fun AppBottomNav() {
         }
     }
     SideEffect {
-        tourTargets.activeTarget = tourState.step?.target
+        tourTargets.step = tourState.step
     }
     LaunchedEffect(key1 = tourState.step?.screen) {
         val screen = tourState.step?.screen ?: return@LaunchedEffect
@@ -178,6 +178,7 @@ fun AppBottomNav() {
                         MainScreenNavigation(
                             modifier = Modifier.fillMaxSize(),
                             tabRequest = tabRequest,
+                            onTabRequestHandled = { tabRequest = null },
                             onReplayTour = tourViewModel::onReplayClicked
                         ) { destination ->
                             navigate(destination)

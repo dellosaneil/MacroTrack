@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
+import org.thelazybattley.macrotrack.features.tour.tourTarget
+import org.thelazybattley.macrotrack.features.tour.TourTarget
 import androidx.compose.foundation.layout.Arrangement
 import org.thelazybattley.macrotrack.ui.common.weightInputText
 import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
@@ -118,7 +120,9 @@ fun ProfileScreen(
             onReplayTour = onReplayTour
         )
         ProfileYourData(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .tourTarget(target = TourTarget.PROFILE_YOUR_DATA),
             lastBackup = viewState.lastBackup,
             isTelemetryEnabled = viewState.isTelemetryEnabled,
             onClick = onOpenBackup,

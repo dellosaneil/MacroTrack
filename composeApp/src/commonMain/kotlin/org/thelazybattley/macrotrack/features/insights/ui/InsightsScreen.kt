@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.insights.ui
 
+import org.thelazybattley.macrotrack.features.tour.tourTarget
+import org.thelazybattley.macrotrack.features.tour.TourTarget
 import androidx.compose.foundation.Canvas
 import org.thelazybattley.macrotrack.ui.common.portionUnit
 import androidx.compose.foundation.background
@@ -112,6 +114,7 @@ private fun InsightsScreen(
         }
         Text(text = stringResource(resource = Res.string.insights), style = typography.bold32, color = colors.ink)
         RangeTabs(
+            modifier = Modifier.tourTarget(target = TourTarget.INSIGHTS_RANGE),
             selected = insights?.range ?: InsightsRange.WEEK,
             isMonthLocked = !pro.isActive,
             onSelected = { range ->
@@ -131,12 +134,15 @@ private fun InsightsScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .tourTarget(target = TourTarget.INSIGHTS_SUMMARY)
                     .clip(shape = RoundedCornerShape(size = 20.dp))
                     .border(width = 1.5.dp, color = colors.dashed, shape = RoundedCornerShape(size = 20.dp))
                     .padding(vertical = 28.dp, horizontal = 16.dp)
             )
         } else {
-            CaloriesCard(insights = insights)
+            Box(modifier = Modifier.tourTarget(target = TourTarget.INSIGHTS_SUMMARY)) {
+                CaloriesCard(insights = insights)
+            }
             MacrosCard(macros = insights.macros)
             if (pro.isActive) {
                 MealSplitCard(shares = insights.mealShares)
@@ -150,12 +156,13 @@ private fun InsightsScreen(
 
 @Composable
 private fun RangeTabs(
+    modifier: Modifier = Modifier,
     selected: InsightsRange,
     isMonthLocked: Boolean,
     onSelected: (InsightsRange) -> Unit
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(size = 14.dp))
             .background(color = colors.divider)

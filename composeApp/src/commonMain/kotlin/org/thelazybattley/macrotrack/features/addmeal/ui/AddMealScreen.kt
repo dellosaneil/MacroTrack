@@ -209,36 +209,43 @@ private fun AddMealScreen(
                         )
                     }
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-                    CreateButton(
-                        modifier = Modifier.weight(weight = 1f),
-                        text = Res.string.quick_add,
-                        icon = Res.drawable.ic_bolt,
-                        onClick = {
-                            callbacks.onNavigateScreen(
-                                route = AppDestinations.Root.QuickAdd.createRoute(mealType = viewState.selectedMealType.name)
-                            )
-                        }
-                    )
-                    CreateButton(
-                        modifier = Modifier.weight(weight = 1f),
-                        text = Res.string.new_food_button,
-                        onClick = {
-                            callbacks.onNavigateScreen(route = AppDestinations.Root.CreateFood.createRoute(foodName = ""))
-                        }
-                    )
-                    CreateButton(
-                        modifier = Modifier.weight(weight = 1f),
-                        text = Res.string.new_recipe_button,
-                        onClick = {
-                            callbacks.onNavigateScreen(route = AppDestinations.Root.CreateRecipe.createRoute(recipeName = ""))
-                        }
-                    )
+                Column(
+                    modifier = Modifier.tourTarget(target = TourTarget.ADD_MEAL_CREATE),
+                    verticalArrangement = Arrangement.spacedBy(space = 12.dp)
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                        CreateButton(
+                            modifier = Modifier.weight(weight = 1f),
+                            text = Res.string.quick_add,
+                            icon = Res.drawable.ic_bolt,
+                            onClick = {
+                                callbacks.onNavigateScreen(
+                                    route = AppDestinations.Root.QuickAdd.createRoute(mealType = viewState.selectedMealType.name)
+                                )
+                            }
+                        )
+                        CreateButton(
+                            modifier = Modifier.weight(weight = 1f),
+                            text = Res.string.new_food_button,
+                            onClick = {
+                                callbacks.onNavigateScreen(route = AppDestinations.Root.CreateFood.createRoute(foodName = ""))
+                            }
+                        )
+                        CreateButton(
+                            modifier = Modifier.weight(weight = 1f),
+                            text = Res.string.new_recipe_button,
+                            onClick = {
+                                callbacks.onNavigateScreen(route = AppDestinations.Root.CreateRecipe.createRoute(recipeName = ""))
+                            }
+                        )
+                    }
+                    BrowseLibraryRow(onClick = { openLibrary(null) })
                 }
-                BrowseLibraryRow(onClick = { openLibrary(null) })
                 if (!viewState.isSearching) {
                     AddMealFilter(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .tourTarget(target = TourTarget.ADD_MEAL_FILTERS),
                         selectedFilter = viewState.activeFilter,
                         favoriteCount = viewState.favoriteCount,
                         onFilterSelected = callbacks::onMealFilterSelected
@@ -286,7 +293,11 @@ private fun AddMealScreen(
                     }
                     if (items.isEmpty() && viewState.activeFilter == MealFilter.FAVORITES) {
                         item(key = "empty") {
-                            EmptyFavorites(modifier = Modifier.fillMaxWidth())
+                            EmptyFavorites(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .tourTarget(target = TourTarget.ADD_MEAL_EMPTY_LIST)
+                            )
                         }
                     } else if (items.isEmpty()) {
                         item(key = "empty") {
@@ -301,7 +312,10 @@ private fun AddMealScreen(
                                 style = typography.regular13,
                                 color = colors.muted,
                                 textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .tourTarget(target = TourTarget.ADD_MEAL_EMPTY_LIST)
+                                    .padding(vertical = 24.dp)
                             )
                         }
                     }
