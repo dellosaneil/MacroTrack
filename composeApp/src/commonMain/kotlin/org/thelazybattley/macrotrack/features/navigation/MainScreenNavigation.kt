@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.flow.first
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -48,12 +49,17 @@ fun MainScreenNavigation(
     // Nutrition goals) and jumps to that tab.
     LaunchedEffect(key1 = tabRequest) {
         val tab = tabRequest?.tab ?: return@LaunchedEffect
-        onTabRequestHandled()
-        if (currentDestination.route == tab.route) return@LaunchedEffect
-        navController.navigate(route = tab.route) {
-            popUpTo(route = AppDestinations.BottomNavigation.Log.route)
-            launchSingleTop = true
+        // The tab NavHost sits in the Scaffold's content, which is composed after this effect can start. Navigating
+        // before it sets its graph throws, so wait for its first screen.
+        val currentRoute = navController.currentBackStackEntryFlow.first().destination.route
+        if (currentRoute != tab.route) {
+            navController.navigate(route = tab.route) {
+                popUpTo(route = AppDestinations.BottomNavigation.Log.route)
+                launchSingleTop = true
+            }
         }
+        // Last, since clearing the request cancels this effect.
+        onTabRequestHandled()
     }
 
     Scaffold(

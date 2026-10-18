@@ -1,5 +1,5 @@
-import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -108,8 +108,8 @@ android {
         applicationId = "org.thelazybattley.macrotrack"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 4
+        versionName = "1.0.0-alpha"
         // Debug builds never send analytics, even on their first launch. Crash reports come from every build.
         manifestPlaceholders["analyticsEnabled"] = "true"
     }
