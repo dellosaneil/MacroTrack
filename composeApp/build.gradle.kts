@@ -104,12 +104,19 @@ android {
     namespace = "org.thelazybattley.macrotrack"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    val appMajor = 1
+    val appMinor = 0
+    val appPatch = 0
+
+    val appBuild = 0
+
+    val appSuffix = "-alpha.$appBuild"
     defaultConfig {
         applicationId = "org.thelazybattley.macrotrack"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 4
-        versionName = "1.0.0-alpha"
+        versionCode = (appMajor * 1000000) + (appMinor * 10000) + (appPatch * 100) + appBuild
+        versionName = "$appMajor.$appMinor.$appPatch$appSuffix"
         // Debug builds never send analytics, even on their first launch. Crash reports come from every build.
         manifestPlaceholders["analyticsEnabled"] = "true"
     }
