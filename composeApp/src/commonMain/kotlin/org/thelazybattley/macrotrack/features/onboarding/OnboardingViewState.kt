@@ -3,11 +3,14 @@ package org.thelazybattley.macrotrack.features.onboarding
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.GoalPace
 import org.thelazybattley.macrotrack.domain.model.UserSex
 import org.thelazybattley.macrotrack.features.onboarding.ui.OnboardingStep
 
 data class OnboardingViewState(
     val selectedGoal: Goal? = null,
+    /** kg per month. */
+    val goalPace: Double = GoalPace.DEFAULT_KG_PER_MONTH,
     val selectedActivityLevel: ActivityLevel? = null,
     val selectedGender: UserSex? = null,
     val currentStep: OnboardingStep = OnboardingStep.GOAL_AND_STATS,

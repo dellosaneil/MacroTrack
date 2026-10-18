@@ -1,5 +1,8 @@
 package org.thelazybattley.macrotrack.features.profile.nutritiongoals.ui
 
+import org.thelazybattley.macrotrack.ui.common.CommonGoalPaceStepper
+import org.thelazybattley.macrotrack.domain.model.GoalPace
+import org.thelazybattley.macrotrack.domain.model.calorieAdjust
 import androidx.compose.foundation.background
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.ui.common.formatWeightWithUnit
@@ -150,12 +153,16 @@ private fun NutritionGoalsScreen(
                 .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(space = 18.dp)
         ) {
+            val goalPace = viewState.goalPace ?: GoalPace.DEFAULT_KG_PER_MONTH
             GoalSection(
                 selected = viewState.selectedGoal,
-                onSelected = callbacks::onGoalSelected
+                goalPace = goalPace,
+                onSelected = callbacks::onGoalSelected,
+                onPaceChanged = callbacks::onGoalPaceChanged
             )
             CalorieGoalCard(
                 goal = viewState.selectedGoal,
+                goalPace = goalPace,
                 maintenanceCalories = viewState.maintenanceCalories,
                 macroGoals = viewState.macroGoals
             )
@@ -181,7 +188,9 @@ private fun NutritionGoalsScreen(
 @Composable
 private fun GoalSection(
     selected: Goal?,
-    onSelected: (Goal) -> Unit
+    goalPace: Double,
+    onSelected: (Goal) -> Unit,
+    onPaceChanged: (Double) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         SectionLabel(text = stringResource(resource = Res.string.your_goal))
@@ -205,12 +214,15 @@ private fun GoalSection(
                         color = colors.ink
                     )
                     Text(
-                        text = stringResource(resource = Res.string.signed_kcal, goal.calorieAdjust.toSigned()),
+                        text = stringResource(resource = Res.string.signed_kcal, goal.calorieAdjust(paceKgPerMonth = goalPace).toSigned()),
                         style = typography.regular11,
                         color = colors.muted
                     )
                 }
             }
+        }
+        selected?.let { goal ->
+            CommonGoalPaceStepper(goal = goal, kgPerMonth = goalPace, onChanged = onPaceChanged)
         }
     }
 }
@@ -218,9 +230,11 @@ private fun GoalSection(
 @Composable
 private fun CalorieGoalCard(
     goal: Goal?,
+    goalPace: Double,
     maintenanceCalories: Int?,
     macroGoals: MacroGoals?
 ) {
+    val calorieAdjust = goal?.calorieAdjust(paceKgPerMonth = goalPace) ?: 0
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -270,7 +284,7 @@ private fun CalorieGoalCard(
                 ),
                 value = stringResource(
                     resource = Res.string.signed_kcal,
-                    (goal?.calorieAdjust ?: 0).toSigned()
+                    calorieAdjust.toSigned()
                 )
             )
         }
@@ -280,7 +294,7 @@ private fun CalorieGoalCard(
                 .height(height = 1.dp)
                 .background(color = colors.heroTrack)
         )
-        ExpectedWeightChange(dailyCalorieAdjust = goal?.calorieAdjust ?: 0)
+        ExpectedWeightChange(dailyCalorieAdjust = calorieAdjust)
     }
 }
 
@@ -373,7 +387,7 @@ private fun ExpectedWeightChange(dailyCalorieAdjust: Int) {
 
 private const val KCAL_PER_KG = 7700.0
 private const val DAYS_PER_WEEK = 7
-private const val DAYS_PER_MONTH = 30
+private const val DAYS_PER_MONTH = 30.4
 
 private fun Double.toSignedDecimal(decimals: Int): String {
     val factor = if (decimals == 1) 10 else 100

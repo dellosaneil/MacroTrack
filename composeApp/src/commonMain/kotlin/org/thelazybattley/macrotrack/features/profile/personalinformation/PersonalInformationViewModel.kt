@@ -125,7 +125,8 @@ class PersonalInformationViewModel(
             age = age,
             gender = sex ?: userDetails.sex,
             activityLevel = activityLevel ?: userDetails.activityLevel,
-            goal = userDetails.goal
+            goal = userDetails.goal,
+            goalPace = userDetails.goalPace
         ).calories
         return copy(dailyCalories = calories)
     }

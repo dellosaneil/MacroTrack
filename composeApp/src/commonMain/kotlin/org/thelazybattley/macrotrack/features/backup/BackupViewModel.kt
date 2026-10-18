@@ -136,7 +136,8 @@ class BackupViewModel(
                             age = it.age,
                             gender = it.sex,
                             activityLevel = it.activityLevel,
-                            goal = it.goal
+                            goal = it.goal,
+                            goalPace = it.goalPace
                         )
                     )
                 }

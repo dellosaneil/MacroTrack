@@ -47,7 +47,8 @@ class CalendarViewModel(
                         age = it.age,
                         gender = it.sex,
                         activityLevel = it.activityLevel,
-                        goal = it.goal
+                        goal = it.goal,
+                        goalPace = it.goalPace
                     )
                 }
                 val days = logs.groupBy { it.date }.mapValues { (date, dayLogs) ->

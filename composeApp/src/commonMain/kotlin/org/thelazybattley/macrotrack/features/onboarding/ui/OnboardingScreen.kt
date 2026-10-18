@@ -1,5 +1,10 @@
 package org.thelazybattley.macrotrack.features.onboarding.ui
 
+import org.thelazybattley.macrotrack.ui.common.CommonGoalPaceStepper
+import org.thelazybattley.macrotrack.domain.model.GoalPace
+import org.thelazybattley.macrotrack.domain.model.calorieAdjust
+import macrotrack.composeapp.generated.resources.goal_pace_lose_summary
+import macrotrack.composeapp.generated.resources.goal_pace_gain_summary
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -205,6 +210,13 @@ private fun GoalAndStatsStep(
                     goal = goal,
                     isSelected = goal == viewState.selectedGoal,
                     onClick = { callbacks.onGoalSelected(goal = goal) }
+                )
+            }
+            viewState.selectedGoal?.let { goal ->
+                CommonGoalPaceStepper(
+                    goal = goal,
+                    kgPerMonth = viewState.goalPace,
+                    onChanged = callbacks::onGoalPaceChanged
                 )
             }
         }
@@ -524,7 +536,10 @@ private fun ActivityLevelStep(
                 Column(horizontalAlignment = Alignment.End) {
                     Text(text = stringResource(resource = goal.description), style = typography.bold12, color = colors.accentInk)
                     Text(
-                        text = stringResource(resource = Res.string.signed_kcal, goal.calorieAdjust.toSigned()),
+                        text = stringResource(
+                            resource = Res.string.signed_kcal,
+                            goal.calorieAdjust(paceKgPerMonth = viewState.goalPace).toSigned()
+                        ),
                         style = typography.regular11,
                         color = colors.accentInk
                     )
@@ -558,8 +573,7 @@ private fun SummaryStep(viewState: OnboardingViewState) {
         ) {
             SummaryRow(
                 label = stringResource(resource = Res.string.goal),
-                value = stringResource(resource = goal.description) + " · " +
-                    stringResource(resource = Res.string.signed_kcal, goal.calorieAdjust.toSigned())
+                value = goalSummary(goal = goal, kgPerMonth = viewState.goalPace)
             )
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             SummaryRow(
@@ -575,6 +589,19 @@ private fun SummaryStep(viewState: OnboardingViewState) {
             }
         }
     }
+}
+
+/** "Lose 1.2 kg a month · −300 kcal", or "Maintain weight · 0 kcal". */
+@Composable
+private fun goalSummary(goal: Goal, kgPerMonth: Double): String {
+    val calories = stringResource(resource = Res.string.signed_kcal, goal.calorieAdjust(paceKgPerMonth = kgPerMonth).toSigned())
+    val pace = GoalPace.shown(kgPerMonth = kgPerMonth, unitSystem = LocalUnitSystem.current).toString()
+    val goalText = when (goal) {
+        Goal.LOSE_WEIGHT -> stringResource(resource = Res.string.goal_pace_lose_summary, pace, weightUnitLabel())
+        Goal.GAIN_WEIGHT -> stringResource(resource = Res.string.goal_pace_gain_summary, pace, weightUnitLabel())
+        Goal.MAINTAIN_WEIGHT -> stringResource(resource = goal.description)
+    }
+    return "$goalText · $calories"
 }
 
 @Composable

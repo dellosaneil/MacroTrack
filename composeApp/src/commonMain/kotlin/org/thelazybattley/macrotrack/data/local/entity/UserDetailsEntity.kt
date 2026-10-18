@@ -1,11 +1,13 @@
 package org.thelazybattley.macrotrack.data.local.entity
 
 import kotlinx.datetime.LocalDate
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.GoalPace
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.UserSex
 
@@ -19,6 +21,8 @@ data class UserDetailsEntity(
     val gender: UserSex,
     val activityLevel: ActivityLevel,
     val goal: Goal,
+    /** kg per month; older backups and rows from before AppDatabase.MIGRATION_12_13 get the default. */
+    @ColumnInfo(defaultValue = "1.2") val goalPace: Double = GoalPace.DEFAULT_KG_PER_MONTH,
     val targetWeight: Double? = null,
     val targetStartWeight: Double? = null,
     val targetSetDate: LocalDate? = null
@@ -31,6 +35,7 @@ fun UserDetailsEntity.toDomain() = UserDetails(
     sex = gender,
     activityLevel = activityLevel,
     goal = goal,
+    goalPace = goalPace,
     targetWeight = targetWeight,
     targetStartWeight = targetStartWeight,
     targetSetDate = targetSetDate

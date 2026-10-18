@@ -10,6 +10,8 @@ data class UserDetails(
     val sex: UserSex,
     val activityLevel: ActivityLevel,
     val goal: Goal,
+    /** How fast to lose or gain, in kg per month. */
+    val goalPace: Double = GoalPace.DEFAULT_KG_PER_MONTH,
     val targetWeight: Double? = null,
     val targetStartWeight: Double? = null,
     val targetSetDate: LocalDate? = null
@@ -22,6 +24,7 @@ fun UserDetails.toEntity() = UserDetailsEntity(
     gender = sex,
     activityLevel = activityLevel,
     goal = goal,
+    goalPace = goalPace,
     targetWeight = targetWeight,
     targetStartWeight = targetStartWeight,
     targetSetDate = targetSetDate

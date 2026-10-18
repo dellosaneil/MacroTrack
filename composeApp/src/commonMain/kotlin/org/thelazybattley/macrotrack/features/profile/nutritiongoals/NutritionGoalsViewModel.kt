@@ -50,7 +50,8 @@ class NutritionGoalsViewModel(
                         age = userDetails.age,
                         gender = userDetails.sex,
                         activityLevel = userDetails.activityLevel,
-                        goal = userDetails.goal
+                        goal = userDetails.goal,
+                        goalPace = userDetails.goalPace
                     )
                 )
                 val history = goalPeriods(
@@ -61,6 +62,7 @@ class NutritionGoalsViewModel(
                     currentState.copy(
                         userDetails = userDetails,
                         selectedGoal = currentState.selectedGoal ?: userDetails.goal,
+                        goalPace = currentState.goalPace ?: userDetails.goalPace,
                         history = history
                     ).withCalculatedGoals()
                 }
@@ -74,13 +76,21 @@ class NutritionGoalsViewModel(
         }
     }
 
+    override fun onGoalPaceChanged(kgPerMonth: Double) {
+        _state.update { currentState ->
+            currentState.copy(goalPace = kgPerMonth).withCalculatedGoals()
+        }
+    }
+
     override fun onSave() {
         val currentState = _state.value
         val userDetails = currentState.userDetails ?: return
         val goal = currentState.selectedGoal ?: return
         if (!currentState.canSave) return
         viewModelScope.launch {
-            insertUserDetailsUseCase(userDetails = userDetails.copy(goal = goal))
+            insertUserDetailsUseCase(
+                userDetails = userDetails.copy(goal = goal, goalPace = currentState.goalPace ?: userDetails.goalPace)
+            )
             _state.update { it.copy(isSaved = true) }
         }
     }
@@ -88,6 +98,7 @@ class NutritionGoalsViewModel(
     private fun NutritionGoalsViewState.withCalculatedGoals(): NutritionGoalsViewState {
         val userDetails = userDetails ?: return this
         val goal = selectedGoal ?: return this
+        val goalPace = goalPace ?: return this
         return copy(
             maintenanceCalories = calculateTDEEUseCase(
                 height = userDetails.height,
@@ -102,7 +113,8 @@ class NutritionGoalsViewModel(
                 age = userDetails.age,
                 gender = userDetails.sex,
                 activityLevel = userDetails.activityLevel,
-                goal = goal
+                goal = goal,
+                goalPace = goalPace
             )
         )
     }

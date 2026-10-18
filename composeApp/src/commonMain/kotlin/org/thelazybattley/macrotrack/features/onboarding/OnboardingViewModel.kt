@@ -34,6 +34,10 @@ class OnboardingViewModel(
         _state.update { it.copy(selectedGoal = goal).withPlan() }
     }
 
+    override fun onGoalPaceChanged(kgPerMonth: Double) {
+        _state.update { it.copy(goalPace = kgPerMonth).withPlan() }
+    }
+
     override fun onActivityLevelSelected(activityLevel: ActivityLevel) {
         _state.update { it.copy(selectedActivityLevel = activityLevel).withPlan() }
     }
@@ -73,7 +77,8 @@ class OnboardingViewModel(
                         height = currentState.height,
                         sex = gender,
                         activityLevel = activityLevel,
-                        goal = goal
+                        goal = goal,
+                        goalPace = currentState.goalPace
                     )
                 )
                 telemetry.logEvent(
@@ -110,7 +115,8 @@ class OnboardingViewModel(
                 age = age,
                 gender = gender,
                 activityLevel = activityLevel,
-                goal = goal
+                goal = goal,
+                goalPace = goalPace
             ),
             maintenanceCalories = calculateTDEEUseCase(
                 height = height,

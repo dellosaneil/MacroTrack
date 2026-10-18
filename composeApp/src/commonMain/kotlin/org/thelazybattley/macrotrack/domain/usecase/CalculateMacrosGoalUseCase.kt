@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.domain.usecase
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.calorieAdjust
 import org.thelazybattley.macrotrack.domain.model.UserSex
 import kotlin.math.roundToInt
 
@@ -15,7 +16,8 @@ class CalculateMacrosGoalUseCase(
         age: Int,
         gender: UserSex,
         activityLevel: ActivityLevel,
-        goal: Goal
+        goal: Goal,
+        goalPace: Double
     ): MacroGoals {
         val bmr = calculateTDEEUseCase(
             height = height,
@@ -26,7 +28,7 @@ class CalculateMacrosGoalUseCase(
         )
         val protein = (weight * 2).roundToInt()
         val fat = (weight * 0.7).roundToInt()
-        val calories = bmr + goal.calorieAdjust
+        val calories = bmr + goal.calorieAdjust(paceKgPerMonth = goalPace)
         val carbs = (calories - (protein * 4) - (fat * 9)) / 4
         return MacroGoals(
             calories =calories,

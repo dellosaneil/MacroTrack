@@ -9,6 +9,8 @@ interface OnboardingCallbacks {
 
     fun onGoalSelected(goal: Goal)
 
+    fun onGoalPaceChanged(kgPerMonth: Double)
+
     fun onActivityLevelSelected(activityLevel: ActivityLevel)
 
     fun onGenderSelected(gender: UserSex)
@@ -30,6 +32,10 @@ interface OnboardingCallbacks {
         fun default() = run {
             object : OnboardingCallbacks {
                 override fun onGoalSelected(goal: Goal) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onGoalPaceChanged(kgPerMonth: Double) {
                     TODO("Not yet implemented")
                 }
 

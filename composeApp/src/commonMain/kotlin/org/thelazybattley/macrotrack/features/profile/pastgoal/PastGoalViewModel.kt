@@ -153,7 +153,9 @@ class PastGoalViewModel(
             age = it.age,
             gender = it.sex,
             activityLevel = it.activityLevel,
-            goal = goal
+            goal = goal,
+            // Past days use today's pace; only the goal and the weight at the time change.
+            goalPace = it.goalPace
         )
     }
 }
