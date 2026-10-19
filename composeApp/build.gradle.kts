@@ -105,7 +105,7 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     val appMajor = 1
-    val appMinor = 0
+    val appMinor = 1
     val appPatch = 0
 
     val appBuild = 0
