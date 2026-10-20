@@ -15,11 +15,13 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.InsertFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.LookUpBarcodeUseCase
-import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.features.scanbarcode.ui.isCameraScanSupported
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LOG_DATE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
+import org.thelazybattley.macrotrack.ui.navigation.logDateOf
 import kotlin.math.roundToInt
 
 class ScanBarcodeViewModel(
@@ -28,7 +30,7 @@ class ScanBarcodeViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
     private val insertFoodLogUseCase: InsertFoodLogUseCase,
     private val calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
-    private val getRemainingCaloriesTodayUseCase: GetRemainingCaloriesTodayUseCase,
+    private val getRemainingCaloriesUseCase: GetRemainingCaloriesUseCase,
     private val scannedFoodRequest: ScannedFoodRequest,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), ScanBarcodeCallbacks {
@@ -36,6 +38,7 @@ class ScanBarcodeViewModel(
     private val _state = MutableStateFlow(
         value = ScanBarcodeViewState(
             mealType = MealType.entries.find { it.name == savedStateHandle[MEAL_TYPE] } ?: MealType.BREAKFAST,
+            logDate = logDateOf(argument = savedStateHandle[LOG_DATE]),
             // Without a camera scanner the screen opens on typing the number.
             mode = if (isCameraScanSupported) ScanMode.SCANNING else ScanMode.MANUAL
         )
@@ -54,7 +57,7 @@ class ScanBarcodeViewModel(
             }
         }
         viewModelScope.launch {
-            getRemainingCaloriesTodayUseCase().collect { remainingCalories ->
+            getRemainingCaloriesUseCase(date = _state.value.logDate).collect { remainingCalories ->
                 _state.update { it.copy(remainingCalories = remainingCalories) }
             }
         }
@@ -124,7 +127,8 @@ class ScanBarcodeViewModel(
                 carbs = macros.carbs,
                 protein = macros.protein,
                 weight = currentState.amount,
-                dominantMacro = food.dominantMacro
+                dominantMacro = food.dominantMacro,
+                date = currentState.logDate
             )
             _state.update { it.copy(isSaved = true) }
         }

@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.domain.usecase.foodlog
 
+import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
 import org.thelazybattley.macrotrack.domain.model.MacroType
@@ -11,6 +13,7 @@ class InsertFoodLogUseCase(
     private val telemetry: Telemetry
 ) {
 
+    /** Logs to [date], which is today or a past day the user is filling in. */
     suspend operator fun invoke(
         foodName: String,
         mealType: MealType,
@@ -20,6 +23,7 @@ class InsertFoodLogUseCase(
         protein: Double,
         weight: Double,
         dominantMacro: MacroType,
+        date: LocalDate,
         isQuickAdd: Boolean = false
     ) = repository.insertFoodLog(
         foodName = foodName,
@@ -30,13 +34,15 @@ class InsertFoodLogUseCase(
         protein = protein,
         weight = weight,
         dominantMacro = dominantMacro,
+        date = date,
         isQuickAdd = isQuickAdd
     ).also {
         telemetry.logEvent(
             name = TelemetryEvent.FOOD_LOGGED,
             params = mapOf(
                 TelemetryEvent.PARAM_MEAL_TYPE to mealType.name.lowercase(),
-                TelemetryEvent.PARAM_QUICK_ADD to isQuickAdd
+                TelemetryEvent.PARAM_QUICK_ADD to isQuickAdd,
+                TelemetryEvent.PARAM_PAST_DAY to (date < getCurrentDate())
             )
         )
     }

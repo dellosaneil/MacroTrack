@@ -12,8 +12,10 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LOG_DATE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.QUERY
+import org.thelazybattley.macrotrack.ui.navigation.logDateOf
 
 class FoodLibraryViewModel(
     private val getFoodLibraryUseCase: GetFoodLibraryUseCase,
@@ -24,6 +26,7 @@ class FoodLibraryViewModel(
     private val _state = MutableStateFlow(
         value = FoodLibraryViewState(
             mealType = MealType.entries.find { it.name == savedStateHandle[MEAL_TYPE] } ?: MealType.BREAKFAST,
+            logDate = logDateOf(argument = savedStateHandle[LOG_DATE]),
             query = savedStateHandle.get<String>(key = QUERY).orEmpty()
         )
     )
@@ -88,7 +91,9 @@ class FoodLibraryViewModel(
     }
 
     override fun onScan() {
-        _state.update { it.copy(destinationRoute = AppDestinations.Root.ScanBarcode.createRoute(mealType = it.mealType.name)) }
+        _state.update {
+            it.copy(destinationRoute = AppDestinations.Root.ScanBarcode.createRoute(mealType = it.mealType.name, logDate = it.logDate))
+        }
     }
 
     /** Logs one serving of each picked food. Only the name and portion are logged; nothing is added to My foods. */
@@ -105,7 +110,8 @@ class FoodLibraryViewModel(
                     protein = food.macros.protein,
                     mealType = currentState.mealType,
                     weight = food.weight,
-                    dominantMacro = food.dominantMacro
+                    dominantMacro = food.dominantMacro,
+                    date = currentState.logDate
                 )
             }
             _state.update { it.copy(isSaved = true) }

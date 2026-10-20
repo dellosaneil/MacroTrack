@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.scanbarcode
 
+import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
@@ -19,6 +21,8 @@ enum class ScanMode {
 
 data class ScanBarcodeViewState(
     val mealType: MealType = MealType.BREAKFAST,
+    /** The day a found food is logged to: today, or a past day opened in Food Log. */
+    val logDate: LocalDate = getCurrentDate(),
     val mode: ScanMode = ScanMode.SCANNING,
     val barcode: String? = null,
     val manualBarcode: String = "",

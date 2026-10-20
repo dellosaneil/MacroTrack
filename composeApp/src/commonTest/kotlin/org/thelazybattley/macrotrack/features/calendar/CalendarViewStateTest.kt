@@ -88,9 +88,11 @@ class CalendarViewStateTest {
     }
 
     @Test
-    fun onlyLoggedDaysAndTodayCanBeOpened() {
+    fun anyDayUpToTodayCanBeOpened() {
         assertTrue(state.copy(selectedDate = oct(7)).canOpenSelected)
-        assertFalse(state.copy(selectedDate = oct(3)).canOpenSelected)
+        // Nothing logged on Oct 3, so it opens to be filled in.
+        assertTrue(state.copy(selectedDate = oct(3)).canOpenSelected)
         assertTrue(state.copy(days = days - today, selectedDate = today).canOpenSelected)
+        assertFalse(state.copy(selectedDate = oct(9)).canOpenSelected)
     }
 }

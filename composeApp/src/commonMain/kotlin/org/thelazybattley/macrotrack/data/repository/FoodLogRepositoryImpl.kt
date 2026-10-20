@@ -21,9 +21,11 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
         protein: Double,
         weight: Double,
         dominantMacro: MacroType,
+        date: LocalDate,
         isQuickAdd: Boolean
     ) = dao.insertFoodLog(
         foodLogEntity = FoodLogEntity(
+            date = date,
             foodName = foodName,
             mealType = mealType,
             calories = calories,

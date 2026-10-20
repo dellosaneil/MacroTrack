@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.back_to_add_meal
 import macrotrack.composeapp.generated.resources.carbs
@@ -61,8 +62,11 @@ import macrotrack.composeapp.generated.resources.quick_add_enter_a_macro
 import macrotrack.composeapp.generated.resources.quick_add_enter_calories
 import macrotrack.composeapp.generated.resources.quick_add_grams_description
 import macrotrack.composeapp.generated.resources.quick_add_kcal_left_after
+import macrotrack.composeapp.generated.resources.quick_add_kcal_left_after_past_day
+import macrotrack.composeapp.generated.resources.quick_add_kcal_left_past_day
 import macrotrack.composeapp.generated.resources.quick_add_kcal_left_today
 import macrotrack.composeapp.generated.resources.quick_add_kcal_over_after
+import macrotrack.composeapp.generated.resources.quick_add_kcal_over_after_past_day
 import macrotrack.composeapp.generated.resources.quick_add_label_description
 import macrotrack.composeapp.generated.resources.quick_add_label_placeholder
 import macrotrack.composeapp.generated.resources.quick_add_macros
@@ -71,6 +75,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.features.addmeal.ui.stripeColor
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
@@ -80,6 +85,7 @@ import org.thelazybattley.macrotrack.features.quickadd.QuickAddMode
 import org.thelazybattley.macrotrack.features.quickadd.QuickAddViewModel
 import org.thelazybattley.macrotrack.features.quickadd.QuickAddViewState
 import org.thelazybattley.macrotrack.ui.common.CommonKeypad
+import org.thelazybattley.macrotrack.ui.common.CommonLogDateBadge
 import org.thelazybattley.macrotrack.ui.common.KeypadCaret
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -123,7 +129,7 @@ private fun QuickAddScreen(
             .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
-        Header(onBack = onBack)
+        Header(logDate = viewState.logDate, onBack = onBack)
         ModePicker(selected = viewState.mode, onSelected = callbacks::onModeSelected)
         Readout(viewState = viewState, onFieldSelected = callbacks::onFieldSelected)
         LabelField(label = viewState.label, onLabelChange = callbacks::onLabelChanged)
@@ -140,7 +146,7 @@ private fun QuickAddScreen(
 }
 
 @Composable
-private fun Header(onBack: () -> Unit) {
+private fun Header(logDate: LocalDate, onBack: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
@@ -163,7 +169,13 @@ private fun Header(onBack: () -> Unit) {
             )
         }
         Column {
-            Text(text = stringResource(resource = Res.string.log_without_a_food), style = typography.regular11, color = colors.muted)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+            ) {
+                Text(text = stringResource(resource = Res.string.log_without_a_food), style = typography.regular11, color = colors.muted)
+                CommonLogDateBadge(date = logDate)
+            }
             Text(text = stringResource(resource = Res.string.quick_add), style = typography.bold24, color = colors.ink)
         }
     }
@@ -207,7 +219,7 @@ private fun ModePicker(selected: QuickAddMode, onSelected: (QuickAddMode) -> Uni
     }
 }
 
-/** The calories being typed with what's left today, or the three macros with the calories they add up to. */
+/** The calories being typed with what's left that day, or the three macros with the calories they add up to. */
 @Composable
 private fun Readout(viewState: QuickAddViewState, onFieldSelected: (QuickAddField) -> Unit) {
     Column(
@@ -257,12 +269,22 @@ private fun CaloriesReadout(viewState: QuickAddViewState) {
         val remaining = viewState.remainingCalories
         val after = viewState.remainingAfterAdding
         if (remaining != null && after != null) {
+            // The header names a past day, so its figures leave out "today".
+            val isToday = viewState.logDate == getCurrentDate()
             Text(
                 text = when {
-                    viewState.totalCalories <= 0 ->
-                        stringResource(resource = Res.string.quick_add_kcal_left_today, remaining.withThousands())
-                    after >= 0 -> stringResource(resource = Res.string.quick_add_kcal_left_after, after.withThousands())
-                    else -> stringResource(resource = Res.string.quick_add_kcal_over_after, abs(after).withThousands())
+                    viewState.totalCalories <= 0 -> stringResource(
+                        resource = if (isToday) Res.string.quick_add_kcal_left_today else Res.string.quick_add_kcal_left_past_day,
+                        remaining.withThousands()
+                    )
+                    after >= 0 -> stringResource(
+                        resource = if (isToday) Res.string.quick_add_kcal_left_after else Res.string.quick_add_kcal_left_after_past_day,
+                        after.withThousands()
+                    )
+                    else -> stringResource(
+                        resource = if (isToday) Res.string.quick_add_kcal_over_after else Res.string.quick_add_kcal_over_after_past_day,
+                        abs(after).withThousands()
+                    )
                 },
                 style = typography.regular11,
                 color = colors.muted

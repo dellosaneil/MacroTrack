@@ -67,7 +67,8 @@ data class CalendarViewState(
 
     val selectedDay: DaySummary? get() = days[selectedDate]
 
-    val canOpenSelected: Boolean get() = selectedDate in loggedDates || selectedDate == today
+    /** Any day up to today opens in Food Log, so a day with nothing logged can still be filled in. */
+    val canOpenSelected: Boolean get() = selectedDate <= today
 
     fun statusOf(date: LocalDate): DayStatus {
         val day = days[date]

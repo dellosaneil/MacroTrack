@@ -64,6 +64,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOO
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.BARCODE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LIBRARY_FOOD
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LOG_DATE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PREFILL_NAME
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.QUERY
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEASUREMENT_TYPE
@@ -200,6 +201,11 @@ fun AppBottomNav() {
                         arguments = listOf(
                             navArgument(name = MEAL_TYPE) {
                                 type = NavType.StringType
+                            },
+                            navArgument(name = LOG_DATE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
                             }
                         )
                     ) {
@@ -217,6 +223,11 @@ fun AppBottomNav() {
                         arguments = listOf(
                             navArgument(name = MEAL_TYPE) {
                                 type = NavType.StringType
+                            },
+                            navArgument(name = LOG_DATE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
                             }
                         )
                     ) {
@@ -271,6 +282,11 @@ fun AppBottomNav() {
                                 type = NavType.StringType
                                 nullable = true
                                 defaultValue = null
+                            },
+                            navArgument(name = LOG_DATE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
                             }
                         )
                     ) {
@@ -320,6 +336,11 @@ fun AppBottomNav() {
                         arguments = listOf(
                             navArgument(name = MEAL_TYPE) {
                                 type = NavType.StringType
+                            },
+                            navArgument(name = LOG_DATE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
                             }
                         )
                     ) {

@@ -49,6 +49,7 @@ import macrotrack.composeapp.generated.resources.slash_value_gram
 import macrotrack.composeapp.generated.resources.value_gram_left
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.text
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
@@ -108,6 +109,7 @@ fun FoodLogTotalMacros(
             )
         } else {
             CollapsedSummary(
+                isToday = viewState.selectedDate == getCurrentDate(),
                 remainingCalories = remainingCalories,
                 calorieProgress = calorieProgress,
                 macros = macros,
@@ -128,6 +130,7 @@ private data class MacroSummary(
 
 @Composable
 private fun CollapsedSummary(
+    isToday: Boolean,
     remainingCalories: Int,
     calorieProgress: Float,
     macros: List<MacroSummary>,
@@ -145,7 +148,7 @@ private fun CollapsedSummary(
         )
         Column(modifier = Modifier.weight(weight = 1f)) {
             Text(
-                text = stringResource(resource = Res.string.remaining_today),
+                text = stringResource(resource = if (isToday) Res.string.remaining_today else Res.string.remaining_title),
                 style = typography.regular11,
                 color = colors.muted
             )

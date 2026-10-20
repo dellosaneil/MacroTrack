@@ -29,26 +29,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.add_meals
 import macrotrack.composeapp.generated.resources.avg_intake
 import macrotrack.composeapp.generated.resources.calendar
 import macrotrack.composeapp.generated.resources.day_streak
@@ -94,6 +88,7 @@ import org.thelazybattley.macrotrack.features.calendar.DaySummary
 import org.thelazybattley.macrotrack.features.calendar.StreakState
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
+import org.thelazybattley.macrotrack.ui.common.dashedBorder
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -555,7 +550,7 @@ private fun SelectedDayCard(
             }
             if (viewState.canOpenSelected) {
                 Text(
-                    text = stringResource(resource = Res.string.open_in_food_log),
+                    text = stringResource(resource = Res.string.add_meals),
                     style = typography.bold13,
                     color = colors.accentInk,
                     modifier = Modifier
@@ -688,20 +683,6 @@ private fun MacroAmount(letter: String, grams: Double, color: Color) {
         },
         style = typography.regular11,
         color = colors.muted
-    )
-}
-
-private fun Modifier.dashedBorder(color: Color, width: Dp, cornerRadius: Dp): Modifier = drawBehind {
-    val stroke = width.toPx()
-    drawRoundRect(
-        color = color,
-        topLeft = Offset(x = stroke / 2, y = stroke / 2),
-        size = Size(width = size.width - stroke, height = size.height - stroke),
-        style = Stroke(
-            width = stroke,
-            pathEffect = PathEffect.dashPathEffect(intervals = floatArrayOf(4.dp.toPx(), 3.dp.toPx()))
-        ),
-        cornerRadius = CornerRadius(x = cornerRadius.toPx(), y = cornerRadius.toPx())
     )
 }
 

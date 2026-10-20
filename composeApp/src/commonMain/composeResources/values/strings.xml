@@ -447,6 +447,7 @@
     <string name="in_progress">In progress</string>
     <string name="nothing_logged">Nothing logged</string>
     <string name="open_in_food_log">Open in Food log</string>
+    <string name="add_meals">Add meals</string>
     <plurals name="meal_count">
         <item quantity="one">%1$d meal</item>
         <item quantity="other">%1$d meals</item>
@@ -638,6 +639,7 @@
     <string name="scan_barcode">Scan a barcode</string>
     <string name="scan_title">Scan barcode</string>
     <string name="scan_adding_to">Adding to %1$s</string>
+    <string name="scan_adding_to_past_day">Adding to %1$s · %2$s</string>
     <string name="scan_close">Close scanner</string>
     <string name="scan_flashlight">Flashlight</string>
     <string name="scan_hint">Line up the barcode inside the frame</string>
@@ -663,6 +665,7 @@
     <string name="scan_label_serving">Label: %1$s</string>
     <string name="scan_after_adding">%1$s after adding</string>
     <string name="scan_kcal_left_today">%1$s kcal left today</string>
+    <string name="scan_kcal_left_past_day">%1$s kcal left</string>
     <string name="scan_another">Scan another</string>
     <string name="scan_add_to_meal_log">Add to %1$s log</string>
     <string name="scan_edit_label">Label doesn't match? Edit</string>
@@ -764,6 +767,9 @@
     <string name="quick_add_kcal_left_today">%1$s kcal left today</string>
     <string name="quick_add_kcal_left_after">%1$s kcal left today after this</string>
     <string name="quick_add_kcal_over_after">%1$s kcal over today after this</string>
+    <string name="quick_add_kcal_left_past_day">%1$s kcal left</string>
+    <string name="quick_add_kcal_left_after_past_day">%1$s kcal left after this</string>
+    <string name="quick_add_kcal_over_after_past_day">%1$s kcal over after this</string>
     <string name="quick_add_calories_description">%1$s calories</string>
     <string name="quick_add_grams_description">%1$s, %2$s grams</string>
     <string name="quick_add_calories_from_macros">Calories from macros</string>

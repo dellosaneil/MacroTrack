@@ -8,19 +8,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.MealType
-import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LOG_DATE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
+import org.thelazybattley.macrotrack.ui.navigation.logDateOf
 
 class QuickAddViewModel(
-    getRemainingCaloriesTodayUseCase: GetRemainingCaloriesTodayUseCase,
+    getRemainingCaloriesUseCase: GetRemainingCaloriesUseCase,
     private val insertFoodLogUseCase: InsertFoodLogUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), QuickAddCallbacks {
 
     private val _state = MutableStateFlow(
         value = QuickAddViewState(
-            mealType = MealType.entries.find { it.name == savedStateHandle[MEAL_TYPE] } ?: MealType.BREAKFAST
+            mealType = MealType.entries.find { it.name == savedStateHandle[MEAL_TYPE] } ?: MealType.BREAKFAST,
+            logDate = logDateOf(argument = savedStateHandle[LOG_DATE])
         )
     )
     val state = _state.asStateFlow()
@@ -29,7 +32,7 @@ class QuickAddViewModel(
 
     init {
         viewModelScope.launch {
-            getRemainingCaloriesTodayUseCase().collect { remaining ->
+            getRemainingCaloriesUseCase(date = _state.value.logDate).collect { remaining ->
                 // While saving, the new entry is already counted; keep showing the figure from before it.
                 _state.update { if (isSaving) it else it.copy(remainingCalories = remaining) }
             }
@@ -73,6 +76,7 @@ class QuickAddViewModel(
                 fat = if (isMacros) currentState.gramsOf(field = QuickAddField.FAT) else 0.0,
                 weight = 0.0,
                 dominantMacro = currentState.dominantMacro,
+                date = currentState.logDate,
                 isQuickAdd = true
             )
             _state.update { it.copy(isSaved = true) }

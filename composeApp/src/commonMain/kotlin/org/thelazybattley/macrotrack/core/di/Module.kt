@@ -22,7 +22,7 @@ import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCas
 import org.thelazybattley.macrotrack.features.foodlibrary.FoodLibraryViewModel
 import org.thelazybattley.macrotrack.domain.repository.ProductRepository
 import org.thelazybattley.macrotrack.domain.usecase.food.LookUpBarcodeUseCase
-import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesUseCase
 import org.thelazybattley.macrotrack.features.scanbarcode.ScanBarcodeViewModel
 import org.thelazybattley.macrotrack.features.scanbarcode.ScannedFoodRequest
 import org.thelazybattley.macrotrack.core.isPaywallEnabled
@@ -214,7 +214,7 @@ val useCaseModule = module {
     factoryOf(::IsTrialEndedNoticeDismissedUseCase)
     factoryOf(::DismissTrialEndedNoticeUseCase)
     factoryOf(::LookUpBarcodeUseCase)
-    factoryOf(::GetRemainingCaloriesTodayUseCase)
+    factoryOf(::GetRemainingCaloriesUseCase)
     factoryOf(::GetFoodLibraryUseCase)
     factoryOf(::IsTelemetryEnabledUseCase)
     factoryOf(::SetTelemetryEnabledUseCase)

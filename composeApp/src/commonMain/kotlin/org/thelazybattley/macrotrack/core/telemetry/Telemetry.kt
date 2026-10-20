@@ -53,6 +53,7 @@ object TelemetryEvent {
     const val PARAM_GOAL = "goal"
     const val PARAM_MEAL_TYPE = "meal_type"
     const val PARAM_QUICK_ADD = "quick_add"
+    const val PARAM_PAST_DAY = "past_day"
     const val PARAM_RESULT = "result"
     const val PARAM_FEATURE = "feature"
 }

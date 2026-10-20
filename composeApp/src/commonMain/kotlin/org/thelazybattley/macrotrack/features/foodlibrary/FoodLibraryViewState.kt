@@ -1,11 +1,15 @@
 package org.thelazybattley.macrotrack.features.foodlibrary
 
+import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.LibraryCategory
 import org.thelazybattley.macrotrack.domain.model.LibraryFood
 import org.thelazybattley.macrotrack.domain.model.MealType
 
 data class FoodLibraryViewState(
     val mealType: MealType = MealType.BREAKFAST,
+    /** The day picked foods are logged to: today, or a past day opened in Food Log. */
+    val logDate: LocalDate = getCurrentDate(),
     val foods: List<LibraryFood> = emptyList(),
     val query: String = "",
     /** The picked category chip; null is Popular. A search ignores it. */

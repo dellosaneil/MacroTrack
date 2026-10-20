@@ -73,6 +73,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.datetime.LocalDate
 import kotlin.math.roundToInt
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.base_serving
@@ -98,6 +99,7 @@ import macrotrack.composeapp.generated.resources.portion_size
 import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.scan_add_to_meal_log
 import macrotrack.composeapp.generated.resources.scan_adding_to
+import macrotrack.composeapp.generated.resources.scan_adding_to_past_day
 import macrotrack.composeapp.generated.resources.scan_after_adding
 import macrotrack.composeapp.generated.resources.scan_again
 import macrotrack.composeapp.generated.resources.scan_allow_camera
@@ -111,6 +113,7 @@ import macrotrack.composeapp.generated.resources.scan_edit_label
 import macrotrack.composeapp.generated.resources.scan_flashlight
 import macrotrack.composeapp.generated.resources.scan_found
 import macrotrack.composeapp.generated.resources.scan_hint
+import macrotrack.composeapp.generated.resources.scan_kcal_left_past_day
 import macrotrack.composeapp.generated.resources.scan_kcal_left_today
 import macrotrack.composeapp.generated.resources.scan_label_serving
 import macrotrack.composeapp.generated.resources.scan_later
@@ -144,6 +147,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
@@ -154,6 +158,7 @@ import org.thelazybattley.macrotrack.features.scanbarcode.ScanMode
 import org.thelazybattley.macrotrack.features.scanbarcode.ScannedFood
 import org.thelazybattley.macrotrack.features.scanbarcode.ServingOption
 import org.thelazybattley.macrotrack.features.scanbarcode.formatBarcode
+import org.thelazybattley.macrotrack.ui.common.logDateLabel
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
@@ -232,6 +237,7 @@ private fun ScanBarcodeScreen(
         }
         ScanTopBar(
             mealTitle = stringResource(resource = viewState.mealType.title),
+            logDate = viewState.logDate,
             showTorch = showCamera,
             isTorchOn = viewState.isTorchOn,
             onClose = onBack,
@@ -287,6 +293,7 @@ private fun ScanBarcodeScreen(
 @Composable
 private fun ScanTopBar(
     mealTitle: String,
+    logDate: LocalDate,
     showTorch: Boolean,
     isTorchOn: Boolean,
     onClose: () -> Unit,
@@ -312,7 +319,11 @@ private fun ScanTopBar(
         ) {
             Text(text = stringResource(resource = Res.string.scan_title), style = typography.bold18, color = OnCamera)
             Text(
-                text = stringResource(Res.string.scan_adding_to, mealTitle),
+                text = if (logDate == getCurrentDate()) {
+                    stringResource(Res.string.scan_adding_to, mealTitle)
+                } else {
+                    stringResource(Res.string.scan_adding_to_past_day, mealTitle, logDateLabel(date = logDate))
+                },
                 style = typography.regular11,
                 color = OnCameraMuted
             )
@@ -761,7 +772,10 @@ private fun FoundContent(
                 color = colors.muted
             )
             Text(
-                text = stringResource(Res.string.scan_kcal_left_today, remaining.withThousands()),
+                text = stringResource(
+                    if (viewState.logDate == getCurrentDate()) Res.string.scan_kcal_left_today else Res.string.scan_kcal_left_past_day,
+                    remaining.withThousands()
+                ),
                 style = typography.bold13,
                 color = colors.accentInk
             )

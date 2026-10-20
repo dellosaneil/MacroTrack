@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.addmeal
 
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.Ingredient
 import org.thelazybattley.macrotrack.domain.model.LibraryFood
@@ -9,6 +10,8 @@ import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 
 data class AddMealViewState(
     val selectedMealType: MealType = MealType.BREAKFAST,
+    /** The day the picked foods are logged to: today, or a past day opened in Food Log. */
+    val logDate: LocalDate = getCurrentDate(),
     /** The tab the user picked; null until they pick one, see [activeFilter]. */
     val selectedMealFilter: MealFilter? = null,
     val completeFoodList: List<Food> = emptyList(),

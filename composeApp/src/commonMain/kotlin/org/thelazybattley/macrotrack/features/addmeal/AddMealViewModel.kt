@@ -19,7 +19,7 @@ import org.thelazybattley.macrotrack.domain.usecase.favorite.SetFavoriteUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.DeleteFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
-import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesTodayUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
@@ -27,6 +27,8 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 import org.thelazybattley.macrotrack.features.scanbarcode.ScannedFoodRequest
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LOG_DATE
+import org.thelazybattley.macrotrack.ui.navigation.logDateOf
 
 class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
@@ -36,7 +38,7 @@ class AddMealViewModel(
     private val deleteRecipeUseCase: DeleteRecipeUseCase,
     private val deleteFoodUseCase: DeleteFoodUseCase,
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
-    private val getRemainingCaloriesTodayUseCase: GetRemainingCaloriesTodayUseCase,
+    private val getRemainingCaloriesUseCase: GetRemainingCaloriesUseCase,
     private val getFavoriteKeysUseCase: GetFavoriteKeysUseCase,
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val scannedFoodRequest: ScannedFoodRequest,
@@ -51,7 +53,8 @@ class AddMealViewModel(
     init {
         _state.update { currentState ->
             currentState.copy(
-                selectedMealType = MealType.entries.find { it.name == mealType } ?: MealType.BREAKFAST
+                selectedMealType = MealType.entries.find { it.name == mealType } ?: MealType.BREAKFAST,
+                logDate = logDateOf(argument = savedStateHandle[LOG_DATE])
             )
         }
 
@@ -90,7 +93,7 @@ class AddMealViewModel(
         }
 
         viewModelScope.launch {
-            getRemainingCaloriesTodayUseCase().collect { remainingCalories ->
+            getRemainingCaloriesUseCase(date = _state.value.logDate).collect { remainingCalories ->
                 _state.update { currentState -> currentState.copy(remainingCalories = remainingCalories) }
             }
         }
@@ -171,7 +174,8 @@ class AddMealViewModel(
                     protein = item.food.macros.protein,
                     mealType = currentState.selectedMealType,
                     weight = item.food.weight,
-                    dominantMacro = item.food.dominantMacro
+                    dominantMacro = item.food.dominantMacro,
+                    date = currentState.logDate
                 )
             }
             _state.update { it.copy(isSaved = true) }

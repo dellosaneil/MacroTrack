@@ -1,7 +1,9 @@
 package org.thelazybattley.macrotrack.features.quickadd
 
+import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.KEY_BACKSPACE
 import org.thelazybattley.macrotrack.core.KEY_DECIMAL
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import kotlin.math.roundToInt
@@ -26,13 +28,15 @@ enum class QuickAddField(val macro: MacroType) {
  */
 data class QuickAddViewState(
     val mealType: MealType = MealType.BREAKFAST,
+    /** The day the entry is logged to: today, or a past day opened in Food Log. */
+    val logDate: LocalDate = getCurrentDate(),
     val mode: QuickAddMode = QuickAddMode.CALORIES,
     val calories: String = "",
     val grams: Map<QuickAddField, String> = QuickAddField.entries.associateWith { "" },
     val activeField: QuickAddField = QuickAddField.PROTEIN,
     val replaceOnType: Boolean = true,
     val label: String = "",
-    /** Calories left today before this entry; null until the user's details load. */
+    /** Calories left on [logDate] before this entry; null until the user's details load. */
     val remainingCalories: Int? = null,
     val isSaved: Boolean = false
 ) {

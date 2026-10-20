@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.ui.navigation
 
+import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_nav_insights
 import macrotrack.composeapp.generated.resources.ic_nav_log
@@ -11,6 +12,7 @@ import macrotrack.composeapp.generated.resources.profile
 import macrotrack.composeapp.generated.resources.progress
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileSectionEnum
 
 sealed class AppDestinations {
@@ -52,10 +54,9 @@ sealed class AppDestinations {
         object Splash : Root(route = "splash")
         object Walkthrough : Root(route = "walkthrough")
         object Onboarding : Root(route = "onboarding")
-        object AddMeal : Root(route = "add_meal", routeWithArgs = "add_meal/{$MEAL_TYPE}") {
-            fun createRoute(mealType: String): String {
-                return "$route/$mealType"
-            }
+        object AddMeal : Root(route = "add_meal", routeWithArgs = "add_meal/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
+            fun createRoute(mealType: String, logDate: LocalDate? = null): String =
+                "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())
         }
 
         object CreateFood : Root(
@@ -78,23 +79,26 @@ sealed class AppDestinations {
             )
         }
 
-        object FoodLibrary : Root(route = "food_library", routeWithArgs = "food_library/{$MEAL_TYPE}?$QUERY={$QUERY}") {
-            fun createRoute(mealType: String, query: String? = null): String =
-                "$route/$mealType" + queryString(QUERY to query?.takeIf { it.isNotBlank() })
+        object FoodLibrary : Root(
+            route = "food_library",
+            routeWithArgs = "food_library/{$MEAL_TYPE}?$QUERY={$QUERY}&$LOG_DATE={$LOG_DATE}"
+        ) {
+            fun createRoute(mealType: String, query: String? = null, logDate: LocalDate? = null): String =
+                "$route/$mealType" + queryString(QUERY to query?.takeIf { it.isNotBlank() }, LOG_DATE to logDate?.toString())
         }
 
         object Backup : Root(route = "backup_export")
 
         object DeleteData : Root(route = "delete_data")
 
-        object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}") {
-            fun createRoute(mealType: String): String = "$route/$mealType"
+        object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
+            fun createRoute(mealType: String, logDate: LocalDate? = null): String =
+                "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())
         }
 
-        object ScanBarcode : Root(route = "scan_barcode", routeWithArgs = "scan_barcode/{$MEAL_TYPE}") {
-            fun createRoute(mealType: String): String {
-                return "$route/$mealType"
-            }
+        object ScanBarcode : Root(route = "scan_barcode", routeWithArgs = "scan_barcode/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
+            fun createRoute(mealType: String, logDate: LocalDate? = null): String =
+                "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())
         }
         object CreateRecipe :
             Root(route = "create_recipe", routeWithArgs = "create_recipe/{$RECIPE_NAME}") {
@@ -146,8 +150,14 @@ sealed class AppDestinations {
         const val QUERY = "query"
         const val MEASUREMENT_TYPE = "measurementType"
         const val PRO_FEATURE = "proFeature"
+        /** The day Add meal, Quick add, Scan barcode and the food library log to; today when a route leaves it out. */
+        const val LOG_DATE = "logDate"
     }
 }
+
+/** The day a [AppDestinations.LOG_DATE] argument names, or today when there is none. */
+fun logDateOf(argument: String?): LocalDate =
+    argument?.let { runCatching { LocalDate.parse(input = it) }.getOrNull() } ?: getCurrentDate()
 
 /** Optional route arguments as "?a=1&b=2", leaving out the null ones. Values are percent-encoded, so names like "Milk, 2%" survive. */
 private fun queryString(vararg args: Pair<String, String?>): String =

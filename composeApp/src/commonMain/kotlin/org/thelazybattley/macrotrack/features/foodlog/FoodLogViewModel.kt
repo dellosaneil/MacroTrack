@@ -203,6 +203,8 @@ class FoodLogViewModel(
     }
 
     override fun onNavigate(mealType: MealType) {
+        // Back from Add meal, Food Log shows the day that was added to rather than jumping to today.
+        logDateRequest.request(date = _state.value.selectedDate)
         _state.update { currentState ->
             currentState.copy(
                 navigateMealTypeParameter = mealType

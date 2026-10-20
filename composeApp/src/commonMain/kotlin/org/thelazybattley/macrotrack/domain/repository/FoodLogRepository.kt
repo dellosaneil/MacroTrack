@@ -17,6 +17,7 @@ interface FoodLogRepository {
         protein: Double,
         weight: Double,
         dominantMacro: MacroType,
+        date: LocalDate,
         isQuickAdd: Boolean = false
     ) : Long
 

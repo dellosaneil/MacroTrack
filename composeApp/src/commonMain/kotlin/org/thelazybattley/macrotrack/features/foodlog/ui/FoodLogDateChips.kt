@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
@@ -28,6 +29,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.ui.common.dashedBorder
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -43,9 +45,11 @@ fun FoodLogDateChips(
 ) {
     val today = getCurrentDate()
     val loggedDates = remember(key1 = dates) { dates.toSet() }
-    val allDates = remember(key1 = dates, key2 = today) {
+    // Back to the first logged day or a week ago, whichever is earlier, and further for an older day opened from
+    // the calendar.
+    val allDates = remember(key1 = dates, key2 = today, key3 = dateSelected) {
         val minimumStart = today.minus(period = DatePeriod(days = MIN_DAYS_SHOWN - 1))
-        val start = minOf(dates.minOrNull() ?: minimumStart, minimumStart)
+        val start = minOf(dates.minOrNull() ?: minimumStart, minimumStart, dateSelected)
         generateSequence(seed = start) { it.plus(period = DatePeriod(days = 1)) }
             .takeWhile { it <= today }
             .toList()
@@ -89,7 +93,7 @@ fun FoodLogDateChips(
                 DateChip(
                     date = date,
                     isSelected = date == dateSelected,
-                    isEnabled = date in loggedDates || date == today,
+                    isLogged = date in loggedDates || date == today,
                     onClick = { onDateSelected(date) }
                 )
             }
@@ -102,24 +106,26 @@ private fun DateChip(
     modifier: Modifier = Modifier,
     date: LocalDate,
     isSelected: Boolean,
-    isEnabled: Boolean,
+    isLogged: Boolean,
     onClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(size = 14.dp)
     val background = when {
         isSelected -> colors.accent
-        isEnabled -> colors.surface
-        else -> colors.divider
+        isLogged -> colors.surface
+        else -> Color.Transparent
     }
-    val borderColor = when {
-        isSelected -> colors.accent
-        isEnabled -> colors.line
-        else -> colors.divider
+    // A day with nothing logged gets the calendar's dashed "not logged" outline; it opens like any other day so it
+    // can be filled in.
+    val outline = when {
+        isSelected -> Modifier.border(width = 1.dp, color = colors.accent, shape = shape)
+        isLogged -> Modifier.border(width = 1.dp, color = colors.line, shape = shape)
+        else -> Modifier.dashedBorder(color = colors.dashed, width = 1.dp, cornerRadius = 14.dp)
     }
     val textColor = when {
         isSelected -> colors.onAccent
-        isEnabled -> colors.ink
-        else -> colors.faint
+        isLogged -> colors.ink
+        else -> colors.muted
     }
 
     Column(
@@ -128,15 +134,16 @@ private fun DateChip(
             .height(height = 56.dp)
             .clip(shape = shape)
             .background(color = background)
-            .border(width = 1.dp, color = borderColor, shape = shape)
-            .clickable(enabled = isEnabled, onClick = onClick),
+            .then(other = outline)
+            .clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(space = 2.dp, alignment = Alignment.CenterVertically)
     ) {
         Text(
             text = date.dayOfWeek.name.take(n = 1),
             style = typography.medium11,
-            color = textColor.copy(alpha = 0.75f)
+            // Muted text faded any further would be too faint to read.
+            color = if (isSelected || isLogged) textColor.copy(alpha = 0.75f) else textColor
         )
         Text(
             text = date.day.toString(),

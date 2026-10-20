@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.features.foodlibrary.ui
 import androidx.compose.foundation.background
 import org.thelazybattley.macrotrack.ui.common.portionUnit
 import org.thelazybattley.macrotrack.ui.common.formatPortion
+import org.thelazybattley.macrotrack.ui.common.CommonLogDateBadge
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_count
 import macrotrack.composeapp.generated.resources.add_to_meal
@@ -160,6 +162,7 @@ private fun FoodLibraryScreen(
         topBar = {
             LibraryHeader(
                 mealTitle = mealTitle,
+                logDate = viewState.logDate,
                 selectionCount = viewState.selection.size,
                 onAdd = callbacks::onAddSelection,
                 onBack = onBack
@@ -257,6 +260,7 @@ private fun FoodLibraryScreen(
 @Composable
 private fun LibraryHeader(
     mealTitle: String,
+    logDate: LocalDate,
     selectionCount: Int,
     onAdd: () -> Unit,
     onBack: () -> Unit
@@ -276,11 +280,17 @@ private fun LibraryHeader(
             onClick = onBack
         )
         Column(modifier = Modifier.weight(weight = 1f)) {
-            Text(
-                text = stringResource(resource = Res.string.adding_to_meal, mealTitle),
-                style = typography.regular11,
-                color = colors.muted
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.adding_to_meal, mealTitle),
+                    style = typography.regular11,
+                    color = colors.muted
+                )
+                CommonLogDateBadge(date = logDate)
+            }
             Text(text = stringResource(resource = Res.string.food_library), style = typography.bold18, color = colors.ink)
         }
         if (selectionCount > 0) {

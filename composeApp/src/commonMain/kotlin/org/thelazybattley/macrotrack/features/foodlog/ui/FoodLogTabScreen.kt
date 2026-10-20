@@ -127,7 +127,8 @@ fun FoodLogTabScreen(
         if (viewState.navigateMealTypeParameter != null) {
             onNavigate(
                 AppDestinations.Root.AddMeal.createRoute(
-                    mealType = viewState.navigateMealTypeParameter?.name ?: ""
+                    mealType = viewState.navigateMealTypeParameter?.name ?: "",
+                    logDate = viewState.selectedDate
                 )
             )
             viewModel.resetNavigateMealTypeParameter()
@@ -208,7 +209,6 @@ private fun FoodLogTabScreen(
                 modifier = Modifier.fillMaxWidth(),
                 addButtonModifier = if (index == 0) Modifier.tourTarget(target = TourTarget.TODAY_ADD_MEAL) else Modifier,
                 foodList = meal,
-                isToday = isToday,
                 foodUnit = viewState.foodUnit,
                 recipeCalories = viewState.recipeCalories,
                 onDeleteFoodLog = { id ->
@@ -385,7 +385,6 @@ private fun MealsHeader(
 private fun LoggedFoodMealType(
     modifier: Modifier = Modifier,
     addButtonModifier: Modifier = Modifier,
-    isToday: Boolean,
     foodList: FoodLogFoodListByMealType,
     foodUnit: Map<String, String>,
     recipeCalories: Map<String, Int>,
@@ -422,7 +421,6 @@ private fun LoggedFoodMealType(
             modifier = Modifier.fillMaxWidth().padding(all = 14.dp),
             addButtonModifier = addButtonModifier,
             foodList = foodList,
-            isToday = isToday,
             onNavigate = onNavigate
         )
         if (isEmpty) return@Column
@@ -463,7 +461,6 @@ private fun MealTypeHeader(
     modifier: Modifier = Modifier,
     addButtonModifier: Modifier = Modifier,
     foodList: FoodLogFoodListByMealType,
-    isToday: Boolean,
     onNavigate: () -> Unit
 ) {
     val isEmpty = foodList.foodList.isEmpty()
@@ -525,7 +522,6 @@ private fun MealTypeHeader(
                 )
             }
         }
-        if (!isToday) return@Row
         val addContentDescription = stringResource(resource = Res.string.add_to_value, mealName)
         if (isEmpty) {
             Box(

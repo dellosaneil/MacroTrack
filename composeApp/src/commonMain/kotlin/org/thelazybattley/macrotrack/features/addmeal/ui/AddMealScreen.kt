@@ -50,6 +50,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.datetime.LocalDate
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.add_count
 import macrotrack.composeapp.generated.resources.adding_to
@@ -123,6 +124,7 @@ import org.thelazybattley.macrotrack.features.addmeal.MealListItem
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
+import org.thelazybattley.macrotrack.ui.common.CommonLogDateBadge
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -168,6 +170,7 @@ private fun AddMealScreen(
         topBar = {
             AddMealHeader(
                 mealType = viewState.selectedMealType,
+                logDate = viewState.logDate,
                 remainingCalories = viewState.remainingCalories,
                 selectionCount = viewState.selection.size,
                 onAdd = callbacks::onAddSelection,
@@ -179,7 +182,11 @@ private fun AddMealScreen(
         val listState = rememberLazyListState()
         val openLibrary = { query: String? ->
             callbacks.onNavigateScreen(
-                route = AppDestinations.Root.FoodLibrary.createRoute(mealType = viewState.selectedMealType.name, query = query)
+                route = AppDestinations.Root.FoodLibrary.createRoute(
+                    mealType = viewState.selectedMealType.name,
+                    query = query,
+                    logDate = viewState.logDate
+                )
             )
         }
         // The list re-sorts once the recently logged order loads; keep the list pinned to the top
@@ -205,7 +212,10 @@ private fun AddMealScreen(
                     onQueryChange = callbacks::onSearchQuery,
                     onScan = {
                         callbacks.onNavigateScreen(
-                            route = AppDestinations.Root.ScanBarcode.createRoute(mealType = viewState.selectedMealType.name)
+                            route = AppDestinations.Root.ScanBarcode.createRoute(
+                                mealType = viewState.selectedMealType.name,
+                                logDate = viewState.logDate
+                            )
                         )
                     }
                 )
@@ -220,7 +230,10 @@ private fun AddMealScreen(
                             icon = Res.drawable.ic_bolt,
                             onClick = {
                                 callbacks.onNavigateScreen(
-                                    route = AppDestinations.Root.QuickAdd.createRoute(mealType = viewState.selectedMealType.name)
+                                    route = AppDestinations.Root.QuickAdd.createRoute(
+                                        mealType = viewState.selectedMealType.name,
+                                        logDate = viewState.logDate
+                                    )
                                 )
                             }
                         )
@@ -357,7 +370,10 @@ private fun LazyListScope.searchResults(
                 onCreateFood = createFood,
                 onScan = {
                     callbacks.onNavigateScreen(
-                        route = AppDestinations.Root.ScanBarcode.createRoute(mealType = viewState.selectedMealType.name)
+                        route = AppDestinations.Root.ScanBarcode.createRoute(
+                            mealType = viewState.selectedMealType.name,
+                            logDate = viewState.logDate
+                        )
                     )
                 },
                 onBuildRecipe = createRecipe,
@@ -458,6 +474,7 @@ private fun LazyListScope.mealItems(
 @Composable
 private fun AddMealHeader(
     mealType: MealType,
+    logDate: LocalDate,
     remainingCalories: Int?,
     selectionCount: Int,
     onAdd: () -> Unit,
@@ -489,11 +506,17 @@ private fun AddMealHeader(
             )
         }
         Column(modifier = Modifier.weight(weight = 1f)) {
-            Text(
-                text = stringResource(resource = Res.string.adding_to),
-                style = typography.regular11,
-                color = colors.muted
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+            ) {
+                Text(
+                    text = stringResource(resource = Res.string.adding_to),
+                    style = typography.regular11,
+                    color = colors.muted
+                )
+                CommonLogDateBadge(date = logDate)
+            }
             Text(
                 text = stringResource(resource = mealType.title),
                 style = typography.bold18,
