@@ -37,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -45,9 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -97,7 +93,6 @@ import org.thelazybattley.macrotrack.features.onboarding.OnboardingCallbacks
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewModel
 import org.thelazybattley.macrotrack.features.onboarding.OnboardingViewState
 import org.thelazybattley.macrotrack.ui.common.CommonActivityLevelOption
-import org.thelazybattley.macrotrack.ui.common.CommonInputField
 import org.thelazybattley.macrotrack.ui.common.CommonUnitSystemToggle
 import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import org.thelazybattley.macrotrack.ui.common.weightInputText
@@ -105,6 +100,17 @@ import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadField
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadSheet
+import org.thelazybattley.macrotrack.ui.common.heightInFeetPreview
+import org.thelazybattley.macrotrack.ui.common.heightInCmPreview
+import org.thelazybattley.macrotrack.ui.common.weightInOtherUnitPreview
+import org.thelazybattley.macrotrack.core.KeypadField
+import macrotrack.composeapp.generated.resources.keypad_age_subtitle
+import macrotrack.composeapp.generated.resources.keypad_feet
+import macrotrack.composeapp.generated.resources.keypad_inches
+import macrotrack.composeapp.generated.resources.current_weight
+import kotlin.math.roundToInt
 
 @Composable
 fun OnboardingScreen(modifier: Modifier = Modifier, onFinishButtonClicked: () -> Unit) {
@@ -220,65 +226,171 @@ private fun GoalAndStatsStep(
                 )
             }
         }
-        Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-            val unitSystem = LocalUnitSystem.current
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.weight(weight = 1f)) {
-                    SectionLabel(text = Res.string.your_stats_title)
-                }
-                CommonUnitSystemToggle(selected = unitSystem, onSelected = callbacks::onUnitSystemSelected)
+        StatsSection(viewState = viewState, callbacks = callbacks)
+    }
+}
+
+/** Age, height and weight, each typed on the shared keypad; Next moves through them in order. */
+@Composable
+private fun StatsSection(
+    viewState: OnboardingViewState,
+    callbacks: OnboardingCallbacks
+) {
+    val unitSystem = LocalUnitSystem.current
+    val isImperial = unitSystem == UnitSystem.IMPERIAL
+    var openField by rememberSaveable { mutableStateOf<String?>(value = null) }
+    val feetInches = viewState.height.takeIf { it > 0 }?.let { FeetInches.fromCm(cm = it) }
+    val age = viewState.age.takeIf { it > 0 }?.toString().orEmpty()
+    val heightCm = viewState.height.takeIf { it > 0 }?.let { (round(it * 10) / 10).toCleanString() }.orEmpty()
+    val feet = feetInches?.feet?.takeIf { it > 0 }?.toString().orEmpty()
+    val inches = feetInches?.inches?.toCleanString().orEmpty()
+    val weight = viewState.weight.takeIf { it > 0 }?.let { unitSystem.weightInputText(kg = it) }.orEmpty()
+    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.weight(weight = 1f)) {
+                SectionLabel(text = Res.string.your_stats_title)
             }
-            Row(
-                modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-            ) {
+            CommonUnitSystemToggle(selected = unitSystem, onSelected = callbacks::onUnitSystemSelected)
+        }
+        Row(
+            modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+        ) {
+            StatField(
+                modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                label = Res.string.age,
+                unit = stringResource(resource = Res.string.yrs),
+                value = age,
+                isOpen = openField == AGE_FIELD,
+                onClick = { openField = AGE_FIELD }
+            )
+            SexToggle(
+                modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                selected = viewState.selectedGender,
+                onSelected = callbacks::onGenderSelected
+            )
+        }
+        Row(
+            modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min),
+            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+        ) {
+            if (isImperial) {
+                FeetInchesField(
+                    modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                    feet = feet,
+                    inches = inches,
+                    openField = openField,
+                    onOpen = { openField = it }
+                )
+            } else {
                 StatField(
                     modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
-                    label = Res.string.age,
-                    unit = stringResource(resource = Res.string.yrs),
-                    initial = viewState.age.takeIf { it > 0 }?.toString().orEmpty(),
-                    keyboardType = KeyboardType.Number,
-                    onValue = { callbacks.onAgeUpdated(age = it.toIntOrNull() ?: 0) }
-                )
-                SexToggle(
-                    modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
-                    selected = viewState.selectedGender,
-                    onSelected = callbacks::onGenderSelected
+                    label = Res.string.height,
+                    unit = stringResource(resource = Res.string.cm),
+                    value = heightCm,
+                    isOpen = openField == HEIGHT_FIELD,
+                    onClick = { openField = HEIGHT_FIELD }
                 )
             }
-            Row(
-                modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-            ) {
-                if (unitSystem == UnitSystem.IMPERIAL) {
-                    FeetInchesField(
-                        modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
-                        initialCm = viewState.height,
-                        onHeightCm = { callbacks.onHeightUpdated(height = it) }
-                    )
-                } else {
-                    StatField(
-                        modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
-                        label = Res.string.height,
-                        unit = stringResource(resource = Res.string.cm),
-                        initial = viewState.height.takeIf { it > 0 }?.let { (round(it * 10) / 10).toCleanString() }.orEmpty(),
-                        keyboardType = KeyboardType.Decimal,
-                        onValue = { callbacks.onHeightUpdated(height = it.toDoubleOrNull() ?: 0.0) }
-                    )
-                }
-                // Keyed on the unit so switching units shows the typed weight converted.
-                key(unitSystem) {
-                    StatField(
-                        modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
-                        label = Res.string.weight_kg_label,
-                        unit = weightUnitLabel(),
-                        initial = viewState.weight.takeIf { it > 0 }?.let { unitSystem.weightInputText(kg = it) }.orEmpty(),
-                        keyboardType = KeyboardType.Decimal,
-                        onValue = { callbacks.onWeightUpdated(weight = unitSystem.weightToKg(value = it.toDoubleOrNull() ?: 0.0)) }
-                    )
-                }
-            }
+            StatField(
+                modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                label = Res.string.weight_kg_label,
+                unit = weightUnitLabel(),
+                value = weight,
+                isOpen = openField == WEIGHT_FIELD,
+                onClick = { openField = WEIGHT_FIELD }
+            )
         }
+    }
+
+    openField?.let { open ->
+        val heightFields = if (isImperial) {
+            listOf(
+                KeypadField(
+                    id = FEET_FIELD,
+                    label = stringResource(resource = Res.string.height),
+                    shortLabel = stringResource(resource = Res.string.keypad_feet),
+                    unit = stringResource(resource = Res.string.ft),
+                    value = feet,
+                    wholeDigits = 1,
+                    min = MIN_FEET,
+                    max = MAX_FEET
+                ),
+                KeypadField(
+                    id = INCHES_FIELD,
+                    label = stringResource(resource = Res.string.height),
+                    shortLabel = stringResource(resource = Res.string.keypad_inches),
+                    unit = stringResource(resource = Res.string.unit_in),
+                    value = inches,
+                    wholeDigits = 2,
+                    decimals = 1,
+                    max = UnitSystem.INCHES_PER_FOOT - 0.1,
+                    allowsZero = true
+                )
+            )
+        } else {
+            listOf(
+                KeypadField(
+                    id = HEIGHT_FIELD,
+                    label = stringResource(resource = Res.string.height),
+                    unit = stringResource(resource = Res.string.cm),
+                    value = heightCm,
+                    wholeDigits = 3,
+                    decimals = 1,
+                    min = MIN_HEIGHT_CM,
+                    max = MAX_HEIGHT_CM
+                )
+            )
+        }
+        val fields = listOf(
+            KeypadField(
+                id = AGE_FIELD,
+                label = stringResource(resource = Res.string.age),
+                subtitle = stringResource(resource = Res.string.keypad_age_subtitle),
+                unit = stringResource(resource = Res.string.yrs),
+                value = age,
+                wholeDigits = 3,
+                min = MIN_AGE,
+                max = MAX_AGE
+            )
+        ) + heightFields + KeypadField(
+            id = WEIGHT_FIELD,
+            label = stringResource(resource = Res.string.current_weight),
+            shortLabel = stringResource(resource = Res.string.weight_kg_label),
+            unit = weightUnitLabel(),
+            value = weight,
+            wholeDigits = 3,
+            decimals = 1,
+            min = unitSystem.weightFromKg(kg = MIN_WEIGHT_KG).roundToInt().toDouble(),
+            max = unitSystem.weightFromKg(kg = MAX_WEIGHT_KG).roundToInt().toDouble()
+        )
+        CommonKeypadSheet(
+            fields = fields,
+            openId = open,
+            onOpen = { openField = it },
+            onCommit = { id, text ->
+                when (id) {
+                    AGE_FIELD -> callbacks.onAgeUpdated(age = text.toIntOrNull() ?: 0)
+                    HEIGHT_FIELD -> callbacks.onHeightUpdated(height = text.toDoubleOrNull() ?: 0.0)
+                    FEET_FIELD -> callbacks.onHeightUpdated(
+                        height = FeetInches(feet = text.toIntOrNull() ?: 0, inches = inches.toDoubleOrNull() ?: 0.0).cm
+                    )
+                    INCHES_FIELD -> callbacks.onHeightUpdated(
+                        height = FeetInches(feet = feet.toIntOrNull() ?: 0, inches = text.toDoubleOrNull() ?: 0.0).cm
+                    )
+                    WEIGHT_FIELD -> callbacks.onWeightUpdated(weight = unitSystem.weightToKg(value = text.toDoubleOrNull() ?: 0.0))
+                }
+            },
+            onDismiss = { openField = null },
+            preview = { id, live ->
+                when (id) {
+                    HEIGHT_FIELD -> heightInFeetPreview(cm = live(HEIGHT_FIELD))
+                    FEET_FIELD, INCHES_FIELD -> heightInCmPreview(feet = live(FEET_FIELD), inches = live(INCHES_FIELD))
+                    WEIGHT_FIELD -> weightInOtherUnitPreview(weight = live(WEIGHT_FIELD), unitSystem = unitSystem)
+                    else -> null
+                }
+            }
+        )
     }
 }
 
@@ -338,119 +450,109 @@ private fun StatField(
     modifier: Modifier = Modifier,
     label: StringResource,
     unit: String,
-    initial: String,
-    keyboardType: KeyboardType,
-    onValue: (String) -> Unit
+    value: String,
+    isOpen: Boolean,
+    onClick: () -> Unit
 ) {
-    var text by rememberSaveable { mutableStateOf(value = initial) }
-    Column(
-        modifier = modifier
-            .clip(shape = RoundedCornerShape(size = 16.dp))
-            .background(color = colors.surface)
-            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 16.dp))
-            .padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 8.dp)
-    ) {
-        Text(text = stringResource(resource = label), style = typography.regular11, color = colors.muted)
+    val labelText = stringResource(resource = label)
+    StatCard(modifier = modifier, isOpen = isOpen) {
+        Text(text = labelText, style = typography.regular11, color = colors.muted)
         Row(verticalAlignment = Alignment.CenterVertically) {
-            CommonInputField(
-                modifier = Modifier.weight(weight = 1f).height(height = 36.dp),
-                value = text,
-                onValueChange = { value ->
-                    val allowed = if (keyboardType == KeyboardType.Number) {
-                        value.all { it.isDigit() } && value.length <= 3
-                    } else {
-                        value.count { it == '.' } <= 1 && value.all { it.isDigit() || it == '.' } && value.length <= 5
-                    }
-                    if (allowed) {
-                        text = value
-                        onValue(value)
-                    }
-                },
-                placeholder = "0",
-                keyboardType = keyboardType,
-                textStyle = typography.bold24,
-                cornerRadius = 0.dp,
-                horizontalPadding = 0.dp,
-                showBorder = false
-            )
+            StatValue(modifier = Modifier.weight(weight = 1f), value = value, isOpen = isOpen, contentDescription = labelText, onClick = onClick)
             Text(text = unit, style = typography.regular13, color = colors.muted)
         }
     }
 }
 
-/** Height typed as whole feet plus inches; reports the height in cm, or 0 until the feet are typed. */
+/** Height as whole feet plus inches, each its own keypad field. */
 @Composable
 private fun FeetInchesField(
     modifier: Modifier = Modifier,
-    initialCm: Double,
-    onHeightCm: (Double) -> Unit
+    feet: String,
+    inches: String,
+    openField: String?,
+    onOpen: (String) -> Unit
 ) {
-    val initial = initialCm.takeIf { it > 0 }?.let { FeetInches.fromCm(cm = it) }
-    var feet by rememberSaveable { mutableStateOf(value = initial?.feet?.toString().orEmpty()) }
-    var inches by rememberSaveable { mutableStateOf(value = initial?.inches?.toCleanString().orEmpty()) }
-    fun report() {
-        val wholeFeet = feet.toIntOrNull()
-        val extraInches = inches.ifEmpty { "0" }.toDoubleOrNull()
-        onHeightCm(if (wholeFeet == null || extraInches == null) 0.0 else FeetInches(feet = wholeFeet, inches = extraInches).cm)
-    }
-    val feetDescription = stringResource(resource = Res.string.height_feet)
-    val inchesDescription = stringResource(resource = Res.string.height_inches)
-    Column(
-        modifier = modifier
-            .clip(shape = RoundedCornerShape(size = 16.dp))
-            .background(color = colors.surface)
-            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 16.dp))
-            .padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 8.dp)
-    ) {
+    StatCard(modifier = modifier, isOpen = openField == FEET_FIELD || openField == INCHES_FIELD) {
         Text(text = stringResource(resource = Res.string.height), style = typography.regular11, color = colors.muted)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
-            CommonInputField(
-                modifier = Modifier
-                    .weight(weight = 1f)
-                    .height(height = 36.dp)
-                    .semantics { contentDescription = feetDescription },
+            StatValue(
+                modifier = Modifier.weight(weight = 1f),
                 value = feet,
-                onValueChange = { value ->
-                    if (value.length <= 1 && value.all { it.isDigit() }) {
-                        feet = value
-                        report()
-                    }
-                },
-                placeholder = "0",
-                keyboardType = KeyboardType.Number,
-                textStyle = typography.bold24,
-                cornerRadius = 0.dp,
-                horizontalPadding = 0.dp,
-                showBorder = false
+                isOpen = openField == FEET_FIELD,
+                contentDescription = stringResource(resource = Res.string.height_feet),
+                onClick = { onOpen(FEET_FIELD) }
             )
             Text(text = stringResource(resource = Res.string.ft), style = typography.regular13, color = colors.muted)
-            CommonInputField(
-                modifier = Modifier
-                    .weight(weight = 1f)
-                    .height(height = 36.dp)
-                    .semantics { contentDescription = inchesDescription },
+            StatValue(
+                modifier = Modifier.weight(weight = 1f),
                 value = inches,
-                onValueChange = { value ->
-                    val isValid = value.count { it == '.' } <= 1 && value.all { it.isDigit() || it == '.' } && value.length <= 4
-                    if (isValid && (value.toDoubleOrNull() ?: 0.0) < UnitSystem.INCHES_PER_FOOT) {
-                        inches = value
-                        report()
-                    }
-                },
-                placeholder = "0",
-                keyboardType = KeyboardType.Decimal,
-                textStyle = typography.bold24,
-                cornerRadius = 0.dp,
-                horizontalPadding = 0.dp,
-                showBorder = false
+                isOpen = openField == INCHES_FIELD,
+                contentDescription = stringResource(resource = Res.string.height_inches),
+                onClick = { onOpen(INCHES_FIELD) }
             )
             Text(text = stringResource(resource = Res.string.unit_in), style = typography.regular13, color = colors.muted)
         }
     }
 }
+
+@Composable
+private fun StatCard(
+    modifier: Modifier = Modifier,
+    isOpen: Boolean,
+    content: @Composable () -> Unit
+) {
+    val shape = RoundedCornerShape(size = 16.dp)
+    Column(
+        modifier = modifier
+            .clip(shape = shape)
+            .background(color = colors.surface)
+            .border(width = if (isOpen) 1.5.dp else 1.dp, color = if (isOpen) colors.accent else colors.line, shape = shape)
+            .padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 8.dp)
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun StatValue(
+    modifier: Modifier = Modifier,
+    value: String,
+    isOpen: Boolean,
+    contentDescription: String,
+    onClick: () -> Unit
+) {
+    CommonKeypadField(
+        modifier = modifier.height(height = 36.dp),
+        value = value,
+        onClick = onClick,
+        placeholder = "0",
+        textStyle = typography.bold24,
+        isOpen = isOpen,
+        background = colors.surface,
+        cornerRadius = 0.dp,
+        horizontalPadding = 0.dp,
+        showBorder = false,
+        contentDescription = contentDescription
+    )
+}
+
+private const val AGE_FIELD = "age"
+private const val HEIGHT_FIELD = "height"
+private const val FEET_FIELD = "feet"
+private const val INCHES_FIELD = "inches"
+private const val WEIGHT_FIELD = "weight"
+private const val MIN_AGE = 13.0
+private const val MAX_AGE = 120.0
+private const val MIN_HEIGHT_CM = 100.0
+private const val MAX_HEIGHT_CM = 250.0
+private const val MIN_FEET = 3.0
+private const val MAX_FEET = 8.0
+private const val MIN_WEIGHT_KG = 30.0
+private const val MAX_WEIGHT_KG = 300.0
 
 @Composable
 private fun SexToggle(

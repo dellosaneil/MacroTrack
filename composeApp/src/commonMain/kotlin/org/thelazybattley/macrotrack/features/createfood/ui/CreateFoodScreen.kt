@@ -25,12 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -66,6 +64,20 @@ import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadField
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadSheet
+import org.thelazybattley.macrotrack.ui.common.KeypadPreview
+import org.thelazybattley.macrotrack.core.KeypadField
+import macrotrack.composeapp.generated.resources.keypad_per_serving
+import macrotrack.composeapp.generated.resources.keypad_serving
+import macrotrack.composeapp.generated.resources.keypad_serving_subtitle
+import macrotrack.composeapp.generated.resources.keypad_per_amount
+import macrotrack.composeapp.generated.resources.kcal
+import macrotrack.composeapp.generated.resources.protein
+import macrotrack.composeapp.generated.resources.carbs
+import macrotrack.composeapp.generated.resources.fat
+import kotlin.math.roundToInt
+import androidx.compose.runtime.remember
 
 @Composable
 fun CreateFoodScreen(
@@ -92,6 +104,10 @@ private fun CreateFoodScreen(
     callbacks: CreateFoodCallbacks,
     onBack: () -> Unit
 ) {
+    var openField by remember { mutableStateOf<AddFoodTextFieldType?>(value = null) }
+    val servingUnit = viewState.unit.ifBlank {
+        if (viewState.unitSystem == UnitSystem.IMPERIAL) UnitSystem.OUNCE else stringResource(resource = Res.string.g)
+    }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = colors.background,
@@ -145,14 +161,14 @@ private fun CreateFoodScreen(
                     )
                 }
             }
-            ServingRow(viewState = viewState, callbacks = callbacks)
-            MacroInputs(viewState = viewState, callbacks = callbacks)
+            ServingRow(viewState = viewState, callbacks = callbacks, openField = openField, onOpen = { openField = it })
+            MacroInputs(viewState = viewState, openField = openField, onOpen = { openField = it })
             MacroPreviewCard(
                 modifier = Modifier.fillMaxWidth(),
                 label = stringResource(
                     resource = Res.string.preview_per_value,
                     viewState.weight.takeIf { it > 0 }?.toCleanString() ?: "–",
-                    viewState.unit.ifBlank { if (viewState.unitSystem == UnitSystem.IMPERIAL) UnitSystem.OUNCE else stringResource(resource = Res.string.g) }
+                    servingUnit
                 ).uppercase(),
                 calories = viewState.calories,
                 protein = viewState.protein?.toDoubleOrNull() ?: 0.0,
@@ -162,6 +178,76 @@ private fun CreateFoodScreen(
             )
         }
     }
+
+    openField?.let { open ->
+        CreateFoodKeypad(
+            viewState = viewState,
+            servingUnit = servingUnit,
+            openField = open,
+            onOpen = { openField = it },
+            onCommit = { type, text -> callbacks.onTextFieldUpdated(value = text, type = type) },
+            onDismiss = { openField = null }
+        )
+    }
+}
+
+/** The serving amount and each macro use the keypad, with calories worked out as they are typed. */
+@Composable
+private fun CreateFoodKeypad(
+    viewState: CreateFoodViewState,
+    servingUnit: String,
+    openField: AddFoodTextFieldType,
+    onOpen: (AddFoodTextFieldType) -> Unit,
+    onCommit: (AddFoodTextFieldType, String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val perServing = stringResource(resource = Res.string.keypad_per_serving)
+    val grams = stringResource(resource = Res.string.g)
+    fun macroField(type: AddFoodTextFieldType, label: String, value: String?) = KeypadField(
+        id = type.name,
+        label = label,
+        subtitle = perServing,
+        unit = grams,
+        value = value.orEmpty().removeSuffix(suffix = ".0"),
+        wholeDigits = 3,
+        decimals = 1,
+        allowsZero = true
+    )
+    CommonKeypadSheet(
+        fields = listOf(
+            KeypadField(
+                id = AddFoodTextFieldType.AMOUNT.name,
+                label = stringResource(resource = Res.string.serving_amount),
+                shortLabel = stringResource(resource = Res.string.keypad_serving),
+                subtitle = stringResource(resource = Res.string.keypad_serving_subtitle),
+                unit = servingUnit,
+                value = viewState.weight.takeIf { it > 0 }?.toCleanString().orEmpty(),
+                wholeDigits = 4,
+                decimals = 1
+            ),
+            macroField(type = AddFoodTextFieldType.PROTEIN, label = stringResource(resource = Res.string.protein), value = viewState.protein),
+            macroField(type = AddFoodTextFieldType.CARBS, label = stringResource(resource = Res.string.carbs), value = viewState.carbs),
+            macroField(type = AddFoodTextFieldType.FATS, label = stringResource(resource = Res.string.fat), value = viewState.fat)
+        ),
+        openId = openField.name,
+        onOpen = { onOpen(AddFoodTextFieldType.valueOf(value = it)) },
+        onCommit = { id, text -> onCommit(AddFoodTextFieldType.valueOf(value = id), text) },
+        onDismiss = onDismiss,
+        preview = { _, live ->
+            fun grams(type: AddFoodTextFieldType) = live(type.name).toDoubleOrNull() ?: 0.0
+            val calories = grams(type = AddFoodTextFieldType.PROTEIN) * MacroType.PROTEIN.calories +
+                grams(type = AddFoodTextFieldType.CARBS) * MacroType.CARBS.calories +
+                grams(type = AddFoodTextFieldType.FATS) * MacroType.FAT.calories
+            KeypadPreview(
+                value = stringResource(resource = Res.string.kcal, calories.roundToInt()),
+                caption = stringResource(
+                    resource = Res.string.keypad_per_amount,
+                    live(AddFoodTextFieldType.AMOUNT.name).ifEmpty { "0" },
+                    servingUnit
+                )
+            )
+        }
+    )
 }
 
 @Composable
@@ -182,31 +268,23 @@ private fun FieldLabel(
 @Composable
 private fun ServingRow(
     viewState: CreateFoodViewState,
-    callbacks: CreateFoodCallbacks
+    callbacks: CreateFoodCallbacks,
+    openField: AddFoodTextFieldType?,
+    onOpen: (AddFoodTextFieldType) -> Unit
 ) {
-    var amount by rememberSaveable { mutableStateOf(value = "") }
-    LaunchedEffect(key1 = viewState.weight) {
-        if ((amount.toDoubleOrNull() ?: 0.0) != viewState.weight) {
-            amount = viewState.weight.takeIf { it > 0 }?.toCleanString().orEmpty()
-        }
-    }
     Row(horizontalArrangement = Arrangement.spacedBy(space = 10.dp)) {
         FieldLabel(
             modifier = Modifier.weight(weight = 1f),
             text = stringResource(resource = Res.string.serving_amount)
         ) {
-            CommonInputField(
+            CommonKeypadField(
                 modifier = Modifier.fillMaxWidth().height(height = 50.dp),
-                value = amount,
-                onValueChange = { value ->
-                    if (value.isDecimalInput()) {
-                        amount = value
-                        callbacks.onTextFieldUpdated(value = value, type = AddFoodTextFieldType.AMOUNT)
-                    }
-                },
+                value = viewState.weight.takeIf { it > 0 }?.toCleanString().orEmpty(),
+                onClick = { onOpen(AddFoodTextFieldType.AMOUNT) },
                 placeholder = stringResource(resource = Res.string.one_hundred),
-                keyboardType = KeyboardType.Decimal,
-                textStyle = typography.bold15
+                textStyle = typography.bold15,
+                isOpen = openField == AddFoodTextFieldType.AMOUNT,
+                contentDescription = stringResource(resource = Res.string.serving_amount)
             )
         }
         FieldLabel(
@@ -227,7 +305,8 @@ private fun ServingRow(
 @Composable
 private fun MacroInputs(
     viewState: CreateFoodViewState,
-    callbacks: CreateFoodCallbacks
+    openField: AddFoodTextFieldType?,
+    onOpen: (AddFoodTextFieldType) -> Unit
 ) {
     val rows = listOf(
         Triple(MacroType.PROTEIN, viewState.protein, AddFoodTextFieldType.PROTEIN),
@@ -262,19 +341,18 @@ private fun MacroInputs(
                         color = colors.ink,
                         modifier = Modifier.weight(weight = 1f)
                     )
-                    CommonInputField(
+                    CommonKeypadField(
                         modifier = Modifier.width(width = 76.dp).height(height = 40.dp),
                         value = value.orEmpty().removeSuffix(".0"),
-                        onValueChange = { input ->
-                            if (input.isDecimalInput()) callbacks.onTextFieldUpdated(value = input, type = fieldType)
-                        },
+                        onClick = { onOpen(fieldType) },
                         placeholder = "0",
-                        keyboardType = KeyboardType.Decimal,
                         textAlign = TextAlign.End,
                         textStyle = typography.bold15,
+                        isOpen = openField == fieldType,
                         isHighlighted = !value.isNullOrEmpty(),
                         cornerRadius = 10.dp,
-                        horizontalPadding = 10.dp
+                        horizontalPadding = 10.dp,
+                        contentDescription = stringResource(resource = type.text())
                     )
                     Text(
                         text = stringResource(resource = Res.string.g),
@@ -290,9 +368,6 @@ private fun MacroInputs(
         }
     }
 }
-
-private fun String.isDecimalInput(): Boolean =
-    length <= 7 && count { it == '.' } <= 1 && all { it.isDigit() || it == '.' }
 
 enum class AddFoodTextFieldType {
     FOOD_NAME,

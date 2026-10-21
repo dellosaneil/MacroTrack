@@ -39,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -72,7 +71,6 @@ import org.thelazybattley.macrotrack.features.logweight.LogWeightViewModel
 import org.thelazybattley.macrotrack.features.logweight.LogWeightViewState
 import org.thelazybattley.macrotrack.ui.common.CommonDateButton
 import org.thelazybattley.macrotrack.ui.common.CommonDatePickerDialog
-import org.thelazybattley.macrotrack.ui.common.CommonInputField
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -82,8 +80,19 @@ import kotlin.math.abs
 import macrotrack.composeapp.generated.resources.ic_trend_down
 import macrotrack.composeapp.generated.resources.ic_trend_flat
 import org.thelazybattley.macrotrack.ui.common.formatWeight
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadField
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadSheet
+import org.thelazybattley.macrotrack.ui.common.KeypadPreview
+import org.thelazybattley.macrotrack.core.KeypadField
+import macrotrack.composeapp.generated.resources.keypad_last_weigh_in
+import macrotrack.composeapp.generated.resources.keypad_from_last_time
+import kotlin.math.roundToInt
 
 private const val SAME_THRESHOLD_KG = 0.005
+
+private const val WEIGHT_FIELD = "weight"
+private const val MIN_WEIGHT_KG = 30.0
+private const val MAX_WEIGHT_KG = 300.0
 
 /** Quick-adjust steps from the last weigh-in, in whichever unit the weight is typed in. */
 private val QUICK_ADJUSTMENTS = listOf(-0.5, -0.25, 0.0, 0.25, 0.5)
@@ -122,6 +131,7 @@ private fun LogWeightScreen(
     onSave: () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(value = false) }
+    var isKeypadOpen by remember { mutableStateOf(value = false) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = colors.background,
@@ -152,7 +162,7 @@ private fun LogWeightScreen(
                 date = viewState.date,
                 onClick = { showDatePicker = true }
             )
-            WeightCard(viewState = viewState, onInputChanged = onInputChanged, onStep = onStep)
+            WeightCard(viewState = viewState, isKeypadOpen = isKeypadOpen, onOpenKeypad = { isKeypadOpen = true }, onStep = onStep)
             viewState.previous?.let { previous ->
                 QuickAdjust(
                     previousWeight = previous.weight,
@@ -163,6 +173,10 @@ private fun LogWeightScreen(
             }
             ContextCard(viewState = viewState)
         }
+    }
+
+    if (isKeypadOpen) {
+        WeightKeypad(viewState = viewState, onInputChanged = onInputChanged, onDismiss = { isKeypadOpen = false })
     }
 
     if (showDatePicker) {
@@ -180,7 +194,8 @@ private fun LogWeightScreen(
 @Composable
 private fun WeightCard(
     viewState: LogWeightViewState,
-    onInputChanged: (String) -> Unit,
+    isKeypadOpen: Boolean,
+    onOpenKeypad: () -> Unit,
     onStep: (Boolean) -> Unit
 ) {
     val weight = viewState.weight
@@ -201,16 +216,17 @@ private fun WeightCard(
         ) {
             StepButton(label = "−", description = stringResource(resource = Res.string.decrease_weight, weightUnitLabel())) { onStep(false) }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                CommonInputField(
+                CommonKeypadField(
                     modifier = Modifier.width(width = 150.dp).height(height = 64.dp),
                     value = viewState.input,
-                    onValueChange = onInputChanged,
-                    keyboardType = KeyboardType.Decimal,
+                    onClick = onOpenKeypad,
                     textAlign = TextAlign.Center,
                     textStyle = typography.bold32,
+                    isOpen = isKeypadOpen,
                     isHighlighted = true,
                     cornerRadius = 16.dp,
-                    horizontalPadding = 8.dp
+                    horizontalPadding = 8.dp,
+                    contentDescription = stringResource(resource = Res.string.your_weight)
                 )
             }
             StepButton(label = "+", description = stringResource(resource = Res.string.increase_weight, weightUnitLabel())) { onStep(true) }
@@ -244,6 +260,53 @@ private fun WeightCard(
             )
         }
     }
+}
+
+/** Types the weight on the keypad; − and + still step it by 0.1. */
+@Composable
+private fun WeightKeypad(
+    viewState: LogWeightViewState,
+    onInputChanged: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val unitSystem = LocalUnitSystem.current
+    val unit = weightUnitLabel()
+    val previous = viewState.previous?.let { unitSystem.weightFromKg(kg = it.weight) }
+    CommonKeypadSheet(
+        fields = listOf(
+            KeypadField(
+                id = WEIGHT_FIELD,
+                label = stringResource(resource = Res.string.your_weight),
+                subtitle = previous?.let { stringResource(resource = Res.string.keypad_last_weigh_in, it.formatTwoDecimals(), unit) }.orEmpty(),
+                unit = unit,
+                value = viewState.input,
+                wholeDigits = 3,
+                decimals = 2,
+                min = unitSystem.weightFromKg(kg = MIN_WEIGHT_KG).roundToInt().toDouble(),
+                max = unitSystem.weightFromKg(kg = MAX_WEIGHT_KG).roundToInt().toDouble()
+            )
+        ),
+        openId = WEIGHT_FIELD,
+        onOpen = {},
+        onCommit = { _, text -> onInputChanged(text) },
+        onDismiss = onDismiss,
+        preview = { id, live ->
+            val typed = live(id).toDoubleOrNull()?.takeIf { it > 0 }
+            if (typed == null || previous == null) {
+                null
+            } else {
+                val difference = typed - previous
+                KeypadPreview(
+                    value = if (abs(difference) < SAME_THRESHOLD_KG) {
+                        stringResource(resource = Res.string.same)
+                    } else {
+                        (if (difference < 0) "↓ " else "↑ ") + abs(difference).formatTwoDecimals() + " " + unit
+                    },
+                    caption = stringResource(resource = Res.string.keypad_from_last_time)
+                )
+            }
+        }
+    )
 }
 
 @Composable

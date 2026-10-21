@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -31,11 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -90,6 +84,21 @@ import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadField
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadSheet
+import org.thelazybattley.macrotrack.ui.common.heightInFeetPreview
+import org.thelazybattley.macrotrack.ui.common.heightInCmPreview
+import org.thelazybattley.macrotrack.core.KeypadField
+import macrotrack.composeapp.generated.resources.keypad_age_subtitle
+import macrotrack.composeapp.generated.resources.keypad_feet
+import macrotrack.composeapp.generated.resources.keypad_inches
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewState.Companion.MIN_AGE
+import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewState.Companion.MAX_AGE
+import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewState.Companion.MIN_HEIGHT
+import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewState.Companion.MAX_HEIGHT
 
 @Composable
 fun PersonalInformationScreen(
@@ -159,6 +168,8 @@ private fun AboutYouSection(
     viewState: PersonalInformationViewState,
     callbacks: PersonalInformationCallbacks
 ) {
+    var openField by remember { mutableStateOf<String?>(value = null) }
+    val isImperial = viewState.unitSystem == UnitSystem.IMPERIAL
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         SectionLabel(text = stringResource(resource = Res.string.about_you))
         Column(
@@ -173,21 +184,21 @@ private fun AboutYouSection(
                 value = viewState.age,
                 suffix = stringResource(resource = Res.string.yrs),
                 isError = viewState.parsedAge == null,
-                keyboardType = KeyboardType.Number,
-                onValueChange = callbacks::onAgeChanged
+                isOpen = openField == AGE_FIELD,
+                onClick = { openField = AGE_FIELD }
             )
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             InfoRow(label = Res.string.sex) {
                 SexToggle(selected = viewState.sex, onSelected = callbacks::onSexSelected)
             }
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
-            if (viewState.unitSystem == UnitSystem.IMPERIAL) {
+            if (isImperial) {
                 FeetInchesRow(
                     feet = viewState.heightFeet,
                     inches = viewState.heightInches,
                     isError = viewState.parsedHeight == null,
-                    onFeetChange = callbacks::onHeightFeetChanged,
-                    onInchesChange = callbacks::onHeightInchesChanged
+                    openField = openField,
+                    onOpen = { openField = it }
                 )
             } else {
                 NumberRow(
@@ -195,8 +206,8 @@ private fun AboutYouSection(
                     value = viewState.height,
                     suffix = stringResource(resource = Res.string.cm),
                     isError = viewState.parsedHeight == null,
-                    keyboardType = KeyboardType.Decimal,
-                    onValueChange = callbacks::onHeightChanged
+                    isOpen = openField == HEIGHT_FIELD,
+                    onClick = { openField = HEIGHT_FIELD }
                 )
             }
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
@@ -205,6 +216,78 @@ private fun AboutYouSection(
                 latestWeight = viewState.latestWeight
             )
         }
+    }
+
+    openField?.let { open ->
+        val ageField = KeypadField(
+            id = AGE_FIELD,
+            label = stringResource(resource = Res.string.age),
+            subtitle = stringResource(resource = Res.string.keypad_age_subtitle),
+            unit = stringResource(resource = Res.string.yrs),
+            value = viewState.age,
+            wholeDigits = 3,
+            min = MIN_AGE.toDouble(),
+            max = MAX_AGE.toDouble()
+        )
+        val heightFields = if (isImperial) {
+            listOf(
+                KeypadField(
+                    id = FEET_FIELD,
+                    label = stringResource(resource = Res.string.height),
+                    shortLabel = stringResource(resource = Res.string.keypad_feet),
+                    unit = stringResource(resource = Res.string.ft),
+                    value = viewState.heightFeet,
+                    wholeDigits = 1,
+                    min = 1.0,
+                    max = 8.0
+                ),
+                KeypadField(
+                    id = INCHES_FIELD,
+                    label = stringResource(resource = Res.string.height),
+                    shortLabel = stringResource(resource = Res.string.keypad_inches),
+                    unit = stringResource(resource = Res.string.unit_in),
+                    value = viewState.heightInches,
+                    wholeDigits = 2,
+                    decimals = 1,
+                    max = UnitSystem.INCHES_PER_FOOT - 0.1,
+                    allowsZero = true
+                )
+            )
+        } else {
+            listOf(
+                KeypadField(
+                    id = HEIGHT_FIELD,
+                    label = stringResource(resource = Res.string.height),
+                    unit = stringResource(resource = Res.string.cm),
+                    value = viewState.height,
+                    wholeDigits = 3,
+                    decimals = 1,
+                    min = MIN_HEIGHT,
+                    max = MAX_HEIGHT
+                )
+            )
+        }
+        CommonKeypadSheet(
+            fields = listOf(ageField) + heightFields,
+            openId = open,
+            onOpen = { openField = it },
+            onCommit = { id, text ->
+                when (id) {
+                    AGE_FIELD -> callbacks.onAgeChanged(age = text)
+                    HEIGHT_FIELD -> callbacks.onHeightChanged(height = text)
+                    FEET_FIELD -> callbacks.onHeightFeetChanged(feet = text)
+                    INCHES_FIELD -> callbacks.onHeightInchesChanged(inches = text)
+                }
+            },
+            onDismiss = { openField = null },
+            preview = { id, live ->
+                when (id) {
+                    HEIGHT_FIELD -> heightInFeetPreview(cm = live(HEIGHT_FIELD))
+                    FEET_FIELD, INCHES_FIELD -> heightInCmPreview(feet = live(FEET_FIELD), inches = live(INCHES_FIELD))
+                    else -> null
+                }
+            }
+        )
     }
 }
 
@@ -237,15 +320,16 @@ private fun NumberRow(
     value: String,
     suffix: String,
     isError: Boolean,
-    keyboardType: KeyboardType,
-    onValueChange: (String) -> Unit
+    isOpen: Boolean,
+    onClick: () -> Unit
 ) {
     InfoRow(label = label) {
         NumberField(
             value = value,
             isError = isError,
-            keyboardType = keyboardType,
-            onValueChange = onValueChange
+            isOpen = isOpen,
+            contentDescription = stringResource(resource = label),
+            onClick = onClick
         )
         UnitSuffix(text = suffix)
     }
@@ -257,30 +341,28 @@ private fun FeetInchesRow(
     feet: String,
     inches: String,
     isError: Boolean,
-    onFeetChange: (String) -> Unit,
-    onInchesChange: (String) -> Unit
+    openField: String?,
+    onOpen: (String) -> Unit
 ) {
     val feetDescription = stringResource(resource = Res.string.height_feet)
     val inchesDescription = stringResource(resource = Res.string.height_inches)
     InfoRow(label = Res.string.height) {
         NumberField(
-            modifier = Modifier
-                .width(width = 48.dp)
-                .semantics { contentDescription = feetDescription },
+            modifier = Modifier.width(width = 48.dp),
             value = feet,
             isError = isError,
-            keyboardType = KeyboardType.Number,
-            onValueChange = onFeetChange
+            isOpen = openField == FEET_FIELD,
+            contentDescription = feetDescription,
+            onClick = { onOpen(FEET_FIELD) }
         )
         UnitSuffix(text = stringResource(resource = Res.string.ft))
         NumberField(
-            modifier = Modifier
-                .width(width = 60.dp)
-                .semantics { contentDescription = inchesDescription },
+            modifier = Modifier.width(width = 60.dp),
             value = inches,
             isError = isError,
-            keyboardType = KeyboardType.Decimal,
-            onValueChange = onInchesChange
+            isOpen = openField == INCHES_FIELD,
+            contentDescription = inchesDescription,
+            onClick = { onOpen(INCHES_FIELD) }
         )
         UnitSuffix(text = stringResource(resource = Res.string.unit_in))
     }
@@ -291,32 +373,29 @@ private fun NumberField(
     modifier: Modifier = Modifier.width(width = 72.dp),
     value: String,
     isError: Boolean,
-    keyboardType: KeyboardType,
-    onValueChange: (String) -> Unit
+    isOpen: Boolean,
+    contentDescription: String,
+    onClick: () -> Unit
 ) {
-    val shape = RoundedCornerShape(size = 10.dp)
-    BasicTextField(
+    CommonKeypadField(
+        modifier = modifier.height(height = 40.dp),
         value = value,
-        onValueChange = onValueChange,
-        singleLine = true,
-        textStyle = typography.bold16.copy(color = colors.ink, textAlign = TextAlign.End),
-        cursorBrush = SolidColor(value = colors.accent),
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        modifier = modifier
-            .height(height = 40.dp)
-            .clip(shape = shape)
-            .background(color = colors.background)
-            .border(width = 1.dp, color = if (isError) colors.fat else colors.line, shape = shape),
-        decorationBox = { innerTextField ->
-            Box(
-                modifier = Modifier.padding(horizontal = 10.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                innerTextField()
-            }
-        }
+        onClick = onClick,
+        textAlign = TextAlign.End,
+        textStyle = typography.bold16,
+        isOpen = isOpen,
+        isError = isError,
+        background = colors.background,
+        cornerRadius = 10.dp,
+        horizontalPadding = 10.dp,
+        contentDescription = contentDescription
     )
 }
+
+private const val AGE_FIELD = "age"
+private const val HEIGHT_FIELD = "height"
+private const val FEET_FIELD = "feet"
+private const val INCHES_FIELD = "inches"
 
 @Composable
 private fun UnitSuffix(text: String) {

@@ -77,6 +77,12 @@ import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadField
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadSheet
+import org.thelazybattley.macrotrack.ui.common.KeypadPreview
+import org.thelazybattley.macrotrack.core.KeypadField
+import macrotrack.composeapp.generated.resources.keypad_since
+import kotlin.math.abs
 
 @Composable
 fun MeasurementsLogScreen(
@@ -112,6 +118,7 @@ private fun MeasurementsLogScreen(
     onSave: () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(value = false) }
+    var openType by remember { mutableStateOf<MeasurementType?>(value = null) }
     val filled = viewState.validValues.size
 
     Scaffold(
@@ -171,7 +178,8 @@ private fun MeasurementsLogScreen(
                 InputGroup(
                     group = group,
                     viewState = viewState,
-                    onValueChanged = onValueChanged
+                    openType = openType,
+                    onOpen = { openType = it }
                 )
             }
             Column(verticalArrangement = Arrangement.spacedBy(space = 6.dp)) {
@@ -193,6 +201,16 @@ private fun MeasurementsLogScreen(
         }
     }
 
+    openType?.let { open ->
+        MeasurementsKeypad(
+            viewState = viewState,
+            openType = open,
+            onOpen = { openType = it },
+            onValueChanged = onValueChanged,
+            onDismiss = { openType = null }
+        )
+    }
+
     if (showDatePicker) {
         CommonDatePickerDialog(
             selected = viewState.date,
@@ -209,7 +227,8 @@ private fun MeasurementsLogScreen(
 private fun InputGroup(
     group: MeasurementGroup,
     viewState: MeasurementsLogViewState,
-    onValueChanged: (MeasurementType, String) -> Unit
+    openType: MeasurementType?,
+    onOpen: (MeasurementType) -> Unit
 ) {
     val types = MeasurementType.entries.filter { it.group == group }
     val unitLabel = stringResource(resource = viewState.unit.label)
@@ -256,14 +275,20 @@ private fun InputGroup(
                             )
                         }
                     }
-                    InputBox(
+                    val isFilled = value.toDoubleOrNull() != null
+                    CommonKeypadField(
                         modifier = Modifier.width(width = 84.dp).height(height = 40.dp),
                         value = value,
+                        onClick = { onOpen(type) },
                         placeholder = previousValue.orEmpty(),
                         textAlign = TextAlign.End,
-                        keyboardType = KeyboardType.Decimal,
-                        isFilled = value.toDoubleOrNull() != null,
-                        onValueChange = { onValueChanged(type, it) }
+                        textStyle = typography.bold15,
+                        isOpen = openType == type,
+                        isHighlighted = isFilled,
+                        background = if (isFilled) colors.surface else colors.background,
+                        cornerRadius = 10.dp,
+                        horizontalPadding = 10.dp,
+                        contentDescription = stringResource(resource = type.title)
                     )
                     Text(
                         text = unitLabel,
@@ -279,6 +304,71 @@ private fun InputGroup(
         }
     }
 }
+
+/** Each measurement opens the keypad; Next goes down the list in the order shown. */
+@Composable
+private fun MeasurementsKeypad(
+    viewState: MeasurementsLogViewState,
+    openType: MeasurementType,
+    onOpen: (MeasurementType) -> Unit,
+    onValueChanged: (MeasurementType, String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val unitLabel = stringResource(resource = viewState.unit.label)
+    val types = MeasurementGroup.entries.flatMap { group -> MeasurementType.entries.filter { it.group == group } }
+    val previousValues = types.associateWith { type ->
+        viewState.previous[type]?.latest?.let { viewState.unit.fromCm(cm = it.valueCm) }
+    }
+    CommonKeypadSheet(
+        fields = types.map { type ->
+            val previous = viewState.previous[type]?.latest
+            val previousValue = previousValues[type]?.formatMeasure()
+            KeypadField(
+                id = type.name,
+                label = stringResource(resource = type.title),
+                subtitle = if (previous != null && previousValue != null) {
+                    stringResource(
+                        resource = Res.string.last_value_on,
+                        stringResource(resource = Res.string.value_with_unit, previousValue, unitLabel),
+                        previous.date.toAbbreviatedMonthDay()
+                    )
+                } else {
+                    ""
+                },
+                unit = unitLabel,
+                value = viewState.inputs[type].orEmpty(),
+                placeholder = previousValue.orEmpty(),
+                wholeDigits = 3,
+                decimals = 1
+            )
+        },
+        openId = openType.name,
+        onOpen = { id -> onOpen(MeasurementType.valueOf(value = id)) },
+        onCommit = { id, text -> onValueChanged(MeasurementType.valueOf(value = id), text) },
+        onDismiss = onDismiss,
+        preview = { id, live ->
+            val type = MeasurementType.valueOf(value = id)
+            val typed = live(id).toDoubleOrNull()?.takeIf { it > 0 }
+            val previous = previousValues[type]
+            val date = viewState.previous[type]?.latest?.date
+            if (typed == null || previous == null || date == null) {
+                null
+            } else {
+                val difference = typed - previous
+                KeypadPreview(
+                    value = when {
+                        abs(difference) < SAME_MEASURE_THRESHOLD -> "±0"
+                        difference < 0 -> "−" + abs(difference).formatMeasure()
+                        else -> "+" + difference.formatMeasure()
+                    } + " " + unitLabel,
+                    caption = stringResource(resource = Res.string.keypad_since, date.toAbbreviatedMonthDay())
+                )
+            }
+        }
+    )
+}
+
+private const val SAME_MEASURE_THRESHOLD = 0.05
 
 @Composable
 private fun InputBox(

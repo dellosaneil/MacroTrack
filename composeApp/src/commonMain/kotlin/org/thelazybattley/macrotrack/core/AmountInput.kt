@@ -5,8 +5,15 @@ import kotlin.math.round
 const val KEY_DECIMAL = '.'
 const val KEY_BACKSPACE = '⌫'
 
-/** Typed amounts: up to 4 whole digits and 2 decimal places. */
-private val typedAmountPattern = Regex(pattern = """^\d{0,4}(\.\d{0,2})?$""")
+/**
+ * What a keypad accepts: up to [wholeDigits] whole digits and [decimals] decimal places. A [isCode] value,
+ * like a barcode, is digits only and keeps a leading zero.
+ */
+data class KeypadRule(val wholeDigits: Int = 4, val decimals: Int = 2, val isCode: Boolean = false) {
+    internal val pattern: Regex = Regex(
+        pattern = "^\\d{0,$wholeDigits}" + (if (decimals > 0 && !isCode) "(\\.\\d{0,$decimals})?" else "") + "$"
+    )
+}
 
 /**
  * An amount typed on the in-app keypad. [text] is what the readout shows and may be empty or end in
@@ -19,8 +26,8 @@ data class AmountInput(
 ) {
     val value: Double get() = text.toDoubleOrNull() ?: 0.0
 
-    /** Applies a keypad key: a digit, [KEY_DECIMAL] or [KEY_BACKSPACE]. Keys that would make the amount invalid are ignored. */
-    fun typed(key: Char): AmountInput {
+    /** Applies a keypad key: a digit, [KEY_DECIMAL] or [KEY_BACKSPACE]. Keys that would break [rule] are ignored. */
+    fun typed(key: Char, rule: KeypadRule = KeypadRule()): AmountInput {
         if (!key.isDigit() && key != KEY_DECIMAL && key != KEY_BACKSPACE) return this
         val current = if (replaceOnType) "" else text
         val next = when (key) {
@@ -30,9 +37,9 @@ data class AmountInput(
                 KEY_DECIMAL in current -> current
                 else -> current + key
             }
-            else -> if (current == "0") key.toString() else current + key
+            else -> if (current == "0" && !rule.isCode) key.toString() else current + key
         }
-        if (!typedAmountPattern.matches(input = next)) return this
+        if (!rule.pattern.matches(input = next)) return this
         return AmountInput(text = next, replaceOnType = false)
     }
 

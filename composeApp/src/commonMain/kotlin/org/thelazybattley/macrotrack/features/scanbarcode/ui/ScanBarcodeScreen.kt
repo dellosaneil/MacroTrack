@@ -44,8 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -66,7 +64,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -152,7 +149,6 @@ import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.scanbarcode.ScanBarcodeCallbacks
-import org.thelazybattley.macrotrack.features.scanbarcode.ScanBarcodeViewModel
 import org.thelazybattley.macrotrack.features.scanbarcode.ScanBarcodeViewState
 import org.thelazybattley.macrotrack.features.scanbarcode.ScanMode
 import org.thelazybattley.macrotrack.features.scanbarcode.ScannedFood
@@ -161,6 +157,19 @@ import org.thelazybattley.macrotrack.features.scanbarcode.formatBarcode
 import org.thelazybattley.macrotrack.ui.common.logDateLabel
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadField
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadSheet
+import org.thelazybattley.macrotrack.ui.common.KeypadPreview
+import org.thelazybattley.macrotrack.core.KeypadField
+import macrotrack.composeapp.generated.resources.keypad_barcode_label
+import macrotrack.composeapp.generated.resources.keypad_barcode_at_least
+import macrotrack.composeapp.generated.resources.keypad_barcode_usual
+import macrotrack.composeapp.generated.resources.keypad_digits
+import org.jetbrains.compose.resources.pluralStringResource
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import org.thelazybattley.macrotrack.features.scanbarcode.ScanBarcodeViewModel
 
 // The camera view stays dark in both themes; the sheets on top of it follow the app theme.
 private val CameraBackground = Color(color = 0xFF0D0E10)
@@ -1118,6 +1127,7 @@ private fun NotFoundContent(
     }
 }
 
+/** The barcode is typed on the shared keypad, which opens right away. */
 @Composable
 private fun ManualEntryContent(
     value: String,
@@ -1126,46 +1136,52 @@ private fun ManualEntryContent(
     onLookUp: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(key1 = Unit) { focusRequester.requestFocus() }
+    var isKeypadOpen by rememberSaveable { mutableStateOf(value = true) }
     Text(text = stringResource(resource = Res.string.scan_type_number), style = typography.bold24, color = colors.ink)
     Column(verticalArrangement = Arrangement.spacedBy(space = 6.dp)) {
-        Text(text = stringResource(resource = Res.string.scan_manual_label), style = typography.bold12, color = colors.muted)
-        val fieldStyle = typography.regular18.copy(
-            color = colors.ink,
-            fontFamily = FontFamily.Monospace,
-            letterSpacing = 1.4.sp
-        )
-        BasicTextField(
+        val label = stringResource(resource = Res.string.scan_manual_label)
+        Text(text = label, style = typography.bold12, color = colors.muted)
+        CommonKeypadField(
+            modifier = Modifier.fillMaxWidth().height(height = 54.dp),
             value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            textStyle = fieldStyle,
-            cursorBrush = SolidColor(value = colors.accent),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { if (isValid) onLookUp() }),
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(focusRequester = focusRequester),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(height = 54.dp)
-                        .clip(shape = RoundedCornerShape(size = 14.dp))
-                        .background(color = colors.surface)
-                        .border(width = 1.5.dp, color = colors.accent, shape = RoundedCornerShape(size = 14.dp))
-                        .padding(horizontal = 14.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    if (value.isEmpty()) {
-                        Text(
-                            text = stringResource(resource = Res.string.scan_manual_placeholder),
-                            style = fieldStyle.copy(color = colors.faint)
-                        )
+            onClick = { isKeypadOpen = true },
+            placeholder = stringResource(resource = Res.string.scan_manual_placeholder),
+            textStyle = typography.regular18.copy(fontFamily = FontFamily.Monospace, letterSpacing = 1.4.sp),
+            isOpen = isKeypadOpen,
+            isHighlighted = true,
+            contentDescription = label
+        )
+    }
+    if (isKeypadOpen) {
+        CommonKeypadSheet(
+            fields = listOf(
+                KeypadField(
+                    id = BARCODE_FIELD,
+                    label = stringResource(resource = Res.string.keypad_barcode_label),
+                    subtitle = stringResource(resource = Res.string.scan_manual_label),
+                    value = value,
+                    placeholder = stringResource(resource = Res.string.scan_manual_placeholder),
+                    wholeDigits = MAX_BARCODE_LENGTH,
+                    isCode = true,
+                    minLength = MIN_BARCODE_LENGTH,
+                    emptyLabel = stringResource(resource = Res.string.keypad_barcode_at_least, MIN_BARCODE_LENGTH)
+                )
+            ),
+            openId = BARCODE_FIELD,
+            onOpen = {},
+            onCommit = { _, text -> onValueChange(text) },
+            onDismiss = { isKeypadOpen = false },
+            preview = { id, live ->
+                val digits = live(id).length
+                KeypadPreview(
+                    value = pluralStringResource(resource = Res.plurals.keypad_digits, quantity = digits, digits),
+                    caption = when (digits) {
+                        13 -> "EAN-13"
+                        12 -> "UPC-A"
+                        8 -> "EAN-8"
+                        else -> stringResource(resource = Res.string.keypad_barcode_usual)
                     }
-                    innerTextField()
-                }
+                )
             }
         )
     }
@@ -1184,6 +1200,10 @@ private fun ManualEntryContent(
         )
     }
 }
+
+private const val BARCODE_FIELD = "barcode"
+private const val MIN_BARCODE_LENGTH = 8
+private const val MAX_BARCODE_LENGTH = 14
 
 @Composable
 private fun SheetButton(

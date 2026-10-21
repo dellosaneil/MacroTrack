@@ -35,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -79,6 +78,12 @@ import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadField
+import org.thelazybattley.macrotrack.ui.common.CommonKeypadSheet
+import org.thelazybattley.macrotrack.ui.common.KeypadPreview
+import org.thelazybattley.macrotrack.core.KeypadField
+import macrotrack.composeapp.generated.resources.keypad_ingredient_subtitle
+import kotlin.math.roundToInt
 
 @Composable
 fun CreateRecipeScreen(
@@ -106,6 +111,7 @@ private fun CreateRecipeScreen(
     onBack: () -> Unit
 ) {
     var searchQuery by rememberSaveable { mutableStateOf(value = "") }
+    var openIngredient by remember { mutableStateOf<String?>(value = null) }
     val selectedNames = viewState.selectedIngredients.map { it.name }.toSet()
     val available = viewState.filteredIngredients.filterNot { it.name in selectedNames }
 
@@ -176,7 +182,8 @@ private fun CreateRecipeScreen(
             item(key = "selected") {
                 SelectedIngredients(
                     ingredients = viewState.selectedIngredients,
-                    onAmountChanged = callbacks::onIngredientAmountChanged,
+                    openIngredient = openIngredient,
+                    onOpen = { openIngredient = it },
                     onRemove = callbacks::removeIngredient
                 )
             }
@@ -203,6 +210,74 @@ private fun CreateRecipeScreen(
             }
         }
     }
+
+    openIngredient?.let { open ->
+        IngredientKeypad(
+            viewState = viewState,
+            openIngredient = open,
+            onOpen = { openIngredient = it },
+            onAmountChanged = callbacks::onIngredientAmountChanged,
+            onDismiss = { openIngredient = null }
+        )
+    }
+}
+
+/**
+ * Each ingredient amount opens the keypad; Next goes on to the next ingredient. Amounts are typed in the shown
+ * unit (oz for an ingredient stored in grams when imperial) and kept in the stored one.
+ */
+@Composable
+private fun IngredientKeypad(
+    viewState: CreateRecipeViewState,
+    openIngredient: String,
+    onOpen: (String) -> Unit,
+    onAmountChanged: (String, Double) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val units = viewState.selectedIngredients.associate { it.name to portionUnit(storedUnit = it.unit) }
+    val originals = viewState.selectedIngredients.associate { food ->
+        food.name to (viewState.ingredients.find { it.name == food.name } ?: food)
+    }
+    CommonKeypadSheet(
+        fields = viewState.selectedIngredients.map { food ->
+            val unit = units.getValue(key = food.name)
+            val original = originals.getValue(key = food.name)
+            KeypadField(
+                id = food.name,
+                label = food.name,
+                subtitle = stringResource(
+                    resource = Res.string.keypad_ingredient_subtitle,
+                    unit.format(amount = original.weight),
+                    unit.label,
+                    original.macros.calories
+                ),
+                unit = unit.label,
+                value = unit.format(amount = food.weight),
+                wholeDigits = 4,
+                decimals = 1
+            )
+        },
+        openId = openIngredient,
+        onOpen = onOpen,
+        onCommit = { name, text ->
+            text.toDoubleOrNull()?.let { onAmountChanged(name, units.getValue(key = name).toStored(value = it)) }
+        },
+        onDismiss = onDismiss,
+        preview = { name, live ->
+            val original = originals.getValue(key = name)
+            val typed = units.getValue(key = name).toStored(value = live(name).toDoubleOrNull() ?: 0.0)
+            val ratio = if (original.weight > 0) typed / original.weight else 0.0
+            KeypadPreview(
+                value = stringResource(resource = Res.string.kcal, (original.macros.calories * ratio).roundToInt()),
+                caption = stringResource(
+                    resource = Res.string.p_c_f,
+                    (original.macros.protein * ratio).roundToInt(),
+                    (original.macros.carbs * ratio).roundToInt(),
+                    (original.macros.fat * ratio).roundToInt()
+                )
+            )
+        }
+    )
 }
 
 @Composable
@@ -213,7 +288,8 @@ private fun SectionLabel(text: String) {
 @Composable
 private fun SelectedIngredients(
     ingredients: List<Food>,
-    onAmountChanged: (String, Double) -> Unit,
+    openIngredient: String?,
+    onOpen: (String) -> Unit,
     onRemove: (Food) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
@@ -242,7 +318,8 @@ private fun SelectedIngredients(
             ingredients.forEachIndexed { index, food ->
                 SelectedIngredientRow(
                     food = food,
-                    onAmountChanged = { onAmountChanged(food.name, it) },
+                    isOpen = openIngredient == food.name,
+                    onOpen = { onOpen(food.name) },
                     onRemove = { onRemove(food) }
                 )
                 if (index != ingredients.lastIndex) {
@@ -256,12 +333,11 @@ private fun SelectedIngredients(
 @Composable
 private fun SelectedIngredientRow(
     food: Food,
-    onAmountChanged: (Double) -> Unit,
+    isOpen: Boolean,
+    onOpen: () -> Unit,
     onRemove: () -> Unit
 ) {
-    // Typed in the shown unit (oz for an ingredient stored in grams when imperial), kept in the stored one.
     val portionUnit = portionUnit(storedUnit = food.unit)
-    var amount by remember(food.name, portionUnit) { mutableStateOf(value = portionUnit.format(amount = food.weight)) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -295,21 +371,17 @@ private fun SelectedIngredientRow(
                 color = colors.muted
             )
         }
-        CommonInputField(
+        CommonKeypadField(
             modifier = Modifier.width(width = 64.dp).height(height = 38.dp),
-            value = amount,
-            onValueChange = { value ->
-                if (value.length <= 6 && value.count { it == '.' } <= 1 && value.all { it.isDigit() || it == '.' }) {
-                    amount = value
-                    value.toDoubleOrNull()?.takeIf { it > 0 }?.let { onAmountChanged(portionUnit.toStored(value = it)) }
-                }
-            },
-            keyboardType = KeyboardType.Decimal,
+            value = portionUnit.format(amount = food.weight),
+            onClick = onOpen,
             textAlign = TextAlign.End,
             textStyle = typography.bold14,
+            isOpen = isOpen,
             isHighlighted = true,
             cornerRadius = 10.dp,
-            horizontalPadding = 8.dp
+            horizontalPadding = 8.dp,
+            contentDescription = food.name
         )
         Text(
             text = portionUnit.label,
