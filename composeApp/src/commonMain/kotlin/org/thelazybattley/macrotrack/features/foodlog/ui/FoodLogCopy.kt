@@ -49,8 +49,11 @@ import macrotrack.composeapp.generated.resources.copy_whole_day_hint
 import macrotrack.composeapp.generated.resources.ic_calendar
 import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_copy
+import macrotrack.composeapp.generated.resources.ic_repeat
 import macrotrack.composeapp.generated.resources.ic_whole_day
 import macrotrack.composeapp.generated.resources.items
+import macrotrack.composeapp.generated.resources.repeat_this_meal
+import macrotrack.composeapp.generated.resources.repeat_this_meal_hint
 import macrotrack.composeapp.generated.resources.undo
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -63,7 +66,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 /**
- * The ⋮ menu on a meal with food: copy it to today (from a past day), to other days, or copy the whole day.
+ * The ⋮ menu on a meal with food: copy it to today (from a past day), to other days, copy the whole day, or repeat
+ * it on a schedule.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +79,7 @@ internal fun CopyMealSheet(
     onCopyToToday: () -> Unit,
     onCopyToOtherDays: () -> Unit,
     onCopyWholeDay: () -> Unit,
+    onRepeat: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val mealName = stringResource(resource = meal.mealType.title)
@@ -132,6 +137,12 @@ internal fun CopyMealSheet(
                     dayName
                 ),
                 onClick = onCopyWholeDay
+            )
+            MenuRow(
+                icon = Res.drawable.ic_repeat,
+                title = stringResource(resource = Res.string.repeat_this_meal),
+                subtitle = stringResource(resource = Res.string.repeat_this_meal_hint),
+                onClick = onRepeat
             )
             Box(
                 modifier = Modifier

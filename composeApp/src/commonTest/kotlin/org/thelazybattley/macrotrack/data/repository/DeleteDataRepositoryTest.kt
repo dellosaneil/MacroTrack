@@ -7,7 +7,9 @@ import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
+import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
+import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.domain.model.DeleteDataStep
@@ -31,6 +33,8 @@ class DeleteDataRepositoryTest {
         override suspend fun getDailyGoals() = emptyList<DailyGoalEntity>()
         override suspend fun getFavorites() = emptyList<FavoriteEntity>()
         override suspend fun getAppFlags() = flags
+        override suspend fun getPlannedFoods() = emptyList<PlannedFoodEntity>()
+        override suspend fun getRepeatingMeals() = emptyList<RepeatingMealEntity>()
         override suspend fun deleteFoods() { cleared += "foods" }
         override suspend fun deleteRecipes() { cleared += "recipes" }
         override suspend fun deleteUserDetails() { cleared += "userDetails" }
@@ -39,6 +43,8 @@ class DeleteDataRepositoryTest {
         override suspend fun deleteMeasurements() { cleared += "measurements" }
         override suspend fun deleteDailyGoals() { cleared += "dailyGoals" }
         override suspend fun deleteFavorites() { cleared += "favorites" }
+        override suspend fun deletePlannedFoods() { cleared += "plannedFoods" }
+        override suspend fun deleteRepeatingMeals() { cleared += "repeatingMeals" }
         override suspend fun deleteAppFlagsExcept(keepKeys: List<String>) { flags = flags.filter { it.key in keepKeys } }
         override suspend fun insertFoods(foods: List<FoodEntity>) {}
         override suspend fun insertRecipes(recipes: List<RecipeEntity>) {}
@@ -49,6 +55,8 @@ class DeleteDataRepositoryTest {
         override suspend fun insertDailyGoals(dailyGoals: List<DailyGoalEntity>) {}
         override suspend fun insertFavorites(favorites: List<FavoriteEntity>) {}
         override suspend fun insertAppFlags(appFlags: List<AppFlagEntity>) {}
+        override suspend fun insertPlannedFoods(plannedFoods: List<PlannedFoodEntity>) {}
+        override suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>) {}
     }
 
     @Test
@@ -57,7 +65,10 @@ class DeleteDataRepositoryTest {
         val repository = DeleteDataRepositoryImpl(backupDao = dao)
         DeleteDataStep.entries.forEach { repository.delete(step = it) }
         assertEquals(
-            setOf("foods", "recipes", "userDetails", "foodLogs", "weights", "measurements", "dailyGoals", "favorites"),
+            setOf(
+                "foods", "recipes", "userDetails", "foodLogs", "weights", "measurements", "dailyGoals", "favorites",
+                "plannedFoods", "repeatingMeals"
+            ),
             dao.cleared
         )
     }

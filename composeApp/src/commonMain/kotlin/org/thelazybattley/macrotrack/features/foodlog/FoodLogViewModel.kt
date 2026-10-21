@@ -16,6 +16,7 @@ import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.PlannedFood
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
 import org.thelazybattley.macrotrack.domain.model.isCheckInDue
 import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeeklyCheckInUseCase
@@ -31,6 +32,8 @@ import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUs
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.UpdateFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetPlannedTodayUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.PlannedFoodActions
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.model.PortionUnit
 import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
@@ -61,7 +64,9 @@ class FoodLogViewModel(
     getWeeklyCheckInUseCase: GetWeeklyCheckInUseCase,
     private val copyFoodLogsUseCase: CopyFoodLogsUseCase,
     private val undoFoodLogCopyUseCase: UndoFoodLogCopyUseCase,
-    private val copyEvents: FoodLogCopyEvents
+    private val copyEvents: FoodLogCopyEvents,
+    getPlannedTodayUseCase: GetPlannedTodayUseCase,
+    private val plannedFoodActions: PlannedFoodActions
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -117,7 +122,29 @@ class FoodLogViewModel(
         viewModelScope.launch {
             copyEvents.latest.collect { copy -> _state.update { it.copy(copyToast = copy) } }
         }
+        viewModelScope.launch {
+            getPlannedTodayUseCase().collect { plannedToday ->
+                _state.update { it.copy(plannedToday = plannedToday) }
+            }
+        }
         updateMacroGoals()
+    }
+
+    override fun onAtePlanned(planned: PlannedFood) {
+        viewModelScope.launch { plannedFoodActions.markEaten(planned = listOf(planned)) }
+    }
+
+    override fun onAteAllPlanned(mealType: MealType) {
+        val planned = _state.value.plannedToday.filter { it.mealType == mealType }
+        viewModelScope.launch { plannedFoodActions.markEaten(planned = planned) }
+    }
+
+    override fun onSkipPlanned(planned: PlannedFood) {
+        viewModelScope.launch { plannedFoodActions.skip(planned = planned) }
+    }
+
+    override fun onUndoPlanned(planned: PlannedFood) {
+        viewModelScope.launch { plannedFoodActions.undo(planned = planned) }
     }
 
     override fun onCopyMealToToday(mealType: MealType) {
@@ -259,6 +286,8 @@ class FoodLogViewModel(
 
     override fun onScreenShown() {
         onDateFilterSelected(date = logDateRequest.consume() ?: getCurrentDate())
+        // Fills in today's repeating meals, and logs the ones that log themselves, on the first open of the day.
+        viewModelScope.launch { plannedFoodActions.sync() }
     }
 
     override fun onOpenEntry(log: FoodLog) {

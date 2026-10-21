@@ -52,6 +52,19 @@ class AppDestinationsTest {
     }
 
     @Test
+    fun mealPlanRoutesLeaveOutMissingArguments() {
+        val friday = LocalDate(year = 2026, month = 10, day = 9)
+        assertEquals("meal_plan", AppDestinations.Root.MealPlan.createRoute())
+        assertEquals("meal_plan?logDate=2026-10-09", AppDestinations.Root.MealPlan.createRoute(logDate = friday))
+        assertEquals("repeat_meal", AppDestinations.Root.RepeatMeal.createRoute())
+        assertEquals("repeat_meal?repeatingMealId=3", AppDestinations.Root.RepeatMeal.createRoute(repeatingMealId = 3))
+        assertEquals(
+            "repeat_meal?sourceDate=2026-10-09&mealType=BREAKFAST",
+            AppDestinations.Root.RepeatMeal.createRoute(sourceDate = friday, mealType = "BREAKFAST")
+        )
+    }
+
+    @Test
     fun logDateFallsBackToToday() {
         assertEquals(LocalDate(year = 2026, month = 10, day = 4), logDateOf(argument = "2026-10-04"))
         assertEquals(getCurrentDate(), logDateOf(argument = null))

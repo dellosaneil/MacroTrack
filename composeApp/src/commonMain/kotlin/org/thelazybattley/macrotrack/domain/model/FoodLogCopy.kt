@@ -6,6 +6,8 @@ import kotlinx.datetime.LocalDate
 data class FoodLogCopy(
     val insertedIds: List<Long>,
     val replaced: List<FoodLog>,
+    /** Planned food it added to later days, which can't be logged yet. */
+    val plannedIds: List<Long> = emptyList(),
     /** How many logs were copied to each day. */
     val itemCount: Int,
     val targetDates: List<LocalDate>

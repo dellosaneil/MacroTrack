@@ -10,6 +10,7 @@ import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodLogCopy
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.PlannedFood
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
 
 data class FoodLogViewState(
@@ -48,7 +49,9 @@ data class FoodLogViewState(
     /** This week's check-in result, while it's due and has enough data to suggest a target. */
     val checkIn: WeeklyCheckIn.Result? = null,
     /** The copy just made, shown with Undo until it's dismissed. */
-    val copyToast: FoodLogCopy? = null
+    val copyToast: FoodLogCopy? = null,
+    /** Food planned for today that waits for Ate it or Skip, and what was already done with it. */
+    val plannedToday: List<PlannedFood> = emptyList()
 )
 
 data class FoodLogFoodListByMealType(

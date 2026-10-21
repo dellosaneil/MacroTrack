@@ -99,6 +99,29 @@ sealed class AppDestinations {
                 "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())
         }
 
+        /** Planning food for [LOG_DATE], a day after today; tomorrow when it's left out. */
+        object MealPlan : Root(route = "meal_plan", routeWithArgs = "meal_plan?$LOG_DATE={$LOG_DATE}") {
+            fun createRoute(logDate: LocalDate? = null): String = route + queryString(LOG_DATE to logDate?.toString())
+        }
+
+        object RepeatingMeals : Root(route = "repeating_meals")
+
+        /**
+         * Sets up a repeating meal: from [MEAL_TYPE] on [SOURCE_DATE] (⋮ on a meal → Repeat this meal), or editing
+         * [REPEATING_MEAL_ID]. With neither, the user picks a recent meal to start from.
+         */
+        object RepeatMeal : Root(
+            route = "repeat_meal",
+            routeWithArgs = "repeat_meal?$SOURCE_DATE={$SOURCE_DATE}&$MEAL_TYPE={$MEAL_TYPE}&$REPEATING_MEAL_ID={$REPEATING_MEAL_ID}"
+        ) {
+            fun createRoute(sourceDate: LocalDate? = null, mealType: String? = null, repeatingMealId: Long? = null): String =
+                route + queryString(
+                    SOURCE_DATE to sourceDate?.toString(),
+                    MEAL_TYPE to mealType,
+                    REPEATING_MEAL_ID to repeatingMealId?.toString()
+                )
+        }
+
         object Backup : Root(route = "backup_export")
 
         object DeleteData : Root(route = "delete_data")
@@ -167,6 +190,7 @@ sealed class AppDestinations {
         /** The day Add meal, Quick add, Scan barcode and the food library log to; today when a route leaves it out. */
         const val LOG_DATE = "logDate"
         const val SOURCE_DATE = "sourceDate"
+        const val REPEATING_MEAL_ID = "repeatingMealId"
     }
 }
 

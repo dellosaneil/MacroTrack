@@ -73,6 +73,7 @@ import macrotrack.composeapp.generated.resources.items_kcal
 import macrotrack.composeapp.generated.resources.kcal
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.meals
+import macrotrack.composeapp.generated.resources.nothing_logged_planned
 import macrotrack.composeapp.generated.resources.nothing_logged_yet
 import macrotrack.composeapp.generated.resources.p_c_f
 import macrotrack.composeapp.generated.resources.p_value_gram
@@ -93,6 +94,7 @@ import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.PlannedFood
 import org.thelazybattley.macrotrack.domain.model.dummyFoodLog
 import org.thelazybattley.macrotrack.features.foodlog.DayGoal
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogCallbacks
@@ -156,6 +158,10 @@ fun FoodLogTabScreen(
         },
         onCopyFrom = { mealType ->
             onNavigate(AppDestinations.Root.CopyFrom.createRoute(mealType = mealType.name, logDate = viewState.selectedDate))
+        },
+        onOpenPlan = { onNavigate(AppDestinations.Root.MealPlan.createRoute()) },
+        onRepeat = { mealType ->
+            onNavigate(AppDestinations.Root.RepeatMeal.createRoute(sourceDate = viewState.selectedDate, mealType = mealType.name))
         }
     )
 }
@@ -171,7 +177,10 @@ private fun FoodLogTabScreen(
     onOpenCheckIn: () -> Unit,
     /** Opens copying a meal to other days, or the whole day when null. */
     onCopyTo: (MealType?) -> Unit,
-    onCopyFrom: (MealType) -> Unit
+    onCopyFrom: (MealType) -> Unit,
+    onOpenPlan: () -> Unit,
+    /** Sets up repeating [MealType] from the selected day. */
+    onRepeat: (MealType) -> Unit
 ) {
     val today = getCurrentDate()
     val isToday = viewState.selectedDate == today
@@ -208,6 +217,7 @@ private fun FoodLogTabScreen(
                 modifier = Modifier.fillMaxWidth(),
                 dates = viewState.availableDates,
                 dateSelected = viewState.selectedDate,
+                onPlan = onOpenPlan
             ) { date ->
                 callbacks.onDateFilterSelected(date = date)
             }
@@ -249,7 +259,10 @@ private fun FoodLogTabScreen(
                         callbacks.onNavigate(mealType = meal.mealType)
                     },
                     onMore = { copyMenuMeal = meal.mealType },
-                    onCopyFrom = if (isToday) ({ onCopyFrom(meal.mealType) }) else null
+                    onCopyFrom = if (isToday) ({ onCopyFrom(meal.mealType) }) else null,
+                    // Planned food waits on the day it's for, so only today shows it.
+                    planned = if (isToday) viewState.plannedToday.filter { it.mealType == meal.mealType } else emptyList(),
+                    callbacks = callbacks
                 )
             }
             // Keeps the last meal clear of the copied toast.
@@ -285,6 +298,10 @@ private fun FoodLogTabScreen(
             onCopyWholeDay = {
                 copyMenuMeal = null
                 onCopyTo(null)
+            },
+            onRepeat = {
+                copyMenuMeal = null
+                onRepeat(meal.mealType)
             },
             onDismiss = { copyMenuMeal = null }
         )
@@ -485,13 +502,15 @@ private fun LoggedFoodMealType(
     onNavigate: () -> Unit,
     onMore: () -> Unit,
     /** Offered on an empty meal on today; null hides it. */
-    onCopyFrom: (() -> Unit)?
+    onCopyFrom: (() -> Unit)?,
+    planned: List<PlannedFood>,
+    callbacks: FoodLogCallbacks
 ) {
     val shape = RoundedCornerShape(size = 20.dp)
     val isEmpty = foodList.foodList.isEmpty()
     val dashedColor = colors.dashed
 
-    val cardModifier = if (isEmpty) {
+    val cardModifier = if (isEmpty && planned.isEmpty()) {
         modifier.drawBehind {
             drawRoundRect(
                 color = dashedColor,
@@ -518,37 +537,49 @@ private fun LoggedFoodMealType(
             foodList = foodList,
             onNavigate = onNavigate,
             onMore = onMore,
-            onCopyFrom = onCopyFrom
+            onCopyFrom = onCopyFrom.takeIf { planned.isEmpty() },
+            plannedCount = planned.size
         )
-        if (isEmpty) return@Column
-        HorizontalDivider(thickness = 1.dp, color = colors.divider)
-        foodList.foodList.forEachIndexed { index, food ->
-            key(food.id) {
-                CommonSwipeToDelete(
-                    modifier = Modifier.fillMaxWidth(),
-                    onDelete = {
-                        onDeleteFoodLog(food.id)
-                    }
-                ) {
-                    FoodLogItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(color = colors.surface)
-                            .clickable(
-                                onClickLabel = stringResource(resource = Res.string.edit_entry_value, food.foodName),
-                                role = Role.Button
-                            ) { onOpenEntry(food) }
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
-                        food = food,
-                        unit = foodUnit[food.foodName] ?: "",
-                        recipePercent = recipeCalories[food.foodName]?.let {
-                            recipePercentEaten(loggedCalories = food.calories, fullCalories = it)
-                        }
-                    )
-                }
-            }
-            if (index == foodList.foodList.lastIndex) return@forEachIndexed
+        if (!isEmpty) {
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            foodList.foodList.forEachIndexed { index, food ->
+                key(food.id) {
+                    CommonSwipeToDelete(
+                        modifier = Modifier.fillMaxWidth(),
+                        onDelete = {
+                            onDeleteFoodLog(food.id)
+                        }
+                    ) {
+                        FoodLogItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(color = colors.surface)
+                                .clickable(
+                                    onClickLabel = stringResource(resource = Res.string.edit_entry_value, food.foodName),
+                                    role = Role.Button
+                                ) { onOpenEntry(food) }
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            food = food,
+                            unit = foodUnit[food.foodName] ?: "",
+                            recipePercent = recipeCalories[food.foodName]?.let {
+                                recipePercentEaten(loggedCalories = food.calories, fullCalories = it)
+                            }
+                        )
+                    }
+                }
+                if (index == foodList.foodList.lastIndex) return@forEachIndexed
+                HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            }
+        }
+        if (planned.isNotEmpty()) {
+            PlannedSection(
+                modifier = Modifier.fillMaxWidth(),
+                planned = planned,
+                onAteAll = { callbacks.onAteAllPlanned(mealType = foodList.mealType) },
+                onAte = callbacks::onAtePlanned,
+                onSkip = callbacks::onSkipPlanned,
+                onUndo = callbacks::onUndoPlanned
+            )
         }
     }
 }
@@ -560,7 +591,8 @@ private fun MealTypeHeader(
     foodList: FoodLogFoodListByMealType,
     onNavigate: () -> Unit,
     onMore: () -> Unit,
-    onCopyFrom: (() -> Unit)?
+    onCopyFrom: (() -> Unit)?,
+    plannedCount: Int
 ) {
     val isEmpty = foodList.foodList.isEmpty()
     val style = foodList.mealType.toMealStyle()
@@ -591,7 +623,9 @@ private fun MealTypeHeader(
                 color = colors.ink
             )
             Text(
-                text = if (isEmpty) {
+                text = if (isEmpty && plannedCount > 0) {
+                    stringResource(resource = Res.string.nothing_logged_planned, plannedCount)
+                } else if (isEmpty) {
                     stringResource(resource = Res.string.nothing_logged_yet)
                 } else {
                     stringResource(
@@ -844,7 +878,9 @@ private fun PreviewFoodLogTabScreen() {
             onOpenCalendar = {},
             onOpenCheckIn = {},
             onCopyTo = {},
-            onCopyFrom = {}
+            onCopyFrom = {},
+            onOpenPlan = {},
+            onRepeat = {}
         )
     }
 }

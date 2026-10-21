@@ -8,7 +8,7 @@ class DeleteDataRepositoryImpl(private val backupDao: BackupDao) : DeleteDataRep
 
     override suspend fun delete(step: DeleteDataStep) {
         when (step) {
-            DeleteDataStep.FOOD_LOG -> backupDao.deleteFoodLogs()
+            DeleteDataStep.FOOD_LOG -> backupDao.deleteFoodLogsAndPlans()
             DeleteDataStep.BODY_RECORDS -> backupDao.deleteBodyRecords()
             DeleteDataStep.SAVED_FOODS -> backupDao.deleteSavedFoods()
             DeleteDataStep.GOALS_AND_SETTINGS -> backupDao.deleteGoalsAndSettings(keepFlagKeys = keptFlagKeys)

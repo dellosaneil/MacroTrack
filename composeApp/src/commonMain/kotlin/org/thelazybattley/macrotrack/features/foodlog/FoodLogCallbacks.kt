@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.features.foodlog
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.PlannedFood
 
 interface FoodLogCallbacks {
 
@@ -30,6 +31,14 @@ interface FoodLogCallbacks {
     fun onCopyMealToToday(mealType: MealType)
     fun onUndoCopy()
     fun onDismissCopyToast()
+
+    /** Logs food planned for today; Ate all logs every planned item still waiting in [mealType]. */
+    fun onAtePlanned(planned: PlannedFood)
+    fun onAteAllPlanned(mealType: MealType)
+    fun onSkipPlanned(planned: PlannedFood)
+
+    /** Puts eaten or skipped planned food back to waiting. */
+    fun onUndoPlanned(planned: PlannedFood)
 
     companion object {
         fun default() = object : FoodLogCallbacks {
@@ -65,6 +74,10 @@ interface FoodLogCallbacks {
             override fun onCopyMealToToday(mealType: MealType) = Unit
             override fun onUndoCopy() = Unit
             override fun onDismissCopyToast() = Unit
+            override fun onAtePlanned(planned: PlannedFood) = Unit
+            override fun onAteAllPlanned(mealType: MealType) = Unit
+            override fun onSkipPlanned(planned: PlannedFood) = Unit
+            override fun onUndoPlanned(planned: PlannedFood) = Unit
         }
     }
 }

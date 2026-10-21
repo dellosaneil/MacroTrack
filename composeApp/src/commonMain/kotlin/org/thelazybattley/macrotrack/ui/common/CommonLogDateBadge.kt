@@ -17,8 +17,10 @@ import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_calendar
+import macrotrack.composeapp.generated.resources.tomorrow
 import macrotrack.composeapp.generated.resources.yesterday
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -29,19 +31,22 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 /**
- * Names the past day a log screen adds to, so food doesn't land on the wrong day by mistake. Shows nothing for
- * today.
+ * Names the past day a log screen adds to, so food doesn't land on the wrong day by mistake. A later day is
+ * being planned, so it gets the meal plan's colors. Shows nothing for today.
  */
 @Composable
 fun CommonLogDateBadge(
     modifier: Modifier = Modifier,
     date: LocalDate
 ) {
-    if (date == getCurrentDate()) return
+    val today = getCurrentDate()
+    if (date == today) return
+    val isPlanning = date > today
+    val tint = if (isPlanning) colors.nightInk else colors.warmInk
     Row(
         modifier = modifier
             .clip(shape = RoundedCornerShape(size = 8.dp))
-            .background(color = colors.warmSoft)
+            .background(color = if (isPlanning) colors.nightSoft else colors.warmSoft)
             .padding(horizontal = 8.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 5.dp)
@@ -49,17 +54,18 @@ fun CommonLogDateBadge(
         Icon(
             painter = painterResource(resource = Res.drawable.ic_calendar),
             contentDescription = null,
-            tint = colors.warmInk,
+            tint = tint,
             modifier = Modifier.size(size = 13.dp)
         )
-        Text(text = logDateLabel(date = date), style = typography.bold12, color = colors.warmInk)
+        Text(text = logDateLabel(date = date), style = typography.bold12, color = tint)
     }
 }
 
-/** "Yesterday", or the short day and date, like "Sun, Oct 4". */
+/** "Yesterday", "Tomorrow", or the short day and date, like "Sun, Oct 4". */
 @Composable
 fun logDateLabel(date: LocalDate): String {
     if (date == getCurrentDate().minus(period = DatePeriod(days = 1))) return stringResource(resource = Res.string.yesterday)
+    if (date == getCurrentDate().plus(period = DatePeriod(days = 1))) return stringResource(resource = Res.string.tomorrow)
     val day = date.dayOfWeek.name.take(n = 3).lowercase().replaceFirstChar { it.uppercase() }
     return "$day, ${date.toAbbreviatedMonthDay()}"
 }

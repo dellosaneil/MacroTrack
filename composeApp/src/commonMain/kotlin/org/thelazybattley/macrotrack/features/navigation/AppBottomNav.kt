@@ -47,6 +47,9 @@ import org.thelazybattley.macrotrack.features.foodlibrary.ui.FoodLibraryScreen
 import org.thelazybattley.macrotrack.features.quickadd.ui.QuickAddScreen
 import org.thelazybattley.macrotrack.features.copy.ui.CopyFromScreen
 import org.thelazybattley.macrotrack.features.copy.ui.CopyToScreen
+import org.thelazybattley.macrotrack.features.mealplan.ui.MealPlanScreen
+import org.thelazybattley.macrotrack.features.mealplan.ui.RepeatMealScreen
+import org.thelazybattley.macrotrack.features.mealplan.ui.RepeatingMealsScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.SOURCE_DATE
 import org.thelazybattley.macrotrack.features.scanbarcode.ui.ScanBarcodeScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
@@ -74,6 +77,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.QUE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEASUREMENT_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PRO_FEATURE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.REPEATING_MEAL_ID
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
 import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
@@ -243,7 +247,7 @@ fun AppBottomNav() {
                                 navigate(route)
                             },
                             onSaved = {
-                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                                navController.popToLogScreen()
                             }
                         )
                     }
@@ -302,7 +306,7 @@ fun AppBottomNav() {
                                 navigate(route)
                             },
                             onSaved = {
-                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                                navController.popToLogScreen()
                             }
                         )
                     }
@@ -351,7 +355,7 @@ fun AppBottomNav() {
                         CopyToScreen(
                             onClose = { navController.popBackStack() },
                             onCopied = {
-                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                                navController.popToLogScreen()
                             }
                         )
                     }
@@ -371,7 +375,56 @@ fun AppBottomNav() {
                         CopyFromScreen(
                             onClose = { navController.popBackStack() },
                             onCopied = {
-                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                                navController.popToLogScreen()
+                            }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.MealPlan.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = LOG_DATE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        MealPlanScreen(
+                            onBack = { navController.popBackStack() },
+                            onPlanFood = { mealType, date ->
+                                navigate(AppDestinations.Root.AddMeal.createRoute(mealType = mealType.name, logDate = date))
+                            },
+                            onCopyFrom = { mealType, date ->
+                                navigate(AppDestinations.Root.CopyFrom.createRoute(mealType = mealType.name, logDate = date))
+                            },
+                            onOpenRepeatingMeals = { navigate(AppDestinations.Root.RepeatingMeals.route) }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.RepeatingMeals.route) {
+                        RepeatingMealsScreen(
+                            onBack = { navController.popBackStack() },
+                            onOpen = { meal -> navigate(AppDestinations.Root.RepeatMeal.createRoute(repeatingMealId = meal.id)) },
+                            onNew = { navigate(AppDestinations.Root.RepeatMeal.createRoute()) }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.RepeatMeal.routeWithArgs!!,
+                        arguments = listOf(SOURCE_DATE, MEAL_TYPE, REPEATING_MEAL_ID).map { name ->
+                            navArgument(name = name) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        }
+                    ) {
+                        RepeatMealScreen(
+                            onClose = { navController.popBackStack() },
+                            onDone = {
+                                // Lands on the list either way, so a new one is seen there; from the list, it's the one below.
+                                navController.navigate(route = AppDestinations.Root.RepeatingMeals.route) {
+                                    popUpTo(route = AppDestinations.Root.RepeatMeal.routeWithArgs!!) { inclusive = true }
+                                    launchSingleTop = true
+                                }
                             }
                         )
                     }
@@ -393,7 +446,7 @@ fun AppBottomNav() {
                                 navController.popBackStack()
                             },
                             onSaved = {
-                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                                navController.popToLogScreen()
                             }
                         )
                     }
@@ -563,6 +616,16 @@ fun AppBottomNav() {
                 )
             }
         }
+    }
+}
+
+/**
+ * Back from logging to where it started: the meal plan when food was being planned there, otherwise the main
+ * screen.
+ */
+private fun NavHostController.popToLogScreen() {
+    if (!popBackStack(route = AppDestinations.Root.MealPlan.routeWithArgs!!, inclusive = false)) {
+        popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
     }
 }
 

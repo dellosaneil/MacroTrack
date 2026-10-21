@@ -51,6 +51,9 @@ object TelemetryEvent {
     const val DATA_DELETED = "data_deleted"
     const val CHECK_IN_DONE = "check_in_done"
     const val FOOD_COPIED = "food_copied"
+    const val FOOD_PLANNED = "food_planned"
+    const val PLANNED_FOOD_DONE = "planned_food_done"
+    const val REPEATING_MEAL_SAVED = "repeating_meal_saved"
 
     const val PARAM_GOAL = "goal"
     const val PARAM_MEAL_TYPE = "meal_type"

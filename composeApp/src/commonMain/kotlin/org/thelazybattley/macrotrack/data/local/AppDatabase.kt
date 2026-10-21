@@ -14,6 +14,7 @@ import org.thelazybattley.macrotrack.data.local.dao.BackupDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
+import org.thelazybattley.macrotrack.data.local.dao.MealPlanDao
 import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
 import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
 import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
@@ -23,6 +24,8 @@ import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
+import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
+import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
@@ -31,8 +34,8 @@ import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
-    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class],
-    version = 15, exportSchema = true,
+    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class],
+    version = 16, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -51,6 +54,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun favoriteDao(): FavoriteDao
     abstract fun appFlagDao(): AppFlagDao
     abstract fun backupDao(): BackupDao
+    abstract fun mealPlanDao(): MealPlanDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -159,6 +163,25 @@ abstract class AppDatabase : RoomDatabase() {
                 listOf("customCalories", "customProtein", "customCarbs", "customFat").forEach { column ->
                     connection.execSQL("ALTER TABLE `UserDetailsEntity` ADD COLUMN `$column` INTEGER")
                 }
+            }
+        }
+
+        /** Adds the meal plan: food planned for later days, and repeating meals that fill it in. */
+        val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `PlannedFoodEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`date` TEXT NOT NULL, `mealType` TEXT NOT NULL, `foodName` TEXT NOT NULL, `calories` INTEGER NOT NULL, " +
+                        "`protein` REAL NOT NULL, `carbs` REAL NOT NULL, `fat` REAL NOT NULL, `weight` REAL NOT NULL, " +
+                        "`dominantMacro` TEXT NOT NULL, `isQuickAdd` INTEGER NOT NULL, `repeatingMealId` INTEGER, " +
+                        "`status` TEXT NOT NULL, `logId` INTEGER)"
+                )
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `RepeatingMealEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`name` TEXT NOT NULL, `mealType` TEXT NOT NULL, `days` TEXT NOT NULL, `foods` TEXT NOT NULL, " +
+                        "`startDate` TEXT NOT NULL, `endDate` TEXT, `maxTimes` INTEGER, `isAutoLog` INTEGER NOT NULL, " +
+                        "`isActive` INTEGER NOT NULL, `updatedOn` TEXT NOT NULL)"
+                )
             }
         }
     }

@@ -83,15 +83,17 @@ fun CommonDateButton(
 fun CommonDatePickerDialog(
     selected: LocalDate,
     minDate: LocalDate? = null,
+    /** The last day that can be picked; null for no limit, to pick a day ahead. */
+    maxDate: LocalDate? = getCurrentDate(),
     onDismiss: () -> Unit,
     onConfirm: (LocalDate) -> Unit
 ) {
-    val todayMillis = getCurrentDate().toEpochDays() * MILLIS_PER_DAY
+    val maxMillis = maxDate?.let { it.toEpochDays() * MILLIS_PER_DAY } ?: Long.MAX_VALUE
     val minMillis = minDate?.let { it.toEpochDays() * MILLIS_PER_DAY } ?: Long.MIN_VALUE
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selected.toEpochDays() * MILLIS_PER_DAY,
         selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis in minMillis..todayMillis
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis in minMillis..maxMillis
         }
     )
     DatePickerDialog(

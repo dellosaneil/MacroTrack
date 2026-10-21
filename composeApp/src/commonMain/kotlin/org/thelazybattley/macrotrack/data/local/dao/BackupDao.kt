@@ -11,7 +11,9 @@ import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
+import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
+import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 
@@ -49,6 +51,12 @@ abstract class BackupDao {
     @Query("SELECT * FROM AppFlagEntity")
     abstract suspend fun getAppFlags(): List<AppFlagEntity>
 
+    @Query("SELECT * FROM PlannedFoodEntity")
+    abstract suspend fun getPlannedFoods(): List<PlannedFoodEntity>
+
+    @Query("SELECT * FROM RepeatingMealEntity")
+    abstract suspend fun getRepeatingMeals(): List<RepeatingMealEntity>
+
     @Query("DELETE FROM FoodEntity")
     protected abstract suspend fun deleteFoods()
 
@@ -59,7 +67,13 @@ abstract class BackupDao {
     protected abstract suspend fun deleteUserDetails()
 
     @Query("DELETE FROM FoodLogEntity")
-    abstract suspend fun deleteFoodLogs()
+    protected abstract suspend fun deleteFoodLogs()
+
+    @Query("DELETE FROM PlannedFoodEntity")
+    protected abstract suspend fun deletePlannedFoods()
+
+    @Query("DELETE FROM RepeatingMealEntity")
+    protected abstract suspend fun deleteRepeatingMeals()
 
     @Query("DELETE FROM WeightEntity")
     protected abstract suspend fun deleteWeights()
@@ -103,6 +117,20 @@ abstract class BackupDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     protected abstract suspend fun insertAppFlags(appFlags: List<AppFlagEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    protected abstract suspend fun insertPlannedFoods(plannedFoods: List<PlannedFoodEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    protected abstract suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>)
+
+    /** The food log, with the meal plan and repeating meals that feed it. */
+    @Transaction
+    open suspend fun deleteFoodLogsAndPlans() {
+        deleteFoodLogs()
+        deletePlannedFoods()
+        deleteRepeatingMeals()
+    }
+
     @Transaction
     open suspend fun deleteBodyRecords() {
         deleteWeights()
@@ -138,6 +166,8 @@ abstract class BackupDao {
         deleteMeasurements()
         deleteDailyGoals()
         deleteFavorites()
+        deletePlannedFoods()
+        deleteRepeatingMeals()
         deleteAppFlagsExcept(keepKeys = deviceFlagKeys)
         insertFoods(foods = snapshot.foods)
         insertRecipes(recipes = snapshot.recipes)
@@ -147,6 +177,8 @@ abstract class BackupDao {
         insertMeasurements(measurements = snapshot.measurements)
         insertDailyGoals(dailyGoals = snapshot.dailyGoals)
         insertFavorites(favorites = snapshot.favorites)
+        insertPlannedFoods(plannedFoods = snapshot.plannedFoods)
+        insertRepeatingMeals(repeatingMeals = snapshot.repeatingMeals)
         insertAppFlags(appFlags = snapshot.appFlags.filter { it.key !in deviceFlagKeys })
     }
 }
@@ -161,5 +193,7 @@ data class DatabaseSnapshot(
     val measurements: List<MeasurementEntity>,
     val dailyGoals: List<DailyGoalEntity>,
     val favorites: List<FavoriteEntity>,
-    val appFlags: List<AppFlagEntity>
+    val appFlags: List<AppFlagEntity>,
+    val plannedFoods: List<PlannedFoodEntity>,
+    val repeatingMeals: List<RepeatingMealEntity>
 )

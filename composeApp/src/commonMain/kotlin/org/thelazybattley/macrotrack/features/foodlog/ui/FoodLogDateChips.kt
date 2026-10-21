@@ -22,13 +22,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.plan_chip
+import macrotrack.composeapp.generated.resources.plan_chip_description
+import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.core.getCurrentDate
+import org.thelazybattley.macrotrack.core.toShortDayMonthDay
 import org.thelazybattley.macrotrack.ui.common.dashedBorder
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -41,6 +49,8 @@ fun FoodLogDateChips(
     modifier: Modifier = Modifier,
     dates: List<LocalDate>,
     dateSelected: LocalDate,
+    /** Opens the meal plan for tomorrow, from the chip after today. */
+    onPlan: () -> Unit = {},
     onDateSelected: (LocalDate) -> Unit,
 ) {
     val today = getCurrentDate()
@@ -54,8 +64,9 @@ fun FoodLogDateChips(
             .takeWhile { it <= today }
             .toList()
     }
+    // The Plan chip follows today, so a day's chip sits one in from the right edge to leave room for it.
     val state = rememberLazyListState(
-        initialFirstVisibleItemIndex = (allDates.indexOf(dateSelected) - MIN_DAYS_SHOWN + 1)
+        initialFirstVisibleItemIndex = (allDates.indexOf(dateSelected) - MIN_DAYS_SHOWN + 2)
             .coerceAtLeast(minimumValue = 0)
     )
     LaunchedEffect(key1 = allDates, key2 = dateSelected) {
@@ -67,7 +78,7 @@ fun FoodLogDateChips(
                 item.offset + item.size <= state.layoutInfo.viewportEndOffset
         }
         if (!isFullyVisible) {
-            state.scrollToItem(index = (index - MIN_DAYS_SHOWN + 1).coerceAtLeast(minimumValue = 0))
+            state.scrollToItem(index = (index - MIN_DAYS_SHOWN + 2).coerceAtLeast(minimumValue = 0))
         }
     }
     val visibleMonth by remember(key1 = allDates) {
@@ -97,9 +108,35 @@ fun FoodLogDateChips(
                     onClick = { onDateSelected(date) }
                 )
             }
+            item(key = PLAN_CHIP_KEY) {
+                PlanChip(date = today.plus(period = DatePeriod(days = 1)), onClick = onPlan)
+            }
         }
     }
 }
+
+/** Tomorrow, dashed: food can be planned there but not logged. */
+@Composable
+private fun PlanChip(date: LocalDate, onClick: () -> Unit) {
+    val description = stringResource(resource = Res.string.plan_chip_description, date.toShortDayMonthDay())
+    Column(
+        modifier = Modifier
+            .width(width = 46.dp)
+            .height(height = 56.dp)
+            .clip(shape = RoundedCornerShape(size = 14.dp))
+            .background(color = colors.nightSoft)
+            .dashedBorder(color = colors.nightInk, width = 1.5.dp, cornerRadius = 14.dp)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = description },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(space = 1.dp, alignment = Alignment.CenterVertically)
+    ) {
+        Text(text = stringResource(resource = Res.string.plan_chip), style = typography.bold10, color = colors.nightInk)
+        Text(text = date.day.toString(), style = typography.bold16, color = colors.nightInk)
+    }
+}
+
+private const val PLAN_CHIP_KEY = "plan"
 
 @Composable
 private fun DateChip(

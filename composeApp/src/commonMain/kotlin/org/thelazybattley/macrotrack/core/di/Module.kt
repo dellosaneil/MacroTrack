@@ -107,6 +107,24 @@ import org.thelazybattley.macrotrack.domain.usecase.foodlog.UndoFoodLogCopyUseCa
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogCopyEvents
 import org.thelazybattley.macrotrack.features.copy.CopyToViewModel
 import org.thelazybattley.macrotrack.features.copy.CopyFromViewModel
+import org.thelazybattley.macrotrack.data.repository.MealPlanRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.MealPlanRepository
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.DeleteRepeatingMealUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetPlannedFoodsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetPlannedTodayUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.PlannedFoodActions
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetRepeatingMealsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.MarkPlannedEatenUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.PlanFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.RemovePlannedFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.SaveRepeatingMealUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.SetRepeatingMealActiveUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.SkipPlannedFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.SyncRepeatingMealsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.UndoPlannedFoodUseCase
+import org.thelazybattley.macrotrack.features.mealplan.MealPlanViewModel
+import org.thelazybattley.macrotrack.features.mealplan.RepeatMealViewModel
+import org.thelazybattley.macrotrack.features.mealplan.RepeatingMealsViewModel
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
@@ -145,6 +163,7 @@ val sharedModule = module {
     single { get<AppDatabase>().favoriteDao() }
     single { get<AppDatabase>().appFlagDao() }
     single { get<AppDatabase>().backupDao() }
+    single { get<AppDatabase>().mealPlanDao() }
     singleOf(::MeasurementUnitPreference)
     single {
         HttpClient {
@@ -173,6 +192,7 @@ val repositoryModule = module {
     singleOf(::FoodLibraryRepositoryImpl) { bind<FoodLibraryRepository>() }
     singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
     singleOf(::DeleteDataRepositoryImpl) { bind<DeleteDataRepository>() }
+    singleOf(::MealPlanRepositoryImpl) { bind<MealPlanRepository>() }
 }
 
 val useCaseModule = module {
@@ -234,6 +254,19 @@ val useCaseModule = module {
     factoryOf(::GetReviewHistoryUseCase)
     factoryOf(::RecordReviewAskedUseCase)
     factoryOf(::DeleteAllDataUseCase)
+    factoryOf(::GetPlannedFoodsUseCase)
+    factoryOf(::GetPlannedTodayUseCase)
+    factoryOf(::PlannedFoodActions)
+    factoryOf(::GetRepeatingMealsUseCase)
+    factoryOf(::PlanFoodUseCase)
+    factoryOf(::MarkPlannedEatenUseCase)
+    factoryOf(::SkipPlannedFoodUseCase)
+    factoryOf(::UndoPlannedFoodUseCase)
+    factoryOf(::RemovePlannedFoodUseCase)
+    factoryOf(::SyncRepeatingMealsUseCase)
+    factoryOf(::SaveRepeatingMealUseCase)
+    factoryOf(::SetRepeatingMealActiveUseCase)
+    factoryOf(::DeleteRepeatingMealUseCase)
 }
 
 val viewModelModule = module {
@@ -265,6 +298,9 @@ val viewModelModule = module {
     viewModelOf(::CheckInViewModel)
     viewModelOf(::BackupViewModel)
     viewModelOf(::DeleteDataViewModel)
+    viewModelOf(::MealPlanViewModel)
+    viewModelOf(::RepeatingMealsViewModel)
+    viewModelOf(::RepeatMealViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

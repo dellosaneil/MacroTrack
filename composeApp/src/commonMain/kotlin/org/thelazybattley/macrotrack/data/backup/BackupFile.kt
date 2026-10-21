@@ -8,7 +8,9 @@ import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
+import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
+import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 
@@ -33,7 +35,10 @@ data class BackupFile(
     val measurements: List<MeasurementEntity> = emptyList(),
     val dailyGoals: List<DailyGoalEntity> = emptyList(),
     val favorites: List<FavoriteEntity> = emptyList(),
-    val appFlags: List<AppFlagEntity> = emptyList()
+    val appFlags: List<AppFlagEntity> = emptyList(),
+    /** Missing from backups made before the meal plan; they restore with an empty plan. */
+    val plannedFoods: List<PlannedFoodEntity> = emptyList(),
+    val repeatingMeals: List<RepeatingMealEntity> = emptyList()
 ) {
     fun toSnapshot() = DatabaseSnapshot(
         foods = foods,
@@ -44,6 +49,8 @@ data class BackupFile(
         measurements = measurements,
         dailyGoals = dailyGoals,
         favorites = favorites,
-        appFlags = appFlags
+        appFlags = appFlags,
+        plannedFoods = plannedFoods,
+        repeatingMeals = repeatingMeals
     )
 }

@@ -10,14 +10,19 @@ import org.thelazybattley.macrotrack.domain.model.FoodLogCopy
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.copiedLogs
 import org.thelazybattley.macrotrack.domain.model.logsToReplace
+import org.thelazybattley.macrotrack.domain.model.toPlanFood
 import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
+import org.thelazybattley.macrotrack.domain.repository.MealPlanRepository
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.PlanFoodUseCase
 
 /**
- * Copies [logs] to each of [targetDates] (today or earlier; later days can't be logged), into [mealType] or, when
- * null, each log's own meal. With [replace], what's already in that meal (or that whole day) goes first.
+ * Copies [logs] to each of [targetDates], into [mealType] or, when null, each log's own meal. With [replace],
+ * what's already in that meal (or that whole day) goes first. Later days can't be logged, so copies to them are
+ * planned there instead, like filling a meal in the meal plan.
  */
 class CopyFoodLogsUseCase(
     private val repository: FoodLogRepository,
+    private val planFoodUseCase: PlanFoodUseCase,
     private val telemetry: Telemetry
 ) {
     suspend operator fun invoke(
@@ -28,6 +33,8 @@ class CopyFoodLogsUseCase(
     ): FoodLogCopy {
         val today = getCurrentDate()
         val dates = targetDates.filter { it <= today }.distinct()
+        val plannedIds = copiedLogs(logs = logs, targetDates = targetDates.filter { it > today }.distinct(), mealType = mealType)
+            .map { planFoodUseCase(food = it.toPlanFood(), date = it.date, mealType = it.mealType) }
         val replaced = if (replace) {
             logsToReplace(existing = repository.getAllFoodLogs().first(), targetDates = dates, mealType = mealType)
         } else {
@@ -42,15 +49,25 @@ class CopyFoodLogsUseCase(
                 TelemetryEvent.PARAM_RESULT to if (replace) "replace" else "add"
             )
         )
-        return FoodLogCopy(insertedIds = insertedIds, replaced = replaced, itemCount = logs.size, targetDates = dates)
+        return FoodLogCopy(
+            insertedIds = insertedIds,
+            replaced = replaced,
+            plannedIds = plannedIds,
+            itemCount = logs.size,
+            targetDates = targetDates.distinct()
+        )
     }
 }
 
 /** Takes a copy back out and puts back what it replaced. */
-class UndoFoodLogCopyUseCase(private val repository: FoodLogRepository) {
+class UndoFoodLogCopyUseCase(
+    private val repository: FoodLogRepository,
+    private val mealPlanRepository: MealPlanRepository
+) {
 
     suspend operator fun invoke(copy: FoodLogCopy) {
         copy.insertedIds.forEach { repository.deleteFoodLog(id = it) }
+        copy.plannedIds.forEach { mealPlanRepository.deletePlannedFood(id = it) }
         copy.replaced.forEach { repository.insert(log = it) }
     }
 }
