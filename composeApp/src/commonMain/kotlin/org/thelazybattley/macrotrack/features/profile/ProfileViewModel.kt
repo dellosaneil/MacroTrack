@@ -73,7 +73,8 @@ class ProfileViewModel(
                         gender = it.sex,
                         activityLevel = it.activityLevel,
                         goal = it.goal,
-                        goalPace = it.goalPace
+                        goalPace = it.goalPace,
+                        measuredMaintenance = it.measuredMaintenance
                     )
                 }
                 _state.update { currentState ->

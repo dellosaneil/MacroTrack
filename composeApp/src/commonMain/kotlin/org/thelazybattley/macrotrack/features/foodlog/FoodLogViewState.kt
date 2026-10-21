@@ -9,6 +9,7 @@ import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
 
 data class FoodLogViewState(
     val breakfast: FoodLogFoodListByMealType = FoodLogFoodListByMealType(
@@ -42,7 +43,9 @@ data class FoodLogViewState(
     /** The logged entry open in the edit sheet. */
     val entryEdit: EntryEdit? = null,
     /** True when the streak has earned asking for a store rating and the user hasn't been asked lately. */
-    val isReviewDue: Boolean = false
+    val isReviewDue: Boolean = false,
+    /** This week's check-in result, while it's due and has enough data to suggest a target. */
+    val checkIn: WeeklyCheckIn.Result? = null
 )
 
 data class FoodLogFoodListByMealType(

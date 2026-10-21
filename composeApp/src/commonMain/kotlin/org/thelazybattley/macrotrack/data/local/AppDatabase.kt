@@ -32,7 +32,7 @@ import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
     entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class],
-    version = 13, exportSchema = true,
+    version = 14, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -141,6 +141,13 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_12_13 = object : Migration(12, 13) {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("ALTER TABLE `UserDetailsEntity` ADD COLUMN `goalPace` REAL NOT NULL DEFAULT 1.2")
+            }
+        }
+
+        /** Adds the burn measured by a weekly check-in; nobody has one yet, so targets stay as they were. */
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE `UserDetailsEntity` ADD COLUMN `measuredMaintenance` INTEGER")
             }
         }
     }

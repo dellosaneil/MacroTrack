@@ -92,6 +92,8 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogFoodListByMealType
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
 import org.thelazybattley.macrotrack.features.pro.ui.ProTrialBanner
+import org.thelazybattley.macrotrack.features.pro.LocalProAccess
+import org.thelazybattley.macrotrack.features.checkin.ui.CheckInCard
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
@@ -139,7 +141,8 @@ fun FoodLogTabScreen(
         modifier = modifier,
         viewState = viewState,
         callbacks = viewModel,
-        onOpenCalendar = { onNavigate(AppDestinations.Root.Calendar.route) }
+        onOpenCalendar = { onNavigate(AppDestinations.Root.Calendar.route) },
+        onOpenCheckIn = { onNavigate(AppDestinations.Root.CheckIn.route) }
     )
 }
 
@@ -150,7 +153,8 @@ private fun FoodLogTabScreen(
     modifier: Modifier = Modifier,
     viewState: FoodLogViewState,
     callbacks: FoodLogCallbacks,
-    onOpenCalendar: () -> Unit
+    onOpenCalendar: () -> Unit,
+    onOpenCheckIn: () -> Unit
 ) {
     val isToday = viewState.selectedDate == getCurrentDate()
     val meals = listOf(viewState.breakfast, viewState.lunch, viewState.dinner, viewState.snack)
@@ -191,6 +195,9 @@ private fun FoodLogTabScreen(
                 .tourTarget(target = TourTarget.TODAY_REMAINING),
             viewState = viewState
         )
+        viewState.checkIn?.takeIf { isToday && LocalProAccess.current.isActive }?.let { checkIn ->
+            CheckInCard(modifier = Modifier.fillMaxWidth(), checkIn = checkIn, onClick = onOpenCheckIn)
+        }
         ProTrialBanner(modifier = Modifier.fillMaxWidth())
         MealsHeader(
             modifier = Modifier.fillMaxWidth(),
@@ -705,7 +712,8 @@ private fun PreviewFoodLogTabScreen() {
                 availableDates = listOf(getCurrentDate())
             ),
             callbacks = FoodLogCallbacks.default(),
-            onOpenCalendar = {}
+            onOpenCalendar = {},
+            onOpenCheckIn = {}
         )
     }
 }

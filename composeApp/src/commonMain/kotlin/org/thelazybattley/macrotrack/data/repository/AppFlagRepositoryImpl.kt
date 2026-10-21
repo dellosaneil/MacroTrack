@@ -58,6 +58,14 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         dao.insertFlag(flag = AppFlagEntity(key = REVIEW_TIMES_ASKED, value = (timesAsked + 1).toString()))
     }
 
+    override fun getLastCheckIn(): Flow<LocalDate?> = dao.getFlagValue(key = LAST_CHECK_IN).map { value ->
+        value?.let { runCatching { LocalDate.parse(input = it) }.getOrNull() }
+    }
+
+    override suspend fun setLastCheckIn(date: LocalDate) {
+        dao.insertFlag(flag = AppFlagEntity(key = LAST_CHECK_IN, value = date.toString()))
+    }
+
     companion object {
         /** Also seeded by AppDatabase.MIGRATION_8_9 for people who set up the app before the tour existed. */
         const val TOUR_COMPLETED = "tour_completed"
@@ -65,5 +73,6 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         const val TELEMETRY_OPTED_OUT = "telemetry_opted_out"
         const val REVIEW_LAST_ASKED = "review_last_asked"
         const val REVIEW_TIMES_ASKED = "review_times_asked"
+        const val LAST_CHECK_IN = "last_check_in"
     }
 }

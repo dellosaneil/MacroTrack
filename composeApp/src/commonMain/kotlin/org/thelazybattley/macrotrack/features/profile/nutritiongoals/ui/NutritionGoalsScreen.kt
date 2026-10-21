@@ -42,6 +42,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.check_in_row_body
+import macrotrack.composeapp.generated.resources.check_in_title
+import macrotrack.composeapp.generated.resources.ic_check_in
+import org.thelazybattley.macrotrack.features.pro.ui.ProBadge
 import macrotrack.composeapp.generated.resources.about_kg_per_month
 import macrotrack.composeapp.generated.resources.adjustment
 import macrotrack.composeapp.generated.resources.based_on_your_personal_information
@@ -100,7 +104,8 @@ fun NutritionGoalsScreen(
     modifier: Modifier = Modifier,
     onPopBackStack: () -> Unit,
     onNavigateToPersonalInformation: () -> Unit,
-    onNavigateToPastGoal: () -> Unit
+    onNavigateToPastGoal: () -> Unit,
+    onNavigateToCheckIn: () -> Unit
 ) {
     val viewModel = koinViewModel<NutritionGoalsViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -115,7 +120,8 @@ fun NutritionGoalsScreen(
         callbacks = viewModel,
         onBack = onPopBackStack,
         onNavigateToPersonalInformation = onNavigateToPersonalInformation,
-        onNavigateToPastGoal = onNavigateToPastGoal
+        onNavigateToPastGoal = onNavigateToPastGoal,
+        onNavigateToCheckIn = onNavigateToCheckIn
     )
 }
 
@@ -126,7 +132,8 @@ private fun NutritionGoalsScreen(
     callbacks: NutritionGoalsCallbacks,
     onBack: () -> Unit,
     onNavigateToPersonalInformation: () -> Unit,
-    onNavigateToPastGoal: () -> Unit
+    onNavigateToPastGoal: () -> Unit,
+    onNavigateToCheckIn: () -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -175,6 +182,7 @@ private fun NutritionGoalsScreen(
                     onChangePastGoal = onNavigateToPastGoal
                 )
             }
+            CheckInLink(onClick = onNavigateToCheckIn)
             viewState.userDetails?.let { userDetails ->
                 PersonalInformationLink(
                     userDetails = userDetails,
@@ -551,6 +559,50 @@ private fun PersonalInformationLink(
     }
 }
 
+/** Opens the weekly check-in, which measures the burn the calorie goal is planned from. */
+@Composable
+private fun CheckInLink(onClick: () -> Unit) {
+    val shape = RoundedCornerShape(size = 16.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = shape)
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(size = 36.dp)
+                .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 11.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_check_in),
+                contentDescription = null,
+                tint = colors.accentInk,
+                modifier = Modifier.size(size = 18.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(weight = 1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
+                Text(text = stringResource(resource = Res.string.check_in_title), style = typography.bold13, color = colors.ink)
+                ProBadge()
+            }
+            Text(text = stringResource(resource = Res.string.check_in_row_body), style = typography.regular11, color = colors.muted)
+        }
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_chevron_left),
+            contentDescription = null,
+            tint = colors.faint,
+            modifier = Modifier.size(size = 16.dp).rotate(degrees = 180f)
+        )
+    }
+}
+
 @Composable
 private fun GoalHistorySection(
     viewState: NutritionGoalsViewState,
@@ -636,7 +688,8 @@ private fun PreviewNutritionGoalsScreen() {
             callbacks = NutritionGoalsCallbacks.default(),
             onBack = {},
             onNavigateToPersonalInformation = {},
-            onNavigateToPastGoal = {}
+            onNavigateToPastGoal = {},
+            onNavigateToCheckIn = {}
         )
     }
 }

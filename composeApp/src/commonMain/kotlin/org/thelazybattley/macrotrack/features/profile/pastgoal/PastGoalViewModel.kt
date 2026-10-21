@@ -155,7 +155,8 @@ class PastGoalViewModel(
             activityLevel = it.activityLevel,
             goal = goal,
             // Past days use today's pace; only the goal and the weight at the time change.
-            goalPace = it.goalPace
+            goalPace = it.goalPace,
+            measuredMaintenance = it.measuredMaintenance
         )
     }
 }

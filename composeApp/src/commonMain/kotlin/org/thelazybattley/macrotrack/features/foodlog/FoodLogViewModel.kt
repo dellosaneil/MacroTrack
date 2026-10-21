@@ -16,6 +16,9 @@ import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
+import org.thelazybattley.macrotrack.domain.model.isCheckInDue
+import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeeklyCheckInUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.SaveDailyGoalUseCase
@@ -53,6 +56,7 @@ class FoodLogViewModel(
     private val recordReviewAskedUseCase: RecordReviewAskedUseCase,
     getUnitSystemUseCase: GetUnitSystemUseCase,
     getReviewHistoryUseCase: GetReviewHistoryUseCase,
+    getWeeklyCheckInUseCase: GetWeeklyCheckInUseCase
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -97,6 +101,12 @@ class FoodLogViewModel(
                 history.isDue(currentStreak = streak, today = today)
             }.collect { isReviewDue ->
                 _state.update { it.copy(isReviewDue = isReviewDue) }
+            }
+        }
+        viewModelScope.launch {
+            getWeeklyCheckInUseCase().collect { snapshot ->
+                val isDue = snapshot != null && isCheckInDue(lastCheckIn = snapshot.lastCheckIn, today = snapshot.today)
+                _state.update { it.copy(checkIn = (snapshot?.checkIn as? WeeklyCheckIn.Result)?.takeIf { isDue }) }
             }
         }
         updateMacroGoals()
@@ -170,7 +180,8 @@ class FoodLogViewModel(
                         gender = it.sex,
                         activityLevel = it.activityLevel,
                         goal = it.goal,
-                        goalPace = it.goalPace
+                        goalPace = it.goalPace,
+                        measuredMaintenance = it.measuredMaintenance
                     )
                 }
                 if (user != null && currentMacroGoals != null) {

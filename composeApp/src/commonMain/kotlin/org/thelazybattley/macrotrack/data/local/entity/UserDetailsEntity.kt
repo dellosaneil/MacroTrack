@@ -25,7 +25,9 @@ data class UserDetailsEntity(
     @ColumnInfo(defaultValue = "1.2") val goalPace: Double = GoalPace.DEFAULT_KG_PER_MONTH,
     val targetWeight: Double? = null,
     val targetStartWeight: Double? = null,
-    val targetSetDate: LocalDate? = null
+    val targetSetDate: LocalDate? = null,
+    /** Added by AppDatabase.MIGRATION_13_14; older backups have none and use the formula. */
+    val measuredMaintenance: Int? = null
 )
 
 fun UserDetailsEntity.toDomain() = UserDetails(
@@ -38,5 +40,6 @@ fun UserDetailsEntity.toDomain() = UserDetails(
     goalPace = goalPace,
     targetWeight = targetWeight,
     targetStartWeight = targetStartWeight,
-    targetSetDate = targetSetDate
+    targetSetDate = targetSetDate,
+    measuredMaintenance = measuredMaintenance
 )

@@ -14,6 +14,9 @@ import org.thelazybattley.macrotrack.domain.repository.DeleteDataRepository
 import org.thelazybattley.macrotrack.domain.usecase.deletedata.DeleteAllDataUseCase
 import org.thelazybattley.macrotrack.features.deletedata.DeleteDataViewModel
 import org.thelazybattley.macrotrack.features.quickadd.QuickAddViewModel
+import org.thelazybattley.macrotrack.features.checkin.CheckInViewModel
+import org.thelazybattley.macrotrack.domain.usecase.checkin.CompleteCheckInUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeeklyCheckInUseCase
 import io.ktor.client.plugins.HttpTimeout
 import org.thelazybattley.macrotrack.data.repository.FoodLibraryRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.OpenFoodFactsRepositoryImpl
@@ -215,6 +218,8 @@ val useCaseModule = module {
     factoryOf(::DismissTrialEndedNoticeUseCase)
     factoryOf(::LookUpBarcodeUseCase)
     factoryOf(::GetRemainingCaloriesUseCase)
+    factoryOf(::GetWeeklyCheckInUseCase)
+    factoryOf(::CompleteCheckInUseCase)
     factoryOf(::GetFoodLibraryUseCase)
     factoryOf(::IsTelemetryEnabledUseCase)
     factoryOf(::SetTelemetryEnabledUseCase)
@@ -247,6 +252,7 @@ val viewModelModule = module {
     viewModelOf(::ScanBarcodeViewModel)
     viewModelOf(::FoodLibraryViewModel)
     viewModelOf(::QuickAddViewModel)
+    viewModelOf(::CheckInViewModel)
     viewModelOf(::BackupViewModel)
     viewModelOf(::DeleteDataViewModel)
 }

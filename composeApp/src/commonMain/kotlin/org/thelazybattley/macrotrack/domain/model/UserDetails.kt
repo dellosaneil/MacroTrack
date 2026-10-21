@@ -14,7 +14,9 @@ data class UserDetails(
     val goalPace: Double = GoalPace.DEFAULT_KG_PER_MONTH,
     val targetWeight: Double? = null,
     val targetStartWeight: Double? = null,
-    val targetSetDate: LocalDate? = null
+    val targetSetDate: LocalDate? = null,
+    /** The daily burn measured by a weekly check-in, used in place of the formula's estimate once applied. */
+    val measuredMaintenance: Int? = null
 )
 
 fun UserDetails.toEntity() = UserDetailsEntity(
@@ -27,5 +29,6 @@ fun UserDetails.toEntity() = UserDetailsEntity(
     goalPace = goalPace,
     targetWeight = targetWeight,
     targetStartWeight = targetStartWeight,
-    targetSetDate = targetSetDate
+    targetSetDate = targetSetDate,
+    measuredMaintenance = measuredMaintenance
 )

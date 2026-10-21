@@ -3,6 +3,8 @@ package org.thelazybattley.macrotrack.features.pro
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.pro_feature_backup
 import macrotrack.composeapp.generated.resources.pro_feature_backup_body
+import macrotrack.composeapp.generated.resources.pro_feature_check_in
+import macrotrack.composeapp.generated.resources.pro_feature_check_in_body
 import macrotrack.composeapp.generated.resources.pro_feature_goal_phases
 import macrotrack.composeapp.generated.resources.pro_feature_goal_phases_body
 import macrotrack.composeapp.generated.resources.pro_feature_insights
@@ -27,7 +29,8 @@ enum class ProFeature(val title: StringResource, val body: StringResource) {
     BODY_MEASUREMENTS(title = Res.string.pro_feature_measurements, body = Res.string.pro_feature_measurements_body),
     INSIGHTS(title = Res.string.pro_feature_insights, body = Res.string.pro_feature_insights_body),
     RECIPES(title = Res.string.pro_feature_recipes, body = Res.string.pro_feature_recipes_body),
-    BACKUP(title = Res.string.pro_feature_backup, body = Res.string.pro_feature_backup_body)
+    BACKUP(title = Res.string.pro_feature_backup, body = Res.string.pro_feature_backup_body),
+    CHECK_IN(title = Res.string.pro_feature_check_in, body = Res.string.pro_feature_check_in_body)
 }
 
 /**

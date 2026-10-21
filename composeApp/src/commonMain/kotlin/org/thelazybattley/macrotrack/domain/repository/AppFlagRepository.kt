@@ -25,4 +25,9 @@ interface AppFlagRepository {
     fun getReviewHistory(): Flow<ReviewHistory>
 
     suspend fun recordReviewAsked(date: LocalDate)
+
+    /** The day the user last finished a weekly check-in, whether they applied its target or kept theirs. */
+    fun getLastCheckIn(): Flow<LocalDate?>
+
+    suspend fun setLastCheckIn(date: LocalDate)
 }

@@ -51,7 +51,8 @@ class NutritionGoalsViewModel(
                         gender = userDetails.sex,
                         activityLevel = userDetails.activityLevel,
                         goal = userDetails.goal,
-                        goalPace = userDetails.goalPace
+                        goalPace = userDetails.goalPace,
+                        measuredMaintenance = userDetails.measuredMaintenance
                     )
                 )
                 val history = goalPeriods(
@@ -100,7 +101,7 @@ class NutritionGoalsViewModel(
         val goal = selectedGoal ?: return this
         val goalPace = goalPace ?: return this
         return copy(
-            maintenanceCalories = calculateTDEEUseCase(
+            maintenanceCalories = userDetails.measuredMaintenance ?: calculateTDEEUseCase(
                 height = userDetails.height,
                 weight = userDetails.weight,
                 age = userDetails.age,
@@ -114,7 +115,8 @@ class NutritionGoalsViewModel(
                 gender = userDetails.sex,
                 activityLevel = userDetails.activityLevel,
                 goal = goal,
-                goalPace = goalPace
+                goalPace = goalPace,
+                measuredMaintenance = userDetails.measuredMaintenance
             )
         )
     }

@@ -117,6 +117,8 @@ sealed class AppDestinations {
 
         object PastGoal : Root(route = "past_goal")
 
+        object CheckIn : Root(route = "check_in")
+
         object MovingAverage : Root(route = "moving_average")
 
         object Paywall : Root(route = "paywall", routeWithArgs = "paywall?$PRO_FEATURE={$PRO_FEATURE}") {

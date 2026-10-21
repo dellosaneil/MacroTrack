@@ -17,9 +17,11 @@ class CalculateMacrosGoalUseCase(
         gender: UserSex,
         activityLevel: ActivityLevel,
         goal: Goal,
-        goalPace: Double
+        goalPace: Double,
+        /** A burn measured by a weekly check-in replaces the formula's estimate. */
+        measuredMaintenance: Int? = null
     ): MacroGoals {
-        val bmr = calculateTDEEUseCase(
+        val bmr = measuredMaintenance ?: calculateTDEEUseCase(
             height = height,
             weight = weight,
             age = age,

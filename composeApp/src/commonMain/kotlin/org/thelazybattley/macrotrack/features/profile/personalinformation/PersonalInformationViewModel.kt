@@ -108,7 +108,9 @@ class PersonalInformationViewModel(
                     // Keep the saved height when only feet-and-inches rounding moved it.
                     height = if (currentState.isHeightChanged) height else userDetails.height,
                     sex = currentState.sex ?: userDetails.sex,
-                    activityLevel = currentState.activityLevel ?: userDetails.activityLevel
+                    activityLevel = currentState.activityLevel ?: userDetails.activityLevel,
+                    // New details mean a new estimate; the next weekly check-in measures the burn again.
+                    measuredMaintenance = null
                 )
             )
             _state.update { it.copy(isSaved = true) }
