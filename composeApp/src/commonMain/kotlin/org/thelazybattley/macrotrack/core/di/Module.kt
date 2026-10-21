@@ -102,6 +102,11 @@ import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetFoodLogByDateUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.InsertFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.CopyFoodLogsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.UndoFoodLogCopyUseCase
+import org.thelazybattley.macrotrack.features.foodlog.FoodLogCopyEvents
+import org.thelazybattley.macrotrack.features.copy.CopyToViewModel
+import org.thelazybattley.macrotrack.features.copy.CopyFromViewModel
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
@@ -156,6 +161,7 @@ val repositoryModule = module {
     singleOf(::UserDetailsRepositoryImpl) { bind<UserDetailsRepository>() }
     singleOf(::FoodLogRepositoryImpl) { bind<FoodLogRepository>() }
     singleOf(::LogDateRequest)
+    singleOf(::FoodLogCopyEvents)
     singleOf(::ScannedFoodRequest)
     singleOf(::WeightRepositoryImpl) { bind<WeightRepository>() }
     singleOf(::MeasurementRepositoryImpl) { bind<MeasurementRepository>() }
@@ -184,6 +190,8 @@ val useCaseModule = module {
     factoryOf(::GetAllFoodLogUseCase)
     factoryOf(::UpdateFoodLogUseCase)
     factoryOf(::InsertFoodLogUseCase)
+    factoryOf(::CopyFoodLogsUseCase)
+    factoryOf(::UndoFoodLogCopyUseCase)
     factoryOf(::CalculateCaloriesFromMacrosUseCase)
     factoryOf(::CalculateAdjustMacrosUseCase)
     factoryOf(::CalculateMacroPercentageUseCase)
@@ -252,6 +260,8 @@ val viewModelModule = module {
     viewModelOf(::ScanBarcodeViewModel)
     viewModelOf(::FoodLibraryViewModel)
     viewModelOf(::QuickAddViewModel)
+    viewModelOf(::CopyToViewModel)
+    viewModelOf(::CopyFromViewModel)
     viewModelOf(::CheckInViewModel)
     viewModelOf(::BackupViewModel)
     viewModelOf(::DeleteDataViewModel)

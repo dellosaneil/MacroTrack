@@ -33,6 +33,15 @@ fun getCurrentDate() = run {
 
 fun Double.to2Decimal() = round(x = this * 100) / 100
 
+/** "Tue" */
+fun LocalDate.toShortDayName(): String = dayOfWeek.name.take(n = 3).lowercase().replaceFirstChar { it.uppercase() }
+
+/** "Tue, Oct 6" */
+fun LocalDate.toShortDayMonthDay(): String = toShortDayName() + ", " + toAbbreviatedMonthDay()
+
+/** "Wednesday, Oct 7" */
+fun LocalDate.toDayMonthDay(): String = dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() } + ", " + toAbbreviatedMonthDay()
+
 fun LocalDate.toAbbreviatedMonthDay() : String {
     return month.name.lowercase().replaceFirstChar { it.uppercase() }.take(3) + " " + day
 }

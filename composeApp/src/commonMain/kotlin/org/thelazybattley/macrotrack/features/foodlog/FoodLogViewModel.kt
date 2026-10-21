@@ -23,7 +23,9 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.SaveDailyGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.CopyFoodLogsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.DeleteFoodLogUseCase
+import org.thelazybattley.macrotrack.domain.usecase.foodlog.UndoFoodLogCopyUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
@@ -56,7 +58,10 @@ class FoodLogViewModel(
     private val recordReviewAskedUseCase: RecordReviewAskedUseCase,
     getUnitSystemUseCase: GetUnitSystemUseCase,
     getReviewHistoryUseCase: GetReviewHistoryUseCase,
-    getWeeklyCheckInUseCase: GetWeeklyCheckInUseCase
+    getWeeklyCheckInUseCase: GetWeeklyCheckInUseCase,
+    private val copyFoodLogsUseCase: CopyFoodLogsUseCase,
+    private val undoFoodLogCopyUseCase: UndoFoodLogCopyUseCase,
+    private val copyEvents: FoodLogCopyEvents
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -109,7 +114,31 @@ class FoodLogViewModel(
                 _state.update { it.copy(checkIn = (snapshot?.checkIn as? WeeklyCheckIn.Result)?.takeIf { isDue }) }
             }
         }
+        viewModelScope.launch {
+            copyEvents.latest.collect { copy -> _state.update { it.copy(copyToast = copy) } }
+        }
         updateMacroGoals()
+    }
+
+    override fun onCopyMealToToday(mealType: MealType) {
+        val currentState = _state.value
+        val logs = currentState.allFoodLog.filter { it.date == currentState.selectedDate && it.mealType == mealType }
+        if (logs.isEmpty()) return
+        viewModelScope.launch {
+            copyEvents.post(
+                copy = copyFoodLogsUseCase(logs = logs, targetDates = listOf(getCurrentDate()), mealType = mealType, replace = false)
+            )
+        }
+    }
+
+    override fun onUndoCopy() {
+        val copy = _state.value.copyToast ?: return
+        copyEvents.clear()
+        viewModelScope.launch { undoFoodLogCopyUseCase(copy = copy) }
+    }
+
+    override fun onDismissCopyToast() {
+        copyEvents.clear()
     }
 
     private fun filterFoodLogsByDate(foodLog: List<FoodLog>) {

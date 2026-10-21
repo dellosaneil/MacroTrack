@@ -7,6 +7,7 @@ import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.FoodLogCopy
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
@@ -45,7 +46,9 @@ data class FoodLogViewState(
     /** True when the streak has earned asking for a store rating and the user hasn't been asked lately. */
     val isReviewDue: Boolean = false,
     /** This week's check-in result, while it's due and has enough data to suggest a target. */
-    val checkIn: WeeklyCheckIn.Result? = null
+    val checkIn: WeeklyCheckIn.Result? = null,
+    /** The copy just made, shown with Undo until it's dismissed. */
+    val copyToast: FoodLogCopy? = null
 )
 
 data class FoodLogFoodListByMealType(

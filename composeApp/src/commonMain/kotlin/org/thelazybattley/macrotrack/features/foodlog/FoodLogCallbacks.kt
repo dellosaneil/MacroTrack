@@ -26,6 +26,11 @@ interface FoodLogCallbacks {
     /** The store rating dialog was requested, so it isn't asked for again until it's due. */
     fun onReviewAsked()
 
+    /** Copies [mealType] from the selected past day into today's same meal, keeping what's there. */
+    fun onCopyMealToToday(mealType: MealType)
+    fun onUndoCopy()
+    fun onDismissCopyToast()
+
     companion object {
         fun default() = object : FoodLogCallbacks {
             override fun onNavigate(mealType: MealType) {
@@ -57,6 +62,9 @@ interface FoodLogCallbacks {
             override fun onSaveEntry() = Unit
             override fun onDeleteEntry() = Unit
             override fun onReviewAsked() = Unit
+            override fun onCopyMealToToday(mealType: MealType) = Unit
+            override fun onUndoCopy() = Unit
+            override fun onDismissCopyToast() = Unit
         }
     }
 }

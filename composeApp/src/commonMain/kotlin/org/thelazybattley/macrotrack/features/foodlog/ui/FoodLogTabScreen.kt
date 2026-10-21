@@ -24,6 +24,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +46,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_chevron_right
+import macrotrack.composeapp.generated.resources.copy_day
+import macrotrack.composeapp.generated.resources.copy_from_another_day
+import macrotrack.composeapp.generated.resources.copy_meal_more
+import macrotrack.composeapp.generated.resources.ic_copy
+import macrotrack.composeapp.generated.resources.ic_more_vertical
 import macrotrack.composeapp.generated.resources.edit_entry_value
 import macrotrack.composeapp.generated.resources.tap_entry_hint
 import macrotrack.composeapp.generated.resources.add
@@ -142,7 +150,13 @@ fun FoodLogTabScreen(
         viewState = viewState,
         callbacks = viewModel,
         onOpenCalendar = { onNavigate(AppDestinations.Root.Calendar.route) },
-        onOpenCheckIn = { onNavigate(AppDestinations.Root.CheckIn.route) }
+        onOpenCheckIn = { onNavigate(AppDestinations.Root.CheckIn.route) },
+        onCopyTo = { mealType ->
+            onNavigate(AppDestinations.Root.CopyTo.createRoute(sourceDate = viewState.selectedDate, mealType = mealType?.name))
+        },
+        onCopyFrom = { mealType ->
+            onNavigate(AppDestinations.Root.CopyFrom.createRoute(mealType = mealType.name, logDate = viewState.selectedDate))
+        }
     )
 }
 
@@ -154,79 +168,126 @@ private fun FoodLogTabScreen(
     viewState: FoodLogViewState,
     callbacks: FoodLogCallbacks,
     onOpenCalendar: () -> Unit,
-    onOpenCheckIn: () -> Unit
+    onOpenCheckIn: () -> Unit,
+    /** Opens copying a meal to other days, or the whole day when null. */
+    onCopyTo: (MealType?) -> Unit,
+    onCopyFrom: (MealType) -> Unit
 ) {
-    val isToday = viewState.selectedDate == getCurrentDate()
+    val today = getCurrentDate()
+    val isToday = viewState.selectedDate == today
     val meals = listOf(viewState.breakfast, viewState.lunch, viewState.dinner, viewState.snack)
+    val itemCount = meals.sumOf { it.foodList.size }
+    var copyMenuMeal by rememberSaveable { mutableStateOf<MealType?>(value = null) }
 
-    Column(
-        modifier = modifier
-            .background(color = colors.background)
-            .verticalScroll(state = rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(space = 14.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            FoodLogHeader(
-                modifier = Modifier
-                    .weight(weight = 1f)
-                    .tourTarget(target = TourTarget.TODAY_HEADER),
-                viewState = viewState,
-                isToday = isToday
-            )
-            StreakCalendarButton(
-                modifier = Modifier.tourTarget(target = TourTarget.TODAY_STREAK),
-                streak = viewState.currentStreak,
-                onClick = onOpenCalendar
-            )
-        }
-        FoodLogDateChips(
-            modifier = Modifier.fillMaxWidth(),
-            dates = viewState.availableDates,
-            dateSelected = viewState.selectedDate,
-        ) { date ->
-            callbacks.onDateFilterSelected(date = date)
-        }
-        FoodLogTotalMacros(
+    Box(modifier = modifier) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .tourTarget(target = TourTarget.TODAY_REMAINING),
-            viewState = viewState
-        )
-        viewState.checkIn?.takeIf { isToday && LocalProAccess.current.isActive }?.let { checkIn ->
-            CheckInCard(modifier = Modifier.fillMaxWidth(), checkIn = checkIn, onClick = onOpenCheckIn)
-        }
-        ProTrialBanner(modifier = Modifier.fillMaxWidth())
-        MealsHeader(
-            modifier = Modifier.fillMaxWidth(),
-            itemCount = meals.sumOf { it.foodList.size },
-            calories = viewState.totalFoodMacros?.calories ?: 0
-        )
-        if (meals.any { it.foodList.isNotEmpty() }) {
-            Text(
-                text = stringResource(resource = Res.string.tap_entry_hint),
-                style = typography.regular11,
-                color = colors.muted
-            )
-        }
-        meals.forEachIndexed { index, meal ->
-            LoggedFoodMealType(
+                .fillMaxSize()
+                .background(color = colors.background)
+                .verticalScroll(state = rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(space = 14.dp)
+        ) {
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                addButtonModifier = if (index == 0) Modifier.tourTarget(target = TourTarget.TODAY_ADD_MEAL) else Modifier,
-                foodList = meal,
-                foodUnit = viewState.foodUnit,
-                recipeCalories = viewState.recipeCalories,
-                onDeleteFoodLog = { id ->
-                    callbacks.onDeleteFoodLog(id = id)
-                },
-                onOpenEntry = callbacks::onOpenEntry,
-                onNavigate = {
-                    callbacks.onNavigate(mealType = meal.mealType)
-                }
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FoodLogHeader(
+                    modifier = Modifier
+                        .weight(weight = 1f)
+                        .tourTarget(target = TourTarget.TODAY_HEADER),
+                    viewState = viewState,
+                    isToday = isToday
+                )
+                StreakCalendarButton(
+                    modifier = Modifier.tourTarget(target = TourTarget.TODAY_STREAK),
+                    streak = viewState.currentStreak,
+                    onClick = onOpenCalendar
+                )
+            }
+            FoodLogDateChips(
+                modifier = Modifier.fillMaxWidth(),
+                dates = viewState.availableDates,
+                dateSelected = viewState.selectedDate,
+            ) { date ->
+                callbacks.onDateFilterSelected(date = date)
+            }
+            FoodLogTotalMacros(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tourTarget(target = TourTarget.TODAY_REMAINING),
+                viewState = viewState
+            )
+            viewState.checkIn?.takeIf { isToday && LocalProAccess.current.isActive }?.let { checkIn ->
+                CheckInCard(modifier = Modifier.fillMaxWidth(), checkIn = checkIn, onClick = onOpenCheckIn)
+            }
+            ProTrialBanner(modifier = Modifier.fillMaxWidth())
+            MealsHeader(
+                modifier = Modifier.fillMaxWidth(),
+                itemCount = itemCount,
+                calories = viewState.totalFoodMacros?.calories ?: 0,
+                onCopyDay = { onCopyTo(null) }
+            )
+            if (meals.any { it.foodList.isNotEmpty() }) {
+                Text(
+                    text = stringResource(resource = Res.string.tap_entry_hint),
+                    style = typography.regular11,
+                    color = colors.muted
+                )
+            }
+            meals.forEachIndexed { index, meal ->
+                LoggedFoodMealType(
+                    modifier = Modifier.fillMaxWidth(),
+                    addButtonModifier = if (index == 0) Modifier.tourTarget(target = TourTarget.TODAY_ADD_MEAL) else Modifier,
+                    foodList = meal,
+                    foodUnit = viewState.foodUnit,
+                    recipeCalories = viewState.recipeCalories,
+                    onDeleteFoodLog = { id ->
+                        callbacks.onDeleteFoodLog(id = id)
+                    },
+                    onOpenEntry = callbacks::onOpenEntry,
+                    onNavigate = {
+                        callbacks.onNavigate(mealType = meal.mealType)
+                    },
+                    onMore = { copyMenuMeal = meal.mealType },
+                    onCopyFrom = if (isToday) ({ onCopyFrom(meal.mealType) }) else null
+                )
+            }
+            // Keeps the last meal clear of the copied toast.
+            if (viewState.copyToast != null) Box(modifier = Modifier.height(height = 64.dp))
+        }
+        viewState.copyToast?.let { copy ->
+            CopiedToast(
+                modifier = Modifier
+                    .align(alignment = Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                copy = copy,
+                today = today,
+                onUndo = callbacks::onUndoCopy,
+                onTimeout = callbacks::onDismissCopyToast
             )
         }
+    }
+    meals.find { it.mealType == copyMenuMeal && it.foodList.isNotEmpty() }?.let { meal ->
+        CopyMealSheet(
+            meal = meal,
+            date = viewState.selectedDate,
+            isToday = isToday,
+            dayItemCount = itemCount,
+            onCopyToToday = {
+                copyMenuMeal = null
+                callbacks.onCopyMealToToday(mealType = meal.mealType)
+            },
+            onCopyToOtherDays = {
+                copyMenuMeal = null
+                onCopyTo(meal.mealType)
+            },
+            onCopyWholeDay = {
+                copyMenuMeal = null
+                onCopyTo(null)
+            },
+            onDismiss = { copyMenuMeal = null }
+        )
     }
     viewState.entryEdit?.let { edit ->
         EntryEditSheet(
@@ -364,11 +425,13 @@ private fun DayGoalLabel(
 private fun MealsHeader(
     modifier: Modifier = Modifier,
     itemCount: Int,
-    calories: Int
+    calories: Int,
+    onCopyDay: () -> Unit
 ) {
     Row(
         modifier = modifier,
-        verticalAlignment = Alignment.Bottom
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
     ) {
         Text(
             text = stringResource(resource = Res.string.meals),
@@ -385,6 +448,28 @@ private fun MealsHeader(
             style = typography.regular11,
             color = colors.muted
         )
+        if (itemCount > 0) {
+            val shape = RoundedCornerShape(size = 10.dp)
+            Row(
+                modifier = Modifier
+                    .height(height = 30.dp)
+                    .clip(shape = shape)
+                    .background(color = colors.surface)
+                    .border(width = 1.dp, color = colors.line, shape = shape)
+                    .clickable(role = Role.Button, onClick = onCopyDay)
+                    .padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_copy),
+                    contentDescription = null,
+                    tint = colors.ink,
+                    modifier = Modifier.size(size = 13.dp)
+                )
+                Text(text = stringResource(resource = Res.string.copy_day), style = typography.bold12, color = colors.ink)
+            }
+        }
     }
 }
 
@@ -397,7 +482,10 @@ private fun LoggedFoodMealType(
     recipeCalories: Map<String, Int>,
     onDeleteFoodLog: (Long) -> Unit,
     onOpenEntry: (FoodLog) -> Unit,
-    onNavigate: () -> Unit
+    onNavigate: () -> Unit,
+    onMore: () -> Unit,
+    /** Offered on an empty meal on today; null hides it. */
+    onCopyFrom: (() -> Unit)?
 ) {
     val shape = RoundedCornerShape(size = 20.dp)
     val isEmpty = foodList.foodList.isEmpty()
@@ -428,7 +516,9 @@ private fun LoggedFoodMealType(
             modifier = Modifier.fillMaxWidth().padding(all = 14.dp),
             addButtonModifier = addButtonModifier,
             foodList = foodList,
-            onNavigate = onNavigate
+            onNavigate = onNavigate,
+            onMore = onMore,
+            onCopyFrom = onCopyFrom
         )
         if (isEmpty) return@Column
         HorizontalDivider(thickness = 1.dp, color = colors.divider)
@@ -468,7 +558,9 @@ private fun MealTypeHeader(
     modifier: Modifier = Modifier,
     addButtonModifier: Modifier = Modifier,
     foodList: FoodLogFoodListByMealType,
-    onNavigate: () -> Unit
+    onNavigate: () -> Unit,
+    onMore: () -> Unit,
+    onCopyFrom: (() -> Unit)?
 ) {
     val isEmpty = foodList.foodList.isEmpty()
     val style = foodList.mealType.toMealStyle()
@@ -512,6 +604,29 @@ private fun MealTypeHeader(
                 style = typography.regular11,
                 color = colors.muted
             )
+            if (isEmpty && onCopyFrom != null) {
+                Row(
+                    modifier = Modifier
+                        .padding(top = 2.dp)
+                        .clip(shape = RoundedCornerShape(size = 8.dp))
+                        .clickable(role = Role.Button, onClick = onCopyFrom)
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(space = 5.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_copy),
+                        contentDescription = null,
+                        tint = colors.accentInk,
+                        modifier = Modifier.size(size = 14.dp)
+                    )
+                    Text(
+                        text = stringResource(resource = Res.string.copy_from_another_day),
+                        style = typography.bold12,
+                        color = colors.accentInk
+                    )
+                }
+            }
         }
         if (!isEmpty) {
             Row(horizontalArrangement = Arrangement.spacedBy(space = 3.dp)) {
@@ -526,6 +641,20 @@ private fun MealTypeHeader(
                     style = typography.regular11,
                     color = colors.muted,
                     modifier = Modifier.alignByBaseline()
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(width = 32.dp, height = 44.dp)
+                    .clip(shape = RoundedCornerShape(size = 12.dp))
+                    .clickable(role = Role.Button, onClick = onMore),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_more_vertical),
+                    contentDescription = stringResource(resource = Res.string.copy_meal_more, mealName.lowercase()),
+                    tint = colors.muted,
+                    modifier = Modifier.size(size = 18.dp)
                 )
             }
         }
@@ -713,7 +842,9 @@ private fun PreviewFoodLogTabScreen() {
             ),
             callbacks = FoodLogCallbacks.default(),
             onOpenCalendar = {},
-            onOpenCheckIn = {}
+            onOpenCheckIn = {},
+            onCopyTo = {},
+            onCopyFrom = {}
         )
     }
 }

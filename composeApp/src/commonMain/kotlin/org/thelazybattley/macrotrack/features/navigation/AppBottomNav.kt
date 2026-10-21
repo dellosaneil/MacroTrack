@@ -45,6 +45,9 @@ import org.thelazybattley.macrotrack.features.calendar.ui.CalendarScreen
 import org.thelazybattley.macrotrack.features.createfood.ui.CreateFoodScreen
 import org.thelazybattley.macrotrack.features.foodlibrary.ui.FoodLibraryScreen
 import org.thelazybattley.macrotrack.features.quickadd.ui.QuickAddScreen
+import org.thelazybattley.macrotrack.features.copy.ui.CopyFromScreen
+import org.thelazybattley.macrotrack.features.copy.ui.CopyToScreen
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.SOURCE_DATE
 import org.thelazybattley.macrotrack.features.scanbarcode.ui.ScanBarcodeScreen
 import org.thelazybattley.macrotrack.features.createrecipe.ui.CreateRecipeScreen
 import org.thelazybattley.macrotrack.features.logweight.ui.LogWeightScreen
@@ -329,6 +332,46 @@ fun AppBottomNav() {
                                         inclusive = true
                                     }
                                 }
+                            }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.CopyTo.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = SOURCE_DATE) {
+                                type = NavType.StringType
+                            },
+                            navArgument(name = MEAL_TYPE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        CopyToScreen(
+                            onClose = { navController.popBackStack() },
+                            onCopied = {
+                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                            }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.CopyFrom.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = MEAL_TYPE) {
+                                type = NavType.StringType
+                            },
+                            navArgument(name = LOG_DATE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        CopyFromScreen(
+                            onClose = { navController.popBackStack() },
+                            onCopied = {
+                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
                             }
                         )
                     }

@@ -87,6 +87,18 @@ sealed class AppDestinations {
                 "$route/$mealType" + queryString(QUERY to query?.takeIf { it.isNotBlank() }, LOG_DATE to logDate?.toString())
         }
 
+        /** Copy a meal ([MEAL_TYPE]) or, without one, the whole day from [SOURCE_DATE] to other days. */
+        object CopyTo : Root(route = "copy_to", routeWithArgs = "copy_to/{$SOURCE_DATE}?$MEAL_TYPE={$MEAL_TYPE}") {
+            fun createRoute(sourceDate: LocalDate, mealType: String?): String =
+                "$route/$sourceDate" + queryString(MEAL_TYPE to mealType)
+        }
+
+        /** Fill an empty [MEAL_TYPE] on [LOG_DATE] from a meal on one of the days before. */
+        object CopyFrom : Root(route = "copy_from", routeWithArgs = "copy_from/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
+            fun createRoute(mealType: String, logDate: LocalDate? = null): String =
+                "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())
+        }
+
         object Backup : Root(route = "backup_export")
 
         object DeleteData : Root(route = "delete_data")
@@ -154,6 +166,7 @@ sealed class AppDestinations {
         const val PRO_FEATURE = "proFeature"
         /** The day Add meal, Quick add, Scan barcode and the food library log to; today when a route leaves it out. */
         const val LOG_DATE = "logDate"
+        const val SOURCE_DATE = "sourceDate"
     }
 }
 
