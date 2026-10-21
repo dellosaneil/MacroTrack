@@ -6,7 +6,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
+import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.Goal
+import org.thelazybattley.macrotrack.domain.model.MacroBasis
 import org.thelazybattley.macrotrack.domain.model.GoalPace
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.UserSex
@@ -27,7 +29,14 @@ data class UserDetailsEntity(
     val targetStartWeight: Double? = null,
     val targetSetDate: LocalDate? = null,
     /** Added by AppDatabase.MIGRATION_13_14; older backups have none and use the formula. */
-    val measuredMaintenance: Int? = null
+    val measuredMaintenance: Int? = null,
+    /** Added by AppDatabase.MIGRATION_14_15, like the body fat and custom targets after it. */
+    @ColumnInfo(defaultValue = "TARGET_WEIGHT") val macroBasis: MacroBasis = MacroBasis.TARGET_WEIGHT,
+    val bodyFat: Double? = null,
+    val customCalories: Int? = null,
+    val customProtein: Int? = null,
+    val customCarbs: Int? = null,
+    val customFat: Int? = null
 )
 
 fun UserDetailsEntity.toDomain() = UserDetails(
@@ -41,5 +50,12 @@ fun UserDetailsEntity.toDomain() = UserDetails(
     targetWeight = targetWeight,
     targetStartWeight = targetStartWeight,
     targetSetDate = targetSetDate,
-    measuredMaintenance = measuredMaintenance
+    measuredMaintenance = measuredMaintenance,
+    macroBasis = macroBasis,
+    bodyFat = bodyFat,
+    customMacroGoals = if (customCalories != null && customProtein != null && customCarbs != null && customFat != null) {
+        MacroGoals(calories = customCalories, protein = customProtein, carbs = customCarbs, fat = customFat)
+    } else {
+        null
+    }
 )

@@ -41,16 +41,7 @@ class CalendarViewModel(
             ) { logs, dailyGoals, user ->
                 val today = getCurrentDate()
                 val currentMacroGoals = user?.let {
-                    calculateMacrosGoalUseCase(
-                        height = it.height,
-                        weight = it.weight,
-                        age = it.age,
-                        gender = it.sex,
-                        activityLevel = it.activityLevel,
-                        goal = it.goal,
-                        goalPace = it.goalPace,
-                        measuredMaintenance = it.measuredMaintenance
-                    )
+                    calculateMacrosGoalUseCase(userDetails = it)
                 }
                 val days = logs.groupBy { it.date }.mapValues { (date, dayLogs) ->
                     DaySummary(

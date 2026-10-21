@@ -173,16 +173,7 @@ class FoodLogViewModel(
             ) { user, dailyGoals ->
                 val today = getCurrentDate()
                 val currentMacroGoals = user?.let {
-                    calculateMacrosGoalUseCase(
-                        height = it.height,
-                        weight = it.weight,
-                        age = it.age,
-                        gender = it.sex,
-                        activityLevel = it.activityLevel,
-                        goal = it.goal,
-                        goalPace = it.goalPace,
-                        measuredMaintenance = it.measuredMaintenance
-                    )
+                    calculateMacrosGoalUseCase(userDetails = it)
                 }
                 if (user != null && currentMacroGoals != null) {
                     // Record today's goal so past days keep the goal they were tracked with.

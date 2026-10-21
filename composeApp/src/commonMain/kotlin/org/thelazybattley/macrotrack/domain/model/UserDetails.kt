@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.domain.model
 
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
+import org.thelazybattley.macrotrack.domain.MacroGoals
 
 data class UserDetails(
     val weight: Double,
@@ -16,7 +17,13 @@ data class UserDetails(
     val targetStartWeight: Double? = null,
     val targetSetDate: LocalDate? = null,
     /** The daily burn measured by a weekly check-in, used in place of the formula's estimate once applied. */
-    val measuredMaintenance: Int? = null
+    val measuredMaintenance: Int? = null,
+    /** What protein and fat are planned from in calculated targets. */
+    val macroBasis: MacroBasis = MacroBasis.TARGET_WEIGHT,
+    /** Body fat in percent, for [MacroBasis.LEAN_MASS]. */
+    val bodyFat: Double? = null,
+    /** Targets the user typed in; while set they replace the calculated ones. */
+    val customMacroGoals: MacroGoals? = null
 )
 
 fun UserDetails.toEntity() = UserDetailsEntity(
@@ -30,5 +37,11 @@ fun UserDetails.toEntity() = UserDetailsEntity(
     targetWeight = targetWeight,
     targetStartWeight = targetStartWeight,
     targetSetDate = targetSetDate,
-    measuredMaintenance = measuredMaintenance
+    measuredMaintenance = measuredMaintenance,
+    macroBasis = macroBasis,
+    bodyFat = bodyFat,
+    customCalories = customMacroGoals?.calories,
+    customProtein = customMacroGoals?.protein,
+    customCarbs = customMacroGoals?.carbs,
+    customFat = customMacroGoals?.fat
 )

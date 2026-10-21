@@ -146,17 +146,7 @@ class PastGoalViewModel(
         )
     }
 
-    private fun macrosFor(goal: Goal, weight: Double) = user!!.let {
-        calculateMacrosGoalUseCase(
-            height = it.height,
-            weight = weight,
-            age = it.age,
-            gender = it.sex,
-            activityLevel = it.activityLevel,
-            goal = goal,
-            // Past days use today's pace; only the goal and the weight at the time change.
-            goalPace = it.goalPace,
-            measuredMaintenance = it.measuredMaintenance
-        )
-    }
+    // Past days use today's pace; only the goal and the weight at the time change.
+    private fun macrosFor(goal: Goal, weight: Double) =
+        calculateMacrosGoalUseCase.calculated(userDetails = user!!, goal = goal, weight = weight)
 }

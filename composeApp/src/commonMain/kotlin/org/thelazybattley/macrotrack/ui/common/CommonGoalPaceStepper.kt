@@ -25,6 +25,7 @@ import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.goal_pace_gain_faster
 import macrotrack.composeapp.generated.resources.goal_pace_gain_slower
 import macrotrack.composeapp.generated.resources.goal_pace_kcal
+import macrotrack.composeapp.generated.resources.goal_pace_kcal_below_resting
 import macrotrack.composeapp.generated.resources.goal_pace_kcal_fat
 import macrotrack.composeapp.generated.resources.goal_pace_kcal_hard
 import macrotrack.composeapp.generated.resources.goal_pace_kcal_recommended
@@ -49,13 +50,15 @@ import kotlin.math.abs
 /**
  * How much to lose or gain a month, with − and + buttons, and the daily calories it means. Shows nothing for
  * [Goal.MAINTAIN_WEIGHT]. A pace past [GoalPace.MAX_COMFORTABLE_DEFICIT] or [GoalPace.MAX_COMFORTABLE_SURPLUS]
- * gets a warning in place of the "recommended" note.
+ * gets a warning in place of the "recommended" note, and a target under the resting burn
+ * ([isBelowRestingBurn]) a red one.
  */
 @Composable
 fun CommonGoalPaceStepper(
     modifier: Modifier = Modifier,
     goal: Goal,
     kgPerMonth: Double,
+    isBelowRestingBurn: Boolean = false,
     onChanged: (Double) -> Unit
 ) {
     if (goal == Goal.MAINTAIN_WEIGHT) return
@@ -100,6 +103,7 @@ fun CommonGoalPaceStepper(
             Text(
                 text = stringResource(
                     resource = when {
+                        isBelowRestingBurn && isLoss -> Res.string.goal_pace_kcal_below_resting
                         GoalPace.isRecommended(kgPerMonth = kgPerMonth) -> Res.string.goal_pace_kcal_recommended
                         isFast && isLoss -> Res.string.goal_pace_kcal_hard
                         isFast -> Res.string.goal_pace_kcal_fat
@@ -108,7 +112,11 @@ fun CommonGoalPaceStepper(
                     signedCalories
                 ),
                 style = typography.bold12,
-                color = if (isFast) colors.warmInk else colors.accentInk
+                color = when {
+                    isBelowRestingBurn && isLoss -> colors.danger
+                    isFast -> colors.warmInk
+                    else -> colors.accentInk
+                }
             )
         }
         StepButton(

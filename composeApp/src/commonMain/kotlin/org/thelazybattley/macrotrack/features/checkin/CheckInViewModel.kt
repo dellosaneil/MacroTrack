@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
 import org.thelazybattley.macrotrack.domain.model.calorieAdjust
+import org.thelazybattley.macrotrack.domain.model.carbsFor
 import org.thelazybattley.macrotrack.domain.model.isCheckInDue
 import org.thelazybattley.macrotrack.domain.model.nextCheckIn
 import org.thelazybattley.macrotrack.domain.usecase.checkin.CheckInSnapshot
@@ -77,9 +78,21 @@ class CheckInViewModel(
         val userDetails = snapshot.userDetails
         // Saved so the target comes out at exactly the suggestion: burn plus the goal's pace.
         val maintenance = result.suggestedTarget - userDetails.goal.calorieAdjust(paceKgPerMonth = userDetails.goalPace)
+        // Custom targets change calories only: protein and fat stay as typed, and carbs take what's left.
+        val customMacroGoals = userDetails.customMacroGoals?.let {
+            it.copy(
+                calories = result.suggestedTarget,
+                carbs = carbsFor(calories = result.suggestedTarget, protein = it.protein, fat = it.fat)
+            )
+        }
         _state.update { it.copy(isApplied = true) }
         viewModelScope.launch {
-            completeCheckInUseCase(date = snapshot.today, userDetails = userDetails, measuredMaintenance = maintenance)
+            completeCheckInUseCase(
+                date = snapshot.today,
+                userDetails = userDetails,
+                measuredMaintenance = maintenance,
+                customMacroGoals = customMacroGoals
+            )
         }
     }
 
@@ -90,7 +103,10 @@ class CheckInViewModel(
         viewModelScope.launch {
             val userDetails = getUserDetailsUseCase().first() ?: return@launch
             insertUserDetailsUseCase(
-                userDetails = userDetails.copy(measuredMaintenance = snapshot.userDetails.measuredMaintenance)
+                userDetails = userDetails.copy(
+                    measuredMaintenance = snapshot.userDetails.measuredMaintenance,
+                    customMacroGoals = snapshot.userDetails.customMacroGoals
+                )
             )
         }
     }

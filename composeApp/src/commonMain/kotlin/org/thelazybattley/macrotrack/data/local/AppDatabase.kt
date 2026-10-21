@@ -32,7 +32,7 @@ import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
     entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class],
-    version = 14, exportSchema = true,
+    version = 15, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -148,6 +148,17 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_13_14 = object : Migration(13, 14) {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("ALTER TABLE `UserDetailsEntity` ADD COLUMN `measuredMaintenance` INTEGER")
+            }
+        }
+
+        /** Adds what protein and fat are based on, body fat and custom targets; everyone keeps calculated targets. */
+        val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE `UserDetailsEntity` ADD COLUMN `macroBasis` TEXT NOT NULL DEFAULT 'TARGET_WEIGHT'")
+                connection.execSQL("ALTER TABLE `UserDetailsEntity` ADD COLUMN `bodyFat` REAL")
+                listOf("customCalories", "customProtein", "customCarbs", "customFat").forEach { column ->
+                    connection.execSQL("ALTER TABLE `UserDetailsEntity` ADD COLUMN `$column` INTEGER")
+                }
             }
         }
     }

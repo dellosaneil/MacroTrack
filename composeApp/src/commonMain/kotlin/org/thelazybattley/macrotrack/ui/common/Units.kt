@@ -44,6 +44,13 @@ fun Double.formatWeight(): String = LocalUnitSystem.current.weightFromKg(kg = th
 fun Double.formatWeightWithUnit(): String =
     stringResource(resource = Res.string.value_unit, formatWeight(), weightUnitLabel())
 
+/** A weight in kg in the user's unit to one decimal, with the unit: "69.6 kg" or "153.4 lb". */
+@Composable
+fun Double.formatWeightOneDecimalWithUnit(): String {
+    val tenths = round(abs(LocalUnitSystem.current.weightFromKg(kg = this)) * 10).toInt()
+    return stringResource(resource = Res.string.value_unit, "${tenths / 10}.${tenths % 10}", weightUnitLabel())
+}
+
 /** A weight change in kg with its sign, like "+0.40" or "−1.20", and "0.00" when it barely moved. */
 @Composable
 @ReadOnlyComposable

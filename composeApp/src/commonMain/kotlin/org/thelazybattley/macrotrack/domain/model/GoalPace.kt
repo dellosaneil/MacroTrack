@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.domain.model
 
+import kotlin.math.floor
 import kotlin.math.round
 import kotlin.math.roundToInt
 
@@ -40,6 +41,14 @@ object GoalPace {
         val range = rangeFor(unitSystem = unitSystem)
         val shown = shown(kgPerMonth = kgPerMonth, unitSystem = unitSystem)
         return if (faster) shown < range.max - EPSILON else shown > range.min + EPSILON
+    }
+
+    /** The fastest step in [unitSystem] no faster than [kgPerMonth], in kg per month; null if that's under the slowest. */
+    fun stepAtOrBelow(kgPerMonth: Double, unitSystem: UnitSystem): Double? {
+        val range = rangeFor(unitSystem = unitSystem)
+        val shown = floor(unitSystem.weightFromKg(kg = kgPerMonth) / range.step + EPSILON) * range.step
+        if (shown < range.min - EPSILON) return null
+        return unitSystem.weightToKg(value = round(shown.coerceAtMost(range.max) * 10) / 10)
     }
 
     private fun rangeFor(unitSystem: UnitSystem) = if (unitSystem == UnitSystem.IMPERIAL) imperialRange else metricRange

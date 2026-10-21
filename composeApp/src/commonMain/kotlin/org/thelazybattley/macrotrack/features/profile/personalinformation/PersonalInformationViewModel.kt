@@ -121,14 +121,18 @@ class PersonalInformationViewModel(
         val userDetails = userDetails ?: return this
         val age = parsedAge ?: return this
         val height = parsedHeight ?: return this
-        val calories = calculateMacrosGoalUseCase(
+        // Custom targets stay as typed whatever the details say.
+        val calories = userDetails.customMacroGoals?.calories ?: calculateMacrosGoalUseCase(
             height = height,
             weight = currentWeight ?: userDetails.weight,
             age = age,
             gender = sex ?: userDetails.sex,
             activityLevel = activityLevel ?: userDetails.activityLevel,
             goal = userDetails.goal,
-            goalPace = userDetails.goalPace
+            goalPace = userDetails.goalPace,
+            targetWeight = userDetails.targetWeight,
+            macroBasis = userDetails.macroBasis,
+            bodyFat = userDetails.bodyFat
         ).calories
         return copy(dailyCalories = calories)
     }

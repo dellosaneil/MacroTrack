@@ -32,6 +32,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,6 +68,11 @@ import macrotrack.composeapp.generated.resources.nutrition_goals
 import macrotrack.composeapp.generated.resources.percent_value
 import macrotrack.composeapp.generated.resources.personal_info_summary
 import macrotrack.composeapp.generated.resources.save_goal
+import macrotrack.composeapp.generated.resources.save_custom_targets
+import macrotrack.composeapp.generated.resources.resting_burn_bmr
+import macrotrack.composeapp.generated.resources.macro_rule_carbs
+import macrotrack.composeapp.generated.resources.macro_rule_carbs_none
+import org.thelazybattley.macrotrack.domain.model.MacroTargets
 import macrotrack.composeapp.generated.resources.signed_kcal
 import macrotrack.composeapp.generated.resources.surplus_to_gain_weight
 import macrotrack.composeapp.generated.resources.weight_change_estimate_note
@@ -147,7 +155,7 @@ private fun NutritionGoalsScreen(
                     .fillMaxWidth()
                     .navigationBarsPadding()
                     .padding(horizontal = 20.dp, vertical = 16.dp),
-                text = Res.string.save_goal,
+                text = if (viewState.isCustom) Res.string.save_custom_targets else Res.string.save_goal,
                 enabled = viewState.canSave,
                 onClick = callbacks::onSave
             )
@@ -160,21 +168,81 @@ private fun NutritionGoalsScreen(
                 .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(space = 18.dp)
         ) {
-            val goalPace = viewState.goalPace ?: GoalPace.DEFAULT_KG_PER_MONTH
-            GoalSection(
-                selected = viewState.selectedGoal,
-                goalPace = goalPace,
-                onSelected = callbacks::onGoalSelected,
-                onPaceChanged = callbacks::onGoalPaceChanged
+            var openField by rememberSaveable { mutableStateOf<String?>(value = null) }
+            var isPercent by rememberSaveable { mutableStateOf(value = false) }
+            TargetModeToggle(
+                isCustom = viewState.isCustom,
+                onSelected = {
+                    openField = null
+                    callbacks.onCustomSelected(isCustom = it)
+                }
             )
-            CalorieGoalCard(
-                goal = viewState.selectedGoal,
-                goalPace = goalPace,
-                maintenanceCalories = viewState.maintenanceCalories,
-                macroGoals = viewState.macroGoals
-            )
-            viewState.macroGoals?.let { macroGoals ->
-                MacroTargetsSection(macroGoals = macroGoals)
+            val custom = viewState.customMacroGoals
+            if (viewState.isCustom && custom != null) {
+                CustomTargetsSection(
+                    custom = custom,
+                    calculated = viewState.macroGoals,
+                    isPercent = isPercent,
+                    openField = openField,
+                    onPercentChanged = { isPercent = it },
+                    onOpen = { openField = it },
+                    onChanged = callbacks::onCustomMacroGoalsChanged
+                )
+                openField?.takeIf { it != BODY_FAT }?.let { id ->
+                    CustomTargetsKeypad(
+                        custom = custom,
+                        isPercent = isPercent,
+                        openId = id,
+                        onOpen = { openField = it },
+                        onChanged = callbacks::onCustomMacroGoalsChanged,
+                        onDismiss = { openField = null }
+                    )
+                }
+            } else {
+                val goalPace = viewState.goalPace ?: GoalPace.DEFAULT_KG_PER_MONTH
+                GoalSection(
+                    selected = viewState.selectedGoal,
+                    goalPace = goalPace,
+                    isBelowRestingBurn = viewState.isBelowRestingBurn,
+                    onSelected = callbacks::onGoalSelected,
+                    onPaceChanged = callbacks::onGoalPaceChanged
+                )
+                MacroWarnings(
+                    viewState = viewState,
+                    onPaceChanged = callbacks::onGoalPaceChanged,
+                    onCustom = { callbacks.onCustomSelected(isCustom = true) }
+                )
+                CalorieGoalCard(
+                    goal = viewState.selectedGoal,
+                    goalPace = goalPace,
+                    maintenanceCalories = viewState.maintenanceCalories,
+                    restingBurn = viewState.restingBurn,
+                    macroGoals = viewState.macroGoals
+                )
+                viewState.macroGoals?.let { macroGoals ->
+                    MacroTargetsSection(
+                        macroGoals = macroGoals,
+                        basisWeight = viewState.basisWeight,
+                        isCarbsAtZero = viewState.isCarbsAtZero
+                    ) {
+                        MacroBasisSection(
+                            viewState = viewState,
+                            isBodyFatOpen = openField == BODY_FAT,
+                            onSelected = callbacks::onMacroBasisSelected,
+                            onOpenBodyFat = { openField = BODY_FAT }
+                        )
+                    }
+                }
+                if (openField == BODY_FAT) {
+                    viewState.userDetails?.let { userDetails ->
+                        BodyFatKeypad(
+                            bodyFat = viewState.bodyFat,
+                            weight = userDetails.weight,
+                            onCommit = callbacks::onBodyFatChanged,
+                            onDismiss = { openField = null }
+                        )
+                    }
+                }
             }
             if (viewState.history.isNotEmpty()) {
                 GoalHistorySection(
@@ -197,6 +265,7 @@ private fun NutritionGoalsScreen(
 private fun GoalSection(
     selected: Goal?,
     goalPace: Double,
+    isBelowRestingBurn: Boolean,
     onSelected: (Goal) -> Unit,
     onPaceChanged: (Double) -> Unit
 ) {
@@ -230,7 +299,12 @@ private fun GoalSection(
             }
         }
         selected?.let { goal ->
-            CommonGoalPaceStepper(goal = goal, kgPerMonth = goalPace, onChanged = onPaceChanged)
+            CommonGoalPaceStepper(
+                goal = goal,
+                kgPerMonth = goalPace,
+                isBelowRestingBurn = isBelowRestingBurn,
+                onChanged = onPaceChanged
+            )
         }
     }
 }
@@ -240,6 +314,7 @@ private fun CalorieGoalCard(
     goal: Goal?,
     goalPace: Double,
     maintenanceCalories: Int?,
+    restingBurn: Int?,
     macroGoals: MacroGoals?
 ) {
     val calorieAdjust = goal?.calorieAdjust(paceKgPerMonth = goalPace) ?: 0
@@ -295,6 +370,12 @@ private fun CalorieGoalCard(
                     calorieAdjust.toSigned()
                 )
             )
+            restingBurn?.let {
+                BreakdownRow(
+                    label = stringResource(resource = Res.string.resting_burn_bmr),
+                    value = stringResource(resource = Res.string.signed_kcal, it.withThousands())
+                )
+            }
         }
         Box(
             modifier = Modifier
@@ -431,15 +512,44 @@ private data class MacroShare(
     val macroType: MacroType,
     val color: Color,
     val grams: Int,
-    val calories: Int
+    val calories: Int,
+    /** How the grams are worked out, like "2.0 g × 69.6 kg". */
+    val rule: String,
+    val isZero: Boolean = false
 )
 
+/** The calculated macros with how each is worked out, then [basis]: what protein and fat are based on. */
 @Composable
-private fun MacroTargetsSection(macroGoals: MacroGoals) {
+private fun MacroTargetsSection(
+    macroGoals: MacroGoals,
+    basisWeight: Double?,
+    isCarbsAtZero: Boolean,
+    basis: @Composable () -> Unit
+) {
+    val weight = basisWeight ?: 0.0
     val macros = listOf(
-        MacroShare(MacroType.PROTEIN, colors.protein, macroGoals.protein, macroGoals.protein * 4),
-        MacroShare(MacroType.CARBS, colors.carbs, macroGoals.carbs, macroGoals.carbs * 4),
-        MacroShare(MacroType.FAT, colors.fat, macroGoals.fat, macroGoals.fat * 9)
+        MacroShare(
+            macroType = MacroType.PROTEIN,
+            color = colors.protein,
+            grams = macroGoals.protein,
+            calories = macroGoals.protein * MacroType.PROTEIN.calories,
+            rule = perWeightRule(gramsPerKg = MacroTargets.PROTEIN_GRAMS_PER_KG, basisWeight = weight)
+        ),
+        MacroShare(
+            macroType = MacroType.CARBS,
+            color = colors.carbs,
+            grams = macroGoals.carbs,
+            calories = macroGoals.carbs * MacroType.CARBS.calories,
+            rule = stringResource(resource = if (isCarbsAtZero) Res.string.macro_rule_carbs_none else Res.string.macro_rule_carbs),
+            isZero = isCarbsAtZero
+        ),
+        MacroShare(
+            macroType = MacroType.FAT,
+            color = colors.fat,
+            grams = macroGoals.fat,
+            calories = macroGoals.fat * MacroType.FAT.calories,
+            rule = perWeightRule(gramsPerKg = MacroTargets.FAT_GRAMS_PER_KG, basisWeight = weight)
+        )
     )
     val totalCalories = macros.sumOf { it.calories }.coerceAtLeast(minimumValue = 1)
 
@@ -480,12 +590,14 @@ private fun MacroTargetsSection(macroGoals: MacroGoals) {
                             .size(size = 10.dp)
                             .background(color = macro.color, shape = RoundedCornerShape(size = 3.dp))
                     )
-                    Text(
-                        text = stringResource(resource = macro.macroType.text()),
-                        style = typography.medium13,
-                        color = colors.ink,
-                        modifier = Modifier.weight(weight = 1f)
-                    )
+                    Column(modifier = Modifier.weight(weight = 1f)) {
+                        Text(
+                            text = stringResource(resource = macro.macroType.text()),
+                            style = typography.medium13,
+                            color = colors.ink
+                        )
+                        Text(text = macro.rule, style = typography.regular11, color = colors.muted)
+                    }
                     Text(
                         text = stringResource(resource = Res.string.signed_kcal, macro.calories.withThousands()),
                         style = typography.regular11,
@@ -506,12 +618,19 @@ private fun MacroTargetsSection(macroGoals: MacroGoals) {
                     Text(
                         text = "${macro.grams}g",
                         style = typography.bold16,
-                        color = colors.ink,
+                        color = if (macro.isZero) colors.danger else colors.ink,
                         textAlign = TextAlign.End,
                         modifier = Modifier.width(width = 52.dp)
                     )
                 }
             }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(height = 1.dp)
+                    .background(color = colors.divider)
+            )
+            basis()
         }
     }
 }

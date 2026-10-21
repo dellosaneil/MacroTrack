@@ -66,16 +66,7 @@ class ProfileViewModel(
                     return@combine
                 }
                 val macroGoals = userDetails?.let {
-                    calculateMacrosGoalUseCase(
-                        height = it.height,
-                        weight = it.weight,
-                        age = it.age,
-                        gender = it.sex,
-                        activityLevel = it.activityLevel,
-                        goal = it.goal,
-                        goalPace = it.goalPace,
-                        measuredMaintenance = it.measuredMaintenance
-                    )
+                    calculateMacrosGoalUseCase(userDetails = it)
                 }
                 _state.update { currentState ->
                     currentState.copy(

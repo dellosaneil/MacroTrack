@@ -40,16 +40,7 @@ class GetWeeklyCheckInUseCase(
     ) { foodLogs, weights, userDetails, lastCheckIn ->
         userDetails ?: return@combine null
         val today = getCurrentDate()
-        val macroGoals = calculateMacrosGoalUseCase(
-            height = userDetails.height,
-            weight = userDetails.weight,
-            age = userDetails.age,
-            gender = userDetails.sex,
-            activityLevel = userDetails.activityLevel,
-            goal = userDetails.goal,
-            goalPace = userDetails.goalPace,
-            measuredMaintenance = userDetails.measuredMaintenance
-        )
+        val macroGoals = calculateMacrosGoalUseCase(userDetails = userDetails)
         val estimatedBurn = calculateTDEEUseCase(
             height = userDetails.height,
             weight = userDetails.weight,
