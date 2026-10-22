@@ -9,6 +9,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
+import org.thelazybattley.macrotrack.data.local.dao.ActivityDao
 import org.thelazybattley.macrotrack.data.local.dao.AppFlagDao
 import org.thelazybattley.macrotrack.data.local.dao.BackupDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
@@ -20,6 +21,7 @@ import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
 import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
 import org.thelazybattley.macrotrack.data.local.dao.MeasurementDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
+import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
@@ -27,6 +29,7 @@ import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
+import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
@@ -34,8 +37,8 @@ import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
-    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class],
-    version = 16, exportSchema = true,
+    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, StepHourEntity::class, ActivitySessionEntity::class],
+    version = 17, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -55,6 +58,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun appFlagDao(): AppFlagDao
     abstract fun backupDao(): BackupDao
     abstract fun mealPlanDao(): MealPlanDao
+    abstract fun activityDao(): ActivityDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -181,6 +185,22 @@ abstract class AppDatabase : RoomDatabase() {
                         "`name` TEXT NOT NULL, `mealType` TEXT NOT NULL, `days` TEXT NOT NULL, `foods` TEXT NOT NULL, " +
                         "`startDate` TEXT NOT NULL, `endDate` TEXT, `maxTimes` INTEGER, `isAutoLog` INTEGER NOT NULL, " +
                         "`isActive` INTEGER NOT NULL, `updatedOn` TEXT NOT NULL)"
+                )
+            }
+        }
+
+        /** Adds steps counted per hour, and walks and runs recorded with the map. */
+        val MIGRATION_16_17 = object : Migration(16, 17) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `StepHourEntity` (`date` TEXT NOT NULL, `hour` INTEGER NOT NULL, " +
+                        "`steps` INTEGER NOT NULL, PRIMARY KEY(`date`, `hour`))"
+                )
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `ActivitySessionEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`type` TEXT NOT NULL, `name` TEXT, `startMillis` INTEGER NOT NULL, `endMillis` INTEGER NOT NULL, " +
+                        "`movingSeconds` INTEGER NOT NULL, `distanceMeters` REAL NOT NULL, `steps` INTEGER NOT NULL, " +
+                        "`climbMeters` REAL NOT NULL, `route` TEXT NOT NULL)"
                 )
             }
         }

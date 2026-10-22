@@ -2,6 +2,19 @@ package org.thelazybattley.macrotrack.features.navigation
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import org.thelazybattley.macrotrack.features.backup.ui.BackupScreen
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import org.thelazybattley.macrotrack.core.platform.rememberMotionPermissionState
+import org.thelazybattley.macrotrack.domain.usecase.activity.ScheduleStepNudgeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.TrackStepsUseCase
+import org.thelazybattley.macrotrack.features.activity.ui.ActivityDetailScreen
+import org.thelazybattley.macrotrack.features.activity.ui.ActivityHistoryScreen
+import org.thelazybattley.macrotrack.features.activity.ui.CaloriesBurnedScreen
+import org.thelazybattley.macrotrack.features.activity.ui.RecordScreen
+import org.thelazybattley.macrotrack.features.activity.ui.StepsScreen
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ACTIVITY_ID
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ACTIVITY_TYPE
 import org.thelazybattley.macrotrack.features.deletedata.ui.DeleteDataScreen
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -113,6 +126,20 @@ fun AppBottomNav() {
         isTelemetryEnabled().collect { isEnabled ->
             telemetry.setCollectionEnabled(crashReports = isEnabled, analytics = isEnabled && isAnalyticsAllowed)
         }
+    }
+    // Steps are counted while the app is open; the phone's counter covers the time in between.
+    val trackSteps = koinInject<TrackStepsUseCase>()
+    val scheduleStepNudge = koinInject<ScheduleStepNudgeUseCase>()
+    val motionPermission = rememberMotionPermissionState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(key1 = motionPermission.isGranted) {
+        if (motionPermission.isGranted) {
+            lifecycleOwner.repeatOnLifecycle(state = Lifecycle.State.STARTED) { trackSteps() }
+        }
+    }
+    // A restart clears the evening reminder, so it's set again each time the app opens.
+    LaunchedEffect(key1 = Unit) {
+        scheduleStepNudge()
     }
     // The tabs inside the main screen log their own views.
     TrackScreenViews(navController = navController, ignore = setOf(AppDestinations.Root.MainScreen.route))
@@ -319,6 +346,52 @@ fun AppBottomNav() {
                                 tabRequest = TabRequest(tab = AppDestinations.BottomNavigation.Log)
                                 navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
                             }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.Steps.route) {
+                        StepsScreen(
+                            onBack = { navController.popBackStack() },
+                            onRecord = { type -> navigate(AppDestinations.Root.RecordActivity.createRoute(type = type.name)) },
+                            onOpenSession = { id -> navigate(AppDestinations.Root.ActivityDetail.createRoute(id = id)) },
+                            onOpenHistory = { navigate(AppDestinations.Root.ActivityHistory.route) },
+                            onOpenBurn = { navigate(AppDestinations.Root.CaloriesBurned.route) }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.RecordActivity.routeWithArgs!!,
+                        arguments = listOf(navArgument(name = ACTIVITY_TYPE) { type = NavType.StringType })
+                    ) {
+                        RecordScreen(
+                            onBack = { navController.popBackStack() },
+                            onSaved = { id ->
+                                // The summary takes the live map's place, so Back from it goes to Steps.
+                                navController.navigate(route = AppDestinations.Root.ActivityDetail.createRoute(id = id)) {
+                                    popUpTo(route = AppDestinations.Root.RecordActivity.routeWithArgs!!) { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.ActivityDetail.routeWithArgs!!,
+                        arguments = listOf(navArgument(name = ACTIVITY_ID) { type = NavType.StringType })
+                    ) {
+                        ActivityDetailScreen(
+                            onBack = { navController.popBackStack() },
+                            onOpenHistory = { navigate(AppDestinations.Root.ActivityHistory.route) },
+                            onOpenBurn = { navigate(AppDestinations.Root.CaloriesBurned.route) }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.ActivityHistory.route) {
+                        ActivityHistoryScreen(
+                            onBack = { navController.popBackStack() },
+                            onOpenSession = { id -> navigate(AppDestinations.Root.ActivityDetail.createRoute(id = id)) }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.CaloriesBurned.route) {
+                        CaloriesBurnedScreen(
+                            onBack = { navController.popBackStack() },
+                            onOpenSession = { id -> navigate(AppDestinations.Root.ActivityDetail.createRoute(id = id)) },
+                            onEditProfile = { navigate(AppDestinations.Profile.PersonalInfo.route) }
                         )
                     }
                     composable(route = AppDestinations.Root.DeleteData.route) {

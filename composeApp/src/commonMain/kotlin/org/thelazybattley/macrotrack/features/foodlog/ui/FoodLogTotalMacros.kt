@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.budget_includes_burn
 import macrotrack.composeapp.generated.resources.collapse_daily_summary
 import macrotrack.composeapp.generated.resources.eaten
 import macrotrack.composeapp.generated.resources.expand_daily_summary
@@ -114,6 +115,13 @@ fun FoodLogTotalMacros(
                 calorieProgress = calorieProgress,
                 macros = macros,
                 onToggle = { isExpanded = true }
+            )
+        }
+        if (viewState.budgetBurn > 0 && viewState.selectedDate == getCurrentDate()) {
+            Text(
+                text = stringResource(resource = Res.string.budget_includes_burn, viewState.budgetBurn.withThousands()),
+                style = typography.regular11,
+                color = colors.muted
             )
         }
     }

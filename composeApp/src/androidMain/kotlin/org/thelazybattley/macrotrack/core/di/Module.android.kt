@@ -7,6 +7,12 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.core.billing.BillingService
 import org.thelazybattley.macrotrack.core.billing.PlayBillingService
+import org.thelazybattley.macrotrack.core.platform.AndroidLocationTracker
+import org.thelazybattley.macrotrack.core.platform.AndroidStepNudgeScheduler
+import org.thelazybattley.macrotrack.core.platform.AndroidStepSensor
+import org.thelazybattley.macrotrack.core.platform.LocationTracker
+import org.thelazybattley.macrotrack.core.platform.StepNudgeScheduler
+import org.thelazybattley.macrotrack.core.platform.StepSensor
 import org.thelazybattley.macrotrack.core.telemetry.FirebaseTelemetry
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.data.local.AppDatabase
@@ -18,6 +24,9 @@ actual val platformModule: Module = module {
     // Created with Koin so it sees the first activity resume; it needs that activity to open the purchase sheet.
     single<BillingService>(createdAtStart = true) { PlayBillingService(context = get(), telemetry = get()) }
     single<Telemetry> { FirebaseTelemetry.create(context = get()) }
+    single<StepSensor> { AndroidStepSensor(context = get()) }
+    single<LocationTracker> { AndroidLocationTracker(context = get()) }
+    single<StepNudgeScheduler> { AndroidStepNudgeScheduler(context = get()) }
 }
 
 fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
@@ -26,5 +35,5 @@ fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
     return Room.databaseBuilder<AppDatabase>(
         context = appContext,
         name = dbFile.absolutePath
-    ).addMigrations(AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16)
+    ).addMigrations(AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16, AppDatabase.MIGRATION_16_17)
 }

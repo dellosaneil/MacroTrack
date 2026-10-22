@@ -15,6 +15,10 @@ import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
+import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
+import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
+import org.thelazybattley.macrotrack.domain.model.ActivityType
+import org.thelazybattley.macrotrack.domain.model.RoutePoint
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.domain.model.BackupException
@@ -36,6 +40,8 @@ class BackupRepositoryTest {
         var weights = listOf<WeightEntity>()
         var flags = listOf<AppFlagEntity>()
         var repeatingMeals = listOf<RepeatingMealEntity>()
+        var stepHours = listOf<StepHourEntity>()
+        var activitySessions = listOf<ActivitySessionEntity>()
 
         override suspend fun getFoods() = foods
         override suspend fun getRecipes() = emptyList<RecipeEntity>()
@@ -48,6 +54,8 @@ class BackupRepositoryTest {
         override suspend fun getAppFlags() = flags
         override suspend fun getPlannedFoods() = emptyList<PlannedFoodEntity>()
         override suspend fun getRepeatingMeals() = repeatingMeals
+        override suspend fun getStepHours() = stepHours
+        override suspend fun getActivitySessions() = activitySessions
         override suspend fun deleteFoods() { foods = emptyList() }
         override suspend fun deleteRecipes() {}
         override suspend fun deleteUserDetails() {}
@@ -58,6 +66,8 @@ class BackupRepositoryTest {
         override suspend fun deleteFavorites() {}
         override suspend fun deletePlannedFoods() {}
         override suspend fun deleteRepeatingMeals() { repeatingMeals = emptyList() }
+        override suspend fun deleteStepHours() { stepHours = emptyList() }
+        override suspend fun deleteActivitySessions() { activitySessions = emptyList() }
         override suspend fun deleteAppFlagsExcept(keepKeys: List<String>) { flags = flags.filter { it.key in keepKeys } }
         override suspend fun insertFoods(foods: List<FoodEntity>) { this.foods += foods }
         override suspend fun insertRecipes(recipes: List<RecipeEntity>) {}
@@ -70,6 +80,8 @@ class BackupRepositoryTest {
         override suspend fun insertAppFlags(appFlags: List<AppFlagEntity>) { flags += appFlags }
         override suspend fun insertPlannedFoods(plannedFoods: List<PlannedFoodEntity>) {}
         override suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>) { this.repeatingMeals += repeatingMeals }
+        override suspend fun insertStepHours(stepHours: List<StepHourEntity>) { this.stepHours += stepHours }
+        override suspend fun insertActivitySessions(activitySessions: List<ActivitySessionEntity>) { this.activitySessions += activitySessions }
     }
 
     private class FakeAppFlagDao : AppFlagDao {
@@ -123,6 +135,31 @@ class BackupRepositoryTest {
         assertEquals(1, dao.weights.size)
         assertEquals(listOf(breakfast), dao.repeatingMeals)
         assertEquals(setOf(ProRepositoryImpl.PRO_TRIAL_START, "unit_system"), dao.flags.map { it.key }.toSet())
+    }
+
+    @Test
+    fun walksAndStepsTravelInABackupButTheStepCounterReadingDoesNot() = runSync {
+        val walk = ActivitySessionEntity(
+            id = 4, type = ActivityType.WALK, name = "Park loop", startMillis = 1_000L, endMillis = 2_000L, movingSeconds = 2_850,
+            distanceMeters = 4_150.0, steps = 5_420, climbMeters = 32.0,
+            route = listOf(RoutePoint(lat = 1.0, lon = 2.0, timeMillis = 1_000L), RoutePoint(lat = 1.01, lon = 2.0, timeMillis = 2_000L))
+        )
+        val hour = StepHourEntity(date = LocalDate(2026, 10, 8), hour = 7, steps = 4_600)
+        val dao = FakeBackupDao().apply {
+            activitySessions = listOf(walk)
+            stepHours = listOf(hour)
+            flags = listOf(AppFlagEntity(key = ActivityRepositoryImpl.STEP_SENSOR_READING, value = "12345,1000"))
+        }
+        val repository = BackupRepositoryImpl(backupDao = dao, appFlagDao = FakeAppFlagDao())
+        val backup = repository.createBackup()
+        assertTrue(!backup.decodeToString().contains(ActivityRepositoryImpl.STEP_SENSOR_READING))
+
+        dao.activitySessions = emptyList()
+        dao.stepHours = emptyList()
+        repository.restore(bytes = backup)
+        assertEquals(listOf(walk), dao.activitySessions)
+        assertEquals(listOf(hour), dao.stepHours)
+        assertEquals(listOf(ActivityRepositoryImpl.STEP_SENSOR_READING), dao.flags.map { it.key })
     }
 
     @Test

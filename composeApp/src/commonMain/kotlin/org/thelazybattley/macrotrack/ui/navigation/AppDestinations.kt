@@ -124,6 +124,21 @@ sealed class AppDestinations {
 
         object Backup : Root(route = "backup_export")
 
+        object Steps : Root(route = "steps")
+
+        /** Records a walk or run of [ACTIVITY_TYPE], asking for location first if needed. */
+        object RecordActivity : Root(route = "record_activity", routeWithArgs = "record_activity/{$ACTIVITY_TYPE}") {
+            fun createRoute(type: String): String = "$route/$type"
+        }
+
+        object ActivityDetail : Root(route = "activity_detail", routeWithArgs = "activity_detail/{$ACTIVITY_ID}") {
+            fun createRoute(id: Long): String = "$route/$id"
+        }
+
+        object ActivityHistory : Root(route = "activity_history")
+
+        object CaloriesBurned : Root(route = "calories_burned")
+
         object DeleteData : Root(route = "delete_data")
 
         object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
@@ -191,6 +206,8 @@ sealed class AppDestinations {
         const val LOG_DATE = "logDate"
         const val SOURCE_DATE = "sourceDate"
         const val REPEATING_MEAL_ID = "repeatingMealId"
+        const val ACTIVITY_TYPE = "activityType"
+        const val ACTIVITY_ID = "activityId"
     }
 }
 

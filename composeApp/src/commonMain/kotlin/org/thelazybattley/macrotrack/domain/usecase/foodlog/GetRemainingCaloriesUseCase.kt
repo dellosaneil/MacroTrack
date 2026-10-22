@@ -8,27 +8,31 @@ import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.withCurrentGoal
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetBudgetBurnUseCase
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetPlannedFoodsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 
 /**
  * Calories left on a day against that day's goal; null until the user's details are set up. A later day has
- * nothing logged, so what's left there is after the food planned for it.
+ * nothing logged, so what's left there is after the food planned for it. Today's includes calories burned when
+ * the user added them to the budget.
  */
 class GetRemainingCaloriesUseCase(
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase,
     private val getPlannedFoodsUseCase: GetPlannedFoodsUseCase,
-    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase
+    private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
+    private val getBudgetBurnUseCase: GetBudgetBurnUseCase
 ) {
     suspend operator fun invoke(date: LocalDate): Flow<Int?> = combine(
         flow = getAllFoodLogUseCase(),
         flow2 = getUserDetailsUseCase(),
         flow3 = getAllDailyGoalsUseCase(),
-        flow4 = getPlannedFoodsUseCase()
-    ) { foodLogs, userDetails, dailyGoals, plannedFoods ->
+        flow4 = getPlannedFoodsUseCase(),
+        flow5 = getBudgetBurnUseCase(date = getCurrentDate())
+    ) { foodLogs, userDetails, dailyGoals, plannedFoods, budgetBurn ->
         val today = getCurrentDate()
         userDetails?.let {
             val currentMacroGoals = calculateMacrosGoalUseCase(userDetails = it)
@@ -43,7 +47,7 @@ class GetRemainingCaloriesUseCase(
                 foodLogs = foodLogs,
                 dailyGoals = dailyGoals,
                 current = DailyGoal(date = today, goal = it.goal, macroGoals = currentMacroGoals)
-            ) - planned
+            ) - planned + if (date == today) budgetBurn else 0
         }
     }
 }

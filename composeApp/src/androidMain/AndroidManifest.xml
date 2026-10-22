@@ -3,9 +3,25 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Steps all day from the motion sensor. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- Location only while a walk or run is recorded; never in the background. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <!-- The recording notification and the evening step reminder. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- The barcode scanner needs a camera, but the app works without one. -->
     <uses-feature
         android:name="android.hardware.camera"
+        android:required="false" />
+    <!-- Steps and maps need these, but logging food works without them. -->
+    <uses-feature
+        android:name="android.hardware.sensor.stepcounter"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
         android:required="false" />
 
     <application
@@ -29,6 +45,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Keeps a walk or run recording with the screen off. -->
+        <service
+            android:name=".core.platform.ActivityRecordingService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+        <receiver
+            android:name=".core.platform.StepNudgeReceiver"
+            android:exported="false" />
         <!-- Shares exports and backups with other apps. -->
         <provider
             android:name="androidx.core.content.FileProvider"

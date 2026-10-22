@@ -125,6 +125,32 @@ import org.thelazybattley.macrotrack.domain.usecase.mealplan.UndoPlannedFoodUseC
 import org.thelazybattley.macrotrack.features.mealplan.MealPlanViewModel
 import org.thelazybattley.macrotrack.features.mealplan.RepeatMealViewModel
 import org.thelazybattley.macrotrack.features.mealplan.RepeatingMealsViewModel
+import org.thelazybattley.macrotrack.data.repository.ActivityRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.ActivityRepository
+import org.thelazybattley.macrotrack.domain.usecase.activity.DeleteActivitySessionUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetActivitySessionUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetActivitySessionsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetBudgetBurnUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetBurnProfileUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetDayActivityUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepHoursUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.IsBurnAddedToBudgetUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepNudgeEnabledUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.RenameActivitySessionUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.SaveActivitySessionUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.ScheduleStepNudgeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.SetBurnAddedToBudgetUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepGoalUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepNudgeEnabledUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.TrackStepsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetTodayActivityUseCase
+import org.thelazybattley.macrotrack.features.activity.ActivityDetailViewModel
+import org.thelazybattley.macrotrack.features.activity.ActivityHistoryViewModel
+import org.thelazybattley.macrotrack.features.activity.ActivityRecorder
+import org.thelazybattley.macrotrack.features.activity.CaloriesBurnedViewModel
+import org.thelazybattley.macrotrack.features.activity.RecordViewModel
+import org.thelazybattley.macrotrack.features.activity.StepsViewModel
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
@@ -164,6 +190,7 @@ val sharedModule = module {
     single { get<AppDatabase>().appFlagDao() }
     single { get<AppDatabase>().backupDao() }
     single { get<AppDatabase>().mealPlanDao() }
+    single { get<AppDatabase>().activityDao() }
     singleOf(::MeasurementUnitPreference)
     single {
         HttpClient {
@@ -193,6 +220,8 @@ val repositoryModule = module {
     singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
     singleOf(::DeleteDataRepositoryImpl) { bind<DeleteDataRepository>() }
     singleOf(::MealPlanRepositoryImpl) { bind<MealPlanRepository>() }
+    singleOf(::ActivityRepositoryImpl) { bind<ActivityRepository>() }
+    singleOf(::ActivityRecorder)
 }
 
 val useCaseModule = module {
@@ -267,6 +296,24 @@ val useCaseModule = module {
     factoryOf(::SaveRepeatingMealUseCase)
     factoryOf(::SetRepeatingMealActiveUseCase)
     factoryOf(::DeleteRepeatingMealUseCase)
+    factoryOf(::TrackStepsUseCase)
+    factoryOf(::GetStepHoursUseCase)
+    factoryOf(::GetActivitySessionsUseCase)
+    factoryOf(::GetActivitySessionUseCase)
+    factoryOf(::SaveActivitySessionUseCase)
+    factoryOf(::RenameActivitySessionUseCase)
+    factoryOf(::DeleteActivitySessionUseCase)
+    factoryOf(::GetStepGoalUseCase)
+    factoryOf(::SetStepGoalUseCase)
+    factoryOf(::IsStepNudgeEnabledUseCase)
+    factoryOf(::SetStepNudgeEnabledUseCase)
+    factoryOf(::ScheduleStepNudgeUseCase)
+    factoryOf(::IsBurnAddedToBudgetUseCase)
+    factoryOf(::SetBurnAddedToBudgetUseCase)
+    factoryOf(::GetBurnProfileUseCase)
+    factoryOf(::GetDayActivityUseCase)
+    factoryOf(::GetBudgetBurnUseCase)
+    factoryOf(::GetTodayActivityUseCase)
 }
 
 val viewModelModule = module {
@@ -301,6 +348,11 @@ val viewModelModule = module {
     viewModelOf(::MealPlanViewModel)
     viewModelOf(::RepeatingMealsViewModel)
     viewModelOf(::RepeatMealViewModel)
+    viewModelOf(::StepsViewModel)
+    viewModelOf(::RecordViewModel)
+    viewModelOf(::ActivityDetailViewModel)
+    viewModelOf(::ActivityHistoryViewModel)
+    viewModelOf(::CaloriesBurnedViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

@@ -33,6 +33,7 @@ import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.UpdateFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetPlannedTodayUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetTodayActivityUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.PlannedFoodActions
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.model.PortionUnit
@@ -66,7 +67,8 @@ class FoodLogViewModel(
     private val undoFoodLogCopyUseCase: UndoFoodLogCopyUseCase,
     private val copyEvents: FoodLogCopyEvents,
     getPlannedTodayUseCase: GetPlannedTodayUseCase,
-    private val plannedFoodActions: PlannedFoodActions
+    private val plannedFoodActions: PlannedFoodActions,
+    getTodayActivityUseCase: GetTodayActivityUseCase
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -125,6 +127,18 @@ class FoodLogViewModel(
         viewModelScope.launch {
             getPlannedTodayUseCase().collect { plannedToday ->
                 _state.update { it.copy(plannedToday = plannedToday) }
+            }
+        }
+        viewModelScope.launch {
+            getTodayActivityUseCase(date = getCurrentDate()).collect { today ->
+                _state.update {
+                    it.copy(
+                        todayActivity = today.day,
+                        stepGoal = today.stepGoal,
+                        activeKcal = today.activeKcal,
+                        budgetBurn = today.budgetBurn
+                    ).withDayGoal()
+                }
             }
         }
         updateMacroGoals()
@@ -257,7 +271,9 @@ class FoodLogViewModel(
             currentGoal = currentGoal,
             currentMacroGoals = currentMacroGoals
         )
-        return copy(dayGoal = dayGoal, macroGoals = dayGoal?.macroGoals)
+        // Burned calories go on top of today's budget only; the goal that's saved stays as it was.
+        val burn = if (selectedDate == getCurrentDate()) budgetBurn else 0
+        return copy(dayGoal = dayGoal, macroGoals = dayGoal?.macroGoals?.let { it.copy(calories = it.calories + burn) })
     }
 
     override fun onNavigate(mealType: MealType) {

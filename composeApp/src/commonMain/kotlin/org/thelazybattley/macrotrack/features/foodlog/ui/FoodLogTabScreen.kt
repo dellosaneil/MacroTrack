@@ -104,6 +104,7 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
 import org.thelazybattley.macrotrack.features.pro.ui.ProTrialBanner
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.checkin.ui.CheckInCard
+import org.thelazybattley.macrotrack.features.activity.ui.TodayStepsCard
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
@@ -160,6 +161,7 @@ fun FoodLogTabScreen(
             onNavigate(AppDestinations.Root.CopyFrom.createRoute(mealType = mealType.name, logDate = viewState.selectedDate))
         },
         onOpenPlan = { onNavigate(AppDestinations.Root.MealPlan.createRoute()) },
+        onOpenSteps = { onNavigate(AppDestinations.Root.Steps.route) },
         onRepeat = { mealType ->
             onNavigate(AppDestinations.Root.RepeatMeal.createRoute(sourceDate = viewState.selectedDate, mealType = mealType.name))
         }
@@ -179,6 +181,7 @@ private fun FoodLogTabScreen(
     onCopyTo: (MealType?) -> Unit,
     onCopyFrom: (MealType) -> Unit,
     onOpenPlan: () -> Unit,
+    onOpenSteps: () -> Unit,
     /** Sets up repeating [MealType] from the selected day. */
     onRepeat: (MealType) -> Unit
 ) {
@@ -227,6 +230,15 @@ private fun FoodLogTabScreen(
                     .tourTarget(target = TourTarget.TODAY_REMAINING),
                 viewState = viewState
             )
+            if (isToday) {
+                TodayStepsCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    day = viewState.todayActivity,
+                    goal = viewState.stepGoal,
+                    activeKcal = viewState.activeKcal,
+                    onClick = onOpenSteps
+                )
+            }
             viewState.checkIn?.takeIf { isToday && LocalProAccess.current.isActive }?.let { checkIn ->
                 CheckInCard(modifier = Modifier.fillMaxWidth(), checkIn = checkIn, onClick = onOpenCheckIn)
             }
@@ -880,6 +892,7 @@ private fun PreviewFoodLogTabScreen() {
             onCopyTo = {},
             onCopyFrom = {},
             onOpenPlan = {},
+            onOpenSteps = {},
             onRepeat = {}
         )
     }

@@ -5,12 +5,14 @@ import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.DailyGoal
+import org.thelazybattley.macrotrack.domain.model.DayActivity
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodLogCopy
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlannedFood
+import org.thelazybattley.macrotrack.domain.model.StepGoal
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
 
 data class FoodLogViewState(
@@ -51,7 +53,14 @@ data class FoodLogViewState(
     /** The copy just made, shown with Undo until it's dismissed. */
     val copyToast: FoodLogCopy? = null,
     /** Food planned for today that waits for Ate it or Skip, and what was already done with it. */
-    val plannedToday: List<PlannedFood> = emptyList()
+    val plannedToday: List<PlannedFood> = emptyList(),
+    /** Today's steps, walks and runs for the steps card. */
+    val todayActivity: DayActivity = DayActivity(totalSteps = 0, sessions = emptyList()),
+    val stepGoal: Int = StepGoal.DEFAULT,
+    /** Calories burned today; null until the profile is set up. */
+    val activeKcal: Int? = null,
+    /** Burned calories added on top of today's budget: zero unless turned on with Pro. */
+    val budgetBurn: Int = 0
 )
 
 data class FoodLogFoodListByMealType(

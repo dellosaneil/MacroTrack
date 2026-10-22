@@ -3,6 +3,8 @@ package org.thelazybattley.macrotrack.features.pro
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.pro_feature_backup
 import macrotrack.composeapp.generated.resources.pro_feature_backup_body
+import macrotrack.composeapp.generated.resources.pro_feature_calories
+import macrotrack.composeapp.generated.resources.pro_feature_calories_body
 import macrotrack.composeapp.generated.resources.pro_feature_check_in
 import macrotrack.composeapp.generated.resources.pro_feature_check_in_body
 import macrotrack.composeapp.generated.resources.pro_feature_goal_phases
@@ -30,7 +32,8 @@ enum class ProFeature(val title: StringResource, val body: StringResource) {
     INSIGHTS(title = Res.string.pro_feature_insights, body = Res.string.pro_feature_insights_body),
     RECIPES(title = Res.string.pro_feature_recipes, body = Res.string.pro_feature_recipes_body),
     BACKUP(title = Res.string.pro_feature_backup, body = Res.string.pro_feature_backup_body),
-    CHECK_IN(title = Res.string.pro_feature_check_in, body = Res.string.pro_feature_check_in_body)
+    CHECK_IN(title = Res.string.pro_feature_check_in, body = Res.string.pro_feature_check_in_body),
+    CALORIES_BURNED(title = Res.string.pro_feature_calories, body = Res.string.pro_feature_calories_body)
 }
 
 /**
