@@ -44,6 +44,7 @@ object TelemetryEvent {
     const val BARCODE_LOOKUP = "barcode_lookup"
     const val PAYWALL_SHOWN = "paywall_shown"
     const val PURCHASE_STARTED = "purchase_started"
+    const val PURCHASE_UNAVAILABLE = "purchase_unavailable"
     const val PRO_UNLOCKED = "pro_unlocked"
     const val BACKUP_CREATED = "backup_created"
     const val BACKUP_RESTORED = "backup_restored"
@@ -62,4 +63,6 @@ object TelemetryEvent {
     const val PARAM_RESULT = "result"
     const val PARAM_SCOPE = "scope"
     const val PARAM_FEATURE = "feature"
+    const val PARAM_STEP = "step"
+    const val PARAM_CODE = "code"
 }

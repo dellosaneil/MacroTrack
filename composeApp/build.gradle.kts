@@ -106,10 +106,10 @@ android {
 
     val appMajor = 1
     val appMinor = 1
-    val appPatch = 0
+    val appPatch = 1
 
     val appBuild = 0
-
+    //-alpha.$appBuild
     val appSuffix = "-alpha.$appBuild"
     defaultConfig {
         applicationId = "org.thelazybattley.macrotrack"

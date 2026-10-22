@@ -15,7 +15,8 @@ actual val platformModule: Module = module {
     single {
         getDatabaseBuilder(get())
     }
-    single<BillingService> { PlayBillingService(context = get()) }
+    // Created with Koin so it sees the first activity resume; it needs that activity to open the purchase sheet.
+    single<BillingService>(createdAtStart = true) { PlayBillingService(context = get(), telemetry = get()) }
     single<Telemetry> { FirebaseTelemetry.create(context = get()) }
 }
 
