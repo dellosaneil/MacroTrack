@@ -28,7 +28,6 @@ data class ActivityDetailViewState(
     val usedNames: List<String> = emptyList(),
     val chart: RouteChart = RouteChart.PACE,
     val selectedSample: Int? = null,
-    val zoom: Float = 1f,
     /** The name being typed in the rename sheet. */
     val renameDraft: String? = null,
     val isConfirmingDelete: Boolean = false,
@@ -38,7 +37,6 @@ data class ActivityDetailViewState(
 interface ActivityDetailCallbacks {
     fun onChartSelected(chart: RouteChart)
     fun onSampleSelected(index: Int)
-    fun onZoom(zoom: Float)
     fun onOpenRename()
     fun onRenameChanged(name: String)
     fun onCloseRename()
@@ -51,7 +49,6 @@ interface ActivityDetailCallbacks {
         fun default() = object : ActivityDetailCallbacks {
             override fun onChartSelected(chart: RouteChart) = Unit
             override fun onSampleSelected(index: Int) = Unit
-            override fun onZoom(zoom: Float) = Unit
             override fun onOpenRename() = Unit
             override fun onRenameChanged(name: String) = Unit
             override fun onCloseRename() = Unit
@@ -102,10 +99,6 @@ class ActivityDetailViewModel(
 
     override fun onSampleSelected(index: Int) {
         _state.update { it.copy(selectedSample = if (it.selectedSample == index) null else index) }
-    }
-
-    override fun onZoom(zoom: Float) {
-        _state.update { it.copy(zoom = zoom) }
     }
 
     override fun onOpenRename() {

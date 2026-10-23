@@ -28,12 +28,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.detail_all_sessions
 import macrotrack.composeapp.generated.resources.detail_along
@@ -172,7 +174,7 @@ private fun ActivityDetailScreen(
                 )
             }
         )
-        RouteCard(session = session, zoom = viewState.zoom, unitMeters = unitMeters, onZoom = callbacks::onZoom)
+        RouteCard(session = session, unitMeters = unitMeters)
         StatsGrid(viewState = viewState, session = session, isPro = pro.isActive, onLocked = { pro.openPaywall(ProFeature.CALORIES_BURNED) })
         AlongCard(viewState = viewState, session = session, callbacks = callbacks)
         SplitsCard(session = session, unitMeters = unitMeters)
@@ -242,8 +244,10 @@ private fun TypeChip(session: ActivitySession) {
 }
 
 @Composable
-private fun RouteCard(session: ActivitySession, zoom: Float, unitMeters: Double, onZoom: (Float) -> Unit) {
+private fun RouteCard(session: ActivitySession, unitMeters: Double) {
     val shape = RoundedCornerShape(size = 24.dp)
+    val mapState = rememberRouteMapState()
+    val scope = rememberCoroutineScope()
     val markers = unitMeters.takeIf { session.distanceMeters / it <= MAX_MARKERS }
     Box(
         modifier = Modifier
@@ -256,7 +260,7 @@ private fun RouteCard(session: ActivitySession, zoom: Float, unitMeters: Double,
             modifier = Modifier.fillMaxSize(),
             routes = listOf(MapRoute(points = session.route)),
             description = stringResource(resource = Res.string.detail_map_description, distanceText(meters = session.distanceMeters)),
-            zoom = zoom,
+            state = mapState,
             markers = markers
         )
         Column(
@@ -271,9 +275,9 @@ private fun RouteCard(session: ActivitySession, zoom: Float, unitMeters: Double,
                     .background(color = colors.surface)
                     .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 12.dp))
             ) {
-                MapControl(icon = Res.drawable.ic_plus, description = stringResource(resource = Res.string.detail_zoom_in)) { onZoom(zoom.zoomedBy(step = 0.4f)) }
+                MapControl(icon = Res.drawable.ic_plus, description = stringResource(resource = Res.string.detail_zoom_in)) { scope.launch { mapState.zoomIn() } }
                 HorizontalDivider(modifier = Modifier.size(width = 44.dp, height = 1.dp), color = colors.line)
-                MapControl(icon = Res.drawable.ic_minus, description = stringResource(resource = Res.string.detail_zoom_out)) { onZoom(zoom.zoomedBy(step = -0.4f)) }
+                MapControl(icon = Res.drawable.ic_minus, description = stringResource(resource = Res.string.detail_zoom_out)) { scope.launch { mapState.zoomOut() } }
             }
             Box(
                 modifier = Modifier
@@ -281,7 +285,7 @@ private fun RouteCard(session: ActivitySession, zoom: Float, unitMeters: Double,
                     .background(color = colors.surface)
                     .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 12.dp))
             ) {
-                MapControl(icon = Res.drawable.ic_fit, description = stringResource(resource = Res.string.record_fit_route)) { onZoom(1f) }
+                MapControl(icon = Res.drawable.ic_fit, description = stringResource(resource = Res.string.record_fit_route), onClick = mapState::fit)
             }
         }
         Row(

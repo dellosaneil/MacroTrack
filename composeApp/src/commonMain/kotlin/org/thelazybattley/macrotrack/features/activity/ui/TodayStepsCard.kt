@@ -102,14 +102,12 @@ fun TodayStepsCard(
             Text(text = sub, style = typography.regular11, color = colors.muted)
         }
         day.sessions.maxByOrNull { it.startMillis }?.takeIf { it.route.size > 1 }?.let { latest ->
-            RouteMap(
+            RouteSketch(
                 modifier = Modifier
                     .size(width = 64.dp, height = 56.dp)
                     .clip(shape = RoundedCornerShape(size = 12.dp))
                     .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 12.dp)),
-                routes = listOf(MapRoute(points = latest.route)),
-                description = "",
-                showEnds = false,
+                points = latest.route,
                 lineWidth = 3.dp,
                 padding = 8.dp
             )

@@ -53,6 +53,7 @@ kotlin {
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)
             implementation(libs.play.review)
+            implementation(libs.maplibre.android.opengl)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -78,7 +79,10 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.clock)
             implementation(libs.ktor.client.core)
-
+            // The OpenGL build of MapLibre runs on every device and emulator; the default Vulkan one doesn't.
+            implementation(libs.maplibre.compose.get().toString()) {
+                exclude(group = "org.maplibre.gl", module = "android-sdk")
+            }
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

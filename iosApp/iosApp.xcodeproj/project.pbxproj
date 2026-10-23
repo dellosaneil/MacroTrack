@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0BB3CA7A3082247700026671 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB3CA793082247700026671 /* FirebaseAnalytics */; };
 		0BB3CA7C3082247700026671 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB3CA7B3082247700026671 /* FirebaseCrashlytics */; };
+		0BB3CA7E3082247700026671 /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB3CA7F3082247700026671 /* MapLibre */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 			files = (
 				0BB3CA7A3082247700026671 /* FirebaseAnalytics in Frameworks */,
 				0BB3CA7C3082247700026671 /* FirebaseCrashlytics in Frameworks */,
+				0BB3CA7E3082247700026671 /* MapLibre in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +96,7 @@
 			packageProductDependencies = (
 				0BB3CA793082247700026671 /* FirebaseAnalytics */,
 				0BB3CA7B3082247700026671 /* FirebaseCrashlytics */,
+				0BB3CA7F3082247700026671 /* MapLibre */,
 			);
 			productName = iosApp;
 			productReference = 5DA3E81E08984A362881F202 /* MacroTrack.app */;
@@ -125,6 +128,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				0BB3CA783082247700026671 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				0BB3CA7D3082247700026671 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F006976BD68A29CCDFFDAA5D /* Products */;
@@ -266,6 +270,13 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					ComposeApp,
+					"-framework",
+					MapLibre,
+				);
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -293,6 +304,13 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					ComposeApp,
+					"-framework",
+					MapLibre,
 				);
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -390,6 +408,14 @@
 				minimumVersion = 13.0.1;
 			};
 		};
+		0BB3CA7D3082247700026671 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/maplibre/maplibre-gl-native-distribution";
+			requirement = {
+				kind = exactVersion;
+				version = 6.25.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -402,6 +428,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0BB3CA783082247700026671 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCrashlytics;
+		};
+		0BB3CA7F3082247700026671 /* MapLibre */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0BB3CA7D3082247700026671 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
+			productName = MapLibre;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

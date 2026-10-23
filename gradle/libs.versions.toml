@@ -30,6 +30,8 @@ firebase-bom = "34.19.0"
 google-services = "4.5.0"
 firebase-crashlytics-plugin = "3.0.8"
 play-review = "2.0.2"
+maplibre-compose = "0.13.1"
+maplibre-android = "13.0.2"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
@@ -79,6 +81,9 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 play-review = { module = "com.google.android.play:review", version.ref = "play-review" }
+
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre-compose" }
+maplibre-android-opengl = { module = "org.maplibre.gl:android-sdk-opengl", version.ref = "maplibre-android" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -708,7 +708,8 @@ private fun WhereCard(viewState: ActivityHistoryViewState) {
                 modifier = Modifier.fillMaxSize(),
                 routes = routes,
                 description = stringResource(resource = Res.string.history_map_description, sessions.size),
-                showEnds = false
+                showEnds = false,
+                interactive = false
             )
             if (top.isNotEmpty()) {
                 Column(

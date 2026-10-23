@@ -5,13 +5,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -22,12 +26,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -154,14 +160,12 @@ private fun LocationPermissionContent(
                 .verticalScroll(state = rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(space = 20.dp)
         ) {
-            RouteMap(
+            RouteSketch(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(height = 200.dp)
                     .clip(shape = RoundedCornerShape(size = 24.dp)),
-                routes = listOf(MapRoute(points = sampleLoop)),
-                description = "",
-                showEnds = false
+                points = sampleLoop
             )
             Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                 Text(text = stringResource(resource = Res.string.record_permission_title), style = typography.bold24, color = colors.ink)
@@ -233,17 +237,21 @@ private fun LiveContent(viewState: RecordViewState, callbacks: RecordCallbacks, 
             delay(timeMillis = 1_000)
         }
     }
-    var zoom by remember { mutableFloatStateOf(value = 1f) }
+    val mapState = rememberRouteMapState()
+    val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    // The panel covers the bottom of the map, so the route is kept in the part above it.
+    val density = LocalDensity.current
+    var panelHeight by remember { mutableStateOf(value = 0.dp) }
     Box(modifier = Modifier.fillMaxSize().background(color = colors.divider)) {
         RouteMap(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(height = 520.dp),
+            modifier = Modifier.fillMaxSize(),
             routes = listOfNotNull(recording?.points?.let { MapRoute(points = it) }),
             description = stringResource(resource = Res.string.record_map_description),
-            zoom = zoom,
+            state = mapState,
             live = recording?.points?.lastOrNull(),
-            padding = 56.dp
+            padding = PaddingValues(start = 56.dp, top = statusBar + 72.dp, end = 56.dp, bottom = panelHeight + 40.dp),
+            attributionAlignment = Alignment.TopEnd,
+            attributionPadding = PaddingValues(top = statusBar + 72.dp, end = 16.dp)
         )
         Row(
             modifier = Modifier
@@ -257,10 +265,12 @@ private fun LiveContent(viewState: RecordViewState, callbacks: RecordCallbacks, 
             StatusPill(isPaused = recording?.isPaused == true)
             GpsPill(isGood = recording?.hasGoodFix == true)
             Box(modifier = Modifier.weight(weight = 1f))
-            FloatingButton(icon = Res.drawable.ic_fit, description = stringResource(resource = Res.string.record_fit_route), onClick = { zoom = 1f })
+            FloatingButton(icon = Res.drawable.ic_fit, description = stringResource(resource = Res.string.record_fit_route), onClick = mapState::fit)
         }
         LivePanel(
-            modifier = Modifier.align(alignment = Alignment.BottomCenter),
+            modifier = Modifier
+                .align(alignment = Alignment.BottomCenter)
+                .onSizeChanged { panelHeight = with(density) { it.height.toDp() } },
             viewState = viewState,
             type = type,
             recording = recording,

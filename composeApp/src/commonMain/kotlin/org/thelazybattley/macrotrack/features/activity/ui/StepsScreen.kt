@@ -638,14 +638,12 @@ internal fun SessionRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
-        RouteMap(
+        RouteSketch(
             modifier = Modifier
                 .size(size = thumbnailSize)
                 .clip(shape = RoundedCornerShape(size = 14.dp))
                 .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 14.dp)),
-            routes = listOf(MapRoute(points = session.route)),
-            description = "",
-            showEnds = false,
+            points = session.route,
             lineWidth = 3.dp,
             padding = 8.dp
         )
