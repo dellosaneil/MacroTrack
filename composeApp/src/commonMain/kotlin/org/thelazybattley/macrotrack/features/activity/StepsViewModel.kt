@@ -23,6 +23,7 @@ import org.thelazybattley.macrotrack.domain.usecase.activity.GetBurnProfileUseCa
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepHoursUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepNotificationSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepCountingOnUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepNudgeEnabledUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepNudgeEnabledUseCase
@@ -63,7 +64,9 @@ data class StepsViewState(
     val isSensorAvailable: Boolean = true,
     val isNudgeSupported: Boolean = true,
     /** For the counting chip, which says when it's steps only, and the nudge's hour. */
-    val stepNotifications: StepNotificationSettings = StepNotificationSettings()
+    val stepNotifications: StepNotificationSettings = StepNotificationSettings(),
+    /** False once all-day counting is turned off; the chip then says so. */
+    val isCounting: Boolean = true
 ) {
     val todaySteps: Int get() = day.totalSteps
 
@@ -115,6 +118,7 @@ class StepsViewModel(
     getStepGoalUseCase: GetStepGoalUseCase,
     isStepNudgeEnabledUseCase: IsStepNudgeEnabledUseCase,
     getStepNotificationSettingsUseCase: GetStepNotificationSettingsUseCase,
+    isStepCountingOnUseCase: IsStepCountingOnUseCase,
     stepSensor: StepSensor,
     stepNudgeScheduler: StepNudgeScheduler,
     private val setStepGoalUseCase: SetStepGoalUseCase,
@@ -160,6 +164,9 @@ class StepsViewModel(
         }
         viewModelScope.launch {
             getStepNotificationSettingsUseCase().collect { settings -> _state.update { it.copy(stepNotifications = settings) } }
+        }
+        viewModelScope.launch {
+            isStepCountingOnUseCase().collect { isOn -> _state.update { it.copy(isCounting = isOn) } }
         }
     }
 

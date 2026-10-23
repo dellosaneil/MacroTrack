@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.domain.usecase.activity
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
@@ -25,6 +26,8 @@ import org.thelazybattley.macrotrack.domain.repository.StepSensorReading
 import org.thelazybattley.macrotrack.domain.usecase.pro.GetProStatusUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * Saves a step counter's running total: the steps since the last reading go into the hours they were taken in,
@@ -39,12 +42,17 @@ suspend fun ActivityRepository.recordStepCount(count: Long, atMillis: Long) {
     setStepSensorReading(reading = StepSensorReading(count = count, atMillis = atMillis))
 }
 
-/** Counts steps into the database for as long as it runs; started while the app is open. */
+/**
+ * Counts steps into the database for as long as it runs and counting is on; started while the app is open. Turning
+ * counting off stops it, and on again picks up from then.
+ */
 class TrackStepsUseCase(
     private val stepSensor: StepSensor,
     private val repository: ActivityRepository
 ) {
-    suspend operator fun invoke() = stepSensor.track(repository = repository)
+    suspend operator fun invoke() = repository.isStepCountingOn().collectLatest { isOn ->
+        if (isOn) stepSensor.track(repository = repository)
+    }
 }
 
 class GetStepHoursUseCase(private val repository: ActivityRepository) {
@@ -130,6 +138,26 @@ class ScheduleStepNudgeUseCase(
     }
 }
 
+class IsStepCountingOnUseCase(private val repository: ActivityRepository) {
+    operator fun invoke(): Flow<Boolean> = repository.isStepCountingOn()
+}
+
+/**
+ * Turns all-day step counting off or back on. Steps already saved stay; steps taken while it was off are never
+ * added. The steps notification goes while it's off, and walks and runs still count their own steps.
+ */
+class SetStepCountingUseCase(
+    private val repository: ActivityRepository,
+    private val notifier: StepNotifier
+) {
+    @OptIn(ExperimentalTime::class)
+    suspend operator fun invoke(isOn: Boolean) {
+        if (isOn) repository.resetStepBaseline(atMillis = Clock.System.now().toEpochMilliseconds())
+        repository.setStepCountingOn(isOn = isOn)
+        notifier.refresh()
+    }
+}
+
 class GetStepNotificationSettingsUseCase(private val repository: ActivityRepository) {
     operator fun invoke(): Flow<StepNotificationSettings> = repository.getStepNotificationSettings()
 }
@@ -139,33 +167,8 @@ class UpdateStepNotificationSettingsUseCase(private val repository: ActivityRepo
     suspend operator fun invoke(change: (StepNotificationSettings) -> StepNotificationSettings) {
         val current = repository.getStepNotificationSettings().first()
         val updated = change(current)
-        // Turning the notification off ends steps only too; turning it back on shows the ordinary one.
-        repository.setStepNotificationSettings(settings = if (updated.isOn) updated else updated.copy(isStepsOnly = false))
+        repository.setStepNotificationSettings(settings = updated)
         if (updated.isOn && !current.isOn) repository.setStepNotificationHiddenOn(date = null)
-    }
-}
-
-/**
- * "Not now, just count steps": turns on the steps notification in its steps-only form, so it's always clear steps
- * are being counted without location, and shows the one-time pop-down.
- */
-class ChooseStepsOnlyUseCase(
-    private val repository: ActivityRepository,
-    private val notifier: StepNotifier
-) {
-    suspend operator fun invoke() {
-        val current = repository.getStepNotificationSettings().first()
-        repository.setStepNotificationSettings(settings = current.copy(isOn = true, isStepsOnly = true))
-        repository.setStepNotificationHiddenOn(date = null)
-        notifier.announceStepsOnly()
-    }
-}
-
-/** Location was allowed after all, so the notification stops saying no location is used. */
-class EndStepsOnlyUseCase(private val repository: ActivityRepository) {
-    suspend operator fun invoke() {
-        val current = repository.getStepNotificationSettings().first()
-        if (current.isStepsOnly) repository.setStepNotificationSettings(settings = current.copy(isStepsOnly = false))
     }
 }
 
@@ -238,7 +241,9 @@ data class TodayActivity(
     val stepGoal: Int,
     /** Null until the profile is set up. */
     val activeKcal: Int?,
-    val budgetBurn: Int
+    val budgetBurn: Int,
+    /** False once step counting is turned off; the steps already saved still show. */
+    val isCounting: Boolean = true
 )
 
 class GetTodayActivityUseCase(
@@ -251,8 +256,15 @@ class GetTodayActivityUseCase(
         flow = getDayActivityUseCase(date = date),
         flow2 = repository.getStepGoal(),
         flow3 = getBurnProfileUseCase(),
-        flow4 = getBudgetBurnUseCase(date = date)
-    ) { day, goal, profile, budgetBurn ->
-        TodayActivity(day = day, stepGoal = goal, activeKcal = profile?.let { day.activeKcal(profile = it) }, budgetBurn = budgetBurn)
+        flow4 = getBudgetBurnUseCase(date = date),
+        flow5 = repository.isStepCountingOn()
+    ) { day, goal, profile, budgetBurn, isCounting ->
+        TodayActivity(
+            day = day,
+            stepGoal = goal,
+            activeKcal = profile?.let { day.activeKcal(profile = it) },
+            budgetBurn = budgetBurn,
+            isCounting = isCounting
+        )
     }
 }

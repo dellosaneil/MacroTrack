@@ -18,11 +18,15 @@ import org.thelazybattley.macrotrack.domain.usecase.activity.GetBurnProfileUseCa
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetDayActivityUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepNotificationSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepCountingOnUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepNudgeEnabledUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepCountingUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepNudgeEnabledUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.UpdateStepNotificationSettingsUseCase
 
 data class StepsSettingsViewState(
+    /** All-day step counting; off stops it, and with it the steps notification and step alerts. */
+    val isCountingOn: Boolean = true,
     val settings: StepNotificationSettings = StepNotificationSettings(),
     val isNudgeOn: Boolean = true,
     val goal: Int = StepGoal.DEFAULT,
@@ -38,6 +42,7 @@ data class StepsSettingsViewState(
 }
 
 interface StepsSettingsCallbacks {
+    fun onCountingToggled()
     fun onShowStepsToggled()
     fun onLockScreenToggled()
     fun onExtraPicked(extra: StepNotificationExtra)
@@ -47,6 +52,7 @@ interface StepsSettingsCallbacks {
 
     companion object {
         fun default() = object : StepsSettingsCallbacks {
+            override fun onCountingToggled() = Unit
             override fun onShowStepsToggled() = Unit
             override fun onLockScreenToggled() = Unit
             override fun onExtraPicked(extra: StepNotificationExtra) = Unit
@@ -61,13 +67,15 @@ interface StepsSettingsCallbacks {
 class StepsSettingsViewModel(
     getStepNotificationSettingsUseCase: GetStepNotificationSettingsUseCase,
     isStepNudgeEnabledUseCase: IsStepNudgeEnabledUseCase,
+    isStepCountingOnUseCase: IsStepCountingOnUseCase,
     getStepGoalUseCase: GetStepGoalUseCase,
     getDayActivityUseCase: GetDayActivityUseCase,
     getBurnProfileUseCase: GetBurnProfileUseCase,
     stepNotifier: StepNotifier,
     stepNudgeScheduler: StepNudgeScheduler,
     private val updateStepNotificationSettingsUseCase: UpdateStepNotificationSettingsUseCase,
-    private val setStepNudgeEnabledUseCase: SetStepNudgeEnabledUseCase
+    private val setStepNudgeEnabledUseCase: SetStepNudgeEnabledUseCase,
+    private val setStepCountingUseCase: SetStepCountingUseCase
 ) : ViewModel(), StepsSettingsCallbacks {
 
     private val _state = MutableStateFlow(
@@ -86,6 +94,9 @@ class StepsSettingsViewModel(
             }.collect {}
         }
         viewModelScope.launch {
+            isStepCountingOnUseCase().collect { isOn -> _state.update { it.copy(isCountingOn = isOn) } }
+        }
+        viewModelScope.launch {
             combine(flow = getDayActivityUseCase(date = getCurrentDate()), flow2 = getBurnProfileUseCase()) { day, profile ->
                 _state.update {
                     it.copy(
@@ -96,6 +107,12 @@ class StepsSettingsViewModel(
                 }
             }.collect {}
         }
+    }
+
+    override fun onCountingToggled() {
+        val isOn = !_state.value.isCountingOn
+        _state.update { it.copy(isCountingOn = isOn) }
+        viewModelScope.launch { setStepCountingUseCase(isOn = isOn) }
     }
 
     override fun onShowStepsToggled() = update { it.copy(isOn = !it.isOn) }

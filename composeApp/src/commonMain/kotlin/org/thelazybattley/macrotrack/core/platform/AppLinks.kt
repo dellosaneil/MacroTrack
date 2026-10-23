@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 /** A screen opened from outside the app, like a button on the steps notification. */
 enum class AppLink {
     STEPS,
-    STEPS_SETTINGS,
     RECORD_WALK
 }
 

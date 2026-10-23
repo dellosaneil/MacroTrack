@@ -141,9 +141,9 @@ import org.thelazybattley.macrotrack.domain.usecase.activity.RenameActivitySessi
 import org.thelazybattley.macrotrack.domain.usecase.activity.SaveActivitySessionUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.ScheduleStepNudgeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepNotificationSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepCountingOnUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepCountingUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.UpdateStepNotificationSettingsUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.ChooseStepsOnlyUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.EndStepsOnlyUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetBurnAddedToBudgetUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepNudgeEnabledUseCase
@@ -316,9 +316,9 @@ val useCaseModule = module {
     factoryOf(::SetStepNudgeEnabledUseCase)
     factoryOf(::ScheduleStepNudgeUseCase)
     factoryOf(::GetStepNotificationSettingsUseCase)
+    factoryOf(::IsStepCountingOnUseCase)
+    factoryOf(::SetStepCountingUseCase)
     factoryOf(::UpdateStepNotificationSettingsUseCase)
-    factoryOf(::ChooseStepsOnlyUseCase)
-    factoryOf(::EndStepsOnlyUseCase)
     factoryOf(::IsBurnAddedToBudgetUseCase)
     factoryOf(::SetBurnAddedToBudgetUseCase)
     factoryOf(::GetBurnProfileUseCase)

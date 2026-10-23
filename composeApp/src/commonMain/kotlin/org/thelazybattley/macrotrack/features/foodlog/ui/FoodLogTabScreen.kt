@@ -262,6 +262,7 @@ private fun FoodLogTabScreen(
                     day = viewState.todayActivity,
                     goal = viewState.stepGoal,
                     activeKcal = viewState.activeKcal,
+                    isCounting = viewState.isCountingSteps,
                     onClick = onOpenSteps
                 )
             }

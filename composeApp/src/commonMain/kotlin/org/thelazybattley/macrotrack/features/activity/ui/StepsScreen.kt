@@ -28,21 +28,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.liveRegion
-import kotlinx.coroutines.delay
-import macrotrack.composeapp.generated.resources.close
-import macrotrack.composeapp.generated.resources.ic_check
-import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.steps_counting
 import macrotrack.composeapp.generated.resources.steps_counting_all_day
+import macrotrack.composeapp.generated.resources.steps_counting_off
+import macrotrack.composeapp.generated.resources.steps_counting_off_description
+import macrotrack.composeapp.generated.resources.steps_counting_off_hint
 import macrotrack.composeapp.generated.resources.steps_counting_description
-import macrotrack.composeapp.generated.resources.steps_counting_steps_only
-import macrotrack.composeapp.generated.resources.steps_counting_steps_only_description
-import macrotrack.composeapp.generated.resources.steps_only_on
-import macrotrack.composeapp.generated.resources.steps_only_on_body
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +52,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_chevron_right
 import macrotrack.composeapp.generated.resources.ic_flame
+import macrotrack.composeapp.generated.resources.ic_map_pin
+import macrotrack.composeapp.generated.resources.ic_map_pin_off
+import macrotrack.composeapp.generated.resources.steps_location_off_body
+import macrotrack.composeapp.generated.resources.steps_location_off_title
+import macrotrack.composeapp.generated.resources.steps_map_required
+import macrotrack.composeapp.generated.resources.steps_record_needs_location
+import macrotrack.composeapp.generated.resources.steps_record_with_map
 import macrotrack.composeapp.generated.resources.ic_footprints
 import macrotrack.composeapp.generated.resources.ic_minus
 import macrotrack.composeapp.generated.resources.ic_plus
@@ -133,6 +131,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.KeypadField
+import org.thelazybattley.macrotrack.core.platform.rememberLocationPermissionState
 import org.thelazybattley.macrotrack.core.platform.rememberMotionPermissionState
 import org.thelazybattley.macrotrack.core.platform.rememberNotificationPermissionState
 import org.thelazybattley.macrotrack.core.toDayMonthDay
@@ -167,10 +166,7 @@ fun StepsScreen(
     onOpenSession: (Long) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenBurn: () -> Unit,
-    onOpenSettings: () -> Unit,
-    /** Right after choosing to just count steps: confirms it with a toast. */
-    isStepsOnlyJustChosen: Boolean = false,
-    onStepsOnlyToastShown: () -> Unit = {}
+    onOpenSettings: () -> Unit
 ) {
     val viewModel = koinViewModel<StepsViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -185,9 +181,7 @@ fun StepsScreen(
         onOpenSession = onOpenSession,
         onOpenHistory = onOpenHistory,
         onOpenBurn = onOpenBurn,
-        onOpenSettings = onOpenSettings,
-        isStepsOnlyJustChosen = isStepsOnlyJustChosen,
-        onStepsOnlyToastShown = onStepsOnlyToastShown
+        onOpenSettings = onOpenSettings
     )
 }
 
@@ -201,13 +195,11 @@ private fun StepsScreen(
     onOpenSession: (Long) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenBurn: () -> Unit,
-    onOpenSettings: () -> Unit,
-    isStepsOnlyJustChosen: Boolean,
-    onStepsOnlyToastShown: () -> Unit
+    onOpenSettings: () -> Unit
 ) {
     val pro = LocalProAccess.current
     val motion = rememberMotionPermissionState()
-    Box(modifier = Modifier.fillMaxSize()) {
+    val location = rememberLocationPermissionState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -229,7 +221,7 @@ private fun StepsScreen(
                 trailing = { GoalButton(goal = viewState.goal, onClick = callbacks::onOpenGoal) }
             )
             if (viewState.isSensorAvailable && motion.isGranted) {
-                CountingChip(isStepsOnly = viewState.stepNotifications.isStepsOnly, onClick = onOpenSettings)
+                CountingChip(isCounting = viewState.isCounting, onClick = onOpenSettings)
             }
             when {
                 !viewState.isSensorAvailable -> InfoNote(text = stringResource(resource = Res.string.steps_unavailable))
@@ -242,110 +234,56 @@ private fun StepsScreen(
                 onLockedBurn = { pro.openPaywall(ProFeature.CALORIES_BURNED) }
             )
             StepsChartCard(viewState = viewState, callbacks = callbacks)
-            RecordButtons(recording = recording, onRecord = onRecord)
+            RecordButtons(recording = recording, isLocationOn = location.isGranted, onRecord = onRecord)
             RecentSessions(sessions = viewState.recentSessions, onOpenSession = onOpenSession, onSeeAll = onOpenHistory)
             HistoryCard(sessionsLast30 = viewState.sessionsLast30, sessionsPerDay = viewState.sessionsPerDay, onClick = onOpenHistory)
             InfoNote(text = stringResource(resource = Res.string.steps_info))
         }
         RecordingBar()
     }
-    if (isStepsOnlyJustChosen) {
-        StepsOnlyToast(
-            modifier = Modifier
-                .align(alignment = Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-            onDismiss = onStepsOnlyToastShown
-        )
-    }
-    }
     viewState.goalDraft?.let { draft ->
         GoalSheets(viewState = viewState, draft = draft, callbacks = callbacks)
     }
 }
 
-/** Always there while steps count, so it's clear they do; opens Profile › Steps & walks. */
+/**
+ * Always there while steps count, so it's clear they do, and says so when counting was turned off. Opens
+ * Profile › Steps & walks, where counting is turned on or off.
+ */
 @Composable
-private fun CountingChip(isStepsOnly: Boolean, onClick: () -> Unit) {
+private fun CountingChip(isCounting: Boolean, onClick: () -> Unit) {
     val description = stringResource(
-        resource = if (isStepsOnly) Res.string.steps_counting_steps_only_description else Res.string.steps_counting_description
+        resource = if (isCounting) Res.string.steps_counting_description else Res.string.steps_counting_off_description
     )
     Row(
         modifier = Modifier
             .height(height = 32.dp)
             .clip(shape = RoundedCornerShape(size = 16.dp))
-            .background(color = colors.accentSoft)
+            .background(color = if (isCounting) colors.accentSoft else colors.surface)
+            .then(if (isCounting) Modifier else Modifier.border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 16.dp)))
             .clickable(role = Role.Button, onClick = onClick)
             .clearAndSetSemantics { contentDescription = description }
             .padding(start = 10.dp, end = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
-        PulsingDot(color = colors.accent, size = 8.dp)
-        Text(text = stringResource(resource = Res.string.steps_counting), style = typography.bold12, color = colors.accentInk)
-        Text(
-            text = stringResource(resource = if (isStepsOnly) Res.string.steps_counting_steps_only else Res.string.steps_counting_all_day),
-            style = typography.medium11,
-            color = colors.accentInk,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-/** "Steps only is on", for 5 seconds or until closed. */
-@Composable
-private fun StepsOnlyToast(modifier: Modifier = Modifier, onDismiss: () -> Unit) {
-    LaunchedEffect(key1 = Unit) {
-        delay(timeMillis = STEPS_ONLY_TOAST_MILLIS)
-        onDismiss()
-    }
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(elevation = 8.dp, shape = RoundedCornerShape(size = 16.dp))
-            .clip(shape = RoundedCornerShape(size = 16.dp))
-            .background(color = colors.ink)
-            .semantics { liveRegion = LiveRegionMode.Polite }
-            .padding(start = 14.dp, end = 4.dp, top = 12.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(size = 32.dp)
-                .background(color = colors.accent, shape = RoundedCornerShape(size = 10.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(resource = Res.drawable.ic_check),
-                contentDescription = null,
-                tint = colors.onAccent,
-                modifier = Modifier.size(size = 18.dp)
+        if (isCounting) {
+            PulsingDot(color = colors.accent, size = 8.dp)
+            Text(text = stringResource(resource = Res.string.steps_counting), style = typography.bold12, color = colors.accentInk)
+            Text(
+                text = stringResource(resource = Res.string.steps_counting_all_day),
+                style = typography.medium11,
+                color = colors.accentInk,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-        }
-        Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 1.dp)) {
-            Text(text = stringResource(resource = Res.string.steps_only_on), style = typography.bold14, color = colors.background)
-            Text(text = stringResource(resource = Res.string.steps_only_on_body), style = typography.regular11, color = colors.background.copy(alpha = 0.8f))
-        }
-        Box(
-            modifier = Modifier
-                .size(size = 44.dp)
-                .clip(shape = RoundedCornerShape(size = 10.dp))
-                .clickable(role = Role.Button, onClick = onDismiss),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(resource = Res.drawable.ic_close),
-                contentDescription = stringResource(resource = Res.string.close),
-                tint = colors.background,
-                modifier = Modifier.size(size = 16.dp)
-            )
+        } else {
+            Box(modifier = Modifier.size(size = 8.dp).background(color = colors.faint, shape = RoundedCornerShape(size = 4.dp)))
+            Text(text = stringResource(resource = Res.string.steps_counting_off), style = typography.bold12, color = colors.muted)
+            Text(text = stringResource(resource = Res.string.steps_counting_off_hint), style = typography.medium11, color = colors.muted, maxLines = 1)
         }
     }
 }
-
-private const val STEPS_ONLY_TOAST_MILLIS = 5_000L
 
 @Composable
 private fun GoalButton(goal: Int, onClick: () -> Unit) {
@@ -673,10 +611,28 @@ internal fun BarButton(
     }
 }
 
+/**
+ * Walk and Run. They always record on the map, so with location off a notice says why they can't start, and both
+ * lead to the location screen instead.
+ */
 @Composable
-private fun RecordButtons(recording: Recording?, onRecord: (ActivityType) -> Unit) {
+private fun RecordButtons(recording: Recording?, isLocationOn: Boolean, onRecord: (ActivityType) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        Text(text = stringResource(resource = Res.string.steps_record_heading), style = typography.bold12, color = colors.muted)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                modifier = Modifier.weight(weight = 1f),
+                text = stringResource(resource = Res.string.steps_record_heading),
+                style = typography.bold12,
+                color = colors.muted
+            )
+            Icon(painter = painterResource(resource = Res.drawable.ic_map_pin), contentDescription = null, tint = colors.accentInk, modifier = Modifier.size(size = 12.dp))
+            Text(
+                modifier = Modifier.padding(start = 4.dp),
+                text = stringResource(resource = Res.string.steps_map_required),
+                style = typography.bold11,
+                color = colors.accentInk
+            )
+        }
         if (recording != null) {
             CommonPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -684,23 +640,65 @@ private fun RecordButtons(recording: Recording?, onRecord: (ActivityType) -> Uni
                 onClick = { onRecord(recording.type) }
             )
         } else {
+            if (!isLocationOn) LocationOffNotice()
             Row(horizontalArrangement = Arrangement.spacedBy(space = 10.dp)) {
                 ActivityType.entries.forEach { type ->
+                    val title = stringResource(resource = type.title)
+                    val description = if (isLocationOn) {
+                        stringResource(resource = Res.string.steps_record_with_map, title.lowercase())
+                    } else {
+                        stringResource(resource = Res.string.steps_record_needs_location, title)
+                    }
+                    val shape = RoundedCornerShape(size = 16.dp)
+                    val tint = if (isLocationOn) colors.onAccent else colors.ink
                     Row(
                         modifier = Modifier
                             .weight(weight = 1f)
                             .height(height = 56.dp)
-                            .clip(shape = RoundedCornerShape(size = 16.dp))
-                            .background(color = colors.accent)
-                            .clickable(role = Role.Button) { onRecord(type) },
+                            .clip(shape = shape)
+                            .then(
+                                if (isLocationOn) {
+                                    Modifier.background(color = colors.accent)
+                                } else {
+                                    Modifier
+                                        .background(color = colors.surface)
+                                        .border(width = 1.5.dp, color = colors.line, shape = shape)
+                                }
+                            )
+                            // Without location this opens the location screen, which asks for it.
+                            .clickable(role = Role.Button) { onRecord(type) }
+                            .clearAndSetSemantics { contentDescription = description },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterHorizontally)
                     ) {
-                        Icon(painter = painterResource(resource = type.icon), contentDescription = null, tint = colors.onAccent, modifier = Modifier.size(size = 22.dp))
-                        Text(text = stringResource(resource = type.title), style = typography.bold16, color = colors.onAccent)
+                        Icon(painter = painterResource(resource = type.icon), contentDescription = null, tint = tint, modifier = Modifier.size(size = 22.dp))
+                        Text(text = title, style = typography.bold16, color = tint)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LocationOffNotice() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(size = 16.dp))
+            .background(color = colors.warmSoft)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_map_pin_off),
+            contentDescription = null,
+            tint = colors.warmInk,
+            modifier = Modifier.padding(top = 1.dp).size(size = 20.dp)
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+            Text(text = stringResource(resource = Res.string.steps_location_off_title), style = typography.bold13, color = colors.warmInk)
+            Text(text = stringResource(resource = Res.string.steps_location_off_body), style = typography.regular13, color = colors.warmInk)
         }
     }
 }

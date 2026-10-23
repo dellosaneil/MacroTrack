@@ -51,6 +51,8 @@ fun TodayStepsCard(
     day: DayActivity,
     goal: Int,
     activeKcal: Int?,
+    /** False when step counting was turned off in Profile › Steps & walks. */
+    isCounting: Boolean = true,
     onClick: () -> Unit
 ) {
     val isPro = LocalProAccess.current.isActive
@@ -93,7 +95,7 @@ fun TodayStepsCard(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
                 Text(text = stringResource(resource = Res.string.today_steps_title), style = typography.medium11, color = colors.muted)
                 // Steps count all day, so the card says so whenever they do.
-                if (motion.isGranted) {
+                if (motion.isGranted && isCounting) {
                     PulsingDot(color = colors.accent, size = 6.dp)
                     Text(text = stringResource(resource = Res.string.today_steps_counting), style = typography.bold10, color = colors.accentInk)
                 }

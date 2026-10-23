@@ -70,6 +70,23 @@ class ActivityRepositoryImpl(
         }
     }
 
+    override fun isStepCountingOn(): Flow<Boolean> = appFlagDao.isFlagSet(key = STEP_COUNTING_OFF).map { !it }
+
+    override suspend fun setStepCountingOn(isOn: Boolean) {
+        if (isOn) {
+            appFlagDao.deleteFlag(key = STEP_COUNTING_OFF)
+        } else {
+            appFlagDao.insertFlag(flag = AppFlagEntity(key = STEP_COUNTING_OFF))
+        }
+    }
+
+    override suspend fun resetStepBaseline(atMillis: Long) {
+        // A counter that only counts up takes its next reading as the new start; a phone that keeps its own
+        // history is read from this hour on.
+        appFlagDao.deleteFlag(key = STEP_SENSOR_READING)
+        setStepsSyncedUntil(millis = atMillis / MILLIS_PER_HOUR * MILLIS_PER_HOUR)
+    }
+
     override fun getStepNotificationSettings(): Flow<StepNotificationSettings> =
         appFlagDao.getFlagValue(key = STEP_NOTIFICATIONS).map { value ->
             value?.let { runCatching { json.decodeFromString<StepNotificationSettings>(string = it) }.getOrNull() }
@@ -130,6 +147,8 @@ class ActivityRepositoryImpl(
         const val STEP_NUDGE_OFF = "step_nudge_off"
         const val BURN_ADDED_TO_BUDGET = "burn_added_to_budget"
         const val STEP_NOTIFICATIONS = "step_notifications"
+        const val STEP_COUNTING_OFF = "step_counting_off"
+        private const val MILLIS_PER_HOUR = 3_600_000L
 
         /** What this phone's notifications already did today: never backed up. */
         const val STEP_NOTIFICATION_HIDDEN_ON = "step_notification_hidden_on"

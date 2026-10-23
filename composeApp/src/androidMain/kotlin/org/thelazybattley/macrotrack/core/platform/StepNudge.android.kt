@@ -100,7 +100,8 @@ class StepNudgeReceiver : BroadcastReceiver() {
         val sensor = koin.get<StepSensor>()
         val isEnabled = repository.isStepNudgeEnabled().first()
         koin.get<StepNudgeScheduler>().schedule(isEnabled = isEnabled, hour = repository.getStepNotificationSettings().first().nudgeHour)
-        if (!isEnabled) return
+        // No nudge while step counting is off: the count would be stale.
+        if (!isEnabled || !repository.isStepCountingOn().first()) return
         if (sensor.isAvailable && context.canCountSteps()) {
             withTimeoutOrNull(timeMillis = SENSOR_READ_TIMEOUT_MILLIS) { sensor.counts().first() }?.let { count ->
                 repository.recordStepCount(count = count, atMillis = System.currentTimeMillis())

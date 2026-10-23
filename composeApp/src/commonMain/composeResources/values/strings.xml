@@ -1346,7 +1346,12 @@
         <item quantity="one">%1$s step</item>
         <item quantity="other">%1$s steps</item>
     </plurals>
-    <string name="steps_record_heading">Record with a map</string>
+    <string name="steps_record_heading">Record a walk or run</string>
+    <string name="steps_map_required">Map required</string>
+    <string name="steps_location_off_title">Location is off</string>
+    <string name="steps_location_off_body">Walks and runs are recorded on the map, so they can't start without it. Your daily steps still count.</string>
+    <string name="steps_record_needs_location">%1$s. Needs location, turn it on first</string>
+    <string name="steps_record_with_map">Record a %1$s with the map</string>
     <string name="steps_recording_return">Recording a %1$s · Return to the map</string>
     <string name="steps_recent">Recent walks &amp; runs</string>
     <string name="steps_see_all">See all</string>
@@ -1358,7 +1363,7 @@
         <item quantity="other">%1$d walks &amp; runs in 30 days</item>
     </plurals>
     <string name="steps_history_body"> · charts, route map, personal bests</string>
-    <string name="steps_info">Steps are counted by your phone all day, no location needed. Location is used only while you record a walk or run, to draw its route. Calories burned (Pro) use your weight, height, age and sex, and aren't added to your food budget unless you turn that on.</string>
+    <string name="steps_info">Steps are counted by your phone all day, no location needed. Walks and runs are always recorded on the map, so they need location, used only while recording. Calories burned (Pro) use your weight, height, age and sex, and aren't added to your food budget unless you turn that on.</string>
     <string name="steps_goal_sheet_title">Daily step goal</string>
     <string name="steps_goal_sheet_body">Counts from midnight to midnight. Same goal every day.</string>
     <string name="steps_goal_fewer">%1$d fewer steps</string>
@@ -1388,7 +1393,6 @@
     <string name="steps_settings_notification">Steps notification</string>
     <string name="steps_settings_show">Show today's steps</string>
     <string name="steps_settings_show_body">A silent notification that updates about every 15 minutes. Swipe it away any time; it's back tomorrow.</string>
-    <string name="steps_settings_steps_only_body">Steps only is on: it says no location is used, and offers to add a map.</string>
     <string name="steps_settings_lock">Show on lock screen</string>
     <string name="steps_settings_lock_body">Off hides it until your phone is unlocked</string>
     <string name="steps_settings_show_with">Show with steps</string>
@@ -1399,7 +1403,6 @@
     <string name="steps_line_to_go">%1$s to go · %2$s</string>
     <string name="steps_line_reached">Goal reached · %1$s</string>
     <string name="steps_line_kcal">≈%1$s kcal burned</string>
-    <string name="steps_line_steps_only">Counting steps · Steps only</string>
     <string name="steps_settings_alerts">Step alerts</string>
     <string name="steps_settings_goal_alert">Goal reached</string>
     <string name="steps_settings_goal_alert_body">Once a day, the moment you hit %1$s</string>
@@ -1408,32 +1411,35 @@
     <string name="steps_settings_recording">While recording a walk or run</string>
     <string name="steps_settings_recording_title">Recording notification</string>
     <string name="steps_settings_recording_always">Always on</string>
-    <string name="steps_settings_recording_body">Needed so your phone keeps using GPS in the background. It has Pause and Finish, and replaces the steps notification until you finish.</string>
+    <string name="steps_settings_recording_body">Walks and runs are always recorded on the map, so location is required to start one. This notification keeps GPS running, has Pause and Finish, and replaces the steps notification until you finish.</string>
     <string name="steps_settings_footer">You can also turn MacroTrack notifications off in your phone's settings. Step counting keeps working either way.</string>
     <string name="steps_settings_unsupported">Step notifications aren't available on this phone yet. Step counting works as usual.</string>
     <!-- Steps: the counting chip and the steps-only confirmation -->
     <string name="steps_counting">Counting steps</string>
     <string name="steps_counting_all_day">· all day</string>
-    <string name="steps_counting_steps_only">· Steps only, no location</string>
     <string name="steps_counting_description">Step counting is on. Open step settings</string>
-    <string name="steps_counting_steps_only_description">Step counting is on, steps only, no location. Open step settings</string>
-    <string name="steps_only_on">Steps only is on</string>
-    <string name="steps_only_on_body">Counting your steps all day. No location, no map.</string>
+    <string name="steps_counting_off">Step counting off</string>
+    <string name="steps_counting_off_hint">· Turn on</string>
+    <string name="steps_counting_off_description">Step counting is off. Open step settings to turn it on</string>
+    <string name="steps_settings_counting">Step counting</string>
+    <string name="steps_settings_counting_switch">Count my steps</string>
+    <string name="steps_settings_counting_body">All day from your phone's motion sensor, no location. Off stops counting; steps already saved stay, and walks and runs still count their own.</string>
+    <string name="steps_settings_counting_off_note">Step counting is off, so there's nothing new to show.</string>
     <string name="today_steps_counting">Counting</string>
     <string name="steps_goal_keep">Keep %1$s steps</string>
     <string name="steps_goal_save">Save goal · %1$s steps</string>
 
-    <string name="record_permission_title">See your walks and runs on a map</string>
-    <string name="record_permission_body">To draw your route, MacroTrack needs your location while you're recording a walk or run.</string>
+    <string name="record_permission_title">Walks and runs need the map</string>
+    <string name="record_permission_body">Every walk and run is recorded on the map. To start one, MacroTrack needs your location while it records. There's no steps-only recording.</string>
     <string name="record_perk_recording_title">Only while recording</string>
     <string name="record_perk_recording_body">Never in the background. Steps keep counting all day without it.</string>
     <string name="record_perk_phone_title">Routes stay on this phone</string>
-    <string name="record_perk_phone_body">Included in your backups.</string>
-    <string name="record_perk_change_title">Change it any time</string>
-    <string name="record_perk_change_body">In your phone's settings for MacroTrack.</string>
-    <string name="record_permission_continue">Continue</string>
+    <string name="record_perk_phone_body">Included in your backups. Start and finish can be hidden when you share.</string>
+    <string name="record_perk_change_title">Without location</string>
+    <string name="record_perk_change_body">You can't start a walk or run. Your daily step count on Steps keeps working.</string>
+    <string name="record_permission_continue">Allow location</string>
     <string name="record_permission_settings">Open settings</string>
-    <string name="record_permission_not_now">Not now, just count steps</string>
+    <string name="record_permission_not_now">Not now</string>
     <string name="record_map_description">Live map of your route so far</string>
     <string name="record_recording">Recording</string>
     <string name="record_paused">Paused</string>

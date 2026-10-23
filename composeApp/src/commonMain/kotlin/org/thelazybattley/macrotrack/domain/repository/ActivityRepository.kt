@@ -38,6 +38,17 @@ interface ActivityRepository {
 
     suspend fun setStepNudgeEnabled(isEnabled: Boolean)
 
+    /** Counting steps all day from the motion sensor. On until turned off in Profile › Steps & walks. */
+    fun isStepCountingOn(): Flow<Boolean>
+
+    suspend fun setStepCountingOn(isOn: Boolean)
+
+    /**
+     * Forgets where the phone's step counter was, so counting starts again from [atMillis] and steps taken while it
+     * was off aren't added.
+     */
+    suspend fun resetStepBaseline(atMillis: Long)
+
     /** The steps notification and step alerts, as set in Profile › Steps & walks. */
     fun getStepNotificationSettings(): Flow<StepNotificationSettings>
 

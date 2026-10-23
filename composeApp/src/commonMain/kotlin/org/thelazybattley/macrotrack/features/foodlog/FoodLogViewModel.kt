@@ -136,6 +136,7 @@ class FoodLogViewModel(
                     it.copy(
                         todayActivity = today.day,
                         stepGoal = today.stepGoal,
+                        isCountingSteps = today.isCounting,
                         activeKcal = today.activeKcal,
                         budgetBurn = today.budgetBurn
                     ).withDayGoal()

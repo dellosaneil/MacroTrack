@@ -67,15 +67,11 @@ interface StepNotifier {
      * goal-reached alert if it's due, and sets or clears the refresh that keeps doing so.
      */
     suspend fun refresh()
-
-    /** The pop-down shown once, right after choosing to just count steps. */
-    fun announceStepsOnly()
 }
 
 object NoStepNotifier : StepNotifier {
     override val isSupported: Boolean = false
     override suspend fun refresh() = Unit
-    override fun announceStepsOnly() = Unit
 }
 
 /**

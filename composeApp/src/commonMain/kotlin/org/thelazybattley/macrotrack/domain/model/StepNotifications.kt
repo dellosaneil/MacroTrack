@@ -17,15 +17,13 @@ enum class StepNotificationExtra {
  */
 @Serializable
 data class StepNotificationSettings(
-    /** Show today's steps: off until turned on in Profile › Steps & walks, or by choosing to just count steps. */
+    /** Show today's steps: off until turned on in Profile › Steps & walks. */
     val isOn: Boolean = false,
     val isOnLockScreen: Boolean = true,
     val extra: StepNotificationExtra = StepNotificationExtra.DISTANCE,
     /** Once a day, the moment the goal is reached. */
     val isGoalAlertOn: Boolean = true,
-    val nudgeHour: Int = StepGoal.NUDGE_HOUR,
-    /** Set by "Not now, just count steps": the notification says no location is used, and offers to add a map. */
-    val isStepsOnly: Boolean = false
+    val nudgeHour: Int = StepGoal.NUDGE_HOUR
 ) {
     companion object {
         /** The evening nudge times offered: 5 PM to 8 PM. */

@@ -50,10 +50,13 @@ import macrotrack.composeapp.generated.resources.steps_extra_to_goal
 import macrotrack.composeapp.generated.resources.steps_goal_nudge
 import macrotrack.composeapp.generated.resources.steps_line_kcal
 import macrotrack.composeapp.generated.resources.steps_line_reached
-import macrotrack.composeapp.generated.resources.steps_line_steps_only
 import macrotrack.composeapp.generated.resources.steps_line_to_go
 import macrotrack.composeapp.generated.resources.steps_line_to_goal
 import macrotrack.composeapp.generated.resources.steps_settings_alerts
+import macrotrack.composeapp.generated.resources.steps_settings_counting
+import macrotrack.composeapp.generated.resources.steps_settings_counting_body
+import macrotrack.composeapp.generated.resources.steps_settings_counting_off_note
+import macrotrack.composeapp.generated.resources.steps_settings_counting_switch
 import macrotrack.composeapp.generated.resources.steps_settings_daily_goal
 import macrotrack.composeapp.generated.resources.steps_settings_footer
 import macrotrack.composeapp.generated.resources.steps_settings_goal_alert
@@ -77,7 +80,6 @@ import macrotrack.composeapp.generated.resources.steps_settings_show
 import macrotrack.composeapp.generated.resources.steps_settings_show_body
 import macrotrack.composeapp.generated.resources.steps_settings_show_with
 import macrotrack.composeapp.generated.resources.steps_settings_step_goal
-import macrotrack.composeapp.generated.resources.steps_settings_steps_only_body
 import macrotrack.composeapp.generated.resources.steps_settings_title
 import macrotrack.composeapp.generated.resources.steps_settings_unsupported
 import org.jetbrains.compose.resources.painterResource
@@ -140,6 +142,25 @@ private fun StepsSettingsScreen(
             )
             Text(text = stringResource(resource = Res.string.steps_settings_title), style = typography.bold24, color = colors.ink)
         }
+        Section(title = stringResource(resource = Res.string.steps_settings_counting)) {
+            SettingsCard {
+                SwitchRow(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                    title = stringResource(resource = Res.string.steps_settings_counting_switch),
+                    body = stringResource(resource = Res.string.steps_settings_counting_body),
+                    isOn = viewState.isCountingOn,
+                    onToggle = callbacks::onCountingToggled
+                )
+            }
+        }
+        // Everything below shows steps, so it waits while counting is off.
+        Column(
+            modifier = Modifier.alpha(alpha = if (viewState.isCountingOn) 1f else 0.45f),
+            verticalArrangement = Arrangement.spacedBy(space = 18.dp)
+        ) {
+        if (!viewState.isCountingOn) {
+            Text(text = stringResource(resource = Res.string.steps_settings_counting_off_note), style = typography.regular11, color = colors.muted)
+        }
         if (viewState.isNotificationSupported) {
             Section(title = stringResource(resource = Res.string.steps_settings_preview)) {
                 NotificationPreview(viewState = viewState)
@@ -182,9 +203,7 @@ private fun StepsSettingsScreen(
                     SwitchRow(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                         title = stringResource(resource = Res.string.steps_settings_show),
-                        body = stringResource(
-                            resource = if (settings.isStepsOnly) Res.string.steps_settings_steps_only_body else Res.string.steps_settings_show_body
-                        ),
+                        body = stringResource(resource = Res.string.steps_settings_show_body),
                         isOn = settings.isOn,
                         onToggle = askingFirst(!settings.isOn, callbacks::onShowStepsToggled)
                     )
@@ -243,6 +262,7 @@ private fun StepsSettingsScreen(
             Section(title = stringResource(resource = Res.string.steps_settings_recording)) {
                 RecordingNote()
             }
+        }
         }
         Text(text = stringResource(resource = Res.string.steps_settings_footer), style = typography.regular11, color = colors.muted)
     }
@@ -347,7 +367,6 @@ private fun NotificationPreview(viewState: StepsSettingsViewState) {
 @Composable
 private fun previewLine(viewState: StepsSettingsViewState): String {
     val settings = viewState.settings
-    if (settings.isStepsOnly) return stringResource(resource = Res.string.steps_line_steps_only)
     val left = viewState.stepsLeft
     val toGoal = if (left == 0) {
         stringResource(resource = Res.string.steps_line_reached, viewState.goal.withThousands())

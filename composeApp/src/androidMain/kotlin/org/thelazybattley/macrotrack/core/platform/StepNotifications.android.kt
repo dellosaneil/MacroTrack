@@ -51,9 +51,6 @@ import java.util.Locale
 /** Waits this long for the step counter's first reading before showing what's already saved. */
 private const val SENSOR_READ_TIMEOUT_MILLIS = 5_000L
 
-/** The pop-down after choosing steps only goes by itself after this long. */
-private const val ANNOUNCE_TIMEOUT_MILLIS = 5_000L
-
 /**
  * The silent steps notification, in its ordinary or steps-only form, and the goal-reached alert. An inexact alarm
  * runs [StepNotificationReceiver] about every 15 minutes while either is on; it doesn't wake the phone, so the
@@ -74,7 +71,13 @@ class AndroidStepNotifier(
 
     override suspend fun refresh() = mutex.withLock {
         val settings = repository.getStepNotificationSettings().first()
-        scheduleRefresh(isEnabled = settings.isOn || settings.isGoalAlertOn)
+        // With counting off there are no new steps to show or celebrate.
+        val isCounting = repository.isStepCountingOn().first()
+        scheduleRefresh(isEnabled = isCounting && (settings.isOn || settings.isGoalAlertOn))
+        if (!isCounting) {
+            manager.cancel(STEPS_NOTIFICATION_ID)
+            return@withLock
+        }
         if (!canPost()) return@withLock
         createChannels()
         val today = getCurrentDate()
@@ -97,21 +100,6 @@ class AndroidStepNotifier(
     }
 
     @android.annotation.SuppressLint("MissingPermission")
-    override fun announceStepsOnly() {
-        if (!canPost()) return
-        createChannels()
-        val notification = NotificationCompat.Builder(context, ALERTS_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_monochrome)
-            .setContentTitle(context.getString(R.string.steps_only_announce_title))
-            .setContentText(context.getString(R.string.steps_only_announce_body))
-            .setContentIntent(linkIntent(link = AppLink.STEPS, requestCode = REQUEST_ANNOUNCE))
-            .setTimeoutAfter(ANNOUNCE_TIMEOUT_MILLIS)
-            .setAutoCancel(true)
-            .build()
-        manager.notify(ANNOUNCE_NOTIFICATION_ID, notification)
-    }
-
-    @android.annotation.SuppressLint("MissingPermission")
     private suspend fun postSteps(settings: StepNotificationSettings, steps: Int, goal: Int, hours: List<Int>) {
         val left = (goal - steps).coerceAtLeast(minimumValue = 0)
         val toGoal = if (left == 0) {
@@ -130,33 +118,19 @@ class AndroidStepNotifier(
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setVisibility(if (settings.isOnLockScreen) NotificationCompat.VISIBILITY_PUBLIC else NotificationCompat.VISIBILITY_SECRET)
             .addAction(0, context.getString(R.string.steps_action_open), linkIntent(link = AppLink.STEPS, requestCode = REQUEST_OPEN))
-        if (settings.isStepsOnly) {
-            // Says plainly that steps are counted and nothing else, with the compact pill at the top on Android 16.
-            builder
-                .setContentTitle(context.getString(R.string.steps_only_title))
-                .setContentText(context.getString(R.string.steps_only_text, toGoal))
-                .setSubText(context.getString(R.string.steps_only_no_location))
-                .setProgress(goal, steps.coerceAtMost(maximumValue = goal), false)
-                .setOngoing(true)
-                .setRequestPromotedOngoing(true)
-                .setShortCriticalText(steps.formatted())
-                .addAction(0, context.getString(R.string.steps_action_settings), linkIntent(link = AppLink.STEPS_SETTINGS, requestCode = REQUEST_SETTINGS))
-                .addAction(0, context.getString(R.string.steps_action_add_map), linkIntent(link = AppLink.RECORD_WALK, requestCode = REQUEST_WALK))
-        } else {
-            val title = context.getString(R.string.steps_title, steps.formatted())
-            val text = when (val extra = extraText(extra = settings.extra)) {
-                null -> toGoal
-                else -> if (left == 0) context.getString(R.string.steps_goal_reached, extra) else context.getString(R.string.steps_to_go_extra, left.formatted(), extra)
-            }
-            builder
-                .setContentTitle(title)
-                .setContentText(text)
-                .setLargeIcon(ringBitmap(percent = if (goal > 0) steps * 100 / goal else 0))
-                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-                .setCustomBigContentView(expandedView(title = title, text = text, hours = hours))
-                .addAction(0, context.getString(R.string.steps_action_hide), receiverIntent(action = StepNotificationReceiver.ACTION_HIDE_TODAY, requestCode = REQUEST_HIDE))
-                .addAction(0, context.getString(R.string.steps_action_walk), linkIntent(link = AppLink.RECORD_WALK, requestCode = REQUEST_WALK))
+        val title = context.getString(R.string.steps_title, steps.formatted())
+        val text = when (val extra = extraText(extra = settings.extra)) {
+            null -> toGoal
+            else -> if (left == 0) context.getString(R.string.steps_goal_reached, extra) else context.getString(R.string.steps_to_go_extra, left.formatted(), extra)
         }
+        builder
+            .setContentTitle(title)
+            .setContentText(text)
+            .setLargeIcon(ringBitmap(percent = if (goal > 0) steps * 100 / goal else 0))
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomBigContentView(expandedView(title = title, text = text, hours = hours))
+            .addAction(0, context.getString(R.string.steps_action_hide), receiverIntent(action = StepNotificationReceiver.ACTION_HIDE_TODAY, requestCode = REQUEST_HIDE))
+            .addAction(0, context.getString(R.string.steps_action_walk), linkIntent(link = AppLink.RECORD_WALK, requestCode = REQUEST_WALK))
         manager.notify(STEPS_NOTIFICATION_ID, builder.build())
     }
 
@@ -309,15 +283,12 @@ class AndroidStepNotifier(
         private const val ALERTS_CHANNEL_ID = "step_alerts"
         private const val STEPS_NOTIFICATION_ID = 43
         private const val GOAL_NOTIFICATION_ID = 44
-        private const val ANNOUNCE_NOTIFICATION_ID = 45
         private const val REQUEST_OPEN = 10
         private const val REQUEST_HIDE = 11
         private const val REQUEST_WALK = 12
-        private const val REQUEST_SETTINGS = 13
         private const val REQUEST_DISMISSED = 14
         private const val REQUEST_REFRESH = 15
         private const val REQUEST_GOAL = 16
-        private const val REQUEST_ANNOUNCE = 17
 
         private const val ACCENT_LIGHT = 0xFF0E6E52.toInt()
         private const val ACCENT_DARK = 0xFF3FBF8F.toInt()
@@ -353,7 +324,7 @@ class StepNotificationReceiver : BroadcastReceiver() {
             ACTION_HIDE_TODAY, ACTION_DISMISSED -> repository.setStepNotificationHiddenOn(date = getCurrentDate())
             ACTION_REFRESH -> {
                 val sensor = koin.get<StepSensor>()
-                if (sensor.isAvailable && context.canCountSteps()) {
+                if (sensor.isAvailable && context.canCountSteps() && repository.isStepCountingOn().first()) {
                     withTimeoutOrNull(timeMillis = SENSOR_READ_TIMEOUT_MILLIS) { sensor.counts().first() }?.let { count ->
                         repository.recordStepCount(count = count, atMillis = System.currentTimeMillis())
                     }

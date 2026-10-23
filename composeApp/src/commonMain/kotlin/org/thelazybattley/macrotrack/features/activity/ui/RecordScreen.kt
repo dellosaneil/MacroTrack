@@ -93,7 +93,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.platform.rememberLocationPermissionState
-import org.thelazybattley.macrotrack.core.platform.rememberNotificationPermissionState
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.domain.model.ActivityCalories
 import org.thelazybattley.macrotrack.domain.model.ActivityType
@@ -114,13 +113,12 @@ fun RecordScreen(
     onBack: () -> Unit,
     onMinimize: () -> Unit,
     onSaved: (Long) -> Unit,
-    /** After "Not now, just count steps": shows Steps with its confirmation. */
-    onStepsOnly: () -> Unit
+    /** "Not now" on the location screen: walks and runs need the map, so this goes back to Steps. */
+    onLocationDeclined: () -> Unit
 ) {
     val viewModel = koinViewModel<RecordViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     val location = rememberLocationPermissionState()
-    val notifications = rememberNotificationPermissionState()
     LaunchedEffect(key1 = location.isGranted) {
         if (location.isGranted) viewModel.onStart()
     }
@@ -134,12 +132,7 @@ fun RecordScreen(
         LocationPermissionContent(
             isPermanentlyDenied = location.isPermanentlyDenied,
             onContinue = location.request,
-            onNotNow = {
-                // Steps only shows as a notification, so it needs that permission.
-                if (!notifications.isGranted) notifications.request()
-                viewModel.onStepsOnlyChosen()
-                onStepsOnly()
-            }
+            onNotNow = onLocationDeclined
         )
     } else {
         LiveContent(viewState = viewState, callbacks = viewModel, onMinimize = onMinimize)

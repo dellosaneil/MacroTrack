@@ -59,6 +59,8 @@ data class FoodLogViewState(
     /** Today's steps, walks and runs for the steps card. */
     val todayActivity: DayActivity = DayActivity(totalSteps = 0, sessions = emptyList()),
     val stepGoal: Int = StepGoal.DEFAULT,
+    /** All-day step counting is on, so the steps card says it's counting. */
+    val isCountingSteps: Boolean = true,
     /** Calories burned today; null until the profile is set up. */
     val activeKcal: Int? = null,
     /** Burned calories added on top of today's budget: zero unless turned on with Pro. */

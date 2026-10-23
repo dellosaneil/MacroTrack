@@ -175,7 +175,6 @@ fun AppBottomNav() {
             navController.currentBackStackEntryFlow.first { entry -> entry.destination.route !in firstLaunchRoutes }
             val route = when (link) {
                 AppLink.STEPS -> AppDestinations.Root.Steps.route
-                AppLink.STEPS_SETTINGS -> AppDestinations.Root.StepsSettings.route
                 // With a recording already going, its map opens instead of a second one.
                 AppLink.RECORD_WALK -> AppDestinations.Root.RecordActivity.createRoute(
                     type = (recorder.state.value?.type ?: ActivityType.WALK).name
@@ -391,19 +390,14 @@ fun AppBottomNav() {
                             }
                         )
                     }
-                    composable(route = AppDestinations.Root.Steps.route) { entry ->
-                        val isStepsOnlyJustChosen by entry.savedStateHandle
-                            .getStateFlow(key = STEPS_ONLY_CHOSEN, initialValue = false)
-                            .collectAsStateWithLifecycle()
+                    composable(route = AppDestinations.Root.Steps.route) {
                         StepsScreen(
                             onBack = { navController.popBackStack() },
                             onRecord = { type -> navigate(AppDestinations.Root.RecordActivity.createRoute(type = type.name)) },
                             onOpenSession = { id -> navigate(AppDestinations.Root.ActivityDetail.createRoute(id = id)) },
                             onOpenHistory = { navigate(AppDestinations.Root.ActivityHistory.route) },
                             onOpenBurn = { navigate(AppDestinations.Root.CaloriesBurned.route) },
-                            onOpenSettings = { navigate(AppDestinations.Root.StepsSettings.route) },
-                            isStepsOnlyJustChosen = isStepsOnlyJustChosen,
-                            onStepsOnlyToastShown = { entry.savedStateHandle[STEPS_ONLY_CHOSEN] = false }
+                            onOpenSettings = { navigate(AppDestinations.Root.StepsSettings.route) }
                         )
                     }
                     composable(route = AppDestinations.Root.StepsSettings.route) {
@@ -428,13 +422,13 @@ fun AppBottomNav() {
                                     popUpTo(route = AppDestinations.Root.RecordActivity.routeWithArgs!!) { inclusive = true }
                                 }
                             },
-                            onStepsOnly = {
-                                // Back to Steps, opening it if the live map came from somewhere else, with its toast.
+                            onLocationDeclined = {
+                                // Back to Steps, opening it if the live map came from somewhere else, where it says why
+                                // walks and runs can't start.
                                 navController.popBackStack()
                                 if (navController.currentDestination?.route != AppDestinations.Root.Steps.route) {
                                     navController.navigate(route = AppDestinations.Root.Steps.route)
                                 }
-                                navController.currentBackStackEntry?.savedStateHandle?.set(STEPS_ONLY_CHOSEN, true)
                             }
                         )
                     }
@@ -760,9 +754,6 @@ fun AppBottomNav() {
 }
 
 /** Screens before the main screen exists, where the live map mustn't be opened on top. */
-/** Set on the Steps entry after choosing to just count steps, so it confirms that with a toast once. */
-private const val STEPS_ONLY_CHOSEN = "steps_only_chosen"
-
 private val firstLaunchRoutes = setOf(
     AppDestinations.Root.Splash.route,
     AppDestinations.Root.Walkthrough.route,
