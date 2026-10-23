@@ -289,7 +289,7 @@ fun AppBottomNav() {
                         AddMealScreen(
                             modifier = Modifier,
                             onBackButtonPressed = {
-                                navController.popBackStack()
+                                navController.popBack()
                             }
                         ) { route ->
                             navigate(route)
@@ -310,7 +310,7 @@ fun AppBottomNav() {
                     ) {
                         ScanBarcodeScreen(
                             onBack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onNavigate = { route ->
                                 navigate(route)
@@ -346,7 +346,7 @@ fun AppBottomNav() {
                         CreateFoodScreen(
                             modifier = Modifier
                         ) {
-                            navController.popBackStack()
+                            navController.popBack()
                         }
                     }
                     composable(
@@ -369,7 +369,7 @@ fun AppBottomNav() {
                     ) {
                         FoodLibraryScreen(
                             onBack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onNavigate = { route ->
                                 navigate(route)
@@ -382,7 +382,7 @@ fun AppBottomNav() {
                     composable(route = AppDestinations.Root.Backup.route) {
                         BackupScreen(
                             onBack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onGoToToday = {
                                 tabRequest = TabRequest(tab = AppDestinations.BottomNavigation.Log)
@@ -392,7 +392,7 @@ fun AppBottomNav() {
                     }
                     composable(route = AppDestinations.Root.Steps.route) {
                         StepsScreen(
-                            onBack = { navController.popBackStack() },
+                            onBack = { navController.popBack() },
                             onRecord = { type -> navigate(AppDestinations.Root.RecordActivity.createRoute(type = type.name)) },
                             onOpenSession = { id -> navigate(AppDestinations.Root.ActivityDetail.createRoute(id = id)) },
                             onOpenHistory = { navigate(AppDestinations.Root.ActivityHistory.route) },
@@ -402,7 +402,7 @@ fun AppBottomNav() {
                     }
                     composable(route = AppDestinations.Root.StepsSettings.route) {
                         StepsSettingsScreen(
-                            onBack = { navController.popBackStack() },
+                            onBack = { navController.popBack() },
                             onOpenGoal = { navigate(AppDestinations.Root.Steps.route) }
                         )
                     }
@@ -411,7 +411,7 @@ fun AppBottomNav() {
                         arguments = listOf(navArgument(name = ACTIVITY_TYPE) { type = NavType.StringType })
                     ) {
                         RecordScreen(
-                            onBack = { navController.popBackStack() },
+                            onBack = { navController.popBack() },
                             onMinimize = {
                                 tabRequest = TabRequest(tab = AppDestinations.BottomNavigation.Log)
                                 navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
@@ -425,7 +425,7 @@ fun AppBottomNav() {
                             onLocationDeclined = {
                                 // Back to Steps, opening it if the live map came from somewhere else, where it says why
                                 // walks and runs can't start.
-                                navController.popBackStack()
+                                if (!navController.popBack()) return@RecordScreen
                                 if (navController.currentDestination?.route != AppDestinations.Root.Steps.route) {
                                     navController.navigate(route = AppDestinations.Root.Steps.route)
                                 }
@@ -437,20 +437,20 @@ fun AppBottomNav() {
                         arguments = listOf(navArgument(name = ACTIVITY_ID) { type = NavType.StringType })
                     ) {
                         ActivityDetailScreen(
-                            onBack = { navController.popBackStack() },
+                            onBack = { navController.popBack() },
                             onOpenHistory = { navigate(AppDestinations.Root.ActivityHistory.route) },
                             onOpenBurn = { navigate(AppDestinations.Root.CaloriesBurned.route) }
                         )
                     }
                     composable(route = AppDestinations.Root.ActivityHistory.route) {
                         ActivityHistoryScreen(
-                            onBack = { navController.popBackStack() },
+                            onBack = { navController.popBack() },
                             onOpenSession = { id -> navigate(AppDestinations.Root.ActivityDetail.createRoute(id = id)) }
                         )
                     }
                     composable(route = AppDestinations.Root.CaloriesBurned.route) {
                         CaloriesBurnedScreen(
-                            onBack = { navController.popBackStack() },
+                            onBack = { navController.popBack() },
                             onOpenSession = { id -> navigate(AppDestinations.Root.ActivityDetail.createRoute(id = id)) },
                             onEditProfile = { navigate(AppDestinations.Profile.PersonalInfo.route) }
                         )
@@ -458,7 +458,7 @@ fun AppBottomNav() {
                     composable(route = AppDestinations.Root.DeleteData.route) {
                         DeleteDataScreen(
                             onBack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onOpenBackup = {
                                 navigate(AppDestinations.Root.Backup.route)
@@ -487,7 +487,7 @@ fun AppBottomNav() {
                         )
                     ) {
                         CopyToScreen(
-                            onClose = { navController.popBackStack() },
+                            onClose = { navController.popBack() },
                             onCopied = {
                                 navController.popToLogScreen()
                             }
@@ -507,7 +507,7 @@ fun AppBottomNav() {
                         )
                     ) {
                         CopyFromScreen(
-                            onClose = { navController.popBackStack() },
+                            onClose = { navController.popBack() },
                             onCopied = {
                                 navController.popToLogScreen()
                             }
@@ -524,7 +524,7 @@ fun AppBottomNav() {
                         )
                     ) {
                         MealPlanScreen(
-                            onBack = { navController.popBackStack() },
+                            onBack = { navController.popBack() },
                             onPlanFood = { mealType, date ->
                                 navigate(AppDestinations.Root.AddMeal.createRoute(mealType = mealType.name, logDate = date))
                             },
@@ -536,7 +536,7 @@ fun AppBottomNav() {
                     }
                     composable(route = AppDestinations.Root.RepeatingMeals.route) {
                         RepeatingMealsScreen(
-                            onBack = { navController.popBackStack() },
+                            onBack = { navController.popBack() },
                             onOpen = { meal -> navigate(AppDestinations.Root.RepeatMeal.createRoute(repeatingMealId = meal.id)) },
                             onNew = { navigate(AppDestinations.Root.RepeatMeal.createRoute()) }
                         )
@@ -552,7 +552,7 @@ fun AppBottomNav() {
                         }
                     ) {
                         RepeatMealScreen(
-                            onClose = { navController.popBackStack() },
+                            onClose = { navController.popBack() },
                             onDone = {
                                 // Lands on the list either way, so a new one is seen there; from the list, it's the one below.
                                 navController.navigate(route = AppDestinations.Root.RepeatingMeals.route) {
@@ -577,7 +577,7 @@ fun AppBottomNav() {
                     ) {
                         QuickAddScreen(
                             onBack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onSaved = {
                                 navController.popToLogScreen()
@@ -595,7 +595,7 @@ fun AppBottomNav() {
                         CreateRecipeScreen(
                             modifier = Modifier
                         ) {
-                            navController.popBackStack()
+                            navController.popBack()
                         }
                     }
 
@@ -605,7 +605,7 @@ fun AppBottomNav() {
                         PersonalInformationScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             }
                         )
                     }
@@ -615,7 +615,7 @@ fun AppBottomNav() {
                         NutritionGoalsScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onNavigateToPersonalInformation = {
                                 navController.navigate(route = AppDestinations.Profile.PersonalInfo.route)
@@ -631,7 +631,7 @@ fun AppBottomNav() {
                     composable(route = AppDestinations.Root.CheckIn.route) {
                         CheckInScreen(
                             onBack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             }
                         )
                     }
@@ -641,7 +641,7 @@ fun AppBottomNav() {
                         PastGoalScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             }
                         )
                     }
@@ -651,7 +651,7 @@ fun AppBottomNav() {
                         MeasurementsScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onNavigate = navigate
                         )
@@ -662,7 +662,7 @@ fun AppBottomNav() {
                         MeasurementsLogScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             }
                         )
                     }
@@ -677,7 +677,7 @@ fun AppBottomNav() {
                         MeasurementDetailScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onNavigate = navigate
                         )
@@ -688,7 +688,7 @@ fun AppBottomNav() {
                         WeightHistoryScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onNavigate = navigate
                         )
@@ -699,7 +699,7 @@ fun AppBottomNav() {
                         MovingAverageScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             },
                             onNavigate = navigate
                         )
@@ -710,7 +710,7 @@ fun AppBottomNav() {
                         CalendarScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             }
                         )
                     }
@@ -729,7 +729,7 @@ fun AppBottomNav() {
                             feature = ProFeature.entries.find { it.name == featureName },
                             viewState = proState,
                             callbacks = proViewModel,
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBack() }
                         )
                     }
                     composable(
@@ -738,7 +738,7 @@ fun AppBottomNav() {
                         LogWeightScreen(
                             modifier = Modifier,
                             onPopBackStack = {
-                                navController.popBackStack()
+                                navController.popBack()
                             }
                         )
                     }
@@ -751,6 +751,16 @@ fun AppBottomNav() {
             }
         }
     }
+}
+
+/**
+ * Back from the screen on top. A second tap while it's already closing is ignored: popping again took the main screen
+ * with it and left the app blank. Returns false when nothing was popped.
+ */
+private fun NavHostController.popBack(): Boolean {
+    val current = currentBackStackEntry ?: return false
+    if (current.lifecycle.currentState != Lifecycle.State.RESUMED || previousBackStackEntry == null) return false
+    return popBackStack()
 }
 
 /** Screens before the main screen exists, where the live map mustn't be opened on top. */
