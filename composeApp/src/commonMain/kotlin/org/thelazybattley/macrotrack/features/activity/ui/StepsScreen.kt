@@ -186,33 +186,39 @@ private fun StepsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(color = colors.background)
-            .statusBarsPadding()
-            .verticalScroll(state = rememberScrollState())
             .navigationBarsPadding()
-            .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 28.dp),
-        verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
-        ActivityHeader(
-            overline = viewState.today.toDayMonthDay(),
-            title = stringResource(resource = Res.string.steps_title),
-            onBack = onBack,
-            trailing = { GoalButton(goal = viewState.goal, onClick = callbacks::onOpenGoal) }
-        )
-        when {
-            !viewState.isSensorAvailable -> InfoNote(text = stringResource(resource = Res.string.steps_unavailable))
-            !motion.isGranted -> AllowStepsCard(isPermanentlyDenied = motion.isPermanentlyDenied, onAllow = motion.request)
+        Column(
+            modifier = Modifier
+                .weight(weight = 1f)
+                .statusBarsPadding()
+                .verticalScroll(state = rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 16.dp)
+        ) {
+            ActivityHeader(
+                overline = viewState.today.toDayMonthDay(),
+                title = stringResource(resource = Res.string.steps_title),
+                onBack = onBack,
+                trailing = { GoalButton(goal = viewState.goal, onClick = callbacks::onOpenGoal) }
+            )
+            when {
+                !viewState.isSensorAvailable -> InfoNote(text = stringResource(resource = Res.string.steps_unavailable))
+                !motion.isGranted -> AllowStepsCard(isPermanentlyDenied = motion.isPermanentlyDenied, onAllow = motion.request)
+            }
+            StepsHero(
+                viewState = viewState,
+                isPro = pro.isActive,
+                onOpenBurn = onOpenBurn,
+                onLockedBurn = { pro.openPaywall(ProFeature.CALORIES_BURNED) }
+            )
+            StepsChartCard(viewState = viewState, callbacks = callbacks)
+            RecordButtons(recording = recording, onRecord = onRecord)
+            RecentSessions(sessions = viewState.recentSessions, onOpenSession = onOpenSession, onSeeAll = onOpenHistory)
+            HistoryCard(sessionsLast30 = viewState.sessionsLast30, sessionsPerDay = viewState.sessionsPerDay, onClick = onOpenHistory)
+            InfoNote(text = stringResource(resource = Res.string.steps_info))
         }
-        StepsHero(
-            viewState = viewState,
-            isPro = pro.isActive,
-            onOpenBurn = onOpenBurn,
-            onLockedBurn = { pro.openPaywall(ProFeature.CALORIES_BURNED) }
-        )
-        StepsChartCard(viewState = viewState, callbacks = callbacks)
-        RecordButtons(recording = recording, onRecord = onRecord)
-        RecentSessions(sessions = viewState.recentSessions, onOpenSession = onOpenSession, onSeeAll = onOpenHistory)
-        HistoryCard(sessionsLast30 = viewState.sessionsLast30, sessionsPerDay = viewState.sessionsPerDay, onClick = onOpenHistory)
-        InfoNote(text = stringResource(resource = Res.string.steps_info))
+        RecordingBar()
     }
     viewState.goalDraft?.let { draft ->
         GoalSheets(viewState = viewState, draft = draft, callbacks = callbacks)

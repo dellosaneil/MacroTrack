@@ -1407,6 +1407,18 @@
     <string name="record_save">Save %1$s</string>
     <string name="record_discard">Discard</string>
     <string name="record_keep_recording">Keep recording</string>
+    <string name="record_minimize">Minimize. Keeps recording while you use the app</string>
+    <string name="recording_status">Recording %1$s</string>
+    <string name="recording_status_paused">Paused · %1$s</string>
+    <string name="recording_line">%1$s · %2$s · %3$s steps</string>
+    <string name="recording_open_map">Open the live map</string>
+    <string name="recording_pause_type">Pause %1$s</string>
+    <string name="recording_resume_type">Resume %1$s</string>
+    <string name="recording_started">Started %1$s · %2$s</string>
+    <string name="recording_paused_hint">Tap Resume to keep going</string>
+    <string name="recording_open_map_short">Open map</string>
+    <string name="recording_today_of">/ %1$s steps today</string>
+    <string name="recording_goal_reached_on">Goal reached on this %1$s</string>
 
     <string name="detail_when">%1$s · %2$s – %3$s</string>
     <string name="detail_rename_type">Rename this %1$s</string>

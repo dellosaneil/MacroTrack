@@ -29,7 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
@@ -42,9 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.back
+import macrotrack.composeapp.generated.resources.ic_chevron_down
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.ic_fit
 import macrotrack.composeapp.generated.resources.ic_pause
@@ -65,6 +64,7 @@ import macrotrack.composeapp.generated.resources.record_gps_good
 import macrotrack.composeapp.generated.resources.record_gps_waiting
 import macrotrack.composeapp.generated.resources.record_keep_recording
 import macrotrack.composeapp.generated.resources.record_map_description
+import macrotrack.composeapp.generated.resources.record_minimize
 import macrotrack.composeapp.generated.resources.record_pace
 import macrotrack.composeapp.generated.resources.record_pause
 import macrotrack.composeapp.generated.resources.record_paused
@@ -107,12 +107,11 @@ import org.thelazybattley.macrotrack.features.pro.ProFeature
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 @Composable
 fun RecordScreen(
     onBack: () -> Unit,
+    onMinimize: () -> Unit,
     onSaved: (Long) -> Unit
 ) {
     val viewModel = koinViewModel<RecordViewModel>()
@@ -134,7 +133,7 @@ fun RecordScreen(
             onNotNow = onBack
         )
     } else {
-        LiveContent(viewState = viewState, callbacks = viewModel, onBack = onBack)
+        LiveContent(viewState = viewState, callbacks = viewModel, onMinimize = onMinimize)
     }
 }
 
@@ -226,17 +225,11 @@ private fun Perk(icon: DrawableResource, background: Color, tint: Color, title: 
     }
 }
 
-@OptIn(ExperimentalTime::class)
 @Composable
-private fun LiveContent(viewState: RecordViewState, callbacks: RecordCallbacks, onBack: () -> Unit) {
+private fun LiveContent(viewState: RecordViewState, callbacks: RecordCallbacks, onMinimize: () -> Unit) {
     val recording = viewState.recording
     val type = recording?.type ?: viewState.type
-    val now by produceState(initialValue = Clock.System.now().toEpochMilliseconds(), key1 = recording?.isPaused) {
-        while (true) {
-            value = Clock.System.now().toEpochMilliseconds()
-            delay(timeMillis = 1_000)
-        }
-    }
+    val now = rememberRecordingNow(recording = recording)
     val mapState = rememberRouteMapState()
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     // The panel covers the bottom of the map, so the route is kept in the part above it.
@@ -261,7 +254,8 @@ private fun LiveContent(viewState: RecordViewState, callbacks: RecordCallbacks, 
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
-            FloatingButton(icon = Res.drawable.ic_chevron_left, description = stringResource(resource = Res.string.back), onClick = onBack)
+            // Recording carries on while the rest of the app is used; the Log card and recording bar lead back here.
+            FloatingButton(icon = Res.drawable.ic_chevron_down, description = stringResource(resource = Res.string.record_minimize), onClick = onMinimize)
             StatusPill(isPaused = recording?.isPaused == true)
             GpsPill(isGood = recording?.hasGoodFix == true)
             Box(modifier = Modifier.weight(weight = 1f))

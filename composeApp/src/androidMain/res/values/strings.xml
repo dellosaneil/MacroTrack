@@ -1,9 +1,20 @@
 <resources>
     <string name="app_name">MacroTrack</string>
     <string name="recording_channel">Recording walks and runs</string>
-    <string name="recording_walk">Recording a walk</string>
-    <string name="recording_run">Recording a run</string>
-    <string name="recording_body">Tap to see your route. Location is used only until you finish.</string>
+    <string name="recording_walk">Recording walk</string>
+    <string name="recording_run">Recording run</string>
+    <string name="recording_paused_walk">Paused · walk</string>
+    <string name="recording_paused_run">Paused · run</string>
+    <string name="recording_using_location">Using location</string>
+    <string name="recording_steps">%1$s steps</string>
+    <string name="recording_unit_km">km</string>
+    <string name="recording_unit_mi">mi</string>
+    <string name="recording_pace_km">%1$s /km</string>
+    <string name="recording_pace_mi">%1$s /mi</string>
+    <string name="recording_action_pause">Pause</string>
+    <string name="recording_action_resume">Resume</string>
+    <string name="recording_action_finish">Finish</string>
+    <string name="recording_action_open">Open</string>
     <string name="step_nudge_channel">Step goal reminder</string>
     <string name="step_nudge_title">%1$s steps to your goal</string>
     <string name="step_nudge_body">About a %1$d-minute walk closes it.</string>

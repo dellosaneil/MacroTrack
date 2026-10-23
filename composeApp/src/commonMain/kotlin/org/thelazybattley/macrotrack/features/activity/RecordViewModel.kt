@@ -94,6 +94,14 @@ class RecordViewModel(
         viewModelScope.launch {
             recorder.state.collect { recording -> _state.update { it.copy(recording = recording) } }
         }
+        // Finish tapped on the Log card or the notification opens the save sheet here.
+        viewModelScope.launch {
+            recorder.isFinishRequested.collect { isRequested ->
+                if (!isRequested) return@collect
+                onFinish()
+                recorder.onFinishRequestHandled()
+            }
+        }
         viewModelScope.launch {
             combine(
                 flow = getDayActivityUseCase(date = getCurrentDate()),
@@ -120,11 +128,11 @@ class RecordViewModel(
     }
 
     override fun onPauseToggled() {
-        if (_state.value.recording?.isPaused == true) recorder.resume() else recorder.pause()
+        recorder.togglePause()
     }
 
     override fun onFinish() {
-        val recording = _state.value.recording ?: return
+        val recording = recorder.state.value ?: return
         recorder.pause()
         _state.update { it.copy(saveDraft = SaveDraft(name = "", type = recording.type)) }
     }

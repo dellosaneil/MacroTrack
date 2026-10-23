@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <!-- The recording notification and the evening step reminder. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Lets the recording notification show its time chip at the top of the screen (Android 16). -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
     <!-- The barcode scanner needs a camera, but the app works without one. -->
     <uses-feature
         android:name="android.hardware.camera"

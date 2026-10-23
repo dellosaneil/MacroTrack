@@ -8,6 +8,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import org.thelazybattley.macrotrack.core.platform.rememberMotionPermissionState
 import org.thelazybattley.macrotrack.domain.usecase.activity.ScheduleStepNudgeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.TrackStepsUseCase
+import kotlinx.coroutines.flow.first
+import org.thelazybattley.macrotrack.features.activity.ActivityRecorder
 import org.thelazybattley.macrotrack.features.activity.ui.ActivityDetailScreen
 import org.thelazybattley.macrotrack.features.activity.ui.ActivityHistoryScreen
 import org.thelazybattley.macrotrack.features.activity.ui.CaloriesBurnedScreen
@@ -135,6 +137,18 @@ fun AppBottomNav() {
     LaunchedEffect(key1 = motionPermission.isGranted) {
         if (motionPermission.isGranted) {
             lifecycleOwner.repeatOnLifecycle(state = Lifecycle.State.STARTED) { trackSteps() }
+        }
+    }
+    // The Log card, recording bar and notification all lead back to the live map. Waits past first launch, so
+    // opening from the notification doesn't land under the splash screen.
+    val recorder = koinInject<ActivityRecorder>()
+    LaunchedEffect(key1 = Unit) {
+        recorder.openRequests.collect {
+            navController.currentBackStackEntryFlow.first { entry -> entry.destination.route !in firstLaunchRoutes }
+            val recording = recorder.state.value ?: return@collect
+            navController.navigate(route = AppDestinations.Root.RecordActivity.createRoute(type = recording.type.name)) {
+                launchSingleTop = true
+            }
         }
     }
     // A restart clears the evening reminder, so it's set again each time the app opens.
@@ -363,6 +377,10 @@ fun AppBottomNav() {
                     ) {
                         RecordScreen(
                             onBack = { navController.popBackStack() },
+                            onMinimize = {
+                                tabRequest = TabRequest(tab = AppDestinations.BottomNavigation.Log)
+                                navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+                            },
                             onSaved = { id ->
                                 // The summary takes the live map's place, so Back from it goes to Steps.
                                 navController.navigate(route = AppDestinations.Root.ActivityDetail.createRoute(id = id)) {
@@ -691,6 +709,13 @@ fun AppBottomNav() {
         }
     }
 }
+
+/** Screens before the main screen exists, where the live map mustn't be opened on top. */
+private val firstLaunchRoutes = setOf(
+    AppDestinations.Root.Splash.route,
+    AppDestinations.Root.Walkthrough.route,
+    AppDestinations.Root.Onboarding.route
+)
 
 /**
  * Back from logging to where it started: the meal plan when food was being planned there, otherwise the main

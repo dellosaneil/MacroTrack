@@ -4,9 +4,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.platform.LocationFix
@@ -60,6 +63,31 @@ class ActivityRecorder(
 
     /** The recording in progress, or null. */
     val state: StateFlow<Recording?> = _state.asStateFlow()
+
+    private val _openRequests = Channel<Unit>(capacity = Channel.CONFLATED)
+
+    /** Asks for the live map, from the Log card, the recording bar or the notification. */
+    val openRequests: Flow<Unit> = _openRequests.receiveAsFlow()
+
+    private val _isFinishRequested = MutableStateFlow(value = false)
+
+    /** Set when Finish was tapped away from the live map, so it opens with the save sheet up. */
+    val isFinishRequested: StateFlow<Boolean> = _isFinishRequested.asStateFlow()
+
+    /** Shows the live map, with its save sheet open when [finish]. Does nothing when nothing is being recorded. */
+    fun requestOpen(finish: Boolean = false) {
+        if (_state.value == null) return
+        if (finish) _isFinishRequested.value = true
+        _openRequests.trySend(element = Unit)
+    }
+
+    fun onFinishRequestHandled() {
+        _isFinishRequested.value = false
+    }
+
+    fun togglePause() {
+        if (_state.value?.isPaused == true) resume() else pause()
+    }
 
     fun start(type: ActivityType) {
         if (_state.value != null) return
@@ -116,6 +144,7 @@ class ActivityRecorder(
         job?.cancel()
         job = null
         _state.value = null
+        _isFinishRequested.value = false
     }
 
     private fun onFix(fix: LocationFix) {

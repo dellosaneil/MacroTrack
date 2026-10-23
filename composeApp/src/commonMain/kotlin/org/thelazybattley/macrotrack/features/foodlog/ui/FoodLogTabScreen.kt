@@ -113,6 +113,10 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.roundToInt
+import org.koin.compose.koinInject
+import org.thelazybattley.macrotrack.features.activity.ActivityRecorder
+import org.thelazybattley.macrotrack.features.activity.Recording
+import org.thelazybattley.macrotrack.features.activity.ui.LiveRecordingCard
 
 @Composable
 fun FoodLogTabScreen(
@@ -121,6 +125,8 @@ fun FoodLogTabScreen(
 ) {
     val viewModel = koinViewModel<FoodLogViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
+    val recorder = koinInject<ActivityRecorder>()
+    val recording by recorder.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
         viewModel.onScreenShown()
@@ -162,6 +168,9 @@ fun FoodLogTabScreen(
         },
         onOpenPlan = { onNavigate(AppDestinations.Root.MealPlan.createRoute()) },
         onOpenSteps = { onNavigate(AppDestinations.Root.Steps.route) },
+        recording = recording,
+        onToggleRecordingPause = recorder::togglePause,
+        onOpenRecording = { finish -> recorder.requestOpen(finish = finish) },
         onRepeat = { mealType ->
             onNavigate(AppDestinations.Root.RepeatMeal.createRoute(sourceDate = viewState.selectedDate, mealType = mealType.name))
         }
@@ -182,6 +191,11 @@ private fun FoodLogTabScreen(
     onCopyFrom: (MealType) -> Unit,
     onOpenPlan: () -> Unit,
     onOpenSteps: () -> Unit,
+    /** The walk or run being recorded, which turns the steps card into a live one. */
+    recording: Recording? = null,
+    onToggleRecordingPause: () -> Unit = {},
+    /** Opens the live map, with its save sheet up when finishing. */
+    onOpenRecording: (finish: Boolean) -> Unit = {},
     /** Sets up repeating [MealType] from the selected day. */
     onRepeat: (MealType) -> Unit
 ) {
@@ -230,7 +244,18 @@ private fun FoodLogTabScreen(
                     .tourTarget(target = TourTarget.TODAY_REMAINING),
                 viewState = viewState
             )
-            if (isToday) {
+            if (isToday && recording != null) {
+                LiveRecordingCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    recording = recording,
+                    todaySteps = viewState.todayActivity.totalSteps,
+                    goal = viewState.stepGoal,
+                    onTogglePause = onToggleRecordingPause,
+                    onOpen = { onOpenRecording(false) },
+                    onFinish = { onOpenRecording(true) },
+                    onOpenSteps = onOpenSteps
+                )
+            } else if (isToday) {
                 TodayStepsCard(
                     modifier = Modifier.fillMaxWidth(),
                     day = viewState.todayActivity,
