@@ -8,7 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -104,7 +106,8 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
 import org.thelazybattley.macrotrack.features.pro.ui.ProTrialBanner
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
-import org.thelazybattley.macrotrack.features.checkin.ui.CheckInCard
+import org.thelazybattley.macrotrack.features.checkin.ui.WeekBalanceLine
+import org.thelazybattley.macrotrack.features.checkin.ui.WeekBalanceTile
 import org.thelazybattley.macrotrack.features.activity.ui.TodayStepsCard
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
@@ -245,6 +248,8 @@ private fun FoodLogTabScreen(
                     .tourTarget(target = TourTarget.TODAY_REMAINING),
                 viewState = viewState
             )
+            // The suggestion is Pro, so free users never see "New".
+            val isNewSuggestion = viewState.isNewCheckInSuggestion && LocalProAccess.current.isActive
             if (isToday && recording != null) {
                 LiveRecordingCard(
                     modifier = Modifier.fillMaxWidth(),
@@ -256,18 +261,38 @@ private fun FoodLogTabScreen(
                     onFinish = { onOpenRecording(true) },
                     onOpenSteps = onOpenSteps
                 )
+                viewState.weekBalance?.let { balance ->
+                    WeekBalanceLine(
+                        modifier = Modifier.fillMaxWidth(),
+                        balance = balance,
+                        isNewSuggestion = isNewSuggestion,
+                        onClick = onOpenCheckIn
+                    )
+                }
             } else if (isToday) {
-                TodayStepsCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    day = viewState.todayActivity,
-                    goal = viewState.stepGoal,
-                    activeKcal = viewState.activeKcal,
-                    isCounting = viewState.isCountingSteps,
-                    onClick = onOpenSteps
-                )
-            }
-            viewState.checkIn?.takeIf { isToday && LocalProAccess.current.isActive }?.let { checkIn ->
-                CheckInCard(modifier = Modifier.fillMaxWidth(), checkIn = checkIn, onClick = onOpenCheckIn)
+                // Side by side, so Meals stays on the first screen.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(intrinsicSize = IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+                ) {
+                    TodayStepsCard(
+                        modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                        steps = viewState.todayActivity.totalSteps,
+                        goal = viewState.stepGoal,
+                        isCounting = viewState.isCountingSteps,
+                        onClick = onOpenSteps
+                    )
+                    viewState.weekBalance?.let { balance ->
+                        WeekBalanceTile(
+                            modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                            balance = balance,
+                            isNewSuggestion = isNewSuggestion,
+                            onClick = onOpenCheckIn
+                        )
+                    }
+                }
             }
             ProTrialBanner(modifier = Modifier.fillMaxWidth())
             MealsHeader(

@@ -54,17 +54,23 @@ class WeeklyCheckInTest {
     }
 
     @Test
-    fun withinATenthOfAKiloOfThePaceNeedsNoChange() {
-        // Goal: 1.2 kg a month. 1.29 is on pace; 1.31 is faster and gets a suggestion.
+    fun withinATenthOfAKiloOfTheGoalPaceIsOnPace() {
+        // Goal: 1.2 kg a month. 1.29 is on pace; 1.31 is faster; 1.09 is slower.
         val onPace = assertIs<WeeklyCheckIn.Result>(checkIn(foodLogs = logs(days = 1..20, calories = 2140), weights = weights(kgPerDay = 1.29 / 30.4)))
         assertEquals(CheckInPace.ON_PACE, onPace.pace)
-        assertTrue(onPace.isNoChange)
         val faster = assertIs<WeeklyCheckIn.Result>(checkIn(foodLogs = logs(days = 1..20, calories = 2140), weights = weights(kgPerDay = 1.31 / 30.4)))
         assertEquals(CheckInPace.FASTER, faster.pace)
-        assertFalse(faster.isNoChange)
         val slower = assertIs<WeeklyCheckIn.Result>(checkIn(foodLogs = logs(days = 1..20, calories = 2140), weights = weights(kgPerDay = 1.09 / 30.4)))
         assertEquals(CheckInPace.SLOWER, slower.pace)
-        assertFalse(slower.isNoChange)
+    }
+
+    @Test
+    fun aSuggestionWithinFiftyKcalOfTheTargetNeedsNoChange() {
+        val close = assertIs<WeeklyCheckIn.Result>(checkIn(foodLogs = logs(days = 1..20, calories = 2140), weights = weights(kgPerDay = 1.29 / 30.4)))
+        assertTrue(close.isNoChange)
+        // 2,330 burned less the goal's 300 is 2,030: 120 under the 2,150 target.
+        val lower = assertIs<WeeklyCheckIn.Result>(checkIn(foodLogs = logs(days = 1..19, calories = 2110), weights = weights(kgPerDay = 0.6 / 21)))
+        assertFalse(lower.isNoChange)
     }
 
     @Test
@@ -82,13 +88,5 @@ class WeeklyCheckInTest {
         assertEquals(2400, steady.suggestedTarget)
         val drifting = assertIs<WeeklyCheckIn.Result>(checkIn(foodLogs = logs(days = 1..20, calories = 2400), weights = weights(kgPerDay = -0.05), goal = Goal.MAINTAIN_WEIGHT))
         assertEquals(CheckInPace.NOT_STEADY, drifting.pace)
-    }
-
-    @Test
-    fun dueAWeekAfterTheLastCheckIn() {
-        assertTrue(isCheckInDue(lastCheckIn = null, today = today))
-        assertFalse(isCheckInDue(lastCheckIn = daysAgo(6), today = today))
-        assertTrue(isCheckInDue(lastCheckIn = daysAgo(7), today = today))
-        assertEquals(LocalDate(year = 2026, month = 10, day = 13), nextCheckIn(lastCheckIn = daysAgo(2), today = today))
     }
 }

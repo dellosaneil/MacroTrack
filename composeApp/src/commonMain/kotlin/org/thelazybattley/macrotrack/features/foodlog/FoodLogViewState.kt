@@ -13,7 +13,7 @@ import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlannedFood
 import org.thelazybattley.macrotrack.domain.model.StepGoal
-import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
+import org.thelazybattley.macrotrack.domain.model.WeekBalance
 
 data class FoodLogViewState(
     val breakfast: FoodLogFoodListByMealType = FoodLogFoodListByMealType(
@@ -48,8 +48,10 @@ data class FoodLogViewState(
     val entryEdit: EntryEdit? = null,
     /** True when the streak has earned asking for a store rating and the user hasn't been asked lately. */
     val isReviewDue: Boolean = false,
-    /** This week's check-in result, while it's due and has enough data to suggest a target. */
-    val checkIn: WeeklyCheckIn.Result? = null,
+    /** Monday to Sunday so far, beside Steps; it opens the check-in. */
+    val weekBalance: WeekBalance? = null,
+    /** The check-in has a target change the user hasn't looked at yet. */
+    val isNewCheckInSuggestion: Boolean = false,
     /** The copy just made, shown with Undo until it's dismissed. */
     val copyToast: FoodLogCopy? = null,
     /** Food planned for today that waits for Ate it or Skip, and what was already done with it. */
@@ -61,8 +63,6 @@ data class FoodLogViewState(
     val stepGoal: Int = StepGoal.DEFAULT,
     /** All-day step counting is on, so the steps card says it's counting. */
     val isCountingSteps: Boolean = true,
-    /** Calories burned today; null until the profile is set up. */
-    val activeKcal: Int? = null,
     /** Burned calories added on top of today's budget: zero unless turned on with Pro. */
     val budgetBurn: Int = 0
 )

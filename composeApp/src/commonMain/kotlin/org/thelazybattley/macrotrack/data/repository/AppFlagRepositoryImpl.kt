@@ -58,12 +58,11 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         dao.insertFlag(flag = AppFlagEntity(key = REVIEW_TIMES_ASKED, value = (timesAsked + 1).toString()))
     }
 
-    override fun getLastCheckIn(): Flow<LocalDate?> = dao.getFlagValue(key = LAST_CHECK_IN).map { value ->
-        value?.let { runCatching { LocalDate.parse(input = it) }.getOrNull() }
-    }
+    override fun getSeenCheckInSuggestion(): Flow<Int?> =
+        dao.getFlagValue(key = SEEN_CHECK_IN_SUGGESTION).map { value -> value?.toIntOrNull() }
 
-    override suspend fun setLastCheckIn(date: LocalDate) {
-        dao.insertFlag(flag = AppFlagEntity(key = LAST_CHECK_IN, value = date.toString()))
+    override suspend fun setSeenCheckInSuggestion(calories: Int) {
+        dao.insertFlag(flag = AppFlagEntity(key = SEEN_CHECK_IN_SUGGESTION, value = calories.toString()))
     }
 
     companion object {
@@ -73,6 +72,6 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         const val TELEMETRY_OPTED_OUT = "telemetry_opted_out"
         const val REVIEW_LAST_ASKED = "review_last_asked"
         const val REVIEW_TIMES_ASKED = "review_times_asked"
-        const val LAST_CHECK_IN = "last_check_in"
+        const val SEEN_CHECK_IN_SUGGESTION = "seen_check_in_suggestion"
     }
 }

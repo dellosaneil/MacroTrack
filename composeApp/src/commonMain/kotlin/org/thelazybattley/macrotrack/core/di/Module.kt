@@ -16,7 +16,10 @@ import org.thelazybattley.macrotrack.features.deletedata.DeleteDataViewModel
 import org.thelazybattley.macrotrack.features.quickadd.QuickAddViewModel
 import org.thelazybattley.macrotrack.features.checkin.CheckInViewModel
 import org.thelazybattley.macrotrack.domain.usecase.checkin.CompleteCheckInUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeekBalanceUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeekCardUseCase
 import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeeklyCheckInUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checkin.MarkCheckInSeenUseCase
 import io.ktor.client.plugins.HttpTimeout
 import org.thelazybattley.macrotrack.data.repository.FoodLibraryRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.OpenFoodFactsRepositoryImpl
@@ -284,6 +287,9 @@ val useCaseModule = module {
     factoryOf(::GetRemainingCaloriesUseCase)
     factoryOf(::GetWeeklyCheckInUseCase)
     factoryOf(::CompleteCheckInUseCase)
+    factoryOf(::GetWeekBalanceUseCase)
+    factoryOf(::GetWeekCardUseCase)
+    factoryOf(::MarkCheckInSeenUseCase)
     factoryOf(::GetFoodLibraryUseCase)
     factoryOf(::IsTelemetryEnabledUseCase)
     factoryOf(::SetTelemetryEnabledUseCase)

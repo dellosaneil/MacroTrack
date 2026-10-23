@@ -15,15 +15,13 @@ const val CHECK_IN_WINDOW_DAYS = 21
 const val CHECK_IN_MIN_LOGGED_DAYS = 14
 const val CHECK_IN_MIN_WEIGH_INS = 4
 
-const val CHECK_IN_INTERVAL_DAYS = 7
-
-/** A measured burn this close to the profile's estimate reads as "close to what your profile estimated". */
+/**
+ * A suggested target this close to the current one needs no change. A measured burn this close to the profile's
+ * estimate reads as "close to what your profile estimated", and a suggestion that moves this much is new.
+ */
 const val CHECK_IN_NO_CHANGE_KCAL = 50
 
-/**
- * Weight moving within this many kg a month of the goal's pace is on pace, and the check-in suggests no change.
- * Any further off, it suggests a new target.
- */
+/** Weight moving within this many kg a month of the goal's pace is on pace; further off, slower or faster. */
 const val CHECK_IN_PACE_TOLERANCE_KG = 0.1
 
 private const val KCAL_PER_KG = 7700.0
@@ -67,17 +65,9 @@ sealed interface WeeklyCheckIn {
 
         val targetChange: Int get() = suggestedTarget - currentTarget
 
-        val isNoChange: Boolean get() = pace == CheckInPace.ON_PACE
+        val isNoChange: Boolean get() = abs(targetChange) <= CHECK_IN_NO_CHANGE_KCAL
     }
 }
-
-/** Due a week after the last check-in, or right away before the first one. */
-fun isCheckInDue(lastCheckIn: LocalDate?, today: LocalDate): Boolean =
-    lastCheckIn == null || lastCheckIn.plus(period = DatePeriod(days = CHECK_IN_INTERVAL_DAYS)) <= today
-
-fun nextCheckIn(lastCheckIn: LocalDate?, today: LocalDate): LocalDate =
-    if (isCheckInDue(lastCheckIn = lastCheckIn, today = today)) today
-    else lastCheckIn!!.plus(period = DatePeriod(days = CHECK_IN_INTERVAL_DAYS))
 
 /**
  * Works out what the user really burns over the [CHECK_IN_WINDOW_DAYS] days before [today], and the target that

@@ -68,4 +68,9 @@ data class MacroTrackColors(
     val onDanger: Color,
     val dangerSoft: Color,
     val dangerTrack: Color,
+    /** Week balance: a day eaten over its target, under it, and the text for each total. */
+    val over: Color,
+    val under: Color,
+    val overInk: Color,
+    val underInk: Color,
 )

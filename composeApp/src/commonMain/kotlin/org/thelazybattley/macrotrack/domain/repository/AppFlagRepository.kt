@@ -26,8 +26,8 @@ interface AppFlagRepository {
 
     suspend fun recordReviewAsked(date: LocalDate)
 
-    /** The day the user last finished a weekly check-in, whether they applied its target or kept theirs. */
-    fun getLastCheckIn(): Flow<LocalDate?>
+    /** The check-in's suggested target when the user last looked at it, so a changed one can show as new. */
+    fun getSeenCheckInSuggestion(): Flow<Int?>
 
-    suspend fun setLastCheckIn(date: LocalDate)
+    suspend fun setSeenCheckInSuggestion(calories: Int)
 }

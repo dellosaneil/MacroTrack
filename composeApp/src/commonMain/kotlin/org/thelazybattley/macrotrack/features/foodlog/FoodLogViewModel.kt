@@ -18,9 +18,7 @@ import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlanStatus
 import org.thelazybattley.macrotrack.domain.model.PlannedFood
-import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
-import org.thelazybattley.macrotrack.domain.model.isCheckInDue
-import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeeklyCheckInUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeekCardUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.SaveDailyGoalUseCase
@@ -63,7 +61,7 @@ class FoodLogViewModel(
     private val recordReviewAskedUseCase: RecordReviewAskedUseCase,
     getUnitSystemUseCase: GetUnitSystemUseCase,
     getReviewHistoryUseCase: GetReviewHistoryUseCase,
-    getWeeklyCheckInUseCase: GetWeeklyCheckInUseCase,
+    getWeekCardUseCase: GetWeekCardUseCase,
     private val copyFoodLogsUseCase: CopyFoodLogsUseCase,
     private val undoFoodLogCopyUseCase: UndoFoodLogCopyUseCase,
     private val copyEvents: FoodLogCopyEvents,
@@ -117,9 +115,8 @@ class FoodLogViewModel(
             }
         }
         viewModelScope.launch {
-            getWeeklyCheckInUseCase().collect { snapshot ->
-                val isDue = snapshot != null && isCheckInDue(lastCheckIn = snapshot.lastCheckIn, today = snapshot.today)
-                _state.update { it.copy(checkIn = (snapshot?.checkIn as? WeeklyCheckIn.Result)?.takeIf { isDue }) }
+            getWeekCardUseCase().collect { card ->
+                _state.update { it.copy(weekBalance = card.balance, isNewCheckInSuggestion = card.isNewSuggestion) }
             }
         }
         viewModelScope.launch {
@@ -137,7 +134,6 @@ class FoodLogViewModel(
                         todayActivity = today.day,
                         stepGoal = today.stepGoal,
                         isCountingSteps = today.isCounting,
-                        activeKcal = today.activeKcal,
                         budgetBurn = today.budgetBurn
                     ).withDayGoal()
                 }

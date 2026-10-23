@@ -37,12 +37,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.plus
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.back
 import macrotrack.composeapp.generated.resources.check_in_apply
+import macrotrack.composeapp.generated.resources.check_in_back_today
+import macrotrack.composeapp.generated.resources.check_in_when_updated
 import macrotrack.composeapp.generated.resources.check_in_applied_body
 import macrotrack.composeapp.generated.resources.check_in_applied_title
 import macrotrack.composeapp.generated.resources.check_in_average_eaten
@@ -91,8 +91,6 @@ import macrotrack.composeapp.generated.resources.check_in_weigh_ins_tip
 import macrotrack.composeapp.generated.resources.check_in_weight_gained_energy
 import macrotrack.composeapp.generated.resources.check_in_weight_lost_energy
 import macrotrack.composeapp.generated.resources.check_in_when_collecting
-import macrotrack.composeapp.generated.resources.check_in_when_due
-import macrotrack.composeapp.generated.resources.check_in_when_next
 import macrotrack.composeapp.generated.resources.check_in_your_pace
 import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_chevron_left
@@ -104,10 +102,10 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.domain.MacroGoals
-import org.thelazybattley.macrotrack.domain.model.CHECK_IN_INTERVAL_DAYS
 import org.thelazybattley.macrotrack.domain.model.CHECK_IN_MIN_LOGGED_DAYS
+import org.thelazybattley.macrotrack.domain.model.CHECK_IN_NO_CHANGE_KCAL
+import org.thelazybattley.macrotrack.domain.model.WEEK_BALANCE_WEEKS
 import org.thelazybattley.macrotrack.domain.model.CHECK_IN_MIN_WEIGH_INS
-import org.thelazybattley.macrotrack.domain.model.CHECK_IN_PACE_TOLERANCE_KG
 import org.thelazybattley.macrotrack.domain.model.CHECK_IN_WINDOW_DAYS
 import org.thelazybattley.macrotrack.domain.model.CheckInPace
 import org.thelazybattley.macrotrack.domain.model.Goal
@@ -169,12 +167,7 @@ private fun CheckInScreen(
             subtitle = when {
                 checkIn == null -> null
                 checkIn is WeeklyCheckIn.Collecting -> stringResource(resource = Res.string.check_in_when_collecting)
-                viewState.isDue -> stringResource(
-                    resource = Res.string.check_in_when_due,
-                    snapshot.today.shortDate(),
-                    snapshot.today.weekdayName()
-                )
-                else -> viewState.nextCheckIn?.let { stringResource(resource = Res.string.check_in_when_next, it.shortDate()) }
+                else -> stringResource(resource = Res.string.check_in_when_updated, snapshot.today.shortDate())
             },
             onBack = onBack
         )
@@ -186,6 +179,18 @@ private fun CheckInScreen(
                 .padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(space = 16.dp)
         ) {
+            // Free for everyone, whatever state the measured burn is in.
+            viewState.weekBalance?.let { balance ->
+                WeekBalanceCard(
+                    balance = balance,
+                    selectedDay = viewState.selectedDay,
+                    canGoBack = viewState.weeksAgo < WEEK_BALANCE_WEEKS - 1,
+                    canGoForward = viewState.weeksAgo > 0,
+                    onPreviousWeek = callbacks::onPreviousWeek,
+                    onNextWeek = callbacks::onNextWeek,
+                    onDayPicked = callbacks::onDayPicked
+                )
+            }
             when {
                 checkIn == null -> Unit
                 !pro.isActive -> LockedContent(
@@ -396,17 +401,11 @@ private fun ResultContent(
     }
 
     when {
-        !viewState.isDue -> Unit
         viewState.isApplied -> Applied(result = result, onUndo = callbacks::onUndo, onDone = callbacks::onKeep)
         result.isNoChange -> NoChange(result = result, onDone = callbacks::onKeep)
         else -> Suggestion(result = result, macroGoals = macroGoals, onApply = callbacks::onApply, onKeep = callbacks::onKeep)
     }
 
-    val next = if (viewState.isDue) {
-        viewState.snapshot?.today?.plus(period = DatePeriod(days = CHECK_IN_INTERVAL_DAYS))
-    } else {
-        viewState.nextCheckIn
-    }
     Row(horizontalArrangement = Arrangement.spacedBy(space = 10.dp)) {
         Icon(
             painter = painterResource(resource = Res.drawable.ic_info),
@@ -418,8 +417,7 @@ private fun ResultContent(
             text = stringResource(
                 resource = Res.string.check_in_footnote,
                 result.loggedDays,
-                result.weighIns,
-                next?.shortDate().orEmpty()
+                result.weighIns
             ),
             style = typography.regular11,
             color = colors.muted
@@ -565,7 +563,7 @@ private fun Applied(result: WeeklyCheckIn.Result, onUndo: () -> Unit, onDone: ()
             )
         }
     }
-    PrimaryAction(text = stringResource(resource = Res.string.check_in_done), onClick = onDone)
+    PrimaryAction(text = stringResource(resource = Res.string.check_in_back_today), onClick = onDone)
 }
 
 @Composable
@@ -574,7 +572,7 @@ private fun NoChange(result: WeeklyCheckIn.Result, onDone: () -> Unit) {
         Text(text = stringResource(resource = Res.string.check_in_no_change), style = typography.bold12, color = colors.accentInk)
         Text(text = result.suggestionTitle(), style = typography.bold18, color = colors.ink)
         Text(
-            text = stringResource(resource = Res.string.check_in_no_change_body, CHECK_IN_PACE_TOLERANCE_KG.formatWeightWithUnit()),
+            text = stringResource(resource = Res.string.check_in_no_change_body, CHECK_IN_NO_CHANGE_KCAL),
             style = typography.regular13,
             color = colors.muted
         )

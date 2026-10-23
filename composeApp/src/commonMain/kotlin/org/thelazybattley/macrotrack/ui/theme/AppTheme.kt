@@ -99,7 +99,11 @@ val lightMacroTrackColors = MacroTrackColors(
     danger = Danger,
     onDanger = OnDanger,
     dangerSoft = DangerSoft,
-    dangerTrack = DangerTrack
+    dangerTrack = DangerTrack,
+    over = Fat,
+    under = Protein,
+    overInk = OverInk,
+    underInk = UnderInk
 )
 
 val darkMacroTrackColors = MacroTrackColors(
@@ -166,7 +170,11 @@ val darkMacroTrackColors = MacroTrackColors(
     danger = DarkDanger,
     onDanger = DarkOnDanger,
     dangerSoft = DarkDangerSoft,
-    dangerTrack = DarkDangerTrack
+    dangerTrack = DarkDangerTrack,
+    over = DarkFat,
+    under = DarkProtein,
+    overInk = DarkOverInk,
+    underInk = DarkUnderInk
 )
 
 
