@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-    <!-- The recording notification and the evening step reminder. -->
+    <!-- The recording notification, the steps notification and the step alerts. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Lets the recording notification show its time chip at the top of the screen (Android 16). -->
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
@@ -54,6 +54,10 @@
             android:foregroundServiceType="location" />
         <receiver
             android:name=".core.platform.StepNudgeReceiver"
+            android:exported="false" />
+        <!-- Refreshes, hides or notes the dismissal of the silent steps notification. -->
+        <receiver
+            android:name=".core.platform.StepNotificationReceiver"
             android:exported="false" />
         <!-- Shares exports and backups with other apps. -->
         <provider

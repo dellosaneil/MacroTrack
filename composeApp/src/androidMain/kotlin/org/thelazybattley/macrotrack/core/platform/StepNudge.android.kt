@@ -39,10 +39,10 @@ import kotlin.time.ExperimentalTime
 /** Waits this long for the step counter's first reading before nudging on what's already saved. */
 private const val SENSOR_READ_TIMEOUT_MILLIS = 5_000L
 
-/** An inexact alarm at 6 PM; the phone may run it a little late to save battery. */
+/** An inexact alarm at the hour picked (6 PM unless changed); the phone may run it a little late to save battery. */
 class AndroidStepNudgeScheduler(private val context: Context) : StepNudgeScheduler {
 
-    override fun schedule(isEnabled: Boolean) {
+    override fun schedule(isEnabled: Boolean, hour: Int) {
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         val intent = PendingIntent.getBroadcast(
             context,
@@ -52,20 +52,20 @@ class AndroidStepNudgeScheduler(private val context: Context) : StepNudgeSchedul
         )
         alarmManager.cancel(intent)
         if (isEnabled) {
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextNudgeMillis(), intent)
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, nextNudgeMillis(hour = hour), intent)
         }
     }
 
     @OptIn(ExperimentalTime::class)
-    private fun nextNudgeMillis(): Long {
+    private fun nextNudgeMillis(hour: Int): Long {
         val zone = TimeZone.currentSystemDefault()
         val now = Clock.System.now()
         val today = now.toLocalDateTime(timeZone = zone).date
-        val todayAt = LocalDateTime(date = today, time = LocalTime(hour = StepGoal.NUDGE_HOUR, minute = 0)).toInstant(timeZone = zone)
+        val todayAt = LocalDateTime(date = today, time = LocalTime(hour = hour, minute = 0)).toInstant(timeZone = zone)
         val next = if (todayAt > now) {
             todayAt
         } else {
-            LocalDateTime(date = today.plus(period = DatePeriod(days = 1)), time = LocalTime(hour = StepGoal.NUDGE_HOUR, minute = 0))
+            LocalDateTime(date = today.plus(period = DatePeriod(days = 1)), time = LocalTime(hour = hour, minute = 0))
                 .toInstant(timeZone = zone)
         }
         return next.toEpochMilliseconds()
@@ -73,12 +73,17 @@ class AndroidStepNudgeScheduler(private val context: Context) : StepNudgeSchedul
 }
 
 /**
- * Runs at 6 PM: reads the step counter once so steps taken with the app closed count, and posts a reminder only
- * when the goal is more than [StepGoal.NUDGE_MIN_SHORT] steps off. Then sets tomorrow's.
+ * Runs at the nudge hour: reads the step counter once so steps taken with the app closed count, and posts a
+ * reminder only when the goal is more than [StepGoal.NUDGE_MIN_SHORT] steps off. Then sets tomorrow's. Not today
+ * on the reminder just clears it.
  */
 class StepNudgeReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == ACTION_NOT_TODAY) {
+            NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
+            return
+        }
         val pending = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
             try {
@@ -94,7 +99,7 @@ class StepNudgeReceiver : BroadcastReceiver() {
         val repository = koin.get<ActivityRepository>()
         val sensor = koin.get<StepSensor>()
         val isEnabled = repository.isStepNudgeEnabled().first()
-        koin.get<StepNudgeScheduler>().schedule(isEnabled = isEnabled)
+        koin.get<StepNudgeScheduler>().schedule(isEnabled = isEnabled, hour = repository.getStepNotificationSettings().first().nudgeHour)
         if (!isEnabled) return
         if (sensor.isAvailable && context.canCountSteps()) {
             withTimeoutOrNull(timeMillis = SENSOR_READ_TIMEOUT_MILLIS) { sensor.counts().first() }?.let { count ->
@@ -129,6 +134,28 @@ class StepNudgeReceiver : BroadcastReceiver() {
             .setContentText(context.getString(R.string.step_nudge_body, minutes))
             .setContentIntent(openApp)
             .setAutoCancel(true)
+            .addAction(
+                0,
+                context.getString(R.string.step_nudge_not_today),
+                PendingIntent.getBroadcast(
+                    context,
+                    1,
+                    Intent(context, StepNudgeReceiver::class.java).setAction(ACTION_NOT_TODAY),
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            )
+            .addAction(
+                0,
+                context.getString(R.string.step_nudge_walk),
+                PendingIntent.getActivity(
+                    context,
+                    1,
+                    Intent(context, MainActivity::class.java)
+                        .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        .putExtra(AndroidStepNotifier.EXTRA_APP_LINK, AppLink.RECORD_WALK.name),
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            )
             .build()
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
     }
@@ -136,9 +163,6 @@ class StepNudgeReceiver : BroadcastReceiver() {
     companion object {
         private const val CHANNEL_ID = "step_nudge"
         private const val NOTIFICATION_ID = 42
+        private const val ACTION_NOT_TODAY = "org.thelazybattley.macrotrack.nudge.NOT_TODAY"
     }
 }
-
-/** Activity recognition is a runtime permission from Android 10; before that it comes with the app. */
-private fun Context.canCountSteps(): Boolean =
-    Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || hasPermission(permission = Manifest.permission.ACTIVITY_RECOGNITION)

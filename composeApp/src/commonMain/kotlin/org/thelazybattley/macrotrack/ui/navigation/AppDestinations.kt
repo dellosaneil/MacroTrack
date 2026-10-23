@@ -126,6 +126,8 @@ sealed class AppDestinations {
 
         object Steps : Root(route = "steps")
 
+        object StepsSettings : Root(route = "steps_settings")
+
         /** Records a walk or run of [ACTIVITY_TYPE], asking for location first if needed. */
         object RecordActivity : Root(route = "record_activity", routeWithArgs = "record_activity/{$ACTIVITY_TYPE}") {
             fun createRoute(type: String): String = "$route/$type"

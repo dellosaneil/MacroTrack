@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
 import org.thelazybattley.macrotrack.data.local.dao.ActivityDao
 import org.thelazybattley.macrotrack.data.local.dao.AppFlagDao
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
@@ -14,6 +15,7 @@ import org.thelazybattley.macrotrack.domain.model.ActivitySession
 import org.thelazybattley.macrotrack.domain.model.ActivityType
 import org.thelazybattley.macrotrack.domain.model.StepGoal
 import org.thelazybattley.macrotrack.domain.model.StepHour
+import org.thelazybattley.macrotrack.domain.model.StepNotificationSettings
 import org.thelazybattley.macrotrack.domain.repository.ActivityRepository
 import org.thelazybattley.macrotrack.domain.repository.StepSensorReading
 
@@ -21,6 +23,8 @@ class ActivityRepositoryImpl(
     private val activityDao: ActivityDao,
     private val appFlagDao: AppFlagDao
 ) : ActivityRepository {
+
+    private val json = Json { ignoreUnknownKeys = true }
 
     override fun getStepHours(fromDate: LocalDate): Flow<List<StepHour>> =
         activityDao.getStepHours(fromDate = fromDate).map { hours -> hours.map { it.toDomain() } }
@@ -66,6 +70,35 @@ class ActivityRepositoryImpl(
         }
     }
 
+    override fun getStepNotificationSettings(): Flow<StepNotificationSettings> =
+        appFlagDao.getFlagValue(key = STEP_NOTIFICATIONS).map { value ->
+            value?.let { runCatching { json.decodeFromString<StepNotificationSettings>(string = it) }.getOrNull() }
+                ?: StepNotificationSettings()
+        }
+
+    override suspend fun setStepNotificationSettings(settings: StepNotificationSettings) {
+        appFlagDao.insertFlag(flag = AppFlagEntity(key = STEP_NOTIFICATIONS, value = json.encodeToString(value = settings)))
+    }
+
+    override suspend fun getStepNotificationHiddenOn(): LocalDate? = getDateFlag(key = STEP_NOTIFICATION_HIDDEN_ON)
+
+    override suspend fun setStepNotificationHiddenOn(date: LocalDate?) {
+        if (date == null) {
+            appFlagDao.deleteFlag(key = STEP_NOTIFICATION_HIDDEN_ON)
+        } else {
+            appFlagDao.insertFlag(flag = AppFlagEntity(key = STEP_NOTIFICATION_HIDDEN_ON, value = date.toString()))
+        }
+    }
+
+    override suspend fun getGoalAlertSentOn(): LocalDate? = getDateFlag(key = GOAL_ALERT_SENT_ON)
+
+    override suspend fun setGoalAlertSentOn(date: LocalDate) {
+        appFlagDao.insertFlag(flag = AppFlagEntity(key = GOAL_ALERT_SENT_ON, value = date.toString()))
+    }
+
+    private suspend fun getDateFlag(key: String): LocalDate? =
+        appFlagDao.getFlagValue(key = key).first()?.let { runCatching { LocalDate.parse(input = it) }.getOrNull() }
+
     override fun isBurnAddedToBudget(): Flow<Boolean> = appFlagDao.isFlagSet(key = BURN_ADDED_TO_BUDGET)
 
     override suspend fun setBurnAddedToBudget(isAdded: Boolean) {
@@ -96,6 +129,11 @@ class ActivityRepositoryImpl(
         const val STEP_GOAL = "step_goal"
         const val STEP_NUDGE_OFF = "step_nudge_off"
         const val BURN_ADDED_TO_BUDGET = "burn_added_to_budget"
+        const val STEP_NOTIFICATIONS = "step_notifications"
+
+        /** What this phone's notifications already did today: never backed up. */
+        const val STEP_NOTIFICATION_HIDDEN_ON = "step_notification_hidden_on"
+        const val GOAL_ALERT_SENT_ON = "goal_alert_sent_on"
 
         /** The phone's own step counter readings: meaningless on another phone, so never backed up. */
         const val STEP_SENSOR_READING = "step_sensor_reading"

@@ -28,6 +28,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import kotlinx.coroutines.delay
+import macrotrack.composeapp.generated.resources.close
+import macrotrack.composeapp.generated.resources.ic_check
+import macrotrack.composeapp.generated.resources.ic_close
+import macrotrack.composeapp.generated.resources.steps_counting
+import macrotrack.composeapp.generated.resources.steps_counting_all_day
+import macrotrack.composeapp.generated.resources.steps_counting_description
+import macrotrack.composeapp.generated.resources.steps_counting_steps_only
+import macrotrack.composeapp.generated.resources.steps_counting_steps_only_description
+import macrotrack.composeapp.generated.resources.steps_only_on
+import macrotrack.composeapp.generated.resources.steps_only_on_body
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -151,7 +166,11 @@ fun StepsScreen(
     onRecord: (ActivityType) -> Unit,
     onOpenSession: (Long) -> Unit,
     onOpenHistory: () -> Unit,
-    onOpenBurn: () -> Unit
+    onOpenBurn: () -> Unit,
+    onOpenSettings: () -> Unit,
+    /** Right after choosing to just count steps: confirms it with a toast. */
+    isStepsOnlyJustChosen: Boolean = false,
+    onStepsOnlyToastShown: () -> Unit = {}
 ) {
     val viewModel = koinViewModel<StepsViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -165,7 +184,10 @@ fun StepsScreen(
         onRecord = onRecord,
         onOpenSession = onOpenSession,
         onOpenHistory = onOpenHistory,
-        onOpenBurn = onOpenBurn
+        onOpenBurn = onOpenBurn,
+        onOpenSettings = onOpenSettings,
+        isStepsOnlyJustChosen = isStepsOnlyJustChosen,
+        onStepsOnlyToastShown = onStepsOnlyToastShown
     )
 }
 
@@ -178,10 +200,14 @@ private fun StepsScreen(
     onRecord: (ActivityType) -> Unit,
     onOpenSession: (Long) -> Unit,
     onOpenHistory: () -> Unit,
-    onOpenBurn: () -> Unit
+    onOpenBurn: () -> Unit,
+    onOpenSettings: () -> Unit,
+    isStepsOnlyJustChosen: Boolean,
+    onStepsOnlyToastShown: () -> Unit
 ) {
     val pro = LocalProAccess.current
     val motion = rememberMotionPermissionState()
+    Box(modifier = Modifier.fillMaxSize()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -202,6 +228,9 @@ private fun StepsScreen(
                 onBack = onBack,
                 trailing = { GoalButton(goal = viewState.goal, onClick = callbacks::onOpenGoal) }
             )
+            if (viewState.isSensorAvailable && motion.isGranted) {
+                CountingChip(isStepsOnly = viewState.stepNotifications.isStepsOnly, onClick = onOpenSettings)
+            }
             when {
                 !viewState.isSensorAvailable -> InfoNote(text = stringResource(resource = Res.string.steps_unavailable))
                 !motion.isGranted -> AllowStepsCard(isPermanentlyDenied = motion.isPermanentlyDenied, onAllow = motion.request)
@@ -220,10 +249,103 @@ private fun StepsScreen(
         }
         RecordingBar()
     }
+    if (isStepsOnlyJustChosen) {
+        StepsOnlyToast(
+            modifier = Modifier
+                .align(alignment = Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            onDismiss = onStepsOnlyToastShown
+        )
+    }
+    }
     viewState.goalDraft?.let { draft ->
         GoalSheets(viewState = viewState, draft = draft, callbacks = callbacks)
     }
 }
+
+/** Always there while steps count, so it's clear they do; opens Profile › Steps & walks. */
+@Composable
+private fun CountingChip(isStepsOnly: Boolean, onClick: () -> Unit) {
+    val description = stringResource(
+        resource = if (isStepsOnly) Res.string.steps_counting_steps_only_description else Res.string.steps_counting_description
+    )
+    Row(
+        modifier = Modifier
+            .height(height = 32.dp)
+            .clip(shape = RoundedCornerShape(size = 16.dp))
+            .background(color = colors.accentSoft)
+            .clickable(role = Role.Button, onClick = onClick)
+            .clearAndSetSemantics { contentDescription = description }
+            .padding(start = 10.dp, end = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
+    ) {
+        PulsingDot(color = colors.accent, size = 8.dp)
+        Text(text = stringResource(resource = Res.string.steps_counting), style = typography.bold12, color = colors.accentInk)
+        Text(
+            text = stringResource(resource = if (isStepsOnly) Res.string.steps_counting_steps_only else Res.string.steps_counting_all_day),
+            style = typography.medium11,
+            color = colors.accentInk,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/** "Steps only is on", for 5 seconds or until closed. */
+@Composable
+private fun StepsOnlyToast(modifier: Modifier = Modifier, onDismiss: () -> Unit) {
+    LaunchedEffect(key1 = Unit) {
+        delay(timeMillis = STEPS_ONLY_TOAST_MILLIS)
+        onDismiss()
+    }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(size = 16.dp))
+            .clip(shape = RoundedCornerShape(size = 16.dp))
+            .background(color = colors.ink)
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .padding(start = 14.dp, end = 4.dp, top = 12.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(size = 32.dp)
+                .background(color = colors.accent, shape = RoundedCornerShape(size = 10.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_check),
+                contentDescription = null,
+                tint = colors.onAccent,
+                modifier = Modifier.size(size = 18.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 1.dp)) {
+            Text(text = stringResource(resource = Res.string.steps_only_on), style = typography.bold14, color = colors.background)
+            Text(text = stringResource(resource = Res.string.steps_only_on_body), style = typography.regular11, color = colors.background.copy(alpha = 0.8f))
+        }
+        Box(
+            modifier = Modifier
+                .size(size = 44.dp)
+                .clip(shape = RoundedCornerShape(size = 10.dp))
+                .clickable(role = Role.Button, onClick = onDismiss),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(resource = Res.drawable.ic_close),
+                contentDescription = stringResource(resource = Res.string.close),
+                tint = colors.background,
+                modifier = Modifier.size(size = 16.dp)
+            )
+        }
+    }
+}
+
+private const val STEPS_ONLY_TOAST_MILLIS = 5_000L
 
 @Composable
 private fun GoalButton(goal: Int, onClick: () -> Unit) {
@@ -799,7 +921,11 @@ private fun GoalSheet(viewState: StepsViewState, draft: GoalDraft, callbacks: St
             if (viewState.isNudgeSupported) {
                 SwitchRow(
                     title = stringResource(resource = Res.string.steps_goal_nudge),
-                    body = stringResource(resource = Res.string.steps_goal_nudge_body, StepGoal.NUDGE_MIN_SHORT.withThousands()),
+                    body = stringResource(
+                        resource = Res.string.steps_goal_nudge_body,
+                        hourLabel(hour = viewState.stepNotifications.nudgeHour),
+                        StepGoal.NUDGE_MIN_SHORT.withThousands()
+                    ),
                     isOn = draft.isNudgeOn,
                     onToggle = callbacks::onNudgeToggled
                 )

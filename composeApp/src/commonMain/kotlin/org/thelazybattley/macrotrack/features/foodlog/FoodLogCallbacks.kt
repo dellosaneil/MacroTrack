@@ -40,6 +40,10 @@ interface FoodLogCallbacks {
     /** Puts eaten or skipped planned food back to waiting. */
     fun onUndoPlanned(planned: PlannedFood)
 
+    /** Undo on the logged toast: takes the food just logged back out of the meal and into Planned. */
+    fun onUndoPlannedToast()
+    fun onDismissPlannedToast()
+
     companion object {
         fun default() = object : FoodLogCallbacks {
             override fun onNavigate(mealType: MealType) {
@@ -78,6 +82,8 @@ interface FoodLogCallbacks {
             override fun onAteAllPlanned(mealType: MealType) = Unit
             override fun onSkipPlanned(planned: PlannedFood) = Unit
             override fun onUndoPlanned(planned: PlannedFood) = Unit
+            override fun onUndoPlannedToast() = Unit
+            override fun onDismissPlannedToast() = Unit
         }
     }
 }

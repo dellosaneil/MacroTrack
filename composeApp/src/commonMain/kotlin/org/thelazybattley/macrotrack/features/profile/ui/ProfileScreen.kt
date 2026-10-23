@@ -68,6 +68,7 @@ fun ProfileScreen(
         onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) },
         onOpenBackup = { onNavigate(AppDestinations.Root.Backup.route) },
         onOpenDeleteData = { onNavigate(AppDestinations.Root.DeleteData.route) },
+        onOpenStepsSettings = { onNavigate(AppDestinations.Root.StepsSettings.route) },
         onReplayTour = onReplayTour
     )
 }
@@ -81,6 +82,7 @@ fun ProfileScreen(
     onLogWeight: () -> Unit = {},
     onOpenBackup: () -> Unit = {},
     onOpenDeleteData: () -> Unit = {},
+    onOpenStepsSettings: () -> Unit = {},
     onReplayTour: () -> Unit = {}
 ) {
     val showTargetWeightSheet = remember { mutableStateOf(value = false) }
@@ -117,6 +119,7 @@ fun ProfileScreen(
             onNavigate = callbacks::onNavigate,
             onTargetWeightClick = { showTargetWeightSheet.value = true },
             onUnitSystemSelected = callbacks::onUnitSystemSelected,
+            onOpenStepsSettings = onOpenStepsSettings,
             onReplayTour = onReplayTour
         )
         ProfileYourData(

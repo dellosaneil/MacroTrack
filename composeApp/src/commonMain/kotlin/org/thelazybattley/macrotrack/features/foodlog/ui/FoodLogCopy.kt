@@ -201,13 +201,35 @@ internal fun CopiedToast(
     onUndo: () -> Unit,
     onTimeout: () -> Unit
 ) {
-    LaunchedEffect(key1 = copy) {
-        delay(timeMillis = COPIED_TOAST_MILLIS)
-        onTimeout()
-    }
     val target = copy.targetDates.singleOrNull()?.let {
         if (it == today) stringResource(resource = Res.string.copy_target_today) else it.toShortDayMonthDay()
     } ?: stringResource(resource = Res.string.copy_target_days, copy.targetDates.size)
+    UndoToast(
+        modifier = modifier,
+        key = copy,
+        text = stringResource(
+            resource = Res.string.copied_to,
+            pluralStringResource(resource = Res.plurals.items, quantity = copy.itemCount, copy.itemCount),
+            target
+        ),
+        onUndo = onUndo,
+        onTimeout = onTimeout
+    )
+}
+
+/** A dark toast with a check, [text] and Undo, that goes after a few seconds; a new [key] restarts the wait. */
+@Composable
+internal fun UndoToast(
+    modifier: Modifier = Modifier,
+    key: Any,
+    text: String,
+    onUndo: () -> Unit,
+    onTimeout: () -> Unit
+) {
+    LaunchedEffect(key1 = key) {
+        delay(timeMillis = UNDO_TOAST_MILLIS)
+        onTimeout()
+    }
     Row(
         modifier = modifier
             .shadow(elevation = 8.dp, shape = RoundedCornerShape(size = 14.dp))
@@ -225,11 +247,7 @@ internal fun CopiedToast(
             modifier = Modifier.size(size = 18.dp)
         )
         Text(
-            text = stringResource(
-                resource = Res.string.copied_to,
-                pluralStringResource(resource = Res.plurals.items, quantity = copy.itemCount, copy.itemCount),
-                target
-            ),
+            text = text,
             style = typography.bold14,
             color = colors.background,
             modifier = Modifier.weight(weight = 1f)
@@ -247,4 +265,4 @@ internal fun CopiedToast(
     }
 }
 
-private const val COPIED_TOAST_MILLIS = 6_000L
+private const val UNDO_TOAST_MILLIS = 6_000L

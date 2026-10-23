@@ -6,6 +6,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import org.thelazybattley.macrotrack.core.platform.rememberMotionPermissionState
+import org.thelazybattley.macrotrack.core.platform.rememberNotificationPermissionState
+import org.thelazybattley.macrotrack.core.platform.StepNotifier
 import org.thelazybattley.macrotrack.domain.usecase.activity.ScheduleStepNudgeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.TrackStepsUseCase
 import kotlinx.coroutines.flow.first
@@ -15,6 +17,10 @@ import org.thelazybattley.macrotrack.features.activity.ui.ActivityHistoryScreen
 import org.thelazybattley.macrotrack.features.activity.ui.CaloriesBurnedScreen
 import org.thelazybattley.macrotrack.features.activity.ui.RecordScreen
 import org.thelazybattley.macrotrack.features.activity.ui.StepsScreen
+import org.thelazybattley.macrotrack.features.activity.ui.StepsSettingsScreen
+import org.thelazybattley.macrotrack.core.platform.AppLink
+import org.thelazybattley.macrotrack.core.platform.AppLinks
+import org.thelazybattley.macrotrack.domain.model.ActivityType
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ACTIVITY_ID
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ACTIVITY_TYPE
 import org.thelazybattley.macrotrack.features.deletedata.ui.DeleteDataScreen
@@ -151,9 +157,32 @@ fun AppBottomNav() {
             }
         }
     }
-    // A restart clears the evening reminder, so it's set again each time the app opens.
+    // A restart clears the evening reminder and the steps notification's refresh, so both are set again each time
+    // the app opens, and whenever their settings change.
     LaunchedEffect(key1 = Unit) {
         scheduleStepNudge()
+    }
+    // Permission given after a setting was switched on: show what's already turned on.
+    val stepNotifier = koinInject<StepNotifier>()
+    val notificationPermission = rememberNotificationPermissionState()
+    LaunchedEffect(key1 = notificationPermission.isGranted) {
+        if (notificationPermission.isGranted) stepNotifier.refresh()
+    }
+    // Buttons on the steps notification and alerts, once first launch is out of the way.
+    val appLinks = koinInject<AppLinks>()
+    LaunchedEffect(key1 = Unit) {
+        appLinks.requests.collect { link ->
+            navController.currentBackStackEntryFlow.first { entry -> entry.destination.route !in firstLaunchRoutes }
+            val route = when (link) {
+                AppLink.STEPS -> AppDestinations.Root.Steps.route
+                AppLink.STEPS_SETTINGS -> AppDestinations.Root.StepsSettings.route
+                // With a recording already going, its map opens instead of a second one.
+                AppLink.RECORD_WALK -> AppDestinations.Root.RecordActivity.createRoute(
+                    type = (recorder.state.value?.type ?: ActivityType.WALK).name
+                )
+            }
+            navController.navigate(route = route) { launchSingleTop = true }
+        }
     }
     // The tabs inside the main screen log their own views.
     TrackScreenViews(navController = navController, ignore = setOf(AppDestinations.Root.MainScreen.route))
@@ -362,13 +391,25 @@ fun AppBottomNav() {
                             }
                         )
                     }
-                    composable(route = AppDestinations.Root.Steps.route) {
+                    composable(route = AppDestinations.Root.Steps.route) { entry ->
+                        val isStepsOnlyJustChosen by entry.savedStateHandle
+                            .getStateFlow(key = STEPS_ONLY_CHOSEN, initialValue = false)
+                            .collectAsStateWithLifecycle()
                         StepsScreen(
                             onBack = { navController.popBackStack() },
                             onRecord = { type -> navigate(AppDestinations.Root.RecordActivity.createRoute(type = type.name)) },
                             onOpenSession = { id -> navigate(AppDestinations.Root.ActivityDetail.createRoute(id = id)) },
                             onOpenHistory = { navigate(AppDestinations.Root.ActivityHistory.route) },
-                            onOpenBurn = { navigate(AppDestinations.Root.CaloriesBurned.route) }
+                            onOpenBurn = { navigate(AppDestinations.Root.CaloriesBurned.route) },
+                            onOpenSettings = { navigate(AppDestinations.Root.StepsSettings.route) },
+                            isStepsOnlyJustChosen = isStepsOnlyJustChosen,
+                            onStepsOnlyToastShown = { entry.savedStateHandle[STEPS_ONLY_CHOSEN] = false }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.StepsSettings.route) {
+                        StepsSettingsScreen(
+                            onBack = { navController.popBackStack() },
+                            onOpenGoal = { navigate(AppDestinations.Root.Steps.route) }
                         )
                     }
                     composable(
@@ -386,6 +427,14 @@ fun AppBottomNav() {
                                 navController.navigate(route = AppDestinations.Root.ActivityDetail.createRoute(id = id)) {
                                     popUpTo(route = AppDestinations.Root.RecordActivity.routeWithArgs!!) { inclusive = true }
                                 }
+                            },
+                            onStepsOnly = {
+                                // Back to Steps, opening it if the live map came from somewhere else, with its toast.
+                                navController.popBackStack()
+                                if (navController.currentDestination?.route != AppDestinations.Root.Steps.route) {
+                                    navController.navigate(route = AppDestinations.Root.Steps.route)
+                                }
+                                navController.currentBackStackEntry?.savedStateHandle?.set(STEPS_ONLY_CHOSEN, true)
                             }
                         )
                     }
@@ -711,6 +760,9 @@ fun AppBottomNav() {
 }
 
 /** Screens before the main screen exists, where the live map mustn't be opened on top. */
+/** Set on the Steps entry after choosing to just count steps, so it confirms that with a toast once. */
+private const val STEPS_ONLY_CHOSEN = "steps_only_chosen"
+
 private val firstLaunchRoutes = setOf(
     AppDestinations.Root.Splash.route,
     AppDestinations.Root.Walkthrough.route,

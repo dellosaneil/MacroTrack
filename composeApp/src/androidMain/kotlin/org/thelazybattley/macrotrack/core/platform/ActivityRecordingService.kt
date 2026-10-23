@@ -41,13 +41,14 @@ private const val UPDATE_INTERVAL_MILLIS = 3_000L
 /**
  * Keeps the app in the foreground while a walk or run is recorded, so location keeps coming with the screen off.
  * Its notification can't be swiped away until Finish or Discard: it shows the time, distance, steps and pace, with
- * Pause / Resume, Finish and Open, and on Android 16 a compact time chip at the top of the screen. Location still
- * needs only "while using the app".
+ * Pause / Resume, Finish and Open, and on Android 16 a compact time chip at the top of the screen. It replaces the
+ * steps notification while it's up. Location still needs only "while using the app".
  */
 class ActivityRecordingService : Service(), KoinComponent {
 
     private val recorder: ActivityRecorder by inject()
     private val getUnitSystem: GetUnitSystemUseCase by inject()
+    private val stepNotifier: StepNotifier by inject()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var isStarted = false
 
@@ -70,6 +71,8 @@ class ActivityRecordingService : Service(), KoinComponent {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
         )
         val manager = getSystemService(NotificationManager::class.java)
+        // This notification takes the steps one's place until the recording ends.
+        scope.launch { stepNotifier.refresh() }
         scope.launch {
             var shown: Recording? = null
             var shownAt = 0L
@@ -89,6 +92,8 @@ class ActivityRecordingService : Service(), KoinComponent {
 
     override fun onDestroy() {
         scope.cancel()
+        // The recording is over, so the steps notification can come back.
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch { stepNotifier.refresh() }
         super.onDestroy()
     }
 

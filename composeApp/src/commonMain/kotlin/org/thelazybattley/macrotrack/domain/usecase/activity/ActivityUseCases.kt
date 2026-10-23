@@ -3,9 +3,11 @@ package org.thelazybattley.macrotrack.domain.usecase.activity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.core.platform.StepNotifier
 import org.thelazybattley.macrotrack.core.platform.StepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.StepSensor
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
@@ -15,6 +17,7 @@ import org.thelazybattley.macrotrack.domain.model.ActivityType
 import org.thelazybattley.macrotrack.domain.model.BurnProfile
 import org.thelazybattley.macrotrack.domain.model.DayActivity
 import org.thelazybattley.macrotrack.domain.model.StepHour
+import org.thelazybattley.macrotrack.domain.model.StepNotificationSettings
 import org.thelazybattley.macrotrack.domain.model.spreadSteps
 import org.thelazybattley.macrotrack.domain.model.stepsSince
 import org.thelazybattley.macrotrack.domain.repository.ActivityRepository
@@ -97,24 +100,72 @@ class IsStepNudgeEnabledUseCase(private val repository: ActivityRepository) {
     operator fun invoke(): Flow<Boolean> = repository.isStepNudgeEnabled()
 }
 
-/** Saves the choice and sets or clears the 6 PM reminder to match. */
+/** Saves the choice and sets or clears the evening reminder to match. */
 class SetStepNudgeEnabledUseCase(
     private val repository: ActivityRepository,
     private val scheduler: StepNudgeScheduler
 ) {
     suspend operator fun invoke(isEnabled: Boolean) {
         repository.setStepNudgeEnabled(isEnabled = isEnabled)
-        scheduler.schedule(isEnabled = isEnabled)
+        scheduler.schedule(isEnabled = isEnabled, hour = repository.getStepNotificationSettings().first().nudgeHour)
     }
 }
 
-/** Sets the next reminder from the saved choice; run as the app opens, since a restart clears it. */
+/**
+ * Sets the next reminder and the steps notification from the saved choices, and again each time they change; run
+ * while the app is open, since a restart clears both.
+ */
 class ScheduleStepNudgeUseCase(
     private val repository: ActivityRepository,
-    private val scheduler: StepNudgeScheduler
+    private val scheduler: StepNudgeScheduler,
+    private val notifier: StepNotifier
 ) {
     suspend operator fun invoke() {
-        repository.isStepNudgeEnabled().collect { scheduler.schedule(isEnabled = it) }
+        combine(flow = repository.isStepNudgeEnabled(), flow2 = repository.getStepNotificationSettings()) { isOn, settings ->
+            isOn to settings
+        }.collect { (isOn, settings) ->
+            scheduler.schedule(isEnabled = isOn, hour = settings.nudgeHour)
+            notifier.refresh()
+        }
+    }
+}
+
+class GetStepNotificationSettingsUseCase(private val repository: ActivityRepository) {
+    operator fun invoke(): Flow<StepNotificationSettings> = repository.getStepNotificationSettings()
+}
+
+/** Saves a change to the steps notification or alerts; [ScheduleStepNudgeUseCase] applies it. */
+class UpdateStepNotificationSettingsUseCase(private val repository: ActivityRepository) {
+    suspend operator fun invoke(change: (StepNotificationSettings) -> StepNotificationSettings) {
+        val current = repository.getStepNotificationSettings().first()
+        val updated = change(current)
+        // Turning the notification off ends steps only too; turning it back on shows the ordinary one.
+        repository.setStepNotificationSettings(settings = if (updated.isOn) updated else updated.copy(isStepsOnly = false))
+        if (updated.isOn && !current.isOn) repository.setStepNotificationHiddenOn(date = null)
+    }
+}
+
+/**
+ * "Not now, just count steps": turns on the steps notification in its steps-only form, so it's always clear steps
+ * are being counted without location, and shows the one-time pop-down.
+ */
+class ChooseStepsOnlyUseCase(
+    private val repository: ActivityRepository,
+    private val notifier: StepNotifier
+) {
+    suspend operator fun invoke() {
+        val current = repository.getStepNotificationSettings().first()
+        repository.setStepNotificationSettings(settings = current.copy(isOn = true, isStepsOnly = true))
+        repository.setStepNotificationHiddenOn(date = null)
+        notifier.announceStepsOnly()
+    }
+}
+
+/** Location was allowed after all, so the notification stops saying no location is used. */
+class EndStepsOnlyUseCase(private val repository: ActivityRepository) {
+    suspend operator fun invoke() {
+        val current = repository.getStepNotificationSettings().first()
+        if (current.isStepsOnly) repository.setStepNotificationSettings(settings = current.copy(isStepsOnly = false))
     }
 }
 

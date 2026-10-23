@@ -54,6 +54,8 @@ data class FoodLogViewState(
     val copyToast: FoodLogCopy? = null,
     /** Food planned for today that waits for Ate it or Skip, and what was already done with it. */
     val plannedToday: List<PlannedFood> = emptyList(),
+    /** Planned food just marked eaten, shown with Undo until it's dismissed. */
+    val plannedToast: PlannedToast? = null,
     /** Today's steps, walks and runs for the steps card. */
     val todayActivity: DayActivity = DayActivity(totalSteps = 0, sessions = emptyList()),
     val stepGoal: Int = StepGoal.DEFAULT,
@@ -70,4 +72,11 @@ data class FoodLogFoodListByMealType(
     val protein: Double = 0.0,
     val carbs: Double = 0.0,
     val fat: Double = 0.0
+)
+
+/** Planned food in [mealType] just logged with Ate it or Ate all; [foodName] is set when it was one item. */
+data class PlannedToast(
+    val plannedIds: List<Long>,
+    val mealType: MealType,
+    val foodName: String?
 )

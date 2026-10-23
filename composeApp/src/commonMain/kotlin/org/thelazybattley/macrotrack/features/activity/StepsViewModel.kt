@@ -17,10 +17,12 @@ import org.thelazybattley.macrotrack.domain.model.ActivitySession
 import org.thelazybattley.macrotrack.domain.model.BurnProfile
 import org.thelazybattley.macrotrack.domain.model.DayActivity
 import org.thelazybattley.macrotrack.domain.model.StepGoal
+import org.thelazybattley.macrotrack.domain.model.StepNotificationSettings
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetActivitySessionsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetBurnProfileUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepHoursUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepNotificationSettingsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepNudgeEnabledUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepNudgeEnabledUseCase
@@ -59,7 +61,9 @@ data class StepsViewState(
     val selectedDay: Int? = null,
     val goalDraft: GoalDraft? = null,
     val isSensorAvailable: Boolean = true,
-    val isNudgeSupported: Boolean = true
+    val isNudgeSupported: Boolean = true,
+    /** For the counting chip, which says when it's steps only, and the nudge's hour. */
+    val stepNotifications: StepNotificationSettings = StepNotificationSettings()
 ) {
     val todaySteps: Int get() = day.totalSteps
 
@@ -110,6 +114,7 @@ class StepsViewModel(
     getBurnProfileUseCase: GetBurnProfileUseCase,
     getStepGoalUseCase: GetStepGoalUseCase,
     isStepNudgeEnabledUseCase: IsStepNudgeEnabledUseCase,
+    getStepNotificationSettingsUseCase: GetStepNotificationSettingsUseCase,
     stepSensor: StepSensor,
     stepNudgeScheduler: StepNudgeScheduler,
     private val setStepGoalUseCase: SetStepGoalUseCase,
@@ -152,6 +157,9 @@ class StepsViewModel(
         viewModelScope.launch {
             combine(flow = getStepGoalUseCase(), flow2 = isStepNudgeEnabledUseCase()) { goal, isNudgeOn -> goal to isNudgeOn }
                 .collect { (goal, isNudgeOn) -> _state.update { it.copy(goal = goal, isNudgeOn = isNudgeOn) } }
+        }
+        viewModelScope.launch {
+            getStepNotificationSettingsUseCase().collect { settings -> _state.update { it.copy(stepNotifications = settings) } }
         }
     }
 

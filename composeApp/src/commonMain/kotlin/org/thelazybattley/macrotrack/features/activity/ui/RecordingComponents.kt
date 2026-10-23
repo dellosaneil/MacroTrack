@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -118,7 +119,13 @@ internal fun RecordingDot(isPaused: Boolean, recordingColor: Color, pausedColor:
         )
         return
     }
-    val pulse by rememberInfiniteTransition(label = "recording").animateFloat(
+    PulsingDot(color = recordingColor)
+}
+
+/** A dot with a ring that grows out of it and fades, over and over: something is running right now. */
+@Composable
+internal fun PulsingDot(color: Color, size: Dp = 12.dp) {
+    val pulse by rememberInfiniteTransition(label = "pulse").animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(animation = tween(durationMillis = 1_600, easing = LinearEasing), repeatMode = RepeatMode.Restart),
@@ -126,16 +133,16 @@ internal fun RecordingDot(isPaused: Boolean, recordingColor: Color, pausedColor:
     )
     Box(
         modifier = Modifier
-            .size(size = 12.dp)
+            .size(size = size)
             .drawBehind {
                 val grown = (pulse / 0.7f).coerceAtMost(maximumValue = 1f)
                 drawCircle(
-                    color = recordingColor.copy(alpha = 0.55f * (1f - grown)),
-                    radius = size.minDimension / 2 + 7.dp.toPx() * grown
+                    color = color.copy(alpha = 0.55f * (1f - grown)),
+                    radius = this.size.minDimension / 2 + 7.dp.toPx() * grown
                 )
             }
             .clip(shape = CircleShape)
-            .background(color = recordingColor)
+            .background(color = color)
     )
 }
 

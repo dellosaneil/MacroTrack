@@ -94,6 +94,7 @@ import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.PlanStatus
 import org.thelazybattley.macrotrack.domain.model.PlannedFood
 import org.thelazybattley.macrotrack.domain.model.dummyFoodLog
 import org.thelazybattley.macrotrack.features.foodlog.DayGoal
@@ -297,24 +298,36 @@ private fun FoodLogTabScreen(
                     },
                     onMore = { copyMenuMeal = meal.mealType },
                     onCopyFrom = if (isToday) ({ onCopyFrom(meal.mealType) }) else null,
-                    // Planned food waits on the day it's for, so only today shows it.
-                    planned = if (isToday) viewState.plannedToday.filter { it.mealType == meal.mealType } else emptyList(),
+                    // Planned food waits on the day it's for, so only today shows it. Eaten food is in the meal now.
+                    planned = if (isToday) {
+                        viewState.plannedToday.filter { it.mealType == meal.mealType && it.status != PlanStatus.EATEN }
+                    } else {
+                        emptyList()
+                    },
                     callbacks = callbacks
                 )
             }
-            // Keeps the last meal clear of the copied toast.
-            if (viewState.copyToast != null) Box(modifier = Modifier.height(height = 64.dp))
+            // Keeps the last meal clear of the toast.
+            if (viewState.copyToast != null || viewState.plannedToast != null) Box(modifier = Modifier.height(height = 64.dp))
         }
+        val toastModifier = Modifier
+            .align(alignment = Alignment.BottomCenter)
+            .fillMaxWidth()
+            .padding(bottom = 12.dp)
         viewState.copyToast?.let { copy ->
             CopiedToast(
-                modifier = Modifier
-                    .align(alignment = Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                modifier = toastModifier,
                 copy = copy,
                 today = today,
                 onUndo = callbacks::onUndoCopy,
                 onTimeout = callbacks::onDismissCopyToast
+            )
+        } ?: viewState.plannedToast?.let { toast ->
+            PlannedLoggedToast(
+                modifier = toastModifier,
+                toast = toast,
+                onUndo = callbacks::onUndoPlannedToast,
+                onTimeout = callbacks::onDismissPlannedToast
             )
         }
     }
@@ -612,6 +625,7 @@ private fun LoggedFoodMealType(
             PlannedSection(
                 modifier = Modifier.fillMaxWidth(),
                 planned = planned,
+                foodUnit = foodUnit,
                 onAteAll = { callbacks.onAteAllPlanned(mealType = foodList.mealType) },
                 onAte = callbacks::onAtePlanned,
                 onSkip = callbacks::onSkipPlanned,

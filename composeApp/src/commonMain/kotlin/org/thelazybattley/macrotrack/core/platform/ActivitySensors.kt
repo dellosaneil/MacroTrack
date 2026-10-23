@@ -37,19 +37,45 @@ interface LocationTracker {
     fun fixes(type: ActivityType): Flow<LocationFix>
 }
 
-/** The 6 PM reminder when the step goal is far off. */
+/** The evening reminder when the step goal is far off. */
 interface StepNudgeScheduler {
 
     /** False where the reminder can't be set, so its switch isn't offered. */
     val isSupported: Boolean get() = true
 
-    /** Sets the next reminder, or clears it when [isEnabled] is false. */
-    fun schedule(isEnabled: Boolean)
+    /** Sets the next reminder at [hour], or clears it when [isEnabled] is false. */
+    fun schedule(isEnabled: Boolean, hour: Int)
 }
 
 object NoStepNudgeScheduler : StepNudgeScheduler {
     override val isSupported: Boolean = false
-    override fun schedule(isEnabled: Boolean) = Unit
+    override fun schedule(isEnabled: Boolean, hour: Int) = Unit
+}
+
+/**
+ * The silent steps notification and the goal-reached alert, kept up to date about every
+ * [org.thelazybattley.macrotrack.domain.model.StepNotificationSettings.REFRESH_MINUTES] minutes. Step counting never
+ * depends on either.
+ */
+interface StepNotifier {
+
+    /** False where these notifications can't be shown, so their settings aren't offered. */
+    val isSupported: Boolean get() = true
+
+    /**
+     * Posts, updates or clears the steps notification to match the saved settings and today's steps, sends the
+     * goal-reached alert if it's due, and sets or clears the refresh that keeps doing so.
+     */
+    suspend fun refresh()
+
+    /** The pop-down shown once, right after choosing to just count steps. */
+    fun announceStepsOnly()
+}
+
+object NoStepNotifier : StepNotifier {
+    override val isSupported: Boolean = false
+    override suspend fun refresh() = Unit
+    override fun announceStepsOnly() = Unit
 }
 
 /**
@@ -70,6 +96,6 @@ expect fun rememberMotionPermissionState(): SensorPermissionState
 @Composable
 expect fun rememberLocationPermissionState(): SensorPermissionState
 
-/** Permission to post the evening step reminder. Granted where the platform doesn't ask. */
+/** Permission to post the steps notification and step alerts. Granted where the platform doesn't ask. */
 @Composable
 expect fun rememberNotificationPermissionState(): SensorPermissionState

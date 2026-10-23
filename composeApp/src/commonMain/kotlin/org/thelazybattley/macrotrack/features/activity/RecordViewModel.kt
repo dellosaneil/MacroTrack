@@ -16,6 +16,8 @@ import org.thelazybattley.macrotrack.domain.model.DayActivity
 import org.thelazybattley.macrotrack.domain.model.StepGoal
 import org.thelazybattley.macrotrack.domain.model.routeClimb
 import org.thelazybattley.macrotrack.domain.model.routeDistance
+import org.thelazybattley.macrotrack.domain.usecase.activity.ChooseStepsOnlyUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.EndStepsOnlyUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetActivitySessionsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetBurnProfileUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.GetDayActivityUseCase
@@ -59,6 +61,9 @@ interface RecordCallbacks {
     fun onSave()
     fun onDiscard()
 
+    /** "Not now, just count steps" on the location screen. */
+    fun onStepsOnlyChosen()
+
     companion object {
         fun default() = object : RecordCallbacks {
             override fun onStart() = Unit
@@ -69,6 +74,7 @@ interface RecordCallbacks {
             override fun onTypeChanged(type: ActivityType) = Unit
             override fun onSave() = Unit
             override fun onDiscard() = Unit
+            override fun onStepsOnlyChosen() = Unit
         }
     }
 }
@@ -80,7 +86,9 @@ class RecordViewModel(
     getStepGoalUseCase: GetStepGoalUseCase,
     getBurnProfileUseCase: GetBurnProfileUseCase,
     getActivitySessionsUseCase: GetActivitySessionsUseCase,
-    private val saveActivitySessionUseCase: SaveActivitySessionUseCase
+    private val saveActivitySessionUseCase: SaveActivitySessionUseCase,
+    private val chooseStepsOnlyUseCase: ChooseStepsOnlyUseCase,
+    private val endStepsOnlyUseCase: EndStepsOnlyUseCase
 ) : ViewModel(), RecordCallbacks {
 
     private val type = savedStateHandle.get<String>(key = AppDestinations.ACTIVITY_TYPE)
@@ -125,6 +133,12 @@ class RecordViewModel(
 
     override fun onStart() {
         recorder.start(type = type)
+        // Location is allowed now, so the steps notification stops saying none is used.
+        viewModelScope.launch { endStepsOnlyUseCase() }
+    }
+
+    override fun onStepsOnlyChosen() {
+        viewModelScope.launch { chooseStepsOnlyUseCase() }
     }
 
     override fun onPauseToggled() {

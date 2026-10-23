@@ -5,6 +5,7 @@ import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.domain.model.ActivitySession
 import org.thelazybattley.macrotrack.domain.model.ActivityType
 import org.thelazybattley.macrotrack.domain.model.StepHour
+import org.thelazybattley.macrotrack.domain.model.StepNotificationSettings
 
 interface ActivityRepository {
 
@@ -36,6 +37,21 @@ interface ActivityRepository {
     fun isStepNudgeEnabled(): Flow<Boolean>
 
     suspend fun setStepNudgeEnabled(isEnabled: Boolean)
+
+    /** The steps notification and step alerts, as set in Profile › Steps & walks. */
+    fun getStepNotificationSettings(): Flow<StepNotificationSettings>
+
+    suspend fun setStepNotificationSettings(settings: StepNotificationSettings)
+
+    /** The day Hide today was chosen or the notification swiped away; it's back the day after. Null when shown. */
+    suspend fun getStepNotificationHiddenOn(): LocalDate?
+
+    suspend fun setStepNotificationHiddenOn(date: LocalDate?)
+
+    /** The last day the goal-reached alert went out, so it goes once a day. */
+    suspend fun getGoalAlertSentOn(): LocalDate?
+
+    suspend fun setGoalAlertSentOn(date: LocalDate)
 
     /** Adding calories burned to the food budget. Off until turned on. */
     fun isBurnAddedToBudget(): Flow<Boolean>

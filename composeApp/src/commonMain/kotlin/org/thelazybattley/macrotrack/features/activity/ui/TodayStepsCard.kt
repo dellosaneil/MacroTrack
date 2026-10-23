@@ -30,6 +30,7 @@ import macrotrack.composeapp.generated.resources.today_steps_description
 import macrotrack.composeapp.generated.resources.today_steps_goal_reached
 import macrotrack.composeapp.generated.resources.today_steps_of
 import macrotrack.composeapp.generated.resources.today_steps_recorded
+import macrotrack.composeapp.generated.resources.today_steps_counting
 import macrotrack.composeapp.generated.resources.today_steps_title
 import macrotrack.composeapp.generated.resources.today_steps_to_go
 import macrotrack.composeapp.generated.resources.today_steps_turn_on
@@ -89,7 +90,14 @@ fun TodayStepsCard(
             Icon(painter = painterResource(resource = Res.drawable.ic_footprints), contentDescription = null, tint = colors.accentInk, modifier = Modifier.size(size = 18.dp))
         }
         Column(modifier = Modifier.weight(weight = 1f).clearAndSetSemantics {}) {
-            Text(text = stringResource(resource = Res.string.today_steps_title), style = typography.medium11, color = colors.muted)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
+                Text(text = stringResource(resource = Res.string.today_steps_title), style = typography.medium11, color = colors.muted)
+                // Steps count all day, so the card says so whenever they do.
+                if (motion.isGranted) {
+                    PulsingDot(color = colors.accent, size = 6.dp)
+                    Text(text = stringResource(resource = Res.string.today_steps_counting), style = typography.bold10, color = colors.accentInk)
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(space = 5.dp)) {
                 Text(text = steps.withThousands(), style = typography.bold18, color = colors.ink, modifier = Modifier.alignByBaseline())
                 Text(

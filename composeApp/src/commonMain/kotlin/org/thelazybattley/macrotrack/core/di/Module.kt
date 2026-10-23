@@ -140,6 +140,10 @@ import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepNudgeEnabledU
 import org.thelazybattley.macrotrack.domain.usecase.activity.RenameActivitySessionUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SaveActivitySessionUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.ScheduleStepNudgeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepNotificationSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.UpdateStepNotificationSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.ChooseStepsOnlyUseCase
+import org.thelazybattley.macrotrack.domain.usecase.activity.EndStepsOnlyUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetBurnAddedToBudgetUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepGoalUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepNudgeEnabledUseCase
@@ -148,9 +152,11 @@ import org.thelazybattley.macrotrack.domain.usecase.activity.GetTodayActivityUse
 import org.thelazybattley.macrotrack.features.activity.ActivityDetailViewModel
 import org.thelazybattley.macrotrack.features.activity.ActivityHistoryViewModel
 import org.thelazybattley.macrotrack.features.activity.ActivityRecorder
+import org.thelazybattley.macrotrack.core.platform.AppLinks
 import org.thelazybattley.macrotrack.features.activity.CaloriesBurnedViewModel
 import org.thelazybattley.macrotrack.features.activity.RecordViewModel
 import org.thelazybattley.macrotrack.features.activity.StepsViewModel
+import org.thelazybattley.macrotrack.features.activity.StepsSettingsViewModel
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
@@ -192,6 +198,7 @@ val sharedModule = module {
     single { get<AppDatabase>().mealPlanDao() }
     single { get<AppDatabase>().activityDao() }
     singleOf(::MeasurementUnitPreference)
+    singleOf(::AppLinks)
     single {
         HttpClient {
             install(plugin = HttpTimeout) {
@@ -308,6 +315,10 @@ val useCaseModule = module {
     factoryOf(::IsStepNudgeEnabledUseCase)
     factoryOf(::SetStepNudgeEnabledUseCase)
     factoryOf(::ScheduleStepNudgeUseCase)
+    factoryOf(::GetStepNotificationSettingsUseCase)
+    factoryOf(::UpdateStepNotificationSettingsUseCase)
+    factoryOf(::ChooseStepsOnlyUseCase)
+    factoryOf(::EndStepsOnlyUseCase)
     factoryOf(::IsBurnAddedToBudgetUseCase)
     factoryOf(::SetBurnAddedToBudgetUseCase)
     factoryOf(::GetBurnProfileUseCase)
@@ -348,6 +359,7 @@ val viewModelModule = module {
     viewModelOf(::MealPlanViewModel)
     viewModelOf(::RepeatingMealsViewModel)
     viewModelOf(::RepeatMealViewModel)
+    viewModelOf(::StepsSettingsViewModel)
     viewModelOf(::StepsViewModel)
     viewModelOf(::RecordViewModel)
     viewModelOf(::ActivityDetailViewModel)

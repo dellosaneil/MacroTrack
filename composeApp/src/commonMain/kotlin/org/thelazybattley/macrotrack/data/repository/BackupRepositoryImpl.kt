@@ -118,7 +118,9 @@ class BackupRepositoryImpl(
             AppFlagRepositoryImpl.REVIEW_TIMES_ASKED,
             // The step counter's readings mean something only on the phone that took them.
             ActivityRepositoryImpl.STEP_SENSOR_READING,
-            ActivityRepositoryImpl.STEPS_SYNCED_UNTIL
+            ActivityRepositoryImpl.STEPS_SYNCED_UNTIL,
+            ActivityRepositoryImpl.STEP_NOTIFICATION_HIDDEN_ON,
+            ActivityRepositoryImpl.GOAL_ALERT_SENT_ON
         )
     }
 }

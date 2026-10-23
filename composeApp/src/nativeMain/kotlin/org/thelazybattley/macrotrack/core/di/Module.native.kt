@@ -9,7 +9,9 @@ import org.thelazybattley.macrotrack.core.billing.UnavailableBillingService
 import org.thelazybattley.macrotrack.core.platform.IosLocationTracker
 import org.thelazybattley.macrotrack.core.platform.IosStepSensor
 import org.thelazybattley.macrotrack.core.platform.LocationTracker
+import org.thelazybattley.macrotrack.core.platform.NoStepNotifier
 import org.thelazybattley.macrotrack.core.platform.NoStepNudgeScheduler
+import org.thelazybattley.macrotrack.core.platform.StepNotifier
 import org.thelazybattley.macrotrack.core.platform.StepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.StepSensor
 import org.thelazybattley.macrotrack.data.local.AppDatabase
@@ -28,6 +30,7 @@ actual val platformModule: Module = module {
     single<StepSensor> { IosStepSensor() }
     single<LocationTracker> { IosLocationTracker() }
     single<StepNudgeScheduler> { NoStepNudgeScheduler }
+    single<StepNotifier> { NoStepNotifier }
 }
 
 @OptIn(ExperimentalForeignApi::class)

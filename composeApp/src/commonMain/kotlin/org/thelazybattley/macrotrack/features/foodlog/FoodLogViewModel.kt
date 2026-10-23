@@ -16,6 +16,7 @@ import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.PlanStatus
 import org.thelazybattley.macrotrack.domain.model.PlannedFood
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
 import org.thelazybattley.macrotrack.domain.model.isCheckInDue
@@ -145,11 +146,24 @@ class FoodLogViewModel(
     }
 
     override fun onAtePlanned(planned: PlannedFood) {
-        viewModelScope.launch { plannedFoodActions.markEaten(planned = listOf(planned)) }
+        markEaten(planned = listOf(planned), mealType = planned.mealType)
     }
 
     override fun onAteAllPlanned(mealType: MealType) {
-        val planned = _state.value.plannedToday.filter { it.mealType == mealType }
+        markEaten(planned = _state.value.plannedToday.filter { it.mealType == mealType && it.isPending }, mealType = mealType)
+    }
+
+    private fun markEaten(planned: List<PlannedFood>, mealType: MealType) {
+        if (planned.isEmpty()) return
+        _state.update {
+            it.copy(
+                plannedToast = PlannedToast(
+                    plannedIds = planned.map { item -> item.id },
+                    mealType = mealType,
+                    foodName = planned.singleOrNull()?.food?.foodName
+                )
+            )
+        }
         viewModelScope.launch { plannedFoodActions.markEaten(planned = planned) }
     }
 
@@ -159,6 +173,18 @@ class FoodLogViewModel(
 
     override fun onUndoPlanned(planned: PlannedFood) {
         viewModelScope.launch { plannedFoodActions.undo(planned = planned) }
+    }
+
+    override fun onUndoPlannedToast() {
+        val toast = _state.value.plannedToast ?: return
+        _state.update { it.copy(plannedToast = null) }
+        // Read when undone, so each item carries the log Ate it made.
+        val eaten = _state.value.plannedToday.filter { it.id in toast.plannedIds && it.status == PlanStatus.EATEN }
+        viewModelScope.launch { eaten.forEach { plannedFoodActions.undo(planned = it) } }
+    }
+
+    override fun onDismissPlannedToast() {
+        _state.update { it.copy(plannedToast = null) }
     }
 
     override fun onCopyMealToToday(mealType: MealType) {

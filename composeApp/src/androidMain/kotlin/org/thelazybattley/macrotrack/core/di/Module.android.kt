@@ -8,9 +8,11 @@ import org.koin.dsl.module
 import org.thelazybattley.macrotrack.core.billing.BillingService
 import org.thelazybattley.macrotrack.core.billing.PlayBillingService
 import org.thelazybattley.macrotrack.core.platform.AndroidLocationTracker
+import org.thelazybattley.macrotrack.core.platform.AndroidStepNotifier
 import org.thelazybattley.macrotrack.core.platform.AndroidStepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.AndroidStepSensor
 import org.thelazybattley.macrotrack.core.platform.LocationTracker
+import org.thelazybattley.macrotrack.core.platform.StepNotifier
 import org.thelazybattley.macrotrack.core.platform.StepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.StepSensor
 import org.thelazybattley.macrotrack.core.telemetry.FirebaseTelemetry
@@ -27,6 +29,17 @@ actual val platformModule: Module = module {
     single<StepSensor> { AndroidStepSensor(context = get()) }
     single<LocationTracker> { AndroidLocationTracker(context = get()) }
     single<StepNudgeScheduler> { AndroidStepNudgeScheduler(context = get()) }
+    single<StepNotifier> {
+        AndroidStepNotifier(
+            context = get(),
+            repository = get(),
+            recorder = get(),
+            getDayActivityUseCase = get(),
+            getBurnProfileUseCase = get(),
+            getProStatusUseCase = get(),
+            getUnitSystemUseCase = get()
+        )
+    }
 }
 
 fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {

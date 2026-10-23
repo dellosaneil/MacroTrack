@@ -11,13 +11,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -29,14 +31,14 @@ import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.items
 import macrotrack.composeapp.generated.resources.kcal_text
-import macrotrack.composeapp.generated.resources.planned_all_done
 import macrotrack.composeapp.generated.resources.planned_ate_all
 import macrotrack.composeapp.generated.resources.planned_ate_description
 import macrotrack.composeapp.generated.resources.planned_ate_it
 import macrotrack.composeapp.generated.resources.planned_badge
-import macrotrack.composeapp.generated.resources.planned_logged_undo
+import macrotrack.composeapp.generated.resources.planned_logged_to
 import macrotrack.composeapp.generated.resources.planned_skip
 import macrotrack.composeapp.generated.resources.planned_skip_description
+import macrotrack.composeapp.generated.resources.planned_skipped
 import macrotrack.composeapp.generated.resources.planned_skipped_undo
 import macrotrack.composeapp.generated.resources.planned_to_go
 import macrotrack.composeapp.generated.resources.planned_undo_description
@@ -44,25 +46,41 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.PlanStatus
 import org.thelazybattley.macrotrack.domain.model.PlannedFood
+import org.thelazybattley.macrotrack.features.foodlog.PlannedToast
+import org.thelazybattley.macrotrack.features.mealplan.ui.amountText
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 
 /**
  * Food planned for this meal today, from the meal plan or a repeating meal. It isn't counted until it's marked
- * eaten; each item waits for Ate it or Skip, and either can be undone.
+ * eaten; each item waits for Ate it or Skip. Eaten food moves up into the meal as a log, so only waiting and
+ * skipped food shows here, and a skip can be undone.
  */
 @Composable
 internal fun PlannedSection(
     modifier: Modifier = Modifier,
     planned: List<PlannedFood>,
+    foodUnit: Map<String, String>,
     onAteAll: () -> Unit,
     onAte: (PlannedFood) -> Unit,
     onSkip: (PlannedFood) -> Unit,
     onUndo: (PlannedFood) -> Unit
 ) {
     val pending = planned.filter { it.isPending }
-    Column(modifier = modifier.background(color = colors.background)) {
-        HorizontalDivider(thickness = 1.dp, color = colors.dashed)
+    val dashedColor = colors.dashed
+    Column(
+        modifier = modifier
+            .background(color = colors.background)
+            .drawBehind {
+                drawLine(
+                    color = dashedColor,
+                    start = Offset.Zero,
+                    end = Offset(x = size.width, y = 0f),
+                    strokeWidth = 1.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(intervals = floatArrayOf(6.dp.toPx(), 4.dp.toPx()))
+                )
+            }
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -80,7 +98,7 @@ internal fun PlannedSection(
             )
             Text(
                 text = if (pending.isEmpty()) {
-                    stringResource(resource = Res.string.planned_all_done)
+                    stringResource(resource = Res.string.planned_skipped)
                 } else {
                     stringResource(
                         resource = Res.string.planned_to_go,
@@ -102,16 +120,16 @@ internal fun PlannedSection(
             }
         }
         planned.forEach { item ->
-            PlannedItemRow(item = item, onAte = { onAte(item) }, onSkip = { onSkip(item) }, onUndo = { onUndo(item) })
+            PlannedItemRow(item = item, amount = item.food.amountText(foodUnit = foodUnit), onAte = { onAte(item) }, onSkip = { onSkip(item) }, onUndo = { onUndo(item) })
         }
     }
 }
 
 @Composable
-private fun PlannedItemRow(item: PlannedFood, onAte: () -> Unit, onSkip: () -> Unit, onUndo: () -> Unit) {
+private fun PlannedItemRow(item: PlannedFood, amount: String, onAte: () -> Unit, onSkip: () -> Unit, onUndo: () -> Unit) {
     val name = item.food.foodName
     val isSkipped = item.status == PlanStatus.SKIPPED
-    val details = " · " + item.food.calories.withThousands() + " " + stringResource(resource = Res.string.kcal_text)
+    val details = " · " + amount + " · " + item.food.calories.withThousands() + " " + stringResource(resource = Res.string.kcal_text)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -149,7 +167,7 @@ private fun PlannedItemRow(item: PlannedFood, onAte: () -> Unit, onSkip: () -> U
             val undoDescription = stringResource(resource = Res.string.planned_undo_description, name)
             PlanButton(
                 modifier = Modifier.semantics { contentDescription = undoDescription },
-                text = stringResource(resource = if (isSkipped) Res.string.planned_skipped_undo else Res.string.planned_logged_undo),
+                text = stringResource(resource = Res.string.planned_skipped_undo),
                 background = Color.Transparent,
                 textColor = colors.muted,
                 onClick = onUndo
@@ -180,4 +198,26 @@ private fun PlanButton(
     ) {
         Text(text = text, style = typography.bold12, color = textColor)
     }
+}
+
+/** After Ate it or Ate all: what went into which meal, with Undo. */
+@Composable
+internal fun PlannedLoggedToast(
+    modifier: Modifier = Modifier,
+    toast: PlannedToast,
+    onUndo: () -> Unit,
+    onTimeout: () -> Unit
+) {
+    val count = toast.plannedIds.size
+    UndoToast(
+        modifier = modifier,
+        key = toast,
+        text = stringResource(
+            resource = Res.string.planned_logged_to,
+            toast.foodName?.lowercase() ?: pluralStringResource(resource = Res.plurals.items, quantity = count, count),
+            stringResource(resource = toast.mealType.title).lowercase()
+        ),
+        onUndo = onUndo,
+        onTimeout = onTimeout
+    )
 }
