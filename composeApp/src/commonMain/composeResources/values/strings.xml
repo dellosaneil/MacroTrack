@@ -1484,6 +1484,12 @@
     <string name="record_recording">Recording</string>
     <string name="record_paused">Paused</string>
     <string name="record_gps_good">GPS good</string>
+    <string name="record_riding">In a vehicle</string>
+    <string name="record_riding_title">Looks like you're riding</string>
+    <string name="record_riding_body">Driving or cycling isn't counted: distance, time and steps wait until you're on foot. The ride shows as a dashed line.</string>
+    <string name="record_location_off_title">Location is off</string>
+    <string name="record_location_off_body">Allow it again to keep drawing the route. Choosing "While using the app" saves being asked each time.</string>
+    <string name="record_location_off_action">Allow</string>
     <string name="record_gps_waiting">Finding GPS</string>
     <string name="record_fit_route">Fit route</string>
     <string name="record_elapsed">%1$s · elapsed</string>
@@ -1503,6 +1509,8 @@
     <string name="record_minimize">Minimize. Keeps recording while you use the app</string>
     <string name="recording_status">Recording %1$s</string>
     <string name="recording_status_paused">Paused · %1$s</string>
+    <string name="recording_status_riding">In a vehicle · %1$s on hold</string>
+    <string name="recording_riding_hint">Not counted until you're on foot again</string>
     <string name="recording_line">%1$s · %2$s · %3$s steps</string>
     <string name="recording_open_map">Open the live map</string>
     <string name="recording_pause_type">Pause %1$s</string>

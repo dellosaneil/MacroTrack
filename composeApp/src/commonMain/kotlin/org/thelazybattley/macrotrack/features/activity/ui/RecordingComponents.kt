@@ -69,7 +69,9 @@ import macrotrack.composeapp.generated.resources.recording_paused_hint
 import macrotrack.composeapp.generated.resources.recording_resume_type
 import macrotrack.composeapp.generated.resources.recording_started
 import macrotrack.composeapp.generated.resources.recording_status
+import macrotrack.composeapp.generated.resources.recording_riding_hint
 import macrotrack.composeapp.generated.resources.recording_status_paused
+import macrotrack.composeapp.generated.resources.recording_status_riding
 import macrotrack.composeapp.generated.resources.recording_today_of
 import macrotrack.composeapp.generated.resources.today_steps_goal_reached
 import macrotrack.composeapp.generated.resources.today_steps_to_go
@@ -100,11 +102,19 @@ internal fun rememberRecordingNow(recording: Recording?): Long {
     return now
 }
 
-/** "Recording walk" or "Paused · walk": the text always says which, so the dot is never the only signal. */
+/**
+ * "Recording walk", "Paused · walk" or "In a vehicle · walk on hold": the text always says which, so the dot is
+ * never the only signal.
+ */
 @Composable
 private fun Recording.statusText(): String {
     val noun = stringResource(resource = type.title).lowercase()
-    return stringResource(resource = if (isPaused) Res.string.recording_status_paused else Res.string.recording_status, noun)
+    val resource = when {
+        isPaused -> Res.string.recording_status_paused
+        isRiding -> Res.string.recording_status_riding
+        else -> Res.string.recording_status
+    }
+    return stringResource(resource = resource, noun)
 }
 
 /** A red dot that pulses while recording, and turns into a still amber square when paused. */
@@ -269,6 +279,8 @@ fun LiveRecordingCard(
     val shape = RoundedCornerShape(size = 20.dp)
     val sub = if (recording.isPaused) {
         stringResource(resource = Res.string.recording_paused_hint)
+    } else if (recording.isRiding) {
+        stringResource(resource = Res.string.recording_riding_hint)
     } else {
         val started = Instant.fromEpochMilliseconds(epochMilliseconds = recording.startMillis).toLocalDateTime(timeZone = TimeZone.currentSystemDefault())
         stringResource(

@@ -7,8 +7,10 @@ import org.koin.dsl.module
 import org.thelazybattley.macrotrack.core.billing.BillingService
 import org.thelazybattley.macrotrack.core.billing.UnavailableBillingService
 import org.thelazybattley.macrotrack.core.platform.IosLocationTracker
+import org.thelazybattley.macrotrack.core.platform.IosMotionSensor
 import org.thelazybattley.macrotrack.core.platform.IosStepSensor
 import org.thelazybattley.macrotrack.core.platform.LocationTracker
+import org.thelazybattley.macrotrack.core.platform.MotionSensor
 import org.thelazybattley.macrotrack.core.platform.NoStepNotifier
 import org.thelazybattley.macrotrack.core.platform.NoStepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.StepNotifier
@@ -29,6 +31,7 @@ actual val platformModule: Module = module {
     single<BillingService> { UnavailableBillingService() }
     single<StepSensor> { IosStepSensor() }
     single<LocationTracker> { IosLocationTracker() }
+    single<MotionSensor> { IosMotionSensor() }
     single<StepNudgeScheduler> { NoStepNudgeScheduler }
     single<StepNotifier> { NoStepNotifier }
 }

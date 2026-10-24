@@ -21,6 +21,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.thelazybattley.macrotrack.domain.model.ActivityType
 import org.thelazybattley.macrotrack.domain.model.toLocalDateTime
 import org.thelazybattley.macrotrack.domain.repository.ActivityRepository
+import platform.CoreLocation.CLAccuracyAuthorization
 import platform.CoreLocation.CLActivityTypeFitness
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
@@ -31,12 +32,16 @@ import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
 import platform.CoreLocation.kCLDistanceFilterNone
 import platform.CoreLocation.kCLLocationAccuracyBest
+import platform.CoreMotion.CMAltimeter
 import platform.CoreMotion.CMAuthorizationStatusAuthorized
 import platform.CoreMotion.CMAuthorizationStatusDenied
 import platform.CoreMotion.CMAuthorizationStatusNotDetermined
 import platform.CoreMotion.CMAuthorizationStatusRestricted
+import platform.CoreMotion.CMMotionActivityConfidenceLow
+import platform.CoreMotion.CMMotionActivityManager
 import platform.CoreMotion.CMPedometer
 import platform.Foundation.NSDate
+import platform.Foundation.NSOperationQueue
 import platform.Foundation.NSURL
 import platform.Foundation.dateWithTimeIntervalSince1970
 import platform.Foundation.timeIntervalSince1970
@@ -117,6 +122,15 @@ class IosLocationTracker : LocationTracker {
             override fun locationManager(manager: CLLocationManager, didUpdateLocations: List<*>) {
                 didUpdateLocations.filterIsInstance<CLLocation>().forEach { trySend(it.toFix()) }
             }
+
+            // "Allow Once" ends when the app is closed, so a recording picked up after a restart starts getting fixes
+            // only once location is allowed again.
+            override fun locationManagerDidChangeAuthorization(manager: CLLocationManager) {
+                if (manager.isAuthorized) {
+                    manager.requestFullAccuracyIfReduced()
+                    manager.startUpdatingLocation()
+                }
+            }
         }
         manager.delegate = delegate
         manager.desiredAccuracy = kCLLocationAccuracyBest
@@ -125,6 +139,7 @@ class IosLocationTracker : LocationTracker {
         manager.pausesLocationUpdatesAutomatically = false
         manager.allowsBackgroundLocationUpdates = true
         manager.showsBackgroundLocationIndicator = true
+        manager.requestFullAccuracyIfReduced()
         manager.startUpdatingLocation()
         awaitClose {
             manager.stopUpdatingLocation()
@@ -143,8 +158,69 @@ class IosLocationTracker : LocationTracker {
             // A negative vertical accuracy means the altitude isn't valid.
             altitude = altitude.takeIf { verticalAccuracy >= 0 },
             accuracyMeters = horizontalAccuracy.takeIf { it >= 0 } ?: Double.MAX_VALUE,
-            timeMillis = (timestamp.timeIntervalSince1970 * 1000).toLong()
+            timeMillis = (timestamp.timeIntervalSince1970 * 1000).toLong(),
+            verticalAccuracyMeters = verticalAccuracy.takeIf { it >= 0 },
+            // A negative speed means the phone couldn't tell.
+            speedMetersPerSecond = speed.takeIf { it >= 0 && speedAccuracy >= 0 }
         )
+    }
+
+    private val CLLocationManager.isAuthorized: Boolean
+        get() = authorizationStatus == kCLAuthorizationStatusAuthorizedWhenInUse || authorizationStatus == kCLAuthorizationStatusAuthorizedAlways
+
+    /** With Precise Location off, fixes can be a kilometre out; this asks to be precise while recording. */
+    private fun CLLocationManager.requestFullAccuracyIfReduced() {
+        if (isAuthorized && accuracyAuthorization == CLAccuracyAuthorization.CLAccuracyAuthorizationReducedAccuracy) {
+            requestTemporaryFullAccuracyAuthorizationWithPurposeKey(purposeKey = FULL_ACCURACY_PURPOSE)
+        }
+    }
+
+    private companion object {
+        /** Its explanation is under NSLocationTemporaryUsageDescriptionDictionary in Info.plist. */
+        const val FULL_ACCURACY_PURPOSE = "RecordRoute"
+    }
+}
+
+/**
+ * The barometer through Core Motion's altimeter, and Core Motion's guess at whether the user is walking, driving or
+ * cycling. Both need motion access, the same as counting steps; without it they simply end.
+ */
+class IosMotionSensor : MotionSensor {
+
+    override fun relativeAltitudes(): Flow<Double> = callbackFlow {
+        if (!CMAltimeter.isRelativeAltitudeAvailable()) {
+            close()
+            return@callbackFlow
+        }
+        val altimeter = CMAltimeter()
+        altimeter.startRelativeAltitudeUpdatesToQueue(queue = NSOperationQueue.mainQueue) { data, error ->
+            if (error != null) {
+                close()
+                return@startRelativeAltitudeUpdatesToQueue
+            }
+            data?.relativeAltitude?.doubleValue?.let { trySend(it) }
+        }
+        awaitClose { altimeter.stopRelativeAltitudeUpdates() }
+    }
+
+    override fun activities(): Flow<MotionActivity> = callbackFlow {
+        if (!CMMotionActivityManager.isActivityAvailable()) {
+            close()
+            return@callbackFlow
+        }
+        val manager = CMMotionActivityManager()
+        manager.startActivityUpdatesToQueue(queue = NSOperationQueue.mainQueue) { activity ->
+            if (activity == null || activity.confidence == CMMotionActivityConfidenceLow) return@startActivityUpdatesToQueue
+            val motion = when {
+                activity.automotive -> MotionActivity.AUTOMOTIVE
+                activity.cycling -> MotionActivity.CYCLING
+                activity.walking || activity.running -> MotionActivity.ON_FOOT
+                activity.stationary -> MotionActivity.STATIONARY
+                else -> null
+            }
+            motion?.let { trySend(it) }
+        }
+        awaitClose { manager.stopActivityUpdates() }
     }
 }
 

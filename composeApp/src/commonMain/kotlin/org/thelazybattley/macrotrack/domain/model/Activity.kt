@@ -23,8 +23,8 @@ enum class ActivityType(val title: StringResource) {
 }
 
 /**
- * One GPS fix on a recorded route. [segment] goes up by one after every pause, so the line isn't drawn across
- * the gap and the time spent paused doesn't count.
+ * One GPS fix on a recorded route. [segment] goes up by one after every pause, and whenever riding in a vehicle
+ * starts or stops, so the line isn't drawn across the gap and the time spent paused doesn't count.
  */
 @Serializable
 data class RoutePoint(
@@ -33,8 +33,13 @@ data class RoutePoint(
     /** Metres above sea level, when the fix had one. */
     val altitude: Double? = null,
     val timeMillis: Long,
-    val segment: Int = 0
+    val segment: Int = 0,
+    /** Taken riding a car, bus or bike: drawn on the map, but left out of distance, time and climb. */
+    val isRiding: Boolean = false
 )
+
+/** Whether the line from here to [next] counts toward the walk or run: the same stretch, and not riding. */
+fun RoutePoint.continuesTo(next: RoutePoint): Boolean = segment == next.segment && !isRiding && !next.isRiding
 
 /** A walk or run recorded with the map. Names are the user's; null shows as the type and date. */
 data class ActivitySession(
@@ -107,8 +112,8 @@ fun distanceMeters(from: RoutePoint, to: RoutePoint): Double {
 
 private fun Double.toRadians(): Double = this * PI / 180
 
-/** The route's length, leaving out the gaps between paused segments. */
-fun List<RoutePoint>.routeDistance(): Double = zipWithNext().sumOf { (a, b) -> if (a.segment == b.segment) distanceMeters(from = a, to = b) else 0.0 }
+/** The route's length, leaving out the gaps between paused segments and stretches spent riding. */
+fun List<RoutePoint>.routeDistance(): Double = zipWithNext().sumOf { (a, b) -> if (a.continuesTo(next = b)) distanceMeters(from = a, to = b) else 0.0 }
 
 /**
  * Metres climbed. A rise only counts once it passes [CLIMB_THRESHOLD_METERS] above the lowest point since the
@@ -120,6 +125,10 @@ fun List<RoutePoint>.routeClimb(): Double {
     var segment = -1
     forEach { point ->
         val altitude = point.altitude ?: return@forEach
+        if (point.isRiding) {
+            base = null
+            return@forEach
+        }
         if (point.segment != segment || base == null) {
             segment = point.segment
             base = altitude
@@ -137,9 +146,9 @@ fun List<RoutePoint>.routeClimb(): Double {
     return climb
 }
 
-/** Moving seconds along the route: time between fixes in the same segment. */
+/** Moving seconds along the route: time between fixes in the same segment, riding left out. */
 fun List<RoutePoint>.movingSeconds(): Int =
-    (zipWithNext().sumOf { (a, b) -> if (a.segment == b.segment) b.timeMillis - a.timeMillis else 0L } / 1000).toInt()
+    (zipWithNext().sumOf { (a, b) -> if (a.continuesTo(next = b)) b.timeMillis - a.timeMillis else 0L } / 1000).toInt()
 
 /** One split: a full [unitMeters] (km or mile), or the shorter last one, with how long it took. */
 data class ActivitySplit(
@@ -157,7 +166,7 @@ fun List<RoutePoint>.splits(unitMeters: Double): List<ActivitySplit> {
     var meters = 0.0
     var seconds = 0.0
     zipWithNext().forEach { (a, b) ->
-        if (a.segment != b.segment) return@forEach
+        if (!a.continuesTo(next = b)) return@forEach
         var stepMeters = distanceMeters(from = a, to = b)
         var stepSeconds = (b.timeMillis - a.timeMillis) / 1000.0
         // A long gap between fixes can cross more than one split; share its time out by distance.
@@ -202,7 +211,7 @@ fun List<RoutePoint>.samples(count: Int = 24): List<RouteSample> {
     var stretchSeconds = 0.0
     var next = step
     zipWithNext().forEach { (a, b) ->
-        if (a.segment != b.segment) return@forEach
+        if (!a.continuesTo(next = b)) return@forEach
         val d = distanceMeters(from = a, to = b)
         meters += d
         stretchMeters += d

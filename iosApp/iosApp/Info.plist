@@ -10,6 +10,11 @@
 	<string>MacroTrack counts your steps through the day to show your progress toward your step goal.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>MacroTrack uses your location only while you record a walk or run, to draw its route. Routes stay on this phone.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>RecordRoute</key>
+		<string>Precise location keeps your walk or run on the streets you took, instead of up to a kilometre away.</string>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

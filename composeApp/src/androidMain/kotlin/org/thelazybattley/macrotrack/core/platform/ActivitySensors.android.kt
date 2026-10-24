@@ -34,6 +34,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.emptyFlow
 import org.thelazybattley.macrotrack.domain.model.ActivityType
 import org.thelazybattley.macrotrack.domain.repository.ActivityRepository
 import org.thelazybattley.macrotrack.domain.usecase.activity.recordStepCount
@@ -45,6 +46,8 @@ private const val STEP_SAVE_INTERVAL_MILLIS = 5_000L
 private const val STEP_REPORT_LATENCY_MICROS = 10_000_000
 
 private const val LOCATION_INTERVAL_MILLIS = 1_000L
+
+private const val PRESSURE_SMOOTHING = 0.1
 
 /**
  * Android's step counter counts every step since the phone started, whether the app is open or not. Reading it
@@ -118,8 +121,43 @@ class AndroidLocationTracker(private val context: Context) : LocationTracker {
         lon = longitude,
         altitude = if (hasAltitude()) altitude else null,
         accuracyMeters = if (hasAccuracy()) accuracy.toDouble() else Double.MAX_VALUE,
-        timeMillis = time
+        timeMillis = time,
+        verticalAccuracyMeters = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && hasVerticalAccuracy()) verticalAccuracyMeters.toDouble() else null,
+        speedMetersPerSecond = if (hasSpeed()) speed.toDouble() else null
     )
+}
+
+/**
+ * Height from the barometer, on phones that have one. Android can't say whether someone is driving without Google
+ * Play services, so [activities] ends at once and riding is told from speed and steps alone.
+ */
+class AndroidMotionSensor(context: Context) : MotionSensor {
+
+    private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
+
+    override fun relativeAltitudes(): Flow<Double> = callbackFlow {
+        val pressureSensor = sensor ?: run {
+            close()
+            return@callbackFlow
+        }
+        var smoothed: Double? = null
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                // Readings wobble by about a metre; a little smoothing settles them.
+                val height = SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, event.values[0]).toDouble()
+                val next = smoothed?.let { it + PRESSURE_SMOOTHING * (height - it) } ?: height
+                smoothed = next
+                trySend(next)
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
+        sensorManager.registerListener(listener, pressureSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        awaitClose { sensorManager.unregisterListener(listener) }
+    }.conflate()
+
+    override fun activities(): Flow<MotionActivity> = emptyFlow()
 }
 
 internal fun Context.hasPermission(permission: String): Boolean =

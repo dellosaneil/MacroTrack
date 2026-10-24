@@ -36,16 +36,21 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.back
+import macrotrack.composeapp.generated.resources.ic_car
 import macrotrack.composeapp.generated.resources.ic_chevron_down
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.ic_fit
+import macrotrack.composeapp.generated.resources.ic_map_pin_off
 import macrotrack.composeapp.generated.resources.ic_pause
 import macrotrack.composeapp.generated.resources.ic_play
 import macrotrack.composeapp.generated.resources.ic_shield
@@ -80,6 +85,12 @@ import macrotrack.composeapp.generated.resources.record_perk_phone_title
 import macrotrack.composeapp.generated.resources.record_perk_recording_body
 import macrotrack.composeapp.generated.resources.record_perk_recording_title
 import macrotrack.composeapp.generated.resources.record_recording
+import macrotrack.composeapp.generated.resources.record_riding
+import macrotrack.composeapp.generated.resources.record_riding_body
+import macrotrack.composeapp.generated.resources.record_riding_title
+import macrotrack.composeapp.generated.resources.record_location_off_action
+import macrotrack.composeapp.generated.resources.record_location_off_body
+import macrotrack.composeapp.generated.resources.record_location_off_title
 import macrotrack.composeapp.generated.resources.record_resume
 import macrotrack.composeapp.generated.resources.record_save
 import macrotrack.composeapp.generated.resources.record_save_title
@@ -122,20 +133,35 @@ fun RecordScreen(
     LaunchedEffect(key1 = location.isGranted) {
         if (location.isGranted) viewModel.onStart()
     }
+    // A recording picked up after a restart can come back without location: iOS forgets "Allow Once" when the app
+    // closes. Its map stays up, and the system asks straight away rather than showing the location page first.
+    val hasRecording = viewState.recording != null
+    var hasAskedAgain by remember { mutableStateOf(value = false) }
+    LaunchedEffect(key1 = hasRecording, key2 = location.isGranted) {
+        if (hasRecording && !location.isGranted && !location.isPermanentlyDenied && !hasAskedAgain) {
+            hasAskedAgain = true
+            location.request()
+        }
+    }
     LaunchedEffect(key1 = viewState.savedId) {
         viewState.savedId?.let(onSaved)
     }
     LaunchedEffect(key1 = viewState.isDiscarded) {
         if (viewState.isDiscarded) onBack()
     }
-    if (!location.isGranted) {
+    if (!location.isGranted && !hasRecording) {
         LocationPermissionContent(
             isPermanentlyDenied = location.isPermanentlyDenied,
             onContinue = location.request,
             onNotNow = onLocationDeclined
         )
     } else {
-        LiveContent(viewState = viewState, callbacks = viewModel, onMinimize = onMinimize)
+        LiveContent(
+            viewState = viewState,
+            callbacks = viewModel,
+            onMinimize = onMinimize,
+            onAllowLocation = location.request.takeUnless { location.isGranted }
+        )
     }
 }
 
@@ -228,7 +254,13 @@ private fun Perk(icon: DrawableResource, background: Color, tint: Color, title: 
 }
 
 @Composable
-private fun LiveContent(viewState: RecordViewState, callbacks: RecordCallbacks, onMinimize: () -> Unit) {
+private fun LiveContent(
+    viewState: RecordViewState,
+    callbacks: RecordCallbacks,
+    onMinimize: () -> Unit,
+    /** Set while location is off, to ask for it again. */
+    onAllowLocation: (() -> Unit)?
+) {
     val recording = viewState.recording
     val type = recording?.type ?: viewState.type
     val now = rememberRecordingNow(recording = recording)
@@ -243,7 +275,7 @@ private fun LiveContent(viewState: RecordViewState, callbacks: RecordCallbacks, 
             routes = listOfNotNull(recording?.points?.let { MapRoute(points = it) }),
             description = stringResource(resource = Res.string.record_map_description),
             state = mapState,
-            live = recording?.points?.lastOrNull(),
+            live = recording?.livePoint ?: recording?.points?.lastOrNull(),
             padding = PaddingValues(start = 56.dp, top = statusBar + 72.dp, end = 56.dp, bottom = panelHeight + 40.dp),
             attributionAlignment = Alignment.TopEnd,
             attributionPadding = PaddingValues(top = statusBar + 72.dp, end = 16.dp)
@@ -258,10 +290,38 @@ private fun LiveContent(viewState: RecordViewState, callbacks: RecordCallbacks, 
         ) {
             // Recording carries on while the rest of the app is used; the Log card and recording bar lead back here.
             FloatingButton(icon = Res.drawable.ic_chevron_down, description = stringResource(resource = Res.string.record_minimize), onClick = onMinimize)
-            StatusPill(isPaused = recording?.isPaused == true)
+            StatusPill(isPaused = recording?.isPaused == true, isRiding = recording?.isRiding == true)
             GpsPill(isGood = recording?.hasGoodFix == true)
             Box(modifier = Modifier.weight(weight = 1f))
             FloatingButton(icon = Res.drawable.ic_fit, description = stringResource(resource = Res.string.record_fit_route), onClick = mapState::fit)
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(start = 16.dp, end = 16.dp, top = 72.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+        ) {
+            if (onAllowLocation != null) {
+                MapNotice(
+                    icon = Res.drawable.ic_map_pin_off,
+                    tint = colors.warmInk,
+                    background = colors.warmSoft,
+                    title = stringResource(resource = Res.string.record_location_off_title),
+                    body = stringResource(resource = Res.string.record_location_off_body),
+                    action = stringResource(resource = Res.string.record_location_off_action),
+                    onAction = onAllowLocation
+                )
+            }
+            if (recording?.isRiding == true && !recording.isPaused) {
+                MapNotice(
+                    icon = Res.drawable.ic_car,
+                    tint = colors.nightInk,
+                    background = colors.nightSoft,
+                    title = stringResource(resource = Res.string.record_riding_title),
+                    body = stringResource(resource = Res.string.record_riding_body)
+                )
+            }
         }
         LivePanel(
             modifier = Modifier
@@ -444,28 +504,90 @@ private fun PanelButton(
 }
 
 @Composable
-private fun StatusPill(isPaused: Boolean) {
+private fun StatusPill(isPaused: Boolean, isRiding: Boolean) {
+    val isOnHold = isRiding && !isPaused
     Row(
         modifier = Modifier
             .height(height = 32.dp)
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(size = 10.dp))
             .clip(shape = RoundedCornerShape(size = 10.dp))
-            .background(color = if (isPaused) colors.warmSoft else colors.surface)
+            .background(color = if (isPaused) colors.warmSoft else if (isOnHold) colors.nightSoft else colors.surface)
             .padding(horizontal = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
     ) {
+        if (isOnHold) {
+            Icon(painter = painterResource(resource = Res.drawable.ic_car), contentDescription = null, tint = colors.nightInk, modifier = Modifier.size(size = 14.dp))
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(size = 8.dp)
+                    .clip(shape = CircleShape)
+                    .background(color = if (isPaused) colors.warmInk else colors.danger)
+            )
+        }
+        Text(
+            text = stringResource(
+                resource = when {
+                    isPaused -> Res.string.record_paused
+                    isOnHold -> Res.string.record_riding
+                    else -> Res.string.record_recording
+                }
+            ),
+            style = typography.bold12,
+            color = if (isPaused) colors.warmInk else if (isOnHold) colors.nightInk else colors.ink
+        )
+    }
+}
+
+/** A note over the map, about riding or location being off, with an optional button. */
+@Composable
+private fun MapNotice(
+    icon: DrawableResource,
+    tint: Color,
+    background: Color,
+    title: String,
+    body: String,
+    action: String? = null,
+    onAction: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(elevation = 4.dp, shape = RoundedCornerShape(size = 14.dp))
+            .clip(shape = RoundedCornerShape(size = 14.dp))
+            .background(color = colors.surface)
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }
+            .padding(all = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+    ) {
         Box(
             modifier = Modifier
-                .size(size = 8.dp)
-                .clip(shape = CircleShape)
-                .background(color = if (isPaused) colors.warmInk else colors.danger)
-        )
-        Text(
-            text = stringResource(resource = if (isPaused) Res.string.record_paused else Res.string.record_recording),
-            style = typography.bold12,
-            color = if (isPaused) colors.warmInk else colors.ink
-        )
+                .size(size = 32.dp)
+                .clip(shape = RoundedCornerShape(size = 10.dp))
+                .background(color = background),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(painter = painterResource(resource = icon), contentDescription = null, tint = tint, modifier = Modifier.size(size = 16.dp))
+        }
+        Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+            Text(text = title, style = typography.bold13, color = colors.ink)
+            Text(text = body, style = typography.regular11, color = colors.muted)
+        }
+        if (action != null) {
+            Box(
+                modifier = Modifier
+                    .height(height = 34.dp)
+                    .clip(shape = RoundedCornerShape(size = 10.dp))
+                    .background(color = colors.accent)
+                    .clickable(role = Role.Button, onClick = onAction)
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = action, style = typography.bold12, color = colors.onAccent)
+            }
+        }
     }
 }
 

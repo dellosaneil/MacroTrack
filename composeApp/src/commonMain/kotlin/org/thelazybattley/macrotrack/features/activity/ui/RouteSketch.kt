@@ -9,6 +9,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -46,6 +47,7 @@ fun RouteSketch(
     val grid = colors.line
     val route = colors.accent
     val casing = colors.surface
+    val riding = colors.muted
     Box(
         modifier = modifier
             .background(color = ground)
@@ -61,6 +63,15 @@ fun RouteSketch(
             val stroke = lineWidth.toPx()
             points.groupBy { it.segment }.values.forEach { segment ->
                 val path = projection.path(points = segment)
+                if (segment.first().isRiding) {
+                    // Riding in a vehicle: dashed and grey, as on the map.
+                    drawPath(
+                        path = path,
+                        color = riding,
+                        style = Stroke(width = stroke * 0.8f, join = StrokeJoin.Round, pathEffect = PathEffect.dashPathEffect(intervals = floatArrayOf(stroke, stroke * 1.4f)))
+                    )
+                    return@forEach
+                }
                 drawPath(path = path, color = casing, style = Stroke(width = stroke * 1.8f, cap = StrokeCap.Round, join = StrokeJoin.Round))
                 drawPath(path = path, color = route, style = Stroke(width = stroke, cap = StrokeCap.Round, join = StrokeJoin.Round))
             }

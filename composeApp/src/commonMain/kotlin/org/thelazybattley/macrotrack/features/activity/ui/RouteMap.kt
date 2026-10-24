@@ -55,6 +55,7 @@ import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.spatialk.geojson.BoundingBox
 import org.thelazybattley.macrotrack.domain.model.RoutePoint
+import org.thelazybattley.macrotrack.domain.model.continuesTo
 import org.thelazybattley.macrotrack.domain.model.distanceMeters
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -144,10 +145,12 @@ fun RouteMap(
     val casing = colors.surface
     val ink = colors.ink
     val you = colors.protein
+    val riding = colors.muted
     val first = routes.firstOrNull()?.points.orEmpty()
 
-    val solidRoutes = remember(routes) { routesJson(routes = routes.filter { it.alpha >= 1f }) }
-    val faintRoutes = remember(routes) { routesJson(routes = routes.filter { it.alpha < 1f }) }
+    val solidRoutes = remember(routes) { routesJson(routes = routes.filter { it.alpha >= 1f }, isRiding = false) }
+    val faintRoutes = remember(routes) { routesJson(routes = routes.filter { it.alpha < 1f }, isRiding = false) }
+    val ridingRoutes = remember(routes) { routesJson(routes = routes.filter { it.alpha >= 1f }, isRiding = true) }
     val markerPoints = remember(first, markers) { markers?.let { unitMarkers(points = first, unitMeters = it) }.orEmpty() }
     val markersJson = remember(markerPoints) {
         pointsJson(points = markerPoints.mapIndexed { index, point -> point to "${index + 1}" })
@@ -193,6 +196,7 @@ fun RouteMap(
         ) {
             val faint = rememberGeoJsonSource(data = GeoJsonData.JsonString(json = faintRoutes))
             val solid = rememberGeoJsonSource(data = GeoJsonData.JsonString(json = solidRoutes))
+            val rode = rememberGeoJsonSource(data = GeoJsonData.JsonString(json = ridingRoutes))
             val ends = rememberGeoJsonSource(data = GeoJsonData.JsonString(json = endsJson))
             val numbered = rememberGeoJsonSource(data = GeoJsonData.JsonString(json = markersJson))
             val here = rememberGeoJsonSource(data = GeoJsonData.JsonString(json = liveJson))
@@ -203,6 +207,15 @@ fun RouteMap(
                 opacity = feature["alpha"].asNumber(),
                 width = const(lineWidth),
                 cap = const(LineCap.Round),
+                join = const(LineJoin.Round)
+            )
+            // Stretches spent in a vehicle: dashed and grey, so they read as not part of the walk or run.
+            LineLayer(
+                id = "route-riding",
+                source = rode,
+                color = const(riding),
+                width = const(lineWidth * 0.8f),
+                dasharray = const(listOf(1.2, 1.6)),
                 join = const(LineJoin.Round)
             )
             LineLayer(
@@ -286,10 +299,14 @@ fun RouteMap(
     }
 }
 
-/** Each route as one feature, its paused stretches kept apart, with how faint to draw it. */
-private fun routesJson(routes: List<MapRoute>): String = featureCollection(
-    features = routes.filter { it.points.size > 1 }.map { mapRoute ->
-        val segments = mapRoute.points.groupBy { it.segment }.values.filter { it.size > 1 }
+/**
+ * Each route as one feature, its paused stretches kept apart, with how faint to draw it. Only the stretches walked
+ * or run, or with [isRiding] only those spent in a vehicle.
+ */
+private fun routesJson(routes: List<MapRoute>, isRiding: Boolean): String = featureCollection(
+    features = routes.mapNotNull { mapRoute ->
+        val segments = mapRoute.points.groupBy { it.segment }.values.filter { it.size > 1 && it.first().isRiding == isRiding }
+        if (segments.isEmpty()) return@mapNotNull null
         feature(
             geometry = buildJsonObject {
                 put(key = "type", value = "MultiLineString")
@@ -350,7 +367,7 @@ private fun unitMarkers(points: List<RoutePoint>, unitMeters: Double): List<Rout
     var travelled = 0.0
     var next = unitMeters
     points.zipWithNext().forEach { (a, b) ->
-        if (a.segment != b.segment) return@forEach
+        if (!a.continuesTo(next = b)) return@forEach
         val step = distanceMeters(from = a, to = b)
         while (step > 0 && travelled + step >= next) {
             val share = (next - travelled) / step

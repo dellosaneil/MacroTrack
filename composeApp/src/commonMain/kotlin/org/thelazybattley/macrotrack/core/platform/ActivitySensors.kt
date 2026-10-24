@@ -24,8 +24,28 @@ data class LocationFix(
     val lon: Double,
     val altitude: Double?,
     val accuracyMeters: Double,
-    val timeMillis: Long
+    val timeMillis: Long,
+    /** How far off [altitude] may be, in metres; null when the phone doesn't say. */
+    val verticalAccuracyMeters: Double? = null,
+    /** Ground speed the phone measured, in metres a second; null when it doesn't say. */
+    val speedMetersPerSecond: Double? = null
 )
+
+/** What the phone's motion chip thinks the user is doing. */
+enum class MotionActivity { ON_FOOT, CYCLING, AUTOMOTIVE, STATIONARY }
+
+/** The phone's barometer and motion chip, used while a walk or run is recorded. */
+interface MotionSensor {
+
+    /**
+     * Height in metres from the barometer, from an arbitrary zero, for as long as it's collected. Far steadier than
+     * GPS altitude. Ends at once on phones without a barometer.
+     */
+    fun relativeAltitudes(): Flow<Double>
+
+    /** What the user seems to be doing, for as long as it's collected. Ends at once where the phone can't tell. */
+    fun activities(): Flow<MotionActivity>
+}
 
 /** Location while a walk or run is recorded, and never otherwise. */
 interface LocationTracker {

@@ -8,10 +8,12 @@ import org.koin.dsl.module
 import org.thelazybattley.macrotrack.core.billing.BillingService
 import org.thelazybattley.macrotrack.core.billing.PlayBillingService
 import org.thelazybattley.macrotrack.core.platform.AndroidLocationTracker
+import org.thelazybattley.macrotrack.core.platform.AndroidMotionSensor
 import org.thelazybattley.macrotrack.core.platform.AndroidStepNotifier
 import org.thelazybattley.macrotrack.core.platform.AndroidStepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.AndroidStepSensor
 import org.thelazybattley.macrotrack.core.platform.LocationTracker
+import org.thelazybattley.macrotrack.core.platform.MotionSensor
 import org.thelazybattley.macrotrack.core.platform.StepNotifier
 import org.thelazybattley.macrotrack.core.platform.StepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.StepSensor
@@ -28,6 +30,7 @@ actual val platformModule: Module = module {
     single<Telemetry> { FirebaseTelemetry.create(context = get()) }
     single<StepSensor> { AndroidStepSensor(context = get()) }
     single<LocationTracker> { AndroidLocationTracker(context = get()) }
+    single<MotionSensor> { AndroidMotionSensor(context = get()) }
     single<StepNudgeScheduler> { AndroidStepNudgeScheduler(context = get()) }
     single<StepNotifier> {
         AndroidStepNotifier(
