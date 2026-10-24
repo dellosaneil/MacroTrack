@@ -37,4 +37,7 @@
     <string name="steps_action_walk">Start walk</string>
     <string name="goal_alert_title">Step goal reached · %1$s</string>
     <string name="goal_alert_body">%1$d of the last 7 days. Nice work.</string>
+    <string name="photo_reminder_channel">Progress photo reminders</string>
+    <string name="photo_reminder_title">Time for a progress photo</string>
+    <string name="photo_reminder_body">%1$s · line up with your last one in MacroTrack.</string>
 </resources>

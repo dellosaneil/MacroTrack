@@ -20,13 +20,16 @@ import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
 import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
 import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
 import org.thelazybattley.macrotrack.data.local.dao.MeasurementDao
+import org.thelazybattley.macrotrack.data.local.dao.ProgressPhotoDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
 import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
+import org.thelazybattley.macrotrack.data.local.entity.PhotoAlbumEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
+import org.thelazybattley.macrotrack.data.local.entity.ProgressPhotoEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
@@ -37,8 +40,8 @@ import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
-    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, StepHourEntity::class, ActivitySessionEntity::class],
-    version = 17, exportSchema = true,
+    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, StepHourEntity::class, ActivitySessionEntity::class, PhotoAlbumEntity::class, ProgressPhotoEntity::class],
+    version = 19, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -59,6 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun backupDao(): BackupDao
     abstract fun mealPlanDao(): MealPlanDao
     abstract fun activityDao(): ActivityDao
+    abstract fun progressPhotoDao(): ProgressPhotoDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -202,6 +206,29 @@ abstract class AppDatabase : RoomDatabase() {
                         "`movingSeconds` INTEGER NOT NULL, `distanceMeters` REAL NOT NULL, `steps` INTEGER NOT NULL, " +
                         "`climbMeters` REAL NOT NULL, `route` TEXT NOT NULL)"
                 )
+            }
+        }
+
+        /** Adds progress photo albums and the photos in them; the images themselves are files beside the database. */
+        val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `PhotoAlbumEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`name` TEXT NOT NULL, `reminderDays` TEXT NOT NULL, `isDateAndWeightShown` INTEGER NOT NULL, " +
+                        "`createdAtMillis` INTEGER NOT NULL)"
+                )
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `ProgressPhotoEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`albumId` INTEGER NOT NULL, `date` TEXT NOT NULL, `takenOn` TEXT, `pose` TEXT NOT NULL, " +
+                        "`note` TEXT, `weightDate` TEXT, `fileName` TEXT NOT NULL, `createdAtMillis` INTEGER NOT NULL)"
+                )
+            }
+        }
+
+        /** Adds a time to photo album reminders; albums made before keep 6 PM. */
+        val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE `PhotoAlbumEntity` ADD COLUMN `reminderMinutes` INTEGER NOT NULL DEFAULT 1080")
             }
         }
     }

@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.logweight
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,8 @@ import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUs
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import org.thelazybattley.macrotrack.ui.navigation.logDateOf
 import kotlin.math.round
 
 /** One tap of − or + moves the typed weight by this much, in whichever unit it's typed in. */
@@ -55,6 +58,7 @@ data class LogWeightViewState(
 }
 
 class LogWeightViewModel(
+    savedStateHandle: SavedStateHandle,
     getAllWeightUseCase: GetAllWeightUseCase,
     getUserDetailsUseCase: GetUserDetailsUseCase,
     getUnitSystemUseCase: GetUnitSystemUseCase,
@@ -62,7 +66,12 @@ class LogWeightViewModel(
     private val insertUserDetailsUseCase: InsertUserDetailsUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(value = LogWeightViewState())
+    // A progress photo's day without a weigh-in opens here on that day.
+    private val _state = MutableStateFlow(
+        value = LogWeightViewState(
+            date = minOf(logDateOf(argument = savedStateHandle.get<String>(key = AppDestinations.LOG_DATE)), getCurrentDate())
+        )
+    )
     val state = _state.asStateFlow()
 
     init {

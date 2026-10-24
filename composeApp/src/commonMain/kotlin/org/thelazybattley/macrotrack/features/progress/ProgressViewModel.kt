@@ -15,6 +15,11 @@ import org.thelazybattley.macrotrack.domain.model.MeasurementType
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.domain.usecase.measurement.GetAllMeasurementsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.photo.GetPhotoAlbumsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.photo.GetProgressPhotosUseCase
+import org.thelazybattley.macrotrack.features.photos.AlbumSummary
+import org.thelazybattley.macrotrack.features.photos.albumSummaries
+import org.thelazybattley.macrotrack.features.photos.byDate
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.features.measurements.MeasurementSummary
@@ -39,22 +44,34 @@ data class ProgressViewState(
     val lastMeasured: LocalDate? = null,
     val previousMeasured: LocalDate? = null,
     val highlights: List<Pair<MeasurementType, MeasurementSummary>> = emptyList(),
-    val measurementCount: Int = 0
+    val measurementCount: Int = 0,
+    val photoAlbums: List<AlbumSummary> = emptyList()
 )
 
 class ProgressViewModel(
     getAllWeightUseCase: GetAllWeightUseCase,
     getUserDetailsUseCase: GetUserDetailsUseCase,
     getAllMeasurementsUseCase: GetAllMeasurementsUseCase,
-    unitPreference: MeasurementUnitPreference
+    unitPreference: MeasurementUnitPreference,
+    getPhotoAlbumsUseCase: GetPhotoAlbumsUseCase,
+    getProgressPhotosUseCase: GetProgressPhotosUseCase
 ) : ViewModel() {
+
+    private val photoAlbums = combine(
+        flow = getPhotoAlbumsUseCase(),
+        flow2 = getProgressPhotosUseCase(),
+        flow3 = getAllWeightUseCase()
+    ) { albums, photos, weights ->
+        albumSummaries(albums = albums, photos = photos, weightsByDate = weights.byDate())
+    }
 
     val state = combine(
         flow = getAllWeightUseCase(),
         flow2 = flow { emitAll(getUserDetailsUseCase()) },
         flow3 = getAllMeasurementsUseCase(),
-        flow4 = unitPreference.unit
-    ) { weights, userDetails, measurements, unit ->
+        flow4 = unitPreference.unit,
+        flow5 = photoAlbums
+    ) { weights, userDetails, measurements, unit, photoAlbums ->
         val today = getCurrentDate()
         val sorted = weights.sortedBy { it.date }
         val month = sorted.inPeriod(
@@ -80,7 +97,8 @@ class ProgressViewModel(
                 summaries[MeasurementType.CHEST]?.let { MeasurementType.CHEST to it },
                 summaries.bicepAverage()?.let { MeasurementType.LEFT_BICEP to it }
             ),
-            measurementCount = summaries.size
+            measurementCount = summaries.size,
+            photoAlbums = photoAlbums
         )
     }.stateIn(
         scope = viewModelScope,

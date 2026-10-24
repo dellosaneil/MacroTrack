@@ -49,6 +49,8 @@ kotlin {
             implementation(libs.androidx.camera.view)
             implementation(libs.androidx.camera.mlkit.vision)
             implementation(libs.mlkit.barcode.scanning)
+            // Cuts the person out of the last progress photo for the camera's ghost.
+            implementation(libs.mlkit.segmentation.selfie)
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)

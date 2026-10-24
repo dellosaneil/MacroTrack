@@ -22,6 +22,18 @@ import org.thelazybattley.macrotrack.core.platform.AppLink
 import org.thelazybattley.macrotrack.core.platform.AppLinks
 import org.thelazybattley.macrotrack.domain.model.ActivityType
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ACTIVITY_ID
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.AFTER_ID
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ALBUM_ID
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.BEFORE_ID
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.NEW_ALBUM
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.OPEN_ADD
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.SIDE_BY_SIDE
+import org.thelazybattley.macrotrack.domain.usecase.photo.SchedulePhotoRemindersUseCase
+import org.thelazybattley.macrotrack.features.photos.ui.PhotoAlbumScreen
+import org.thelazybattley.macrotrack.features.photos.ui.PhotoCameraScreen
+import org.thelazybattley.macrotrack.features.photos.ui.PhotoCompareScreen
+import org.thelazybattley.macrotrack.features.photos.ui.PhotoSaveScreen
+import org.thelazybattley.macrotrack.features.photos.ui.ProgressPhotosScreen
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ACTIVITY_TYPE
 import org.thelazybattley.macrotrack.features.deletedata.ui.DeleteDataScreen
 import androidx.compose.foundation.layout.PaddingValues
@@ -138,6 +150,7 @@ fun AppBottomNav() {
     // Steps are counted while the app is open; the phone's counter covers the time in between.
     val trackSteps = koinInject<TrackStepsUseCase>()
     val scheduleStepNudge = koinInject<ScheduleStepNudgeUseCase>()
+    val schedulePhotoReminders = koinInject<SchedulePhotoRemindersUseCase>()
     val motionPermission = rememberMotionPermissionState()
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(key1 = motionPermission.isGranted) {
@@ -165,6 +178,7 @@ fun AppBottomNav() {
     // the app opens, and whenever their settings change.
     LaunchedEffect(key1 = Unit) {
         scheduleStepNudge()
+        schedulePhotoReminders()
     }
     // Permission given after a setting was switched on: show what's already turned on.
     val stepNotifier = koinInject<StepNotifier>()
@@ -709,6 +723,100 @@ fun AppBottomNav() {
                         )
                     }
                     composable(
+                        route = AppDestinations.Root.ProgressPhotos.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = NEW_ALBUM) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) { entry ->
+                        ProgressPhotosScreen(
+                            isNewAlbumOpen = entry.savedStateHandle.get<String>(key = NEW_ALBUM) == "true",
+                            onBack = { navController.popBack() },
+                            onOpenAlbum = { id, isAddOpen ->
+                                navigate(AppDestinations.Root.PhotoAlbum.createRoute(albumId = id, isAddOpen = isAddOpen))
+                            },
+                            onOpenCompare = { id -> navigate(AppDestinations.Root.PhotoCompare.createRoute(albumId = id)) },
+                            onOpenCamera = { id -> navigate(AppDestinations.Root.PhotoCamera.createRoute(albumId = id)) },
+                            onOpenSave = { navigate(AppDestinations.Root.PhotoSave.route) }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.PhotoAlbum.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = ALBUM_ID) { type = NavType.StringType },
+                            navArgument(name = OPEN_ADD) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) { entry ->
+                        PhotoAlbumScreen(
+                            isAddOpen = entry.savedStateHandle.get<String>(key = OPEN_ADD) == "true",
+                            onBack = { navController.popBack() },
+                            onOpenCompare = { id, beforeId, afterId, isSideBySide ->
+                                navigate(
+                                    AppDestinations.Root.PhotoCompare.createRoute(
+                                        albumId = id,
+                                        beforeId = beforeId,
+                                        afterId = afterId,
+                                        isSideBySide = isSideBySide
+                                    )
+                                )
+                            },
+                            onOpenCamera = { id -> navigate(AppDestinations.Root.PhotoCamera.createRoute(albumId = id)) },
+                            onOpenSave = { navigate(AppDestinations.Root.PhotoSave.route) }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.PhotoCamera.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = ALBUM_ID) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        PhotoCameraScreen(
+                            onClose = { navController.popBack() },
+                            onOpenSave = { navigate(AppDestinations.Root.PhotoSave.route) }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.PhotoSave.route) {
+                        PhotoSaveScreen(
+                            onBack = { navController.popBack() },
+                            onSaved = { albumId -> navController.showSavedAlbum(albumId = albumId) },
+                            onLogWeight = { date -> navigate(AppDestinations.Root.LogWeight.createRoute(logDate = date)) }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.PhotoCompare.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = ALBUM_ID) { type = NavType.StringType },
+                            navArgument(name = BEFORE_ID) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            },
+                            navArgument(name = AFTER_ID) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            },
+                            navArgument(name = SIDE_BY_SIDE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        PhotoCompareScreen(onBack = { navController.popBack() })
+                    }
+                    composable(
                         route = AppDestinations.Root.Calendar.route
                     ) {
                         CalendarScreen(
@@ -737,7 +845,14 @@ fun AppBottomNav() {
                         )
                     }
                     composable(
-                        route = AppDestinations.Root.LogWeight.route
+                        route = AppDestinations.Root.LogWeight.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = LOG_DATE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
                     ) {
                         LogWeightScreen(
                             modifier = Modifier,
@@ -765,6 +880,23 @@ private fun NavHostController.popBack(): Boolean {
     val current = currentBackStackEntry ?: return false
     if (current.lifecycle.currentState != Lifecycle.State.RESUMED || previousBackStackEntry == null) return false
     return popBackStack()
+}
+
+/**
+ * After saving photos, the album they went to, in place of the camera and Save screens: back to that album if it's
+ * open underneath, otherwise opened over whatever started it.
+ */
+private fun NavHostController.showSavedAlbum(albumId: Long) {
+    val albumRoute = AppDestinations.Root.PhotoAlbum.routeWithArgs!!
+    val underneath = runCatching { getBackStackEntry(route = albumRoute) }.getOrNull()
+    if (underneath?.savedStateHandle?.get<String>(key = ALBUM_ID) == albumId.toString()) {
+        popBackStack(route = albumRoute, inclusive = false)
+        return
+    }
+    if (!popBackStack(route = AppDestinations.Root.PhotoCamera.routeWithArgs!!, inclusive = true)) {
+        popBackStack(route = AppDestinations.Root.PhotoSave.route, inclusive = true)
+    }
+    navigate(route = AppDestinations.Root.PhotoAlbum.createRoute(albumId = albumId))
 }
 
 /** Screens before the main screen exists, where the live map mustn't be opened on top. */

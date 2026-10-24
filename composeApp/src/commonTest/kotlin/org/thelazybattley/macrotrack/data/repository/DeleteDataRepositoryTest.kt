@@ -1,5 +1,8 @@
 package org.thelazybattley.macrotrack.data.repository
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import org.thelazybattley.macrotrack.core.platform.PhotoReminderScheduler
 import org.thelazybattley.macrotrack.data.local.dao.BackupDao
 import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
@@ -15,6 +18,9 @@ import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.domain.model.DeleteDataStep
+import org.thelazybattley.macrotrack.domain.model.PhotoAlbum
+import org.thelazybattley.macrotrack.domain.model.ProgressPhoto
+import org.thelazybattley.macrotrack.domain.repository.ProgressPhotoRepository
 import org.thelazybattley.macrotrack.runSync
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -67,15 +73,38 @@ class DeleteDataRepositoryTest {
         override suspend fun insertActivitySessions(activitySessions: List<ActivitySessionEntity>) {}
     }
 
+    /** Records that the photos were deleted, into the same list as the tables. */
+    private class FakePhotoRepository(private val cleared: MutableSet<String>) : ProgressPhotoRepository {
+        override fun getAlbums(): Flow<List<PhotoAlbum>> = flowOf(value = emptyList())
+        override fun getPhotos(): Flow<List<ProgressPhoto>> = flowOf(value = emptyList())
+        override suspend fun saveAlbum(album: PhotoAlbum) = 0L
+        override suspend fun deleteAlbum(id: Long) {}
+        override suspend fun insertPhotos(photos: List<ProgressPhoto>) = emptyList<Long>()
+        override suspend fun deletePhoto(photo: ProgressPhoto) {}
+        override suspend fun deleteAll() { cleared += "photos" }
+        override suspend fun deleteUnusedImages(alsoKeep: Set<String>) {}
+    }
+
+    private class FakeReminders : PhotoReminderScheduler {
+        var albums: List<PhotoAlbum>? = null
+        override suspend fun schedule(albums: List<PhotoAlbum>) { this.albums = albums }
+    }
+
+    private fun repository(dao: FakeBackupDao, reminders: FakeReminders = FakeReminders()) = DeleteDataRepositoryImpl(
+        backupDao = dao,
+        photoRepository = FakePhotoRepository(cleared = dao.cleared),
+        photoReminders = reminders
+    )
+
     @Test
     fun everyStepTogetherEmptiesEveryTable() = runSync {
         val dao = FakeBackupDao()
-        val repository = DeleteDataRepositoryImpl(backupDao = dao)
+        val repository = repository(dao = dao)
         DeleteDataStep.entries.forEach { repository.delete(step = it) }
         assertEquals(
             setOf(
                 "foods", "recipes", "userDetails", "foodLogs", "weights", "measurements", "dailyGoals", "favorites",
-                "plannedFoods", "repeatingMeals", "stepHours", "activitySessions"
+                "plannedFoods", "repeatingMeals", "stepHours", "activitySessions", "photos"
             ),
             dao.cleared
         )
@@ -93,7 +122,7 @@ class DeleteDataRepositoryTest {
             AppFlagEntity(key = AppFlagRepositoryImpl.UNIT_SYSTEM, value = "IMPERIAL"),
             AppFlagEntity(key = BackupRepositoryImpl.LAST_BACKUP_AT, value = "1")
         )
-        DeleteDataRepositoryImpl(backupDao = dao).delete(step = DeleteDataStep.GOALS_AND_SETTINGS)
+        repository(dao = dao).delete(step = DeleteDataStep.GOALS_AND_SETTINGS)
         assertEquals(
             setOf(
                 ProRepositoryImpl.PRO_PURCHASED,
@@ -103,5 +132,12 @@ class DeleteDataRepositoryTest {
             ),
             dao.flags.map { it.key }.toSet()
         )
+    }
+
+    @Test
+    fun deletingBodyRecordsTurnsOffPhotoReminders() = runSync {
+        val reminders = FakeReminders()
+        repository(dao = FakeBackupDao(), reminders = reminders).delete(step = DeleteDataStep.BODY_RECORDS)
+        assertEquals(emptyList(), reminders.albums)
     }
 }

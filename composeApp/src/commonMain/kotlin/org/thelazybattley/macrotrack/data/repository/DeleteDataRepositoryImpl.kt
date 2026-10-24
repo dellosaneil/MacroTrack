@@ -1,15 +1,25 @@
 package org.thelazybattley.macrotrack.data.repository
 
+import org.thelazybattley.macrotrack.core.platform.PhotoReminderScheduler
 import org.thelazybattley.macrotrack.data.local.dao.BackupDao
 import org.thelazybattley.macrotrack.domain.model.DeleteDataStep
 import org.thelazybattley.macrotrack.domain.repository.DeleteDataRepository
+import org.thelazybattley.macrotrack.domain.repository.ProgressPhotoRepository
 
-class DeleteDataRepositoryImpl(private val backupDao: BackupDao) : DeleteDataRepository {
+class DeleteDataRepositoryImpl(
+    private val backupDao: BackupDao,
+    private val photoRepository: ProgressPhotoRepository,
+    private val photoReminders: PhotoReminderScheduler
+) : DeleteDataRepository {
 
     override suspend fun delete(step: DeleteDataStep) {
         when (step) {
             DeleteDataStep.FOOD_LOG -> backupDao.deleteFoodLogsAndPlans()
-            DeleteDataStep.BODY_RECORDS -> backupDao.deleteBodyRecords()
+            DeleteDataStep.BODY_RECORDS -> {
+                backupDao.deleteBodyRecords()
+                photoRepository.deleteAll()
+                photoReminders.schedule(albums = emptyList())
+            }
             DeleteDataStep.SAVED_FOODS -> backupDao.deleteSavedFoods()
             DeleteDataStep.GOALS_AND_SETTINGS -> backupDao.deleteGoalsAndSettings(keepFlagKeys = keptFlagKeys)
         }

@@ -59,6 +59,10 @@
         <receiver
             android:name=".core.platform.StepNotificationReceiver"
             android:exported="false" />
+        <!-- Reminds on the days picked for each progress photo album. -->
+        <receiver
+            android:name=".core.platform.PhotoReminderReceiver"
+            android:exported="false" />
         <!-- Shares exports and backups with other apps. -->
         <provider
             android:name="androidx.core.content.FileProvider"

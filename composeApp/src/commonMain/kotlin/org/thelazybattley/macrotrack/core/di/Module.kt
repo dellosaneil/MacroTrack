@@ -183,6 +183,21 @@ import org.thelazybattley.macrotrack.features.profile.nutritiongoals.NutritionGo
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewModel
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
 import org.thelazybattley.macrotrack.features.splash.SplashViewModel
+import org.thelazybattley.macrotrack.data.repository.ProgressPhotoRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.ProgressPhotoRepository
+import org.thelazybattley.macrotrack.domain.usecase.photo.DeletePhotoAlbumUseCase
+import org.thelazybattley.macrotrack.domain.usecase.photo.DeleteProgressPhotoUseCase
+import org.thelazybattley.macrotrack.domain.usecase.photo.GetPhotoAlbumsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.photo.GetProgressPhotosUseCase
+import org.thelazybattley.macrotrack.domain.usecase.photo.SavePhotoAlbumUseCase
+import org.thelazybattley.macrotrack.domain.usecase.photo.SaveProgressPhotosUseCase
+import org.thelazybattley.macrotrack.domain.usecase.photo.SchedulePhotoRemindersUseCase
+import org.thelazybattley.macrotrack.features.photos.PhotoDrafts
+import org.thelazybattley.macrotrack.features.photos.PhotoAlbumViewModel
+import org.thelazybattley.macrotrack.features.photos.PhotoCameraViewModel
+import org.thelazybattley.macrotrack.features.photos.PhotoCompareViewModel
+import org.thelazybattley.macrotrack.features.photos.PhotoSaveViewModel
+import org.thelazybattley.macrotrack.features.photos.ProgressPhotosViewModel
 
 expect val platformModule: Module
 
@@ -200,6 +215,7 @@ val sharedModule = module {
     single { get<AppDatabase>().backupDao() }
     single { get<AppDatabase>().mealPlanDao() }
     single { get<AppDatabase>().activityDao() }
+    single { get<AppDatabase>().progressPhotoDao() }
     singleOf(::MeasurementUnitPreference)
     singleOf(::AppLinks)
     single {
@@ -232,6 +248,8 @@ val repositoryModule = module {
     singleOf(::MealPlanRepositoryImpl) { bind<MealPlanRepository>() }
     singleOf(::ActivityRepositoryImpl) { bind<ActivityRepository>() }
     singleOf(::ActivityRecorder)
+    singleOf(::ProgressPhotoRepositoryImpl) { bind<ProgressPhotoRepository>() }
+    singleOf(::PhotoDrafts)
 }
 
 val useCaseModule = module {
@@ -331,6 +349,13 @@ val useCaseModule = module {
     factoryOf(::GetDayActivityUseCase)
     factoryOf(::GetBudgetBurnUseCase)
     factoryOf(::GetTodayActivityUseCase)
+    factoryOf(::GetPhotoAlbumsUseCase)
+    factoryOf(::GetProgressPhotosUseCase)
+    factoryOf(::SavePhotoAlbumUseCase)
+    factoryOf(::DeletePhotoAlbumUseCase)
+    factoryOf(::SaveProgressPhotosUseCase)
+    factoryOf(::DeleteProgressPhotoUseCase)
+    factoryOf(::SchedulePhotoRemindersUseCase)
 }
 
 val viewModelModule = module {
@@ -371,6 +396,11 @@ val viewModelModule = module {
     viewModelOf(::ActivityDetailViewModel)
     viewModelOf(::ActivityHistoryViewModel)
     viewModelOf(::CaloriesBurnedViewModel)
+    viewModelOf(::ProgressPhotosViewModel)
+    viewModelOf(::PhotoAlbumViewModel)
+    viewModelOf(::PhotoCameraViewModel)
+    viewModelOf(::PhotoSaveViewModel)
+    viewModelOf(::PhotoCompareViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

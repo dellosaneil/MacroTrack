@@ -14,6 +14,10 @@ import org.thelazybattley.macrotrack.core.platform.AndroidStepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.AndroidStepSensor
 import org.thelazybattley.macrotrack.core.platform.LocationTracker
 import org.thelazybattley.macrotrack.core.platform.MotionSensor
+import org.thelazybattley.macrotrack.core.platform.AndroidPhotoReminderScheduler
+import org.thelazybattley.macrotrack.core.platform.AndroidPhotoStorage
+import org.thelazybattley.macrotrack.core.platform.PhotoReminderScheduler
+import org.thelazybattley.macrotrack.core.platform.PhotoStorage
 import org.thelazybattley.macrotrack.core.platform.StepNotifier
 import org.thelazybattley.macrotrack.core.platform.StepNudgeScheduler
 import org.thelazybattley.macrotrack.core.platform.StepSensor
@@ -32,6 +36,8 @@ actual val platformModule: Module = module {
     single<LocationTracker> { AndroidLocationTracker(context = get()) }
     single<MotionSensor> { AndroidMotionSensor(context = get()) }
     single<StepNudgeScheduler> { AndroidStepNudgeScheduler(context = get()) }
+    single<PhotoStorage> { AndroidPhotoStorage(context = get()) }
+    single<PhotoReminderScheduler> { AndroidPhotoReminderScheduler(context = get()) }
     single<StepNotifier> {
         AndroidStepNotifier(
             context = get(),
@@ -51,5 +57,5 @@ fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
     return Room.databaseBuilder<AppDatabase>(
         context = appContext,
         name = dbFile.absolutePath
-    ).addMigrations(AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16, AppDatabase.MIGRATION_16_17)
+    ).addMigrations(AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16, AppDatabase.MIGRATION_16_17, AppDatabase.MIGRATION_17_18, AppDatabase.MIGRATION_18_19)
 }

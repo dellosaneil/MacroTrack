@@ -1,6 +1,21 @@
 package org.thelazybattley.macrotrack.features.progress.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.text.style.TextOverflow
+import macrotrack.composeapp.generated.resources.photo
+import macrotrack.composeapp.generated.resources.photo_album_total
+import macrotrack.composeapp.generated.resources.photo_albums_and_compare
+import macrotrack.composeapp.generated.resources.photo_card_prompt
+import macrotrack.composeapp.generated.resources.photo_count
+import macrotrack.composeapp.generated.resources.photo_last_on
+import macrotrack.composeapp.generated.resources.photo_no_photos_yet
+import macrotrack.composeapp.generated.resources.photo_start_album
+import macrotrack.composeapp.generated.resources.progress_photos
+import org.jetbrains.compose.resources.pluralStringResource
+import org.thelazybattley.macrotrack.features.photos.AlbumSummary
+import org.thelazybattley.macrotrack.features.photos.mostRecentlyUsed
+import org.thelazybattley.macrotrack.features.photos.ui.PhotoTile
 import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -127,6 +142,22 @@ private fun ProgressScreen(
         WeightCard(
             viewState = viewState,
             onOpenHistory = { onNavigate(AppDestinations.Profile.WeightHistory.route) }
+        )
+        PhotosCard(
+            albums = viewState.photoAlbums,
+            onAdd = {
+                val album = viewState.photoAlbums.mostRecentlyUsed()
+                onNavigate(
+                    if (album == null) {
+                        AppDestinations.Root.ProgressPhotos.createRoute(isNewAlbum = true)
+                    } else {
+                        AppDestinations.Root.PhotoAlbum.createRoute(albumId = album.album.id, isAddOpen = true)
+                    }
+                )
+            },
+            onOpenAlbum = { id -> onNavigate(AppDestinations.Root.PhotoAlbum.createRoute(albumId = id)) },
+            onOpenAll = { onNavigate(AppDestinations.Root.ProgressPhotos.createRoute()) },
+            onStart = { onNavigate(AppDestinations.Root.ProgressPhotos.createRoute(isNewAlbum = true)) }
         )
         MeasurementsCard(
             viewState = viewState,
@@ -282,6 +313,94 @@ private fun Sparkline(weights: List<Weight>) {
         drawPath(path = line, color = lineColor, style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
         drawCircle(color = markerColor, radius = 4.5.dp.toPx(), center = points.last())
         drawCircle(color = lineColor, radius = 4.5.dp.toPx(), center = points.last(), style = Stroke(width = 2.5.dp.toPx()))
+    }
+}
+
+@Composable
+private fun PhotosCard(
+    albums: List<AlbumSummary>,
+    onAdd: () -> Unit,
+    onOpenAlbum: (Long) -> Unit,
+    onOpenAll: () -> Unit,
+    onStart: () -> Unit
+) {
+    // The latest photo in each album, newest first.
+    val latest = albums.mapNotNull { summary -> summary.latest?.let { summary to it } }
+        .sortedByDescending { (_, item) -> item.photo.date }
+    val photoCount = albums.sumOf { it.photos.size }
+    ProgressCard {
+        Row(verticalAlignment = Alignment.Top) {
+            Column(modifier = Modifier.weight(weight = 1f)) {
+                Text(text = stringResource(resource = Res.string.progress_photos), style = typography.regular11, color = colors.muted)
+                Text(
+                    text = latest.firstOrNull()?.let { (_, item) ->
+                        stringResource(resource = Res.string.photo_last_on, item.photo.date.toAbbreviatedMonthDay())
+                    } ?: stringResource(resource = Res.string.photo_no_photos_yet),
+                    style = typography.bold18,
+                    color = colors.ink
+                )
+                Text(
+                    text = if (albums.isEmpty()) {
+                        stringResource(resource = Res.string.photo_card_prompt)
+                    } else {
+                        pluralStringResource(resource = Res.plurals.photo_album_total, quantity = albums.size, albums.size) + " · " +
+                            pluralStringResource(resource = Res.plurals.photo_count, quantity = photoCount, photoCount)
+                    },
+                    style = typography.regular11,
+                    color = colors.muted
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .height(height = 40.dp)
+                    .clip(shape = RoundedCornerShape(size = 12.dp))
+                    .background(color = colors.accentSoft)
+                    .clickable(onClick = onAdd)
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+            ) {
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_plus),
+                    contentDescription = null,
+                    tint = colors.accentInk,
+                    modifier = Modifier.size(size = 16.dp)
+                )
+                Text(text = stringResource(resource = Res.string.photo), style = typography.bold14, color = colors.accentInk)
+            }
+        }
+        if (latest.isNotEmpty()) {
+            Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                latest.take(n = 3).forEach { (summary, item) ->
+                    Column(
+                        modifier = Modifier.weight(weight = 1f).clickable { onOpenAlbum(summary.album.id) },
+                        verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+                    ) {
+                        PhotoTile(
+                            modifier = Modifier.fillMaxWidth().aspectRatio(ratio = 3f / 4f),
+                            fileName = item.photo.fileName,
+                            date = item.photo.date,
+                            weight = item.weight,
+                            isOverlayShown = summary.album.isDateAndWeightShown,
+                            textStyle = typography.bold10
+                        )
+                        Text(
+                            text = summary.album.name,
+                            style = typography.bold11,
+                            color = colors.muted,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                repeat(times = 3 - latest.size.coerceAtMost(maximumValue = 3)) { Box(modifier = Modifier.weight(weight = 1f)) }
+            }
+        }
+        if (albums.isEmpty()) {
+            LinkRow(text = stringResource(resource = Res.string.photo_start_album), onClick = onStart)
+        } else {
+            LinkRow(text = stringResource(resource = Res.string.photo_albums_and_compare), onClick = onOpenAll)
+        }
     }
 }
 

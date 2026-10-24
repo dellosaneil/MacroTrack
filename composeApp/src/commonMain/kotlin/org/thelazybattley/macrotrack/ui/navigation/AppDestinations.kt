@@ -163,7 +163,44 @@ sealed class AppDestinations {
 
         object MeasurementsLog : Root(route = "measurements_log")
 
-        object LogWeight : Root(route = "log_weight")
+        /** Logs a weight for [LOG_DATE]; today when it's left out. */
+        object LogWeight : Root(route = "log_weight", routeWithArgs = "log_weight?$LOG_DATE={$LOG_DATE}") {
+            fun createRoute(logDate: LocalDate? = null): String = route + queryString(LOG_DATE to logDate?.toString())
+        }
+
+        /** Every photo album; [NEW_ALBUM] opens on making one. */
+        object ProgressPhotos : Root(route = "progress_photos", routeWithArgs = "progress_photos?$NEW_ALBUM={$NEW_ALBUM}") {
+            fun createRoute(isNewAlbum: Boolean = false): String =
+                route + queryString(NEW_ALBUM to if (isNewAlbum) "true" else null)
+        }
+
+        /** One album, [OPEN_ADD] opening on the choice of camera or photo library. */
+        object PhotoAlbum : Root(route = "photo_album", routeWithArgs = "photo_album/{$ALBUM_ID}?$OPEN_ADD={$OPEN_ADD}") {
+            fun createRoute(albumId: Long, isAddOpen: Boolean = false): String =
+                "$route/$albumId" + queryString(OPEN_ADD to if (isAddOpen) "true" else null)
+        }
+
+        /** The camera, saving to [ALBUM_ID] unless another album is picked. */
+        object PhotoCamera : Root(route = "photo_camera", routeWithArgs = "photo_camera?$ALBUM_ID={$ALBUM_ID}") {
+            fun createRoute(albumId: Long?): String = route + queryString(ALBUM_ID to albumId?.toString())
+        }
+
+        /** Dating and filing the photos just taken or picked. */
+        object PhotoSave : Root(route = "photo_save")
+
+        /** Before & after in [ALBUM_ID]: the first and latest photos unless [BEFORE_ID] or [AFTER_ID] say otherwise. */
+        object PhotoCompare : Root(
+            route = "photo_compare",
+            routeWithArgs = "photo_compare/{$ALBUM_ID}?$BEFORE_ID={$BEFORE_ID}&$AFTER_ID={$AFTER_ID}&$SIDE_BY_SIDE={$SIDE_BY_SIDE}"
+        ) {
+            /** [isSideBySide] opens on the two photos next to each other instead of the slider. */
+            fun createRoute(albumId: Long, beforeId: Long? = null, afterId: Long? = null, isSideBySide: Boolean = false): String =
+                "$route/$albumId" + queryString(
+                    BEFORE_ID to beforeId?.toString(),
+                    AFTER_ID to afterId?.toString(),
+                    SIDE_BY_SIDE to if (isSideBySide) "true" else null
+                )
+        }
 
         object Calendar : Root(route = "calendar")
 
@@ -210,6 +247,12 @@ sealed class AppDestinations {
         const val REPEATING_MEAL_ID = "repeatingMealId"
         const val ACTIVITY_TYPE = "activityType"
         const val ACTIVITY_ID = "activityId"
+        const val ALBUM_ID = "albumId"
+        const val OPEN_ADD = "openAdd"
+        const val NEW_ALBUM = "newAlbum"
+        const val BEFORE_ID = "beforeId"
+        const val AFTER_ID = "afterId"
+        const val SIDE_BY_SIDE = "sideBySide"
     }
 }
 

@@ -26,6 +26,7 @@ billing = "9.1.0"
 ktor = "3.6.0"
 camerax = "1.4.2"
 mlkit-barcode = "17.3.0"
+mlkit-segmentation-selfie = "16.0.0-beta6"
 firebase-bom = "34.19.0"
 google-services = "4.5.0"
 firebase-crashlytics-plugin = "3.0.8"
@@ -75,6 +76,7 @@ androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", versi
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
 androidx-camera-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision", version.ref = "camerax" }
 mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkit-barcode" }
+mlkit-segmentation-selfie = { module = "com.google.mlkit:segmentation-selfie", version.ref = "mlkit-segmentation-selfie" }
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
