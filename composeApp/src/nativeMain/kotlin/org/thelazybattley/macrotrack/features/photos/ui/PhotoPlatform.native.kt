@@ -51,6 +51,7 @@ import platform.QuartzCore.CATransaction
 import platform.UIKit.UIApplication
 import platform.UIKit.UISceneActivationStateForegroundActive
 import platform.UIKit.UIWindow
+import platform.UIKit.UIWindowLevelNormal
 import platform.UIKit.UIWindowScene
 import platform.UIKit.UIView
 import platform.UIKit.UIViewController
@@ -209,19 +210,21 @@ private const val PRESENT_TRIES = 20
 private const val PRESENT_RETRY_NANOS = 100_000_000L
 
 /**
- * Presents [controller] once nothing is mid-dismissal. The Add photo sheet is still closing when the picker is asked
- * for, and UIKit quietly drops a presentation made during another's dismissal.
+ * Presents [controller] once the Add photo sheet is gone. Compose draws sheets in a window of its own above the app's,
+ * which it hides as soon as the sheet closes, so anything presented from that window disappears with it; the picker
+ * waits for that window to go, then opens from the app's own window.
  */
 private fun present(controller: UIViewController, triesLeft: Int) {
-    val top = topViewController()
-    if (top != null && !top.isBeingDismissed() && top.presentedViewController == null) {
-        top.presentViewController(controller, animated = true, completion = null)
+    val scene = activeScene()
+    val isOverlayShown = scene?.windows.orEmpty().filterIsInstance<UIWindow>().any { it.isOverlay() && !it.hidden && it.rootViewController != null }
+    val top = topViewController(scene = scene)
+    if (triesLeft > 0 && (isOverlayShown || top == null || top.isBeingDismissed() || top.presentedViewController != null)) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, PRESENT_RETRY_NANOS), dispatch_get_main_queue()) {
+            present(controller = controller, triesLeft = triesLeft - 1)
+        }
         return
     }
-    if (triesLeft == 0) return
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, PRESENT_RETRY_NANOS), dispatch_get_main_queue()) {
-        present(controller = controller, triesLeft = triesLeft - 1)
-    }
+    top?.presentViewController(controller, animated = true, completion = null)
 }
 
 private class PickerDelegate(
@@ -250,16 +253,17 @@ private fun NSItemProvider.loadImageData(onLoaded: (ByteArray?) -> Unit) {
     loadDataRepresentationForTypeIdentifier(typeIdentifier = type) { data, _ -> onLoaded(data?.toByteArray()) }
 }
 
-/**
- * The screen on top, so the picker opens above any sheet; a screen that's on its way out doesn't count. The window
- * comes from the active scene, since a SwiftUI app may have no key window yet.
- */
-private fun topViewController(): UIViewController? {
-    val scene = UIApplication.sharedApplication.connectedScenes
-        .filterIsInstance<UIWindowScene>()
-        .firstOrNull { it.activationState == UISceneActivationStateForegroundActive }
-    val window = scene?.windows?.filterIsInstance<UIWindow>()?.let { windows -> windows.firstOrNull { it.isKeyWindow() } ?: windows.firstOrNull() }
-        ?: UIApplication.sharedApplication.keyWindow
+private fun activeScene(): UIWindowScene? = UIApplication.sharedApplication.connectedScenes
+    .filterIsInstance<UIWindowScene>()
+    .let { scenes -> scenes.firstOrNull { it.activationState == UISceneActivationStateForegroundActive } ?: scenes.firstOrNull() }
+
+/** Compose's window for sheets and dialogs, which sits above the app's. */
+private fun UIWindow.isOverlay(): Boolean = windowLevel > UIWindowLevelNormal
+
+/** The screen on top of the app's own window; a screen that's on its way out doesn't count. */
+private fun topViewController(scene: UIWindowScene?): UIViewController? {
+    val windows = scene?.windows.orEmpty().filterIsInstance<UIWindow>().filter { !it.isOverlay() && !it.hidden }
+    val window = windows.firstOrNull { it.isKeyWindow() } ?: windows.firstOrNull() ?: UIApplication.sharedApplication.keyWindow
     var controller = window?.rootViewController
     while (true) {
         val presented = controller?.presentedViewController ?: break

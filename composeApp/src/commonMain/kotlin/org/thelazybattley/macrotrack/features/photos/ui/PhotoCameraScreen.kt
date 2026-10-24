@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.features.photos.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.runtime.key
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -367,13 +368,16 @@ private fun CameraOverlay(viewState: PhotoCameraViewState, countdown: Int?) {
 @Composable
 internal fun GhostImage(fileName: String) {
     val storage = koinInject<PhotoStorage>()
-    val cutout by produceState<GhostCutout>(initialValue = GhostCutout.Loading, key1 = fileName) {
-        value = withContext(context = Dispatchers.Default) {
-            storage.readCutout(fileName = fileName)
-                ?.let { bytes -> runCatching { bytes.decodeToImageBitmap() }.getOrNull() }
-                ?.let { GhostCutout.Person(bitmap = it) }
-                ?: GhostCutout.None
-        }
+    // Keyed so a different photo doesn't show the last one's cutout while its own loads.
+    val cutout = key(fileName) {
+        produceState<GhostCutout>(initialValue = GhostCutout.Loading) {
+            value = withContext(context = Dispatchers.Default) {
+                storage.readCutout(fileName = fileName)
+                    ?.let { bytes -> runCatching { bytes.decodeToImageBitmap() }.getOrNull() }
+                    ?.let { GhostCutout.Person(bitmap = it) }
+                    ?: GhostCutout.None
+            }
+        }.value
     }
     when (val current = cutout) {
         GhostCutout.Loading -> Unit

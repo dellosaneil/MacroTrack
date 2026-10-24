@@ -17,7 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,17 +92,17 @@ internal fun PhotoImage(
     alpha: Float = 1f
 ) {
     val storage = koinInject<PhotoStorage>()
-    val bitmap by produceState(
-        initialValue = PhotoBitmapCache.get(fileName = fileName, isThumbnail = isThumbnail),
-        key1 = fileName,
-        key2 = isThumbnail
-    ) {
-        if (value != null) return@produceState
-        val decoded = withContext(context = Dispatchers.Default) {
-            storage.read(fileName = fileName, isThumbnail = isThumbnail)?.let { bytes -> runCatching { bytes.decodeToImageBitmap() }.getOrNull() }
-        }
-        decoded?.let { PhotoBitmapCache.put(fileName = fileName, isThumbnail = isThumbnail, bitmap = it) }
-        value = decoded
+    // produceState keeps its value when the keys change, so a tile handed another photo (after one is added or
+    // deleted ahead of it) would go on showing the old one; a fresh state per photo starts from that photo instead.
+    val bitmap = key(fileName, isThumbnail) {
+        produceState(initialValue = PhotoBitmapCache.get(fileName = fileName, isThumbnail = isThumbnail)) {
+            if (value != null) return@produceState
+            val decoded = withContext(context = Dispatchers.Default) {
+                storage.read(fileName = fileName, isThumbnail = isThumbnail)?.let { bytes -> runCatching { bytes.decodeToImageBitmap() }.getOrNull() }
+            }
+            decoded?.let { PhotoBitmapCache.put(fileName = fileName, isThumbnail = isThumbnail, bitmap = it) }
+            value = decoded
+        }.value
     }
     Box(modifier = modifier.background(color = colors.line)) {
         bitmap?.let {
