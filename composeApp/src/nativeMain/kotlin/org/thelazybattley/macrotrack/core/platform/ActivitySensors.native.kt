@@ -129,7 +129,9 @@ class IosLocationTracker : LocationTracker {
         awaitClose {
             manager.stopUpdatingLocation()
             manager.allowsBackgroundLocationUpdates = false
-            manager.delegate = null
+            // The manager holds its delegate weakly; naming it here keeps it alive until the recording ends,
+            // otherwise it's collected and fixes stop arriving.
+            if (manager.delegate === delegate) manager.delegate = null
         }
     }.flowOn(context = Dispatchers.Main)
 

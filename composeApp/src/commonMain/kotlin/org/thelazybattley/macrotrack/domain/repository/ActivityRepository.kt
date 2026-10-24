@@ -78,6 +78,11 @@ interface ActivityRepository {
     suspend fun getStepsSyncedUntil(): Long?
 
     suspend fun setStepsSyncedUntil(millis: Long)
+
+    /** The walk or run being recorded, encoded, so it carries on after the app is closed; null when there's none. */
+    suspend fun getActiveRecording(): String?
+
+    suspend fun setActiveRecording(value: String?)
 }
 
 /** A step counter's running total, and when it was read. */

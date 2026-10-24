@@ -120,7 +120,8 @@ class BackupRepositoryImpl(
             ActivityRepositoryImpl.STEP_SENSOR_READING,
             ActivityRepositoryImpl.STEPS_SYNCED_UNTIL,
             ActivityRepositoryImpl.STEP_NOTIFICATION_HIDDEN_ON,
-            ActivityRepositoryImpl.GOAL_ALERT_SENT_ON
+            ActivityRepositoryImpl.GOAL_ALERT_SENT_ON,
+            ActivityRepositoryImpl.ACTIVE_RECORDING
         )
     }
 }

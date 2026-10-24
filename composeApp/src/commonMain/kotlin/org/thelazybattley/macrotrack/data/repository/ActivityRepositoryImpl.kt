@@ -142,6 +142,16 @@ class ActivityRepositoryImpl(
         appFlagDao.insertFlag(flag = AppFlagEntity(key = STEPS_SYNCED_UNTIL, value = millis.toString()))
     }
 
+    override suspend fun getActiveRecording(): String? = appFlagDao.getFlagValue(key = ACTIVE_RECORDING).first()
+
+    override suspend fun setActiveRecording(value: String?) {
+        if (value == null) {
+            appFlagDao.deleteFlag(key = ACTIVE_RECORDING)
+        } else {
+            appFlagDao.insertFlag(flag = AppFlagEntity(key = ACTIVE_RECORDING, value = value))
+        }
+    }
+
     companion object {
         const val STEP_GOAL = "step_goal"
         const val STEP_NUDGE_OFF = "step_nudge_off"
@@ -157,5 +167,8 @@ class ActivityRepositoryImpl(
         /** The phone's own step counter readings: meaningless on another phone, so never backed up. */
         const val STEP_SENSOR_READING = "step_sensor_reading"
         const val STEPS_SYNCED_UNTIL = "steps_synced_until"
+
+        /** A recording still going on this phone: never backed up. */
+        const val ACTIVE_RECORDING = "active_recording"
     }
 }

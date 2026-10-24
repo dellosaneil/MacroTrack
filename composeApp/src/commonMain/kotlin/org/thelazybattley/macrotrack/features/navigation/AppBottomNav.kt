@@ -148,6 +148,10 @@ fun AppBottomNav() {
     // The Log card, recording bar and notification all lead back to the live map. Waits past first launch, so
     // opening from the notification doesn't land under the splash screen.
     val recorder = koinInject<ActivityRecorder>()
+    // A walk or run that was going when the app was closed carries on.
+    LaunchedEffect(key1 = Unit) {
+        recorder.restore()
+    }
     LaunchedEffect(key1 = Unit) {
         recorder.openRequests.collect {
             navController.currentBackStackEntryFlow.first { entry -> entry.destination.route !in firstLaunchRoutes }

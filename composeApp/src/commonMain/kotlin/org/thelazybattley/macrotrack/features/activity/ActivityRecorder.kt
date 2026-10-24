@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.features.activity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +13,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.thelazybattley.macrotrack.core.platform.LocationFix
 import org.thelazybattley.macrotrack.core.platform.LocationTracker
 import org.thelazybattley.macrotrack.core.platform.StepSensor
@@ -20,13 +26,18 @@ import org.thelazybattley.macrotrack.domain.model.MAX_FIX_ACCURACY_METERS
 import org.thelazybattley.macrotrack.domain.model.RoutePoint
 import org.thelazybattley.macrotrack.domain.model.distanceMeters
 import org.thelazybattley.macrotrack.domain.model.routeClimb
+import org.thelazybattley.macrotrack.domain.repository.ActivityRepository
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 /** A fix closer than this to the last one is the phone standing still, not a step along the route. */
 private const val MIN_POINT_GAP_METERS = 3.0
 
+/** The recording is saved this often, and at once on Pause and Resume, so closing the app loses little of it. */
+private const val SAVE_INTERVAL_MILLIS = 10_000L
+
 /** A walk or run being recorded. Time spent paused doesn't count toward [movingMillis]. */
+@Serializable
 data class Recording(
     val type: ActivityType,
     val startMillis: Long,
@@ -52,13 +63,21 @@ data class Recording(
 /**
  * Records one walk or run at a time, outliving the screen that started it: leaving the live map keeps recording,
  * and coming back picks it up. Location and step counting run only while something is being recorded.
+ *
+ * It's saved as it goes, so closing the app doesn't end it: [restore] carries on from the last save, with the time
+ * the app was closed counted as moving unless it was paused.
  */
 class ActivityRecorder(
     private val locationTracker: LocationTracker,
-    private val stepSensor: StepSensor
+    private val stepSensor: StepSensor,
+    private val repository: ActivityRepository
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var job: Job? = null
+    private val json = Json { ignoreUnknownKeys = true }
+    private val saveLock = Mutex()
+    private val saveRequests = Channel<Unit>(capacity = Channel.CONFLATED)
+    private var isRestored = false
     private val _state = MutableStateFlow<Recording?>(value = null)
 
     /** The recording in progress, or null. */
@@ -92,7 +111,37 @@ class ActivityRecorder(
     fun start(type: ActivityType) {
         if (_state.value != null) return
         _state.value = Recording(type = type, startMillis = now())
+        track(type = type)
+    }
+
+    /**
+     * Picks up a recording that was going when the app was last closed. Called once the app is on screen, since
+     * Android can start recording's foreground service only from there.
+     */
+    fun restore() {
+        if (isRestored) return
+        isRestored = true
+        scope.launch {
+            val saved = saveLock.withLock { repository.getActiveRecording() } ?: return@launch
+            val recording = runCatching { json.decodeFromString<Recording>(string = saved) }.getOrNull()
+            if (recording == null) {
+                saveLock.withLock { repository.setActiveRecording(value = null) }
+                return@launch
+            }
+            // Started again while this was loading; that one wins.
+            if (!_state.compareAndSet(expect = null, update = recording)) return@launch
+            track(type = recording.type)
+        }
+    }
+
+    private fun track(type: ActivityType) {
         job = scope.launch {
+            launch {
+                while (true) {
+                    _state.value?.let { save(recording = it) }
+                    withTimeoutOrNull(timeMillis = SAVE_INTERVAL_MILLIS) { saveRequests.receive() }
+                }
+            }
             launch { locationTracker.fixes(type = type).collect(::onFix) }
             launch {
                 var last: Long? = null
@@ -117,6 +166,7 @@ class ActivityRecorder(
                 recording.copy(isPaused = true, movedMillisBefore = recording.movingMillis(now = now), stretchStartMillis = null)
             }
         }
+        saveRequests.trySend(element = Unit)
     }
 
     fun resume() {
@@ -128,6 +178,7 @@ class ActivityRecorder(
                 recording.copy(isPaused = false, segment = recording.segment + 1, stretchStartMillis = now())
             }
         }
+        saveRequests.trySend(element = Unit)
     }
 
     /** Stops recording and hands back what was recorded, paused at this moment. */
@@ -141,10 +192,20 @@ class ActivityRecorder(
     fun discard() = stop()
 
     private fun stop() {
-        job?.cancel()
+        val stopped = job
         job = null
         _state.value = null
         _isFinishRequested.value = false
+        // Waits out a save in flight, so it can't bring the recording back after it's cleared.
+        scope.launch {
+            stopped?.cancelAndJoin()
+            saveLock.withLock { repository.setActiveRecording(value = null) }
+        }
+    }
+
+    private suspend fun save(recording: Recording) {
+        val value = json.encodeToString(value = recording)
+        saveLock.withLock { repository.setActiveRecording(value = value) }
     }
 
     private fun onFix(fix: LocationFix) {
