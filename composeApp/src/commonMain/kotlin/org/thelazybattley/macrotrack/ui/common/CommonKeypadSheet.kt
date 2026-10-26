@@ -46,7 +46,6 @@ import macrotrack.composeapp.generated.resources.ic_close
 import macrotrack.composeapp.generated.resources.keypad_enter_number
 import macrotrack.composeapp.generated.resources.keypad_max
 import macrotrack.composeapp.generated.resources.keypad_min
-import macrotrack.composeapp.generated.resources.keypad_next
 import macrotrack.composeapp.generated.resources.keypad_type_to_replace
 import macrotrack.composeapp.generated.resources.typing
 import org.jetbrains.compose.resources.painterResource
@@ -68,7 +67,7 @@ private const val MAX_STEP_LABEL_LENGTH = 8
 
 /**
  * The keypad every number field opens in place of the phone keyboard. [fields] are the screen's number fields
- * in order; Next commits [openId] and opens the one after it, Done commits and closes. Closing without Done
+ * in order, and the step chips switch between them; Done commits [openId] and closes. Closing without Done
  * keeps the field as it was. [preview] works out the readout's side note from what is typed so far, where
  * `live(id)` is the typed text for the open field and the saved text for the others.
  */
@@ -117,7 +116,6 @@ private fun KeypadSheetContent(
     val live: (String) -> String = { id -> if (id == openId) input.text else fields.firstOrNull { it.id == id }?.value.orEmpty() }
     val check = field.check(text = input.text)
     val isValid = check == KeypadCheck.Valid
-    val next = fields.getOrNull(index = fields.indexOf(field) + 1)
     fun commit(then: String?) {
         if (!isValid) return
         onCommit(field.id, input.text.removeSuffix(suffix = "."))
@@ -229,28 +227,12 @@ private fun KeypadSheetContent(
             isDecimalEnabled = field.isDecimalEnabled,
             onKey = { key -> input = input.typed(key = key, rule = field.rule) }
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-            if (next != null) {
-                SheetButton(
-                    modifier = Modifier.width(width = 104.dp),
-                    text = stringResource(resource = Res.string.done),
-                    isPrimary = false,
-                    enabled = isValid,
-                    onClick = { commit(then = null) }
-                )
-            }
-            SheetButton(
-                modifier = Modifier.weight(weight = 1f),
-                text = when {
-                    !isValid -> problem
-                    next != null -> stringResource(resource = Res.string.keypad_next, next.shortLabel)
-                    else -> stringResource(resource = Res.string.done)
-                },
-                isPrimary = true,
-                enabled = isValid,
-                onClick = { commit(then = next?.id) }
-            )
-        }
+        SheetButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = if (isValid) stringResource(resource = Res.string.done) else problem,
+            enabled = isValid,
+            onClick = { commit(then = null) }
+        )
     }
 }
 
@@ -287,20 +269,11 @@ private fun StepChip(
 private fun SheetButton(
     modifier: Modifier = Modifier,
     text: String,
-    isPrimary: Boolean,
     enabled: Boolean,
     onClick: () -> Unit
 ) {
-    val background = when {
-        !enabled -> colors.line
-        isPrimary -> colors.accent
-        else -> colors.divider
-    }
-    val content = when {
-        !enabled -> colors.faint
-        isPrimary -> colors.onAccent
-        else -> colors.ink
-    }
+    val background = if (enabled) colors.accent else colors.line
+    val content = if (enabled) colors.onAccent else colors.faint
     Box(
         modifier = modifier
             .height(height = 50.dp)

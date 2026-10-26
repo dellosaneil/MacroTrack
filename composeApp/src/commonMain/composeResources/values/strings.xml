@@ -502,7 +502,6 @@
     <string name="keypad_enter_number">Enter a number</string>
     <string name="keypad_max">Max %1$s</string>
     <string name="keypad_min">Min %1$s</string>
-    <string name="keypad_next">Next: %1$s</string>
     <string name="keypad_feet">Feet</string>
     <string name="keypad_inches">Inches</string>
     <string name="keypad_feet_inches">%1$d ft %2$s in</string>
