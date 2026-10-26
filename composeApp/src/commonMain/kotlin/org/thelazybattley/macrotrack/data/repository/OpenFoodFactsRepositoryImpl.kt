@@ -98,7 +98,7 @@ class OpenFoodFactsRepositoryImpl(private val client: HttpClient) : ProductRepos
     private companion object {
         const val BASE_URL = "https://world.openfoodfacts.org/api/v2/product"
         const val FIELDS = "product_name,generic_name,brands,nutriments,serving_size,serving_quantity,serving_quantity_unit,product_quantity_unit"
-        const val USER_AGENT = "MacroTrack/1.0"
+        const val USER_AGENT = "FitMetric/1.0"
         const val KILOJOULES_PER_KCAL = 4.184
         const val PER_100 = 100.0
         const val GRAMS = "g"

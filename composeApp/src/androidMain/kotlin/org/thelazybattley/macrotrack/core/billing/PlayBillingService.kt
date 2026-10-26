@@ -34,7 +34,7 @@ import kotlinx.coroutines.sync.withLock
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
 
-/** Sells "MacroTrack Pro" as a one-time Google Play in-app product. */
+/** Sells "FitMetric Pro" as a one-time Google Play in-app product. */
 class PlayBillingService(
     context: Context,
     private val telemetry: Telemetry

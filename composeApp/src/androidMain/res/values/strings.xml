@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MacroTrack</string>
+    <string name="app_name">FitMetric</string>
     <string name="recording_channel">Recording walks and runs</string>
     <string name="recording_walk">Recording walk</string>
     <string name="recording_run">Recording run</string>
@@ -39,5 +39,5 @@
     <string name="goal_alert_body">%1$d of the last 7 days. Nice work.</string>
     <string name="photo_reminder_channel">Progress photo reminders</string>
     <string name="photo_reminder_title">Time for a progress photo</string>
-    <string name="photo_reminder_body">%1$s · line up with your last one in MacroTrack.</string>
+    <string name="photo_reminder_body">%1$s · line up with your last one in FitMetric.</string>
 </resources>

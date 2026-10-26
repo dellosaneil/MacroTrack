@@ -61,7 +61,7 @@ class ExportTest {
     @Test
     fun csvZipsOneFilePerItemWithRowCounts() {
         val file = export(format = ExportFormat.CSV)
-        assertEquals("macrotrack-all-time-2026-10-16.zip", file.fileName)
+        assertEquals("fitmetric-all-time-2026-10-16.zip", file.fileName)
         assertEquals(
             listOf("food-log.csv" to 3, "weigh-ins.csv" to 2, "body-measurements.csv" to 0, "my-foods-recipes.csv" to 1, "goal-history.csv" to 2),
             file.entries.map { it.name to it.value }

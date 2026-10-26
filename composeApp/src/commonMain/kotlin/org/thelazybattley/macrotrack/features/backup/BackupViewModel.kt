@@ -307,7 +307,7 @@ class BackupViewModel(
 
     private suspend fun backupFile(): SharedFile {
         val bytes = withContext(context = Dispatchers.Default) { createBackupUseCase() }
-        return SharedFile(name = "macrotrack-backup-${getCurrentDate()}.json", mimeType = "application/json", bytes = bytes)
+        return SharedFile(name = "fitmetric-backup-${getCurrentDate()}.json", mimeType = "application/json", bytes = bytes)
     }
 
     private suspend fun pdfLabels(state: BackupViewState, today: LocalDate): PdfLabels {

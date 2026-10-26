@@ -19,7 +19,7 @@ enum class PurchaseLaunchResult {
     UNAVAILABLE
 }
 
-/** The app store's one-time "MacroTrack Pro" product. Google Play on Android; not available on iOS yet. */
+/** The app store's one-time "FitMetric Pro" product. Google Play on Android; not available on iOS yet. */
 interface BillingService {
 
     val isSupported: Boolean

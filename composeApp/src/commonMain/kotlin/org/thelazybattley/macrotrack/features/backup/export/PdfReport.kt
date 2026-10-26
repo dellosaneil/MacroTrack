@@ -15,7 +15,7 @@ import kotlin.math.roundToInt
 
 /** The words in a PDF report, looked up in the app's strings so the report reads in the user's language. */
 data class PdfLabels(
-    val title: String = "MacroTrack report",
+    val title: String = "FitMetric report",
     /** The range, dates and units under the title. */
     val subtitle: String = "",
     val summary: String = "Summary",

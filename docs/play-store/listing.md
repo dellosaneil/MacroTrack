@@ -1,4 +1,8 @@
-# MacroTrack — Google Play listing
+# FitMetric — Google Play listing
+
+## App name (30 characters max)
+
+FitMetric: Macro & Weight Log
 
 ## Short description (80 characters max)
 
@@ -6,7 +10,7 @@ Track calories, macros and weight. Simple, private, no account needed.
 
 ## Full description (4,000 characters max)
 
-MacroTrack helps you hit your calorie and macro targets every day, without an account, ads or a cluttered screen. Tell it your stats and goal, and it builds your daily calories, protein, carbs and fat for you. Then log what you eat and see exactly what's left.
+FitMetric helps you hit your calorie and macro targets every day, without an account, ads or a cluttered screen. Tell it your stats and goal, and it builds your daily calories, protein, carbs and fat for you. Then log what you eat and see exactly what's left.
 
 Everything you log stays on your phone.
 
@@ -51,7 +55,7 @@ YOUR DATA, YOUR PHONE
 • Delete everything in one step whenever you like
 • Metric or imperial units, and light and dark themes
 
-MACROTRACK PRO
+FITMETRIC PRO
 Logging, goals, streaks and your full history are free, for good. Every new install includes 30 days of Pro, so you can try everything. Pro is a one-time purchase, with no subscription, and adds:
 • Moving average: the real trend behind daily weight swings
 • Goal phases: your weight chart shaded by the goal you had each day
@@ -61,7 +65,7 @@ Logging, goals, streaks and your full history are free, for good. Every new inst
 • Unlimited recipes (free includes 20)
 • Backup, restore and export
 
-MacroTrack is a tool for tracking food and weight. It isn't medical advice. If you have a medical condition, are pregnant or have a history of disordered eating, talk to a doctor before changing your diet.
+FitMetric is a tool for tracking food and weight. It isn't medical advice. If you have a medical condition, are pregnant or have a history of disordered eating, talk to a doctor before changing your diet.
 
 Barcode lookups use Open Food Facts, a free, open database of food products.
 

@@ -2,14 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>FitMetric</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>MacroTrack uses your camera to read barcodes on food packaging and to take progress photos, which stay on this phone.</string>
+	<string>FitMetric uses your camera to read barcodes on food packaging and to take progress photos, which stay on this phone.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>MacroTrack counts your steps through the day to show your progress toward your step goal.</string>
+	<string>FitMetric counts your steps through the day to show your progress toward your step goal.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>MacroTrack uses your location only while you record a walk or run, to draw its route. Routes stay on this phone.</string>
+	<string>FitMetric uses your location only while you record a walk or run, to draw its route. Routes stay on this phone.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>RecordRoute</key>

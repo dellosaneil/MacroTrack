@@ -124,7 +124,7 @@ fun buildExport(
     pdfLabels: PdfLabels
 ): ExportFile {
     val ranged = data.inRange(range = range, today = today)
-    val fileName = "macrotrack-${range.fileLabel}-$today.${format.extension}"
+    val fileName = "fitmetric-${range.fileLabel}-$today.${format.extension}"
     val ordered = ExportItem.entries.filter { it in items }
     return when (format) {
         ExportFormat.CSV -> {
@@ -215,7 +215,7 @@ private fun jsonFor(
     unitSystem: UnitSystem,
     today: LocalDate
 ): JsonObject = buildJsonObject {
-    put("app", "MacroTrack")
+    put("app", "FitMetric")
     put("exportedOn", today.toString())
     put("range", range.fileLabel)
     putJsonObject("units") {

@@ -6,7 +6,7 @@
     <string name="gain_weight">Gain weight</string>
     <string name="stay_balanced">Stay balanced</string>
     <string name="calorie_surplus">Calorie surplus</string>
-    <string name="macrotrack">MacroTrack</string>
+    <string name="macrotrack">FitMetric</string>
     <string name="splash_tagline">Track meals, macros and weight.</string>
     <string name="activity_level_camel">Activity Level</string>
     <string name="how_active_are_you">How active are you on a typical week? This sets your daily calorie target.</string>
@@ -534,7 +534,7 @@
     <string name="walkthrough_get_started">Get started</string>
     <string name="walkthrough_page_of">Page %1$d of %2$d</string>
     <string name="walkthrough_welcome_title">Hit your macros, every day</string>
-    <string name="walkthrough_welcome_description">MacroTrack builds calorie, protein, carb and fat targets from your stats and goal, then shows what's left as you eat.</string>
+    <string name="walkthrough_welcome_description">FitMetric builds calorie, protein, carb and fat targets from your stats and goal, then shows what's left as you eat.</string>
     <string name="walkthrough_log_title">Log a meal in seconds</string>
     <string name="walkthrough_log_description">Search foods, reuse the portion you logged last time, star favorites and build your own foods and recipes.</string>
     <string name="walkthrough_insights_title">See how your week went</string>
@@ -578,7 +578,7 @@
     <string name="tour_screen_moving_average">Moving average</string>
     <string name="tour_screen_profile">Profile</string>
     <string name="tour_screen_all_set">All set</string>
-    <string name="tour_welcome_title">Welcome to MacroTrack</string>
+    <string name="tour_welcome_title">Welcome to FitMetric</string>
     <string name="tour_welcome_body">A quick tour of everything the app can do. The screens are filled with example data so you can see what yours will look like. Skip at any time.</string>
     <string name="tour_goal_title">Your goal for the day</string>
     <string name="tour_goal_body">The badge shows whether today follows your Deficit, Maintain or Surplus goal.</string>
@@ -653,7 +653,7 @@
     <string name="tour_finished_message">Tour complete. Happy logging!</string>
     <string name="tour_replay">Replay</string>
     <string name="replay_app_tour">Replay app tour</string>
-    <string name="pro_name">MacroTrack Pro</string>
+    <string name="pro_name">FitMetric Pro</string>
     <string name="pro_badge">PRO</string>
     <string name="pro_subtitle">Everything you need to log stays free. Pro adds the deeper tools.</string>
     <string name="pro_locked_title">%1$s is part of Pro</string>
@@ -676,7 +676,7 @@
         <item quantity="other">%1$d days left in your free Pro trial.</item>
     </plurals>
     <string name="pro_trial_ended">Your free month of Pro has ended. Logging, goals and all your history stay free.</string>
-    <string name="pro_owned">You have Pro. Thanks for supporting MacroTrack!</string>
+    <string name="pro_owned">You have Pro. Thanks for supporting FitMetric!</string>
     <string name="pro_unlock">Unlock Pro</string>
     <string name="pro_unlock_with_price">Unlock Pro · %1$s</string>
     <string name="pro_one_time">One-time purchase. No subscription.</string>
@@ -717,7 +717,7 @@
     <string name="scan_type_number">Type the barcode number</string>
     <string name="scan_search_instead">Search by name instead</string>
     <string name="scan_permission_title">Allow camera access</string>
-    <string name="scan_permission_body">MacroTrack uses your camera only to read barcodes. Nothing is recorded or saved.</string>
+    <string name="scan_permission_body">FitMetric uses your camera only to read barcodes. Nothing is recorded or saved.</string>
     <string name="scan_allow_camera">Allow camera</string>
     <string name="scan_open_settings">Open settings</string>
     <string name="scan_saved">Saved</string>
@@ -867,9 +867,9 @@
     <string name="backup_packing">Packing your data…</string>
     <string name="backup_choose_place">Choose where to save it…</string>
     <string name="backup_restore">Restore from a backup</string>
-    <string name="backup_restore_detail">Pick a MacroTrack backup file</string>
+    <string name="backup_restore_detail">Pick a FitMetric backup file</string>
     <string name="backup_footnote_trial">Backup &amp; export are part of Pro. If you don't keep Pro after the trial, your backup files stay where you saved them and your data stays on this phone.</string>
-    <string name="backup_footnote_pro">Backup files are saved where you choose. MacroTrack can't see them.</string>
+    <string name="backup_footnote_pro">Backup files are saved where you choose. FitMetric can't see them.</string>
     <string name="backup_paused_title">Backups are paused</string>
     <string name="backup_paused_body">Your Pro trial ended on %1$s. Backup files you saved stay where you saved them.</string>
     <string name="backup_paused_body_no_date">Backup &amp; export are part of Pro. Backup files you saved stay where you saved them.</string>
@@ -934,11 +934,11 @@
     <string name="restore_done_body_saved">Your log, weigh-ins, foods and goals are back as of %1$s. What was on this phone before is in the backup file you just saved.</string>
     <string name="restore_go_today">Go to Today</string>
     <string name="restore_error_title">Can't restore this file</string>
-    <string name="restore_error_not_backup">This isn't a MacroTrack backup file, or it's damaged.</string>
-    <string name="restore_error_too_new">This backup was made by a newer version of MacroTrack. Update the app, then try again.</string>
+    <string name="restore_error_not_backup">This isn't a FitMetric backup file, or it's damaged.</string>
+    <string name="restore_error_too_new">This backup was made by a newer version of FitMetric. Update the app, then try again.</string>
     <string name="pro_feature_backup">Backup &amp; export</string>
     <string name="pro_feature_backup_body">Nightly backups to Google Drive, restore on a new phone, and export to CSV, PDF or JSON.</string>
-    <string name="pdf_title">MacroTrack report</string>
+    <string name="pdf_title">FitMetric report</string>
     <string name="pdf_subtitle">%1$s · %2$s – %3$s · weights in %4$s, portions in %5$s</string>
     <string name="pdf_summary">Summary</string>
     <string name="pdf_summary_entry">Summary &amp; weekly averages</string>
@@ -992,7 +992,7 @@
     <string name="delete_data_title">Delete all data</string>
     <string name="delete_data_profile_detail">Erase everything on this phone</string>
     <string name="delete_data_warning_title">This can't be undone</string>
-    <string name="delete_data_warning_body">Everything you've saved in MacroTrack is erased from this phone, and the app starts over as if it was just installed.</string>
+    <string name="delete_data_warning_body">Everything you've saved in FitMetric is erased from this phone, and the app starts over as if it was just installed.</string>
     <string name="delete_data_what">What will be deleted</string>
     <string name="delete_data_item_settings">Profile &amp; settings</string>
     <string name="delete_data_settings_detail">Body details, targets, units</string>
@@ -1013,7 +1013,7 @@
     <string name="delete_data_step_foods">My foods &amp; recipes</string>
     <string name="delete_data_step_settings">Goals, profile &amp; settings</string>
     <string name="delete_data_done_title">All data deleted</string>
-    <string name="delete_data_done_body">MacroTrack is back to a fresh start on this phone.</string>
+    <string name="delete_data_done_body">FitMetric is back to a fresh start on this phone.</string>
     <string name="delete_data_done_backups">Any backup files you saved are still where you put them, ready to restore.</string>
     <string name="delete_data_start_over">Start over</string>
     <string name="pro_feature_check_in">Weekly check-in</string>
@@ -1021,7 +1021,7 @@
     <string name="check_in_title">Weekly check-in</string>
     <string name="check_in_when_collecting">Open any time · collecting data</string>
     <string name="check_in_locked_title">Find out what you really burn</string>
-    <string name="check_in_locked_body">MacroTrack compares what you ate with your weight trend, updated every day. That shows your real daily burn, so your target follows your body instead of a formula.</string>
+    <string name="check_in_locked_body">FitMetric compares what you ate with your weight trend, updated every day. That shows your real daily burn, so your target follows your body instead of a formula.</string>
     <string name="check_in_perk_burn_title">Your real daily burn</string>
     <string name="check_in_perk_burn_body">Worked out from your own log and weight trend, not a formula.</string>
     <string name="check_in_perk_target_title">A suggested target, any time</string>
@@ -1395,7 +1395,7 @@
     <string name="steps_goal_button">Goal %1$s</string>
     <string name="steps_goal_button_description">Daily step goal, %1$s. Change goal</string>
     <string name="steps_allow_title">Count your steps</string>
-    <string name="steps_allow_body">MacroTrack counts steps with your phone's motion sensor all day. No location needed.</string>
+    <string name="steps_allow_body">FitMetric counts steps with your phone's motion sensor all day. No location needed.</string>
     <string name="steps_allow">Turn on step counting</string>
     <string name="steps_allow_settings">Open settings</string>
     <string name="steps_unavailable">This phone has no step counter, so steps stay at zero. You can still record walks and runs with the map.</string>
@@ -1456,9 +1456,9 @@
     <!-- Profile › Steps & walks -->
     <string name="steps_settings_title">Steps &amp; walks</string>
     <string name="steps_settings_preview">Preview</string>
-    <string name="steps_settings_preview_app">MacroTrack · Steps</string>
+    <string name="steps_settings_preview_app">FitMetric · Steps</string>
     <string name="steps_settings_preview_steps">%1$s steps</string>
-    <string name="steps_settings_preview_description">Preview: MacroTrack steps notification, %1$s steps, %2$s</string>
+    <string name="steps_settings_preview_description">Preview: FitMetric steps notification, %1$s steps, %2$s</string>
     <string name="steps_settings_preview_lock">Shows on lock screen</string>
     <string name="steps_settings_preview_off">No steps notification. Steps still count in the app.</string>
     <string name="steps_settings_daily_goal">Daily goal</string>
@@ -1486,7 +1486,7 @@
     <string name="steps_settings_recording_title">Recording notification</string>
     <string name="steps_settings_recording_always">Always on</string>
     <string name="steps_settings_recording_body">Walks and runs are always recorded on the map, so location is required to start one. This notification keeps GPS running, has Pause and Finish, and replaces the steps notification until you finish.</string>
-    <string name="steps_settings_footer">You can also turn MacroTrack notifications off in your phone's settings. Step counting keeps working either way.</string>
+    <string name="steps_settings_footer">You can also turn FitMetric notifications off in your phone's settings. Step counting keeps working either way.</string>
     <string name="steps_settings_unsupported">Step notifications aren't available on this phone yet. Step counting works as usual.</string>
     <!-- Steps: the counting chip and the steps-only confirmation -->
     <string name="steps_counting">Counting steps</string>
@@ -1503,7 +1503,7 @@
     <string name="steps_goal_save">Save goal · %1$s steps</string>
 
     <string name="record_permission_title">Walks and runs need the map</string>
-    <string name="record_permission_body">Every walk and run is recorded on the map. To start one, MacroTrack needs your location while it records. There's no steps-only recording.</string>
+    <string name="record_permission_body">Every walk and run is recorded on the map. To start one, FitMetric needs your location while it records. There's no steps-only recording.</string>
     <string name="record_perk_recording_title">Only while recording</string>
     <string name="record_perk_recording_body">Never in the background. Steps keep counting all day without it.</string>
     <string name="record_perk_phone_title">Routes stay on this phone</string>
@@ -1738,7 +1738,7 @@
     <string name="photo_start_album">Start an album</string>
     <string name="photo_start_album_body">Name it after what you track, like a pump check after push day or a monthly front, side and back. Each photo is stamped with its date and the weight you logged that day.</string>
     <string name="photo_privacy_title">Only on this phone.</string>
-    <string name="photo_privacy">Photos stay inside MacroTrack and are never uploaded. Ones you add from your photo library are copied in; the originals stay where they were. They aren't part of backups.</string>
+    <string name="photo_privacy">Photos stay inside FitMetric and are never uploaded. Ones you add from your photo library are copied in; the originals stay where they were. They aren't part of backups.</string>
     <string name="photo_back_to_albums">Back to albums</string>
     <string name="photo_back_to_album">Back to album</string>
     <string name="photo_album_options">Album options</string>
@@ -1798,7 +1798,7 @@
     <string name="photo_camera_shoot">Take photo</string>
     <string name="photo_camera_failed">The photo couldn't be taken. Try again.</string>
     <string name="photo_camera_none">This device has no camera. You can still add photos from your library.</string>
-    <string name="photo_camera_permission">MacroTrack needs the camera to take progress photos. They stay on this phone.</string>
+    <string name="photo_camera_permission">FitMetric needs the camera to take progress photos. They stay on this phone.</string>
     <string name="photo_camera_permission_allow">Allow camera</string>
     <string name="photo_camera_permission_settings">Open settings</string>
     <string name="photo_timer">Timer %1$s</string>
@@ -1893,5 +1893,5 @@
         <item quantity="other">%1$s and its %2$d photos will be deleted from this phone. This can't be undone.</item>
     </plurals>
     <string name="photo_reminder_title">Time for a progress photo</string>
-    <string name="photo_reminder_body">%1$s · line up with your last one in MacroTrack.</string>
+    <string name="photo_reminder_body">%1$s · line up with your last one in FitMetric.</string>
 </resources>
