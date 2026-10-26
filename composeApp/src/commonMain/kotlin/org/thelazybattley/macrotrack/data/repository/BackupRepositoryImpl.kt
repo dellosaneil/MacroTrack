@@ -47,9 +47,7 @@ class BackupRepositoryImpl(
             favorites = backupDao.getFavorites(),
             appFlags = backupDao.getAppFlags().filter { it.key !in deviceFlagKeys },
             plannedFoods = backupDao.getPlannedFoods(),
-            repeatingMeals = backupDao.getRepeatingMeals(),
-            stepHours = backupDao.getStepHours(),
-            activitySessions = backupDao.getActivitySessions()
+            repeatingMeals = backupDao.getRepeatingMeals()
         )
         return json.encodeToString(serializer = BackupFile.serializer(), value = file).encodeToByteArray()
     }
@@ -115,13 +113,7 @@ class BackupRepositoryImpl(
             LAST_BACKUP_SIZE,
             // The stores count rating prompts per install, so a restore must not reset or copy them.
             AppFlagRepositoryImpl.REVIEW_LAST_ASKED,
-            AppFlagRepositoryImpl.REVIEW_TIMES_ASKED,
-            // The step counter's readings mean something only on the phone that took them.
-            ActivityRepositoryImpl.STEP_SENSOR_READING,
-            ActivityRepositoryImpl.STEPS_SYNCED_UNTIL,
-            ActivityRepositoryImpl.STEP_NOTIFICATION_HIDDEN_ON,
-            ActivityRepositoryImpl.GOAL_ALERT_SENT_ON,
-            ActivityRepositoryImpl.ACTIVE_RECORDING
+            AppFlagRepositoryImpl.REVIEW_TIMES_ASKED
         )
     }
 }

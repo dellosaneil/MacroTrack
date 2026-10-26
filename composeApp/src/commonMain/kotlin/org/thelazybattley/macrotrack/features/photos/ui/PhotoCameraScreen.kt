@@ -82,7 +82,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.domain.model.PhotoPose
-import org.thelazybattley.macrotrack.features.activity.ui.ActivitySwitch
+import org.thelazybattley.macrotrack.ui.common.CommonSwitch
 import org.thelazybattley.macrotrack.features.photos.PhotoCameraEvent
 import org.thelazybattley.macrotrack.features.photos.PhotoCameraViewModel
 import org.thelazybattley.macrotrack.features.photos.PhotoCameraViewState
@@ -170,7 +170,7 @@ fun PhotoCameraScreen(
                         Text(text = stringResource(resource = Res.string.photo_camera_ghost), style = typography.bold14, color = Color.White)
                         Text(text = stringResource(resource = Res.string.photo_camera_ghost_body), style = typography.regular11, color = CameraMuted)
                     }
-                    ActivitySwitch(
+                    CommonSwitch(
                         isOn = viewState.isGhostOn,
                         description = stringResource(resource = Res.string.photo_camera_ghost),
                         onToggle = viewModel::onGhostToggled

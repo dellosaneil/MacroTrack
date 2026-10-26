@@ -21,7 +21,6 @@ import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.PhotoAlbumEntity
 import org.thelazybattley.macrotrack.data.local.entity.ProgressPhotoEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
-import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
@@ -215,14 +214,6 @@ class TourSampleData(
                 listOf(photo(albumId = monthly, days = days, pose = PhotoPose.FRONT), photo(albumId = monthly, days = days, pose = PhotoPose.SIDE))
             }
         )
-
-        // Steps for the last two weeks, with today partway there.
-        val activity = database.activityDao()
-        (0..13).forEach { days ->
-            val hours = if (days == 0) 7..14 else 7..21
-            val perHour = 520 + (days % 4) * 90
-            hours.forEach { hour -> activity.setSteps(stepHour = StepHourEntity(date = daysAgo(days), hour = hour, steps = perHour + (hour % 3) * 60)) }
-        }
     }
 
     private companion object {

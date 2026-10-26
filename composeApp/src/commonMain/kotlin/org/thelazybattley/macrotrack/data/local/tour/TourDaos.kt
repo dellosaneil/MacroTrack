@@ -2,7 +2,6 @@ package org.thelazybattley.macrotrack.data.local.tour
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
-import org.thelazybattley.macrotrack.data.local.dao.ActivityDao
 import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodDao
@@ -13,7 +12,6 @@ import org.thelazybattley.macrotrack.data.local.dao.ProgressPhotoDao
 import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
 import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
-import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
@@ -24,10 +22,8 @@ import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.ProgressPhotoEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
-import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
-import org.thelazybattley.macrotrack.domain.model.ActivityType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlanStatus
 
@@ -106,19 +102,6 @@ class TourMealPlanDao(private val db: TourDatabaseSwitch) : MealPlanDao {
         db.run { it.mealPlanDao().setRepeatingMealActive(id = id, isActive = isActive, updatedOn = updatedOn) }
     override suspend fun deleteRepeatingMeal(id: Long) = db.run { it.mealPlanDao().deleteRepeatingMeal(id = id) }
     override fun getRepeatingMeals(): Flow<List<RepeatingMealEntity>> = db.flow { it.mealPlanDao().getRepeatingMeals() }
-}
-
-/** Reads follow the tour; steps and recorded sessions always save to the user's own log, since they keep coming. */
-class TourActivityDao(private val db: TourDatabaseSwitch) : ActivityDao {
-    private val real get() = db.realDatabase.activityDao()
-    override fun getStepHours(fromDate: LocalDate): Flow<List<StepHourEntity>> = db.flow { it.activityDao().getStepHours(fromDate = fromDate) }
-    override suspend fun addSteps(date: LocalDate, hour: Int, steps: Int) = real.addSteps(date = date, hour = hour, steps = steps)
-    override suspend fun setSteps(stepHour: StepHourEntity) = real.setSteps(stepHour = stepHour)
-    override suspend fun insertSession(session: ActivitySessionEntity): Long = real.insertSession(session = session)
-    override suspend fun renameSession(id: Long, name: String?, type: ActivityType) = real.renameSession(id = id, name = name, type = type)
-    override suspend fun deleteSession(id: Long) = real.deleteSession(id = id)
-    override fun getSessions(): Flow<List<ActivitySessionEntity>> = db.flow { it.activityDao().getSessions() }
-    override fun getSession(id: Long): Flow<ActivitySessionEntity?> = db.flow { it.activityDao().getSession(id = id) }
 }
 
 class TourProgressPhotoDao(private val db: TourDatabaseSwitch) : ProgressPhotoDao() {

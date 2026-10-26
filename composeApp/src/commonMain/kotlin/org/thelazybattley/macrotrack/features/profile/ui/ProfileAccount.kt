@@ -1,7 +1,6 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
 import androidx.compose.foundation.background
-import org.thelazybattley.macrotrack.core.isActivityEnabled
 import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import org.thelazybattley.macrotrack.ui.common.CommonUnitSystemToggle
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
@@ -29,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.account
 import macrotrack.composeapp.generated.resources.body_measurements
-import macrotrack.composeapp.generated.resources.steps_settings_title
 import macrotrack.composeapp.generated.resources.goal_with_calories
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.not_set
@@ -70,7 +68,6 @@ fun ProfileAccount(
     onNavigate: (ProfileSectionEnum) -> Unit,
     onTargetWeightClick: () -> Unit,
     onUnitSystemSelected: (UnitSystem) -> Unit = {},
-    onOpenStepsSettings: () -> Unit = {},
     onReplayTour: () -> Unit = {}
 ) {
     Column(
@@ -134,13 +131,6 @@ fun ProfileAccount(
                 label = Res.string.body_measurements,
                 onClick = { onNavigate(ProfileSectionEnum.BODY_MEASUREMENTS) }
             )
-            if (isActivityEnabled) {
-                HorizontalDivider(thickness = 1.dp, color = colors.divider)
-                AccountRow(
-                    label = Res.string.steps_settings_title,
-                    onClick = onOpenStepsSettings
-                )
-            }
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             AccountRow(
                 label = Res.string.target_weight,

@@ -2,7 +2,6 @@ package org.thelazybattley.macrotrack.data.backup
 
 import kotlinx.serialization.Serializable
 import org.thelazybattley.macrotrack.data.local.dao.DatabaseSnapshot
-import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
@@ -12,7 +11,6 @@ import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
-import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 
@@ -40,10 +38,7 @@ data class BackupFile(
     val appFlags: List<AppFlagEntity> = emptyList(),
     /** Missing from backups made before the meal plan; they restore with an empty plan. */
     val plannedFoods: List<PlannedFoodEntity> = emptyList(),
-    val repeatingMeals: List<RepeatingMealEntity> = emptyList(),
-    /** Missing from backups made before steps and walks; they restore with no activity. */
-    val stepHours: List<StepHourEntity> = emptyList(),
-    val activitySessions: List<ActivitySessionEntity> = emptyList()
+    val repeatingMeals: List<RepeatingMealEntity> = emptyList()
 ) {
     fun toSnapshot() = DatabaseSnapshot(
         foods = foods,
@@ -56,8 +51,6 @@ data class BackupFile(
         favorites = favorites,
         appFlags = appFlags,
         plannedFoods = plannedFoods,
-        repeatingMeals = repeatingMeals,
-        stepHours = stepHours,
-        activitySessions = activitySessions
+        repeatingMeals = repeatingMeals
     )
 }

@@ -80,7 +80,6 @@ import org.thelazybattley.macrotrack.features.profile.pastgoal.PastGoalViewModel
 import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
 import org.koin.dsl.module
 import org.koin.core.qualifier.named
-import org.thelazybattley.macrotrack.data.local.dao.ActivityDao
 import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodDao
@@ -91,7 +90,6 @@ import org.thelazybattley.macrotrack.data.local.dao.ProgressPhotoDao
 import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
 import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
-import org.thelazybattley.macrotrack.data.local.tour.TourActivityDao
 import org.thelazybattley.macrotrack.data.local.tour.TourDailyGoalDao
 import org.thelazybattley.macrotrack.data.local.tour.TourDatabaseSwitch
 import org.thelazybattley.macrotrack.data.local.tour.TourFavoriteDao
@@ -153,38 +151,6 @@ import org.thelazybattley.macrotrack.domain.usecase.mealplan.UndoPlannedFoodUseC
 import org.thelazybattley.macrotrack.features.mealplan.MealPlanViewModel
 import org.thelazybattley.macrotrack.features.mealplan.RepeatMealViewModel
 import org.thelazybattley.macrotrack.features.mealplan.RepeatingMealsViewModel
-import org.thelazybattley.macrotrack.data.repository.ActivityRepositoryImpl
-import org.thelazybattley.macrotrack.domain.repository.ActivityRepository
-import org.thelazybattley.macrotrack.domain.usecase.activity.DeleteActivitySessionUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetActivitySessionUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetActivitySessionsUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetBudgetBurnUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetBurnProfileUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetDayActivityUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepGoalUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepHoursUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.IsBurnAddedToBudgetUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepNudgeEnabledUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.RenameActivitySessionUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.SaveActivitySessionUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.ScheduleStepNudgeUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetStepNotificationSettingsUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.IsStepCountingOnUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepCountingUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.UpdateStepNotificationSettingsUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.SetBurnAddedToBudgetUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepGoalUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.SetStepNudgeEnabledUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.TrackStepsUseCase
-import org.thelazybattley.macrotrack.domain.usecase.activity.GetTodayActivityUseCase
-import org.thelazybattley.macrotrack.features.activity.ActivityDetailViewModel
-import org.thelazybattley.macrotrack.features.activity.ActivityHistoryViewModel
-import org.thelazybattley.macrotrack.features.activity.ActivityRecorder
-import org.thelazybattley.macrotrack.core.platform.AppLinks
-import org.thelazybattley.macrotrack.features.activity.CaloriesBurnedViewModel
-import org.thelazybattley.macrotrack.features.activity.RecordViewModel
-import org.thelazybattley.macrotrack.features.activity.StepsViewModel
-import org.thelazybattley.macrotrack.features.activity.StepsSettingsViewModel
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
@@ -252,10 +218,8 @@ val sharedModule = module {
     single { get<AppDatabase>().appFlagDao() }
     single { get<AppDatabase>().backupDao() }
     single<MealPlanDao> { TourMealPlanDao(db = get()) }
-    single<ActivityDao> { TourActivityDao(db = get()) }
     single<ProgressPhotoDao> { TourProgressPhotoDao(db = get()) }
     singleOf(::MeasurementUnitPreference)
-    singleOf(::AppLinks)
     single {
         HttpClient {
             install(plugin = HttpTimeout) {
@@ -284,8 +248,6 @@ val repositoryModule = module {
     singleOf(::BackupRepositoryImpl) { bind<BackupRepository>() }
     singleOf(::DeleteDataRepositoryImpl) { bind<DeleteDataRepository>() }
     singleOf(::MealPlanRepositoryImpl) { bind<MealPlanRepository>() }
-    singleOf(::ActivityRepositoryImpl) { bind<ActivityRepository>() }
-    singleOf(::ActivityRecorder)
     singleOf(::ProgressPhotoRepositoryImpl) { bind<ProgressPhotoRepository>() }
     singleOf(::PhotoDrafts)
 }
@@ -365,28 +327,6 @@ val useCaseModule = module {
     factoryOf(::SaveRepeatingMealUseCase)
     factoryOf(::SetRepeatingMealActiveUseCase)
     factoryOf(::DeleteRepeatingMealUseCase)
-    factoryOf(::TrackStepsUseCase)
-    factoryOf(::GetStepHoursUseCase)
-    factoryOf(::GetActivitySessionsUseCase)
-    factoryOf(::GetActivitySessionUseCase)
-    factoryOf(::SaveActivitySessionUseCase)
-    factoryOf(::RenameActivitySessionUseCase)
-    factoryOf(::DeleteActivitySessionUseCase)
-    factoryOf(::GetStepGoalUseCase)
-    factoryOf(::SetStepGoalUseCase)
-    factoryOf(::IsStepNudgeEnabledUseCase)
-    factoryOf(::SetStepNudgeEnabledUseCase)
-    factoryOf(::ScheduleStepNudgeUseCase)
-    factoryOf(::GetStepNotificationSettingsUseCase)
-    factoryOf(::IsStepCountingOnUseCase)
-    factoryOf(::SetStepCountingUseCase)
-    factoryOf(::UpdateStepNotificationSettingsUseCase)
-    factoryOf(::IsBurnAddedToBudgetUseCase)
-    factoryOf(::SetBurnAddedToBudgetUseCase)
-    factoryOf(::GetBurnProfileUseCase)
-    factoryOf(::GetDayActivityUseCase)
-    factoryOf(::GetBudgetBurnUseCase)
-    factoryOf(::GetTodayActivityUseCase)
     factoryOf(::GetPhotoAlbumsUseCase)
     factoryOf(::GetProgressPhotosUseCase)
     factoryOf(::SavePhotoAlbumUseCase)
@@ -428,12 +368,6 @@ val viewModelModule = module {
     viewModelOf(::MealPlanViewModel)
     viewModelOf(::RepeatingMealsViewModel)
     viewModelOf(::RepeatMealViewModel)
-    viewModelOf(::StepsSettingsViewModel)
-    viewModelOf(::StepsViewModel)
-    viewModelOf(::RecordViewModel)
-    viewModelOf(::ActivityDetailViewModel)
-    viewModelOf(::ActivityHistoryViewModel)
-    viewModelOf(::CaloriesBurnedViewModel)
     viewModelOf(::ProgressPhotosViewModel)
     viewModelOf(::PhotoAlbumViewModel)
     viewModelOf(::PhotoCameraViewModel)

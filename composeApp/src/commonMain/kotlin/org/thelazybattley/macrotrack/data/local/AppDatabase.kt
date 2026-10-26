@@ -9,7 +9,6 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
-import org.thelazybattley.macrotrack.data.local.dao.ActivityDao
 import org.thelazybattley.macrotrack.data.local.dao.AppFlagDao
 import org.thelazybattley.macrotrack.data.local.dao.BackupDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
@@ -22,7 +21,6 @@ import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
 import org.thelazybattley.macrotrack.data.local.dao.MeasurementDao
 import org.thelazybattley.macrotrack.data.local.dao.ProgressPhotoDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
-import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
@@ -32,7 +30,6 @@ import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.ProgressPhotoEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
-import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
@@ -40,8 +37,8 @@ import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
-    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, StepHourEntity::class, ActivitySessionEntity::class, PhotoAlbumEntity::class, ProgressPhotoEntity::class],
-    version = 19, exportSchema = true,
+    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, PhotoAlbumEntity::class, ProgressPhotoEntity::class],
+    version = 20, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -61,7 +58,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun appFlagDao(): AppFlagDao
     abstract fun backupDao(): BackupDao
     abstract fun mealPlanDao(): MealPlanDao
-    abstract fun activityDao(): ActivityDao
     abstract fun progressPhotoDao(): ProgressPhotoDao
 
     companion object {
@@ -229,6 +225,19 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_18_19 = object : Migration(18, 19) {
             override fun migrate(connection: SQLiteConnection) {
                 connection.execSQL("ALTER TABLE `PhotoAlbumEntity` ADD COLUMN `reminderMinutes` INTEGER NOT NULL DEFAULT 1080")
+            }
+        }
+
+        /** Removes steps, walks and runs, which never shipped, along with their settings. */
+        val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("DROP TABLE IF EXISTS `StepHourEntity`")
+                connection.execSQL("DROP TABLE IF EXISTS `ActivitySessionEntity`")
+                connection.execSQL(
+                    "DELETE FROM `AppFlagEntity` WHERE `key` IN ('step_goal', 'step_nudge_off', 'burn_added_to_budget', " +
+                        "'step_notifications', 'step_counting_off', 'step_notification_hidden_on', 'goal_alert_sent_on', " +
+                        "'step_sensor_reading', 'steps_synced_until', 'active_recording')"
+                )
             }
         }
     }

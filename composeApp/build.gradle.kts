@@ -55,7 +55,6 @@ kotlin {
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)
             implementation(libs.play.review)
-            implementation(libs.maplibre.android.opengl)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -81,10 +80,6 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.clock)
             implementation(libs.ktor.client.core)
-            // The OpenGL build of MapLibre runs on every device and emulator; the default Vulkan one doesn't.
-            implementation(libs.maplibre.compose.get().toString()) {
-                exclude(group = "org.maplibre.gl", module = "android-sdk")
-            }
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -111,12 +106,17 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     val appMajor = 1
-    val appMinor = 1
-    val appPatch = 1
+    val appMinor = 2
+    val appPatch = 0
 
-    val appBuild = 0
-    //-alpha.$appBuild
-    val appSuffix = "-alpha.$appBuild"
+    val appBuild = 1
+    val isForClosedTesting = false
+
+    val appSuffix = if (isForClosedTesting) {
+        "-alpha.$appBuild"
+    } else {
+        ""
+    }
     defaultConfig {
         applicationId = "org.thelazybattley.macrotrack"
         minSdk = libs.versions.android.minSdk.get().toInt()

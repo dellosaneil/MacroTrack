@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.thelazybattley.macrotrack.core.platform.PhotoReminderScheduler
 import org.thelazybattley.macrotrack.data.local.dao.BackupDao
-import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
@@ -14,7 +13,6 @@ import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
-import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.domain.model.DeleteDataStep
@@ -43,8 +41,6 @@ class DeleteDataRepositoryTest {
         override suspend fun getAppFlags() = flags
         override suspend fun getPlannedFoods() = emptyList<PlannedFoodEntity>()
         override suspend fun getRepeatingMeals() = emptyList<RepeatingMealEntity>()
-        override suspend fun getStepHours() = emptyList<StepHourEntity>()
-        override suspend fun getActivitySessions() = emptyList<ActivitySessionEntity>()
         override suspend fun deleteFoods() { cleared += "foods" }
         override suspend fun deleteRecipes() { cleared += "recipes" }
         override suspend fun deleteUserDetails() { cleared += "userDetails" }
@@ -55,8 +51,6 @@ class DeleteDataRepositoryTest {
         override suspend fun deleteFavorites() { cleared += "favorites" }
         override suspend fun deletePlannedFoods() { cleared += "plannedFoods" }
         override suspend fun deleteRepeatingMeals() { cleared += "repeatingMeals" }
-        override suspend fun deleteStepHours() { cleared += "stepHours" }
-        override suspend fun deleteActivitySessions() { cleared += "activitySessions" }
         override suspend fun deleteAppFlagsExcept(keepKeys: List<String>) { flags = flags.filter { it.key in keepKeys } }
         override suspend fun insertFoods(foods: List<FoodEntity>) {}
         override suspend fun insertRecipes(recipes: List<RecipeEntity>) {}
@@ -69,8 +63,6 @@ class DeleteDataRepositoryTest {
         override suspend fun insertAppFlags(appFlags: List<AppFlagEntity>) {}
         override suspend fun insertPlannedFoods(plannedFoods: List<PlannedFoodEntity>) {}
         override suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>) {}
-        override suspend fun insertStepHours(stepHours: List<StepHourEntity>) {}
-        override suspend fun insertActivitySessions(activitySessions: List<ActivitySessionEntity>) {}
     }
 
     /** Records that the photos were deleted, into the same list as the tables. */
@@ -104,7 +96,7 @@ class DeleteDataRepositoryTest {
         assertEquals(
             setOf(
                 "foods", "recipes", "userDetails", "foodLogs", "weights", "measurements", "dailyGoals", "favorites",
-                "plannedFoods", "repeatingMeals", "stepHours", "activitySessions", "photos"
+                "plannedFoods", "repeatingMeals", "photos"
             ),
             dao.cleared
         )

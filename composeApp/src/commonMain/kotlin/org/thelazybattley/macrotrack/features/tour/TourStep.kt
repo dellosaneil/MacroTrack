@@ -60,8 +60,6 @@ import macrotrack.composeapp.generated.resources.tour_screen_weight_history
 import macrotrack.composeapp.generated.resources.tour_screen_welcome
 import macrotrack.composeapp.generated.resources.tour_search_body
 import macrotrack.composeapp.generated.resources.tour_search_title
-import macrotrack.composeapp.generated.resources.tour_steps_body
-import macrotrack.composeapp.generated.resources.tour_steps_title
 import macrotrack.composeapp.generated.resources.tour_streak_body
 import macrotrack.composeapp.generated.resources.tour_streak_title
 import macrotrack.composeapp.generated.resources.tour_trend_body
@@ -75,7 +73,6 @@ import macrotrack.composeapp.generated.resources.tour_welcome_title
 import macrotrack.composeapp.generated.resources.tour_your_data_body
 import macrotrack.composeapp.generated.resources.tour_your_data_title
 import org.jetbrains.compose.resources.StringResource
-import org.thelazybattley.macrotrack.core.isActivityEnabled
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 /** The screen a tour step needs on display. Tabs of the main screen carry the tab to select. */
@@ -100,7 +97,6 @@ enum class TourTarget(val cornerRadius: Dp) {
     TODAY_STREAK(cornerRadius = 20.dp),
     TODAY_DATES(cornerRadius = 18.dp),
     TODAY_REMAINING(cornerRadius = 26.dp),
-    TODAY_STEPS(cornerRadius = 18.dp),
     TODAY_COPY(cornerRadius = 10.dp),
     TODAY_ADD_MEAL(cornerRadius = 16.dp),
     /** The first food logged today. */
@@ -132,17 +128,15 @@ enum class TourTarget(val cornerRadius: Dp) {
 }
 
 /**
- * The first-run tour, in order; [shown] leaves out the debug-only steps on release builds. A step spotlights the
- * first of its [targets] that is on the screen, so an empty list or chart falls back to the next one; with none (or
- * no [targets]) the card shows in the middle of the screen.
+ * The first-run tour, in order. A step spotlights the first of its [targets] that is on the screen, so an empty list
+ * or chart falls back to the next one; with none (or no [targets]) the card shows in the middle of the screen.
  */
 enum class TourStep(
     val screen: TourScreen,
     val targets: List<TourTarget>,
     val screenLabel: StringResource,
     val title: StringResource,
-    val body: StringResource,
-    val isDebugOnly: Boolean = false
+    val body: StringResource
 ) {
     WELCOME(
         screen = TourScreen.LOG,
@@ -178,14 +172,6 @@ enum class TourStep(
         screenLabel = Res.string.tour_screen_today,
         title = Res.string.tour_remaining_title,
         body = Res.string.tour_remaining_body
-    ),
-    TODAY_STEPS(
-        screen = TourScreen.LOG,
-        targets = listOf(TourTarget.TODAY_STEPS),
-        screenLabel = Res.string.tour_screen_today,
-        title = Res.string.tour_steps_title,
-        body = Res.string.tour_steps_body,
-        isDebugOnly = true
     ),
     TODAY_COPY(
         screen = TourScreen.LOG,
@@ -357,7 +343,7 @@ enum class TourStep(
     val isLast: Boolean get() = this == shown.last()
 
     companion object {
-        /** The steps this build shows: Steps, walks and runs ship in debug builds only for now. */
-        val shown: List<TourStep> = entries.filter { step -> !step.isDebugOnly || isActivityEnabled }
+        /** The steps the tour shows, in order. */
+        val shown: List<TourStep> = entries
     }
 }

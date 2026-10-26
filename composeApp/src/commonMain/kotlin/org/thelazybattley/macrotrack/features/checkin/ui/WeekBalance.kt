@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,11 +32,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
-import macrotrack.composeapp.generated.resources.check_in_review
 import macrotrack.composeapp.generated.resources.ic_chevron_left
 import macrotrack.composeapp.generated.resources.ic_chevron_right
 import macrotrack.composeapp.generated.resources.week_balance
-import macrotrack.composeapp.generated.resources.week_check_in
 import macrotrack.composeapp.generated.resources.week_chip_on
 import macrotrack.composeapp.generated.resources.week_chip_over
 import macrotrack.composeapp.generated.resources.week_chip_under
@@ -253,47 +250,6 @@ fun WeekBalanceTile(
                 }
             }
         }
-    }
-}
-
-/** While a walk or run records, the week shrinks to one line under the live card. */
-@Composable
-fun WeekBalanceLine(
-    modifier: Modifier = Modifier,
-    balance: WeekBalance,
-    isNewSuggestion: Boolean,
-    onClick: () -> Unit
-) {
-    val shape = RoundedCornerShape(size = 16.dp)
-    val description = tileDescription(balance = balance, isNewSuggestion = isNewSuggestion)
-    Row(
-        modifier = modifier
-            .heightIn(min = 44.dp)
-            .clip(shape = shape)
-            .background(color = colors.surface)
-            .border(width = 1.dp, color = colors.line, shape = shape)
-            .clickable(role = Role.Button, onClick = onClick)
-            .clearAndSetSemantics { contentDescription = description }
-            .padding(horizontal = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-    ) {
-        Text(text = stringResource(resource = Res.string.week_this), style = typography.bold12, color = colors.muted)
-        Row(modifier = Modifier.weight(weight = 1f), horizontalArrangement = Arrangement.spacedBy(space = 4.dp)) {
-            Text(
-                text = totalText(total = balance.total),
-                style = typography.bold14,
-                color = totalColor(total = balance.total),
-                modifier = Modifier.alignByBaseline()
-            )
-            Text(text = shortWord(total = balance.total), style = typography.regular11, color = colors.muted, modifier = Modifier.alignByBaseline())
-        }
-        Text(
-            text = stringResource(resource = if (isNewSuggestion) Res.string.check_in_review else Res.string.week_check_in),
-            style = typography.bold12,
-            color = colors.accentInk
-        )
-        Icon(painter = painterResource(resource = Res.drawable.ic_chevron_right), contentDescription = null, tint = colors.accentInk, modifier = Modifier.size(size = 14.dp))
     }
 }
 

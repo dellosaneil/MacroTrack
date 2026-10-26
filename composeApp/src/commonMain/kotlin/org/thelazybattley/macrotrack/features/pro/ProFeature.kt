@@ -3,8 +3,6 @@ package org.thelazybattley.macrotrack.features.pro
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.pro_feature_backup
 import macrotrack.composeapp.generated.resources.pro_feature_backup_body
-import macrotrack.composeapp.generated.resources.pro_feature_calories
-import macrotrack.composeapp.generated.resources.pro_feature_calories_body
 import macrotrack.composeapp.generated.resources.pro_feature_check_in
 import macrotrack.composeapp.generated.resources.pro_feature_check_in_body
 import macrotrack.composeapp.generated.resources.pro_feature_goal_phases
@@ -22,7 +20,6 @@ import macrotrack.composeapp.generated.resources.pro_feature_range_comparison_bo
 import macrotrack.composeapp.generated.resources.pro_feature_recipes
 import macrotrack.composeapp.generated.resources.pro_feature_recipes_body
 import org.jetbrains.compose.resources.StringResource
-import org.thelazybattley.macrotrack.core.isActivityEnabled
 import org.thelazybattley.macrotrack.domain.model.FREE_RECIPE_LIMIT
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
@@ -36,16 +33,8 @@ enum class ProFeature(val title: StringResource, val body: StringResource) {
     INSIGHTS(title = Res.string.pro_feature_insights, body = Res.string.pro_feature_insights_body),
     RECIPES(title = Res.string.pro_feature_recipes, body = Res.string.pro_feature_recipes_body),
     BACKUP(title = Res.string.pro_feature_backup, body = Res.string.pro_feature_backup_body),
-    CHECK_IN(title = Res.string.pro_feature_check_in, body = Res.string.pro_feature_check_in_body),
-    CALORIES_BURNED(title = Res.string.pro_feature_calories, body = Res.string.pro_feature_calories_body)
+    CHECK_IN(title = Res.string.pro_feature_check_in, body = Res.string.pro_feature_check_in_body)
 }
-
-/**
- * What the paywall lists. Calories burned comes from steps, walks and runs, which ship in debug builds only for now,
- * so it shows elsewhere only when it is the [feature] that led to the paywall.
- */
-fun offeredProFeatures(feature: ProFeature?): List<ProFeature> =
-    ProFeature.entries.filter { it != ProFeature.CALORIES_BURNED || isActivityEnabled || it == feature }
 
 /**
  * The Pro feature a navigation [route] opens, or null when it is free. Logging new measurements is Pro, while

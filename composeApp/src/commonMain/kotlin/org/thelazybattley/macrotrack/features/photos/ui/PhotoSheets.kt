@@ -95,7 +95,7 @@ import org.thelazybattley.macrotrack.domain.model.PHOTO_ALBUM_NAME_MAX
 import org.thelazybattley.macrotrack.domain.model.PHOTO_PICK_MAX
 import org.thelazybattley.macrotrack.domain.model.PhotoAlbum
 import org.thelazybattley.macrotrack.domain.model.PhotoPose
-import org.thelazybattley.macrotrack.features.activity.ui.ActivitySwitch
+import org.thelazybattley.macrotrack.ui.common.CommonSwitch
 import org.thelazybattley.macrotrack.features.photos.PhotoDrafts
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -229,7 +229,7 @@ internal fun AlbumSheet(
                     Text(text = stringResource(resource = Res.string.photo_show_date_weight), style = typography.bold14, color = colors.ink)
                     Text(text = stringResource(resource = Res.string.photo_show_date_weight_body), style = typography.regular11, color = colors.muted)
                 }
-                ActivitySwitch(
+                CommonSwitch(
                     isOn = isOverlayShown,
                     description = stringResource(resource = Res.string.photo_show_date_weight),
                     onToggle = { isOverlayShown = !isOverlayShown }

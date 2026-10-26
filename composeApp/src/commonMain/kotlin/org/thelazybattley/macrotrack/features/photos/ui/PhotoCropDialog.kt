@@ -60,7 +60,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.thelazybattley.macrotrack.core.platform.CropRect
 import org.thelazybattley.macrotrack.core.platform.PhotoStorage
-import org.thelazybattley.macrotrack.features.activity.ui.ActivitySwitch
+import org.thelazybattley.macrotrack.ui.common.CommonSwitch
 import org.thelazybattley.macrotrack.features.photos.CROP_ASPECT
 import org.thelazybattley.macrotrack.features.photos.CropPlacement
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
@@ -140,7 +140,7 @@ internal fun PhotoCropDialog(
                         color = Color.White,
                         modifier = Modifier.weight(weight = 1f)
                     )
-                    ActivitySwitch(
+                    CommonSwitch(
                         isOn = isGhostOn,
                         description = stringResource(resource = Res.string.photo_camera_ghost),
                         onToggle = { isGhostOn = !isGhostOn }

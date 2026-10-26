@@ -6,7 +6,6 @@ import kotlinx.serialization.json.Json
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.domain.model.Ingredient
 import org.thelazybattley.macrotrack.domain.model.PlanFood
-import org.thelazybattley.macrotrack.domain.model.RoutePoint
 
 class RoomConverters {
     @TypeConverter
@@ -36,16 +35,6 @@ class RoomConverters {
 
     @TypeConverter
     fun toPlanFoodList(value: String): List<PlanFood> {
-        return Json.decodeFromString(value)
-    }
-
-    @TypeConverter
-    fun fromRoutePointList(value: List<RoutePoint>): String {
-        return Json.encodeToString(value)
-    }
-
-    @TypeConverter
-    fun toRoutePointList(value: String): List<RoutePoint> {
         return Json.decodeFromString(value)
     }
 

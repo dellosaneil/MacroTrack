@@ -5,14 +5,12 @@ import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.DailyGoal
-import org.thelazybattley.macrotrack.domain.model.DayActivity
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodLogCopy
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlannedFood
-import org.thelazybattley.macrotrack.domain.model.StepGoal
 import org.thelazybattley.macrotrack.domain.model.WeekBalance
 
 data class FoodLogViewState(
@@ -48,7 +46,7 @@ data class FoodLogViewState(
     val entryEdit: EntryEdit? = null,
     /** True when the streak has earned asking for a store rating and the user hasn't been asked lately. */
     val isReviewDue: Boolean = false,
-    /** Monday to Sunday so far, beside Steps; it opens the check-in. */
+    /** Monday to Sunday so far; it opens the check-in. */
     val weekBalance: WeekBalance? = null,
     /** The check-in has a target change the user hasn't looked at yet. */
     val isNewCheckInSuggestion: Boolean = false,
@@ -57,14 +55,7 @@ data class FoodLogViewState(
     /** Food planned for today that waits for Ate it or Skip, and what was already done with it. */
     val plannedToday: List<PlannedFood> = emptyList(),
     /** Planned food just marked eaten, shown with Undo until it's dismissed. */
-    val plannedToast: PlannedToast? = null,
-    /** Today's steps, walks and runs for the steps card. */
-    val todayActivity: DayActivity = DayActivity(totalSteps = 0, sessions = emptyList()),
-    val stepGoal: Int = StepGoal.DEFAULT,
-    /** All-day step counting is on, so the steps card says it's counting. */
-    val isCountingSteps: Boolean = true,
-    /** Burned calories added on top of today's budget: zero unless turned on with Pro. */
-    val budgetBurn: Int = 0
+    val plannedToast: PlannedToast? = null
 )
 
 data class FoodLogFoodListByMealType(

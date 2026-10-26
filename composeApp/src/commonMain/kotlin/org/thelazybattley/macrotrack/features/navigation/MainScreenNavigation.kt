@@ -1,6 +1,5 @@
 package org.thelazybattley.macrotrack.features.navigation
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -16,7 +15,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.thelazybattley.macrotrack.core.telemetry.TrackScreenViews
-import org.thelazybattley.macrotrack.features.activity.ui.RecordingBar
 import org.thelazybattley.macrotrack.features.foodlog.ui.FoodLogTabScreen
 import org.thelazybattley.macrotrack.features.insights.ui.InsightsScreen
 import org.thelazybattley.macrotrack.features.profile.ui.ProfileScreen
@@ -68,16 +66,12 @@ fun MainScreenNavigation(
         modifier = modifier,
         containerColor = colors.background,
         bottomBar = {
-            Column {
-                // Shown on every tab while a walk or run records, just above the navigation.
-                RecordingBar()
-                MacroBottomNavBar(
-                    modifier = Modifier.tourTarget(target = TourTarget.BOTTOM_NAVIGATION),
-                    selectedDestination = currentDestination,
-                ) { destination ->
-                    if (currentDestination.route == destination.route) return@MacroBottomNavBar
-                    navController.navigate(route = destination.route)
-                }
+            MacroBottomNavBar(
+                modifier = Modifier.tourTarget(target = TourTarget.BOTTOM_NAVIGATION),
+                selectedDestination = currentDestination,
+            ) { destination ->
+                if (currentDestination.route == destination.route) return@MacroBottomNavBar
+                navController.navigate(route = destination.route)
             }
         }
     ) { innerPadding ->

@@ -8,9 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -88,7 +86,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.thelazybattley.macrotrack.core.isActivityEnabled
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.platform.rememberReviewPrompt
 import kotlinx.coroutines.delay
@@ -107,9 +104,7 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewModel
 import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
 import org.thelazybattley.macrotrack.features.pro.ui.ProTrialBanner
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
-import org.thelazybattley.macrotrack.features.checkin.ui.WeekBalanceLine
 import org.thelazybattley.macrotrack.features.checkin.ui.WeekBalanceTile
-import org.thelazybattley.macrotrack.features.activity.ui.TodayStepsCard
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
@@ -118,10 +113,6 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.roundToInt
-import org.koin.compose.koinInject
-import org.thelazybattley.macrotrack.features.activity.ActivityRecorder
-import org.thelazybattley.macrotrack.features.activity.Recording
-import org.thelazybattley.macrotrack.features.activity.ui.LiveRecordingCard
 
 @Composable
 fun FoodLogTabScreen(
@@ -130,8 +121,6 @@ fun FoodLogTabScreen(
 ) {
     val viewModel = koinViewModel<FoodLogViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
-    val recorder = koinInject<ActivityRecorder>()
-    val recording by recorder.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = Unit) {
         viewModel.onScreenShown()
@@ -172,10 +161,6 @@ fun FoodLogTabScreen(
             onNavigate(AppDestinations.Root.CopyFrom.createRoute(mealType = mealType.name, logDate = viewState.selectedDate))
         },
         onOpenPlan = { onNavigate(AppDestinations.Root.MealPlan.createRoute()) },
-        onOpenSteps = { onNavigate(AppDestinations.Root.Steps.route) },
-        recording = recording,
-        onToggleRecordingPause = recorder::togglePause,
-        onOpenRecording = { finish -> recorder.requestOpen(finish = finish) },
         onRepeat = { mealType ->
             onNavigate(AppDestinations.Root.RepeatMeal.createRoute(sourceDate = viewState.selectedDate, mealType = mealType.name))
         }
@@ -195,12 +180,6 @@ private fun FoodLogTabScreen(
     onCopyTo: (MealType?) -> Unit,
     onCopyFrom: (MealType) -> Unit,
     onOpenPlan: () -> Unit,
-    onOpenSteps: () -> Unit,
-    /** The walk or run being recorded, which turns the steps card into a live one. */
-    recording: Recording? = null,
-    onToggleRecordingPause: () -> Unit = {},
-    /** Opens the live map, with its save sheet up when finishing. */
-    onOpenRecording: (finish: Boolean) -> Unit = {},
     /** Sets up repeating [MealType] from the selected day. */
     onRepeat: (MealType) -> Unit
 ) {
@@ -253,31 +232,7 @@ private fun FoodLogTabScreen(
             )
             // The suggestion is Pro, so free users never see "New".
             val isNewSuggestion = viewState.isNewCheckInSuggestion && LocalProAccess.current.isActive
-            if (isToday && isActivityEnabled && recording != null) {
-                LiveRecordingCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .tourTarget(target = TourTarget.TODAY_STEPS),
-                    recording = recording,
-                    todaySteps = viewState.todayActivity.totalSteps,
-                    goal = viewState.stepGoal,
-                    onTogglePause = onToggleRecordingPause,
-                    onOpen = { onOpenRecording(false) },
-                    onFinish = { onOpenRecording(true) },
-                    onOpenSteps = onOpenSteps
-                )
-                viewState.weekBalance?.let { balance ->
-                    WeekBalanceLine(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .tourTarget(target = TourTarget.TODAY_WEEK),
-                        balance = balance,
-                        isNewSuggestion = isNewSuggestion,
-                        onClick = onOpenCheckIn
-                    )
-                }
-            } else if (isToday && !isActivityEnabled) {
-                // Steps aren't shipped yet, so the week balance fills the row.
+            if (isToday) {
                 viewState.weekBalance?.let { balance ->
                     WeekBalanceTile(
                         modifier = Modifier
@@ -287,36 +242,6 @@ private fun FoodLogTabScreen(
                         isNewSuggestion = isNewSuggestion,
                         onClick = onOpenCheckIn
                     )
-                }
-            } else if (isToday) {
-                // Side by side, so Meals stays on the first screen.
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(intrinsicSize = IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
-                ) {
-                    TodayStepsCard(
-                        modifier = Modifier
-                            .weight(weight = 1f)
-                            .fillMaxHeight()
-                            .tourTarget(target = TourTarget.TODAY_STEPS),
-                        steps = viewState.todayActivity.totalSteps,
-                        goal = viewState.stepGoal,
-                        isCounting = viewState.isCountingSteps,
-                        onClick = onOpenSteps
-                    )
-                    viewState.weekBalance?.let { balance ->
-                        WeekBalanceTile(
-                            modifier = Modifier
-                                .weight(weight = 1f)
-                                .fillMaxHeight()
-                                .tourTarget(target = TourTarget.TODAY_WEEK),
-                            balance = balance,
-                            isNewSuggestion = isNewSuggestion,
-                            onClick = onOpenCheckIn
-                        )
-                    }
                 }
             }
             ProTrialBanner(modifier = Modifier.fillMaxWidth())
@@ -989,7 +914,6 @@ private fun PreviewFoodLogTabScreen() {
             onCopyTo = {},
             onCopyFrom = {},
             onOpenPlan = {},
-            onOpenSteps = {},
             onRepeat = {}
         )
     }

@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import org.thelazybattley.macrotrack.data.local.entity.ActivitySessionEntity
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
@@ -15,7 +14,6 @@ import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
-import org.thelazybattley.macrotrack.data.local.entity.StepHourEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 
@@ -59,12 +57,6 @@ abstract class BackupDao {
     @Query("SELECT * FROM RepeatingMealEntity")
     abstract suspend fun getRepeatingMeals(): List<RepeatingMealEntity>
 
-    @Query("SELECT * FROM StepHourEntity")
-    abstract suspend fun getStepHours(): List<StepHourEntity>
-
-    @Query("SELECT * FROM ActivitySessionEntity")
-    abstract suspend fun getActivitySessions(): List<ActivitySessionEntity>
-
     @Query("DELETE FROM FoodEntity")
     protected abstract suspend fun deleteFoods()
 
@@ -94,12 +86,6 @@ abstract class BackupDao {
 
     @Query("DELETE FROM FavoriteEntity")
     protected abstract suspend fun deleteFavorites()
-
-    @Query("DELETE FROM StepHourEntity")
-    protected abstract suspend fun deleteStepHours()
-
-    @Query("DELETE FROM ActivitySessionEntity")
-    protected abstract suspend fun deleteActivitySessions()
 
     @Query("DELETE FROM AppFlagEntity WHERE `key` NOT IN (:keepKeys)")
     protected abstract suspend fun deleteAppFlagsExcept(keepKeys: List<String>)
@@ -137,12 +123,6 @@ abstract class BackupDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     protected abstract suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    protected abstract suspend fun insertStepHours(stepHours: List<StepHourEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    protected abstract suspend fun insertActivitySessions(activitySessions: List<ActivitySessionEntity>)
-
     /** The food log, with the meal plan and repeating meals that feed it. */
     @Transaction
     open suspend fun deleteFoodLogsAndPlans() {
@@ -151,13 +131,11 @@ abstract class BackupDao {
         deleteRepeatingMeals()
     }
 
-    /** Weigh-ins and measurements, with the steps, walks and runs recorded alongside them. */
+    /** Weigh-ins and measurements. */
     @Transaction
     open suspend fun deleteBodyRecords() {
         deleteWeights()
         deleteMeasurements()
-        deleteStepHours()
-        deleteActivitySessions()
     }
 
     @Transaction
@@ -191,8 +169,6 @@ abstract class BackupDao {
         deleteFavorites()
         deletePlannedFoods()
         deleteRepeatingMeals()
-        deleteStepHours()
-        deleteActivitySessions()
         deleteAppFlagsExcept(keepKeys = deviceFlagKeys)
         insertFoods(foods = snapshot.foods)
         insertRecipes(recipes = snapshot.recipes)
@@ -204,8 +180,6 @@ abstract class BackupDao {
         insertFavorites(favorites = snapshot.favorites)
         insertPlannedFoods(plannedFoods = snapshot.plannedFoods)
         insertRepeatingMeals(repeatingMeals = snapshot.repeatingMeals)
-        insertStepHours(stepHours = snapshot.stepHours)
-        insertActivitySessions(activitySessions = snapshot.activitySessions)
         insertAppFlags(appFlags = snapshot.appFlags.filter { it.key !in deviceFlagKeys })
     }
 }
@@ -222,7 +196,5 @@ data class DatabaseSnapshot(
     val favorites: List<FavoriteEntity>,
     val appFlags: List<AppFlagEntity>,
     val plannedFoods: List<PlannedFoodEntity>,
-    val repeatingMeals: List<RepeatingMealEntity>,
-    val stepHours: List<StepHourEntity>,
-    val activitySessions: List<ActivitySessionEntity>
+    val repeatingMeals: List<RepeatingMealEntity>
 )
