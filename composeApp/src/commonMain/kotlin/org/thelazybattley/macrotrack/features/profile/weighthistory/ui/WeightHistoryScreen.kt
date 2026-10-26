@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory.ui
 
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import androidx.compose.foundation.background
 import org.thelazybattley.macrotrack.ui.common.inWeightUnit
 import androidx.compose.foundation.border
@@ -129,7 +131,9 @@ private fun WeightHistoryScreen(
             verticalArrangement = Arrangement.spacedBy(space = 14.dp)
         ) {
             WeightHistoryTimeRange(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tourTarget(target = TourTarget.WEIGHT_HISTORY_RANGE),
                 selectedTimeRange = viewState.timeRange,
                 onSelectTimeRange = callbacks::onTimePeriodSelect
             )
@@ -146,12 +150,14 @@ private fun WeightHistoryScreen(
                 EmptyPeriod()
                 return@Column
             }
-            ChartCard(
-                period = period,
-                weightList = viewState.periodWeights,
-                goalPhases = viewState.goalPhases,
-                onOpenMovingAverage = onOpenMovingAverage
-            )
+            Box(modifier = Modifier.tourTarget(target = TourTarget.WEIGHT_HISTORY_CHART)) {
+                ChartCard(
+                    period = period,
+                    weightList = viewState.periodWeights,
+                    goalPhases = viewState.goalPhases,
+                    onOpenMovingAverage = onOpenMovingAverage
+                )
+            }
             WeightHistoryAverageCard(modifier = Modifier.fillMaxWidth(), viewState = viewState)
             WeightHistoryStatistics(modifier = Modifier.fillMaxWidth(), weightList = viewState.periodWeights)
             WeightHistoryEntries(

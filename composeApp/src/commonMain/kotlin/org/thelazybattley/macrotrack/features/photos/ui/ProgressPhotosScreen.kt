@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.photos.ui
 
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -160,9 +162,15 @@ private fun ProgressPhotosContent(
             )
             AccentPillButton(text = stringResource(resource = Res.string.photo), onClick = onAddPhoto)
         }
-        viewState.hero?.let { hero -> HeroCard(summary = hero, onCompare = { onOpenCompare(hero.album.id) }) }
+        viewState.hero?.let { hero ->
+            Box(modifier = Modifier.tourTarget(target = TourTarget.PHOTOS_HERO)) {
+                HeroCard(summary = hero, onCompare = { onOpenCompare(hero.album.id) })
+            }
+        }
         if (viewState.isLoaded && viewState.albums.isEmpty()) {
-            StartAlbumCard(onNewAlbum = onNewAlbum)
+            Box(modifier = Modifier.tourTarget(target = TourTarget.PHOTOS_ALBUMS)) {
+                StartAlbumCard(onNewAlbum = onNewAlbum)
+            }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -179,16 +187,21 @@ private fun ProgressPhotosContent(
         }
         // Two to a row, with New album taking the next free spot.
         val tiles: List<AlbumSummary?> = viewState.albums + null
-        tiles.chunked(size = 2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(space = 12.dp)) {
-                row.forEach { summary ->
-                    if (summary == null) {
-                        NewAlbumTile(modifier = Modifier.weight(weight = 1f), onClick = onNewAlbum)
-                    } else {
-                        AlbumTile(modifier = Modifier.weight(weight = 1f), summary = summary, onClick = { onOpenAlbum(summary.album.id) })
+        Column(
+            modifier = Modifier.tourTarget(target = TourTarget.PHOTOS_ALBUMS),
+            verticalArrangement = Arrangement.spacedBy(space = 16.dp)
+        ) {
+            tiles.chunked(size = 2).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(space = 12.dp)) {
+                    row.forEach { summary ->
+                        if (summary == null) {
+                            NewAlbumTile(modifier = Modifier.weight(weight = 1f), onClick = onNewAlbum)
+                        } else {
+                            AlbumTile(modifier = Modifier.weight(weight = 1f), summary = summary, onClick = { onOpenAlbum(summary.album.id) })
+                        }
                     }
+                    if (row.size == 1) Box(modifier = Modifier.weight(weight = 1f))
                 }
-                if (row.size == 1) Box(modifier = Modifier.weight(weight = 1f))
             }
         }
         PrivacyNote()

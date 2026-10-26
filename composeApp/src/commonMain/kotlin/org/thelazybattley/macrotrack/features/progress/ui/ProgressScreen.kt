@@ -144,6 +144,7 @@ private fun ProgressScreen(
             onOpenHistory = { onNavigate(AppDestinations.Profile.WeightHistory.route) }
         )
         PhotosCard(
+            modifier = Modifier.tourTarget(target = TourTarget.PROGRESS_PHOTOS),
             albums = viewState.photoAlbums,
             onAdd = {
                 val album = viewState.photoAlbums.mostRecentlyUsed()
@@ -205,9 +206,9 @@ private fun QuickAction(
 }
 
 @Composable
-private fun ProgressCard(content: @Composable () -> Unit) {
+private fun ProgressCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(size = 24.dp))
             .background(color = colors.surface)
@@ -318,6 +319,7 @@ private fun Sparkline(weights: List<Weight>) {
 
 @Composable
 private fun PhotosCard(
+    modifier: Modifier = Modifier,
     albums: List<AlbumSummary>,
     onAdd: () -> Unit,
     onOpenAlbum: (Long) -> Unit,
@@ -328,7 +330,7 @@ private fun PhotosCard(
     val latest = albums.mapNotNull { summary -> summary.latest?.let { summary to it } }
         .sortedByDescending { (_, item) -> item.photo.date }
     val photoCount = albums.sumOf { it.photos.size }
-    ProgressCard {
+    ProgressCard(modifier = modifier) {
         Row(verticalAlignment = Alignment.Top) {
             Column(modifier = Modifier.weight(weight = 1f)) {
                 Text(text = stringResource(resource = Res.string.progress_photos), style = typography.regular11, color = colors.muted)

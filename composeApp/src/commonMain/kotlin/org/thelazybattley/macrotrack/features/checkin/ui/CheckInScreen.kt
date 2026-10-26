@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.checkin.ui
 
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -182,6 +184,7 @@ private fun CheckInScreen(
             // Free for everyone, whatever state the measured burn is in.
             viewState.weekBalance?.let { balance ->
                 WeekBalanceCard(
+                    modifier = Modifier.tourTarget(target = TourTarget.CHECK_IN_WEEK),
                     balance = balance,
                     selectedDay = viewState.selectedDay,
                     canGoBack = viewState.weeksAgo < WEEK_BALANCE_WEEKS - 1,

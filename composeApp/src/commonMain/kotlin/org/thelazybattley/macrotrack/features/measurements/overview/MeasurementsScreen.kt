@@ -1,5 +1,8 @@
 package org.thelazybattley.macrotrack.features.measurements.overview
 
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -113,10 +116,14 @@ private fun MeasurementsScreen(
             verticalArrangement = Arrangement.spacedBy(space = 16.dp)
         ) {
             if (viewState.summaries.isEmpty()) {
-                EmptyMeasurements(onLog = onLog)
+                Box(modifier = Modifier.tourTarget(target = TourTarget.MEASUREMENTS_SUMMARY)) {
+                    EmptyMeasurements(onLog = onLog)
+                }
                 return@Column
             }
-            SummaryCard(viewState = viewState, onUnitSelected = onUnitSelected)
+            Box(modifier = Modifier.tourTarget(target = TourTarget.MEASUREMENTS_SUMMARY)) {
+                SummaryCard(viewState = viewState, onUnitSelected = onUnitSelected)
+            }
             MeasurementGroup.entries.forEach { group ->
                 val rows = MeasurementType.entries.filter { it.group == group }.mapNotNull { viewState.summaries[it] }
                 if (rows.isEmpty()) return@forEach

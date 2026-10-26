@@ -11,6 +11,7 @@ import org.thelazybattley.macrotrack.core.platform.StepNotifier
 import org.thelazybattley.macrotrack.domain.usecase.activity.ScheduleStepNudgeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.activity.TrackStepsUseCase
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.features.activity.ActivityRecorder
 import org.thelazybattley.macrotrack.features.activity.ui.ActivityDetailScreen
 import org.thelazybattley.macrotrack.features.activity.ui.ActivityHistoryScreen
@@ -117,6 +118,8 @@ import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import org.koin.compose.koinInject
 import androidx.compose.ui.text.intl.Locale
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.core.isActivityEnabled
+import org.thelazybattley.macrotrack.domain.usecase.photo.GetProgressPhotosUseCase
 import org.thelazybattley.macrotrack.core.isAnalyticsAllowed
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
@@ -154,7 +157,7 @@ fun AppBottomNav() {
     val motionPermission = rememberMotionPermissionState()
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(key1 = motionPermission.isGranted) {
-        if (motionPermission.isGranted) {
+        if (isActivityEnabled && motionPermission.isGranted) {
             lifecycleOwner.repeatOnLifecycle(state = Lifecycle.State.STARTED) { trackSteps() }
         }
     }
@@ -163,7 +166,7 @@ fun AppBottomNav() {
     val recorder = koinInject<ActivityRecorder>()
     // A walk or run that was going when the app was closed carries on.
     LaunchedEffect(key1 = Unit) {
-        recorder.restore()
+        if (isActivityEnabled) recorder.restore()
     }
     LaunchedEffect(key1 = Unit) {
         recorder.openRequests.collect {
@@ -177,14 +180,14 @@ fun AppBottomNav() {
     // A restart clears the evening reminder and the steps notification's refresh, so both are set again each time
     // the app opens, and whenever their settings change.
     LaunchedEffect(key1 = Unit) {
-        scheduleStepNudge()
+        if (isActivityEnabled) launch { scheduleStepNudge() }
         schedulePhotoReminders()
     }
     // Permission given after a setting was switched on: show what's already turned on.
     val stepNotifier = koinInject<StepNotifier>()
     val notificationPermission = rememberNotificationPermissionState()
     LaunchedEffect(key1 = notificationPermission.isGranted) {
-        if (notificationPermission.isGranted) stepNotifier.refresh()
+        if (isActivityEnabled && notificationPermission.isGranted) stepNotifier.refresh()
     }
     // Buttons on the steps notification and alerts, once first launch is out of the way.
     val appLinks = koinInject<AppLinks>()
@@ -222,9 +225,20 @@ fun AppBottomNav() {
     SideEffect {
         tourTargets.step = tourState.step
     }
+    val getProgressPhotos = koinInject<GetProgressPhotosUseCase>()
     LaunchedEffect(key1 = tourState.step?.screen) {
         val screen = tourState.step?.screen ?: return@LaunchedEffect
-        navController.showTourScreen(screen = screen) { tab -> tabRequest = TabRequest(tab = tab) }
+        // Before & after needs two photos in one album: the album added to most recently.
+        val compareAlbumId = if (screen == TourScreen.PHOTO_COMPARE) {
+            getProgressPhotos().first()
+                .groupBy { photo -> photo.albumId }
+                .filterValues { photos -> photos.size >= 2 }
+                .maxByOrNull { (_, photos) -> photos.maxOf { it.createdAtMillis } }
+                ?.key
+        } else {
+            null
+        }
+        navController.showTourScreen(screen = screen, compareAlbumId = compareAlbumId) { tab -> tabRequest = TabRequest(tab = tab) }
     }
     LaunchedEffect(key1 = tourState.outcome) {
         if (tourState.outcome == null) return@LaunchedEffect
@@ -916,24 +930,52 @@ private fun NavHostController.popToLogScreen() {
     }
 }
 
-/** Shows the screen a tour step talks about, starting from the main screen so Back never leads somewhere odd. */
+/**
+ * Shows the screen a tour step talks about, starting from the main screen so Back never leads somewhere odd.
+ * [compareAlbumId] is the album Before & after opens on; without one the photos screen shows instead.
+ */
 private fun NavHostController.showTourScreen(
     screen: TourScreen,
+    compareAlbumId: Long? = null,
     onSelectTab: (AppDestinations.BottomNavigation) -> Unit
 ) {
     val currentRoute = currentBackStackEntry?.destination?.route
+    fun open(pattern: String, route: String) {
+        if (currentRoute == pattern) return
+        popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+        navigate(route = route)
+    }
     when (screen) {
-        TourScreen.ADD_MEAL -> {
-            if (currentRoute == AppDestinations.Root.AddMeal.routeWithArgs) return
-            popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
-            navigate(route = AppDestinations.Root.AddMeal.createRoute(mealType = MealType.BREAKFAST.name))
+        TourScreen.ADD_MEAL -> open(
+            pattern = AppDestinations.Root.AddMeal.routeWithArgs!!,
+            route = AppDestinations.Root.AddMeal.createRoute(mealType = MealType.BREAKFAST.name)
+        )
+        TourScreen.CHECK_IN -> open(pattern = AppDestinations.Root.CheckIn.route, route = AppDestinations.Root.CheckIn.route)
+        TourScreen.WEIGHT_HISTORY -> open(
+            pattern = AppDestinations.Profile.WeightHistory.route,
+            route = AppDestinations.Profile.WeightHistory.route
+        )
+        TourScreen.MOVING_AVERAGE -> open(
+            pattern = AppDestinations.Root.MovingAverage.route,
+            route = AppDestinations.Root.MovingAverage.route
+        )
+        TourScreen.MEASUREMENTS -> open(
+            pattern = AppDestinations.Profile.BodyMeasurements.route,
+            route = AppDestinations.Profile.BodyMeasurements.route
+        )
+        TourScreen.PHOTO_COMPARE -> if (compareAlbumId != null) {
+            open(
+                pattern = AppDestinations.Root.PhotoCompare.routeWithArgs!!,
+                route = AppDestinations.Root.PhotoCompare.createRoute(albumId = compareAlbumId)
+            )
+        } else {
+            showTourScreen(screen = TourScreen.PHOTOS, onSelectTab = onSelectTab)
         }
-        TourScreen.MOVING_AVERAGE -> {
-            if (currentRoute == AppDestinations.Root.MovingAverage.route) return
-            popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
-            navigate(route = AppDestinations.Root.MovingAverage.route)
-        }
-        else -> {
+        TourScreen.PHOTOS -> open(
+            pattern = AppDestinations.Root.ProgressPhotos.routeWithArgs!!,
+            route = AppDestinations.Root.ProgressPhotos.createRoute()
+        )
+        TourScreen.LOG, TourScreen.INSIGHTS, TourScreen.PROGRESS, TourScreen.PROFILE -> {
             popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
             screen.tab?.let(onSelectTab)
         }

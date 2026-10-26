@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.core.isActivityEnabled
 import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import org.thelazybattley.macrotrack.ui.common.CommonUnitSystemToggle
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
@@ -133,11 +134,13 @@ fun ProfileAccount(
                 label = Res.string.body_measurements,
                 onClick = { onNavigate(ProfileSectionEnum.BODY_MEASUREMENTS) }
             )
-            HorizontalDivider(thickness = 1.dp, color = colors.divider)
-            AccountRow(
-                label = Res.string.steps_settings_title,
-                onClick = onOpenStepsSettings
-            )
+            if (isActivityEnabled) {
+                HorizontalDivider(thickness = 1.dp, color = colors.divider)
+                AccountRow(
+                    label = Res.string.steps_settings_title,
+                    onClick = onOpenStepsSettings
+                )
+            }
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             AccountRow(
                 label = Res.string.target_weight,

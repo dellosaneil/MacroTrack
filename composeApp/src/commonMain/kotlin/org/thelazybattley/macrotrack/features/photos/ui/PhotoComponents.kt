@@ -1,6 +1,12 @@
 package org.thelazybattley.macrotrack.features.photos.ui
 
 import androidx.compose.foundation.Image
+import org.thelazybattley.macrotrack.data.local.tour.TOUR_SAMPLE_PHOTO_PREFIX
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -91,6 +97,10 @@ internal fun PhotoImage(
     contentScale: ContentScale = ContentScale.Crop,
     alpha: Float = 1f
 ) {
+    if (fileName.startsWith(prefix = TOUR_SAMPLE_PHOTO_PREFIX)) {
+        SamplePhoto(modifier = modifier, fileName = fileName, alpha = alpha)
+        return
+    }
     val storage = koinInject<PhotoStorage>()
     // produceState keeps its value when the keys change, so a tile handed another photo (after one is added or
     // deleted ahead of it) would go on showing the old one; a fresh state per photo starts from that photo instead.
@@ -116,6 +126,58 @@ internal fun PhotoImage(
         }
     }
 }
+
+/**
+ * Stands in for the tour's example photos, which have no image file: a figure against a plain wall that slims a
+ * little from one photo to the next, so first vs latest and the before & after slider show a change.
+ */
+@Composable
+private fun SamplePhoto(modifier: Modifier, fileName: String, alpha: Float) {
+    val progress = (fileName.removePrefix(prefix = TOUR_SAMPLE_PHOTO_PREFIX).toIntOrNull() ?: 0) % SAMPLE_PHOTO_STEPS / (SAMPLE_PHOTO_STEPS - 1f)
+    Canvas(modifier = modifier.background(color = SampleWall)) {
+        drawRect(brush = Brush.verticalGradient(colors = listOf(SampleWall, SampleWallShade)), alpha = alpha)
+        drawRect(color = SampleFloor, topLeft = Offset(x = 0f, y = size.height * 0.86f), alpha = alpha)
+        val centerX = size.width / 2
+        val unit = minOf(size.width, size.height * 0.62f)
+        val headRadius = unit * 0.1f
+        val headY = size.height * 0.2f
+        drawCircle(color = SampleFigure, radius = headRadius, center = Offset(x = centerX, y = headY), alpha = alpha)
+        val shoulderY = headY + headRadius * 1.7f
+        val shoulder = unit * 0.34f
+        val waist = unit * (0.27f - 0.06f * progress)
+        val hipY = size.height * 0.7f
+        val torso = Path().apply {
+            moveTo(x = centerX - shoulder, y = shoulderY + unit * 0.05f)
+            quadraticTo(x1 = centerX - shoulder, y1 = shoulderY, x2 = centerX - shoulder * 0.6f, y2 = shoulderY)
+            lineTo(x = centerX + shoulder * 0.6f, y = shoulderY)
+            quadraticTo(x1 = centerX + shoulder, y1 = shoulderY, x2 = centerX + shoulder, y2 = shoulderY + unit * 0.05f)
+            quadraticTo(x1 = centerX + waist, y1 = size.height * 0.5f, x2 = centerX + waist * 1.05f, y2 = hipY)
+            lineTo(x = centerX + waist * 0.95f, y = size.height)
+            lineTo(x = centerX - waist * 0.95f, y = size.height)
+            lineTo(x = centerX - waist * 1.05f, y = hipY)
+            quadraticTo(x1 = centerX - waist, y1 = size.height * 0.5f, x2 = centerX - shoulder, y2 = shoulderY + unit * 0.05f)
+            close()
+        }
+        drawPath(path = torso, color = SampleFigure, alpha = alpha)
+        val armWidth = unit * 0.09f
+        listOf(-1f, 1f).forEach { side ->
+            drawLine(
+                color = SampleFigure,
+                start = Offset(x = centerX + side * shoulder * 0.92f, y = shoulderY + unit * 0.06f),
+                end = Offset(x = centerX + side * (shoulder + unit * 0.06f), y = hipY),
+                strokeWidth = armWidth,
+                cap = StrokeCap.Round,
+                alpha = alpha
+            )
+        }
+    }
+}
+
+private const val SAMPLE_PHOTO_STEPS = 5
+private val SampleWall = Color(0xFFCFC8BC)
+private val SampleWallShade = Color(0xFFB3AA9C)
+private val SampleFloor = Color(0xFF9C9284)
+private val SampleFigure = Color(0xFF5E5149)
 
 /** A photo tile with its date and weight along the bottom, like the grid, hero and Progress card show. */
 @Composable

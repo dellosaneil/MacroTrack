@@ -57,6 +57,7 @@ import org.thelazybattley.macrotrack.features.pro.ProCallbacks
 import org.thelazybattley.macrotrack.features.pro.ProFeature
 import org.thelazybattley.macrotrack.features.pro.ProMessage
 import org.thelazybattley.macrotrack.features.pro.ProViewState
+import org.thelazybattley.macrotrack.features.pro.offeredProFeatures
 import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
 import org.thelazybattley.macrotrack.ui.common.CommonScreenHeader
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
@@ -138,7 +139,7 @@ fun PaywallScreen(
                     .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 20.dp))
                     .padding(vertical = 6.dp)
             ) {
-                ProFeature.entries
+                offeredProFeatures(feature = feature)
                     .sortedByDescending { it == feature }
                     .forEach { item -> FeatureRow(feature = item, isHighlighted = item == feature && !isOwned) }
             }

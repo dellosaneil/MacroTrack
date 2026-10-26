@@ -61,6 +61,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.graphics.PathEffect
+import macrotrack.composeapp.generated.resources.tour_example_data
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.back
 import macrotrack.composeapp.generated.resources.ic_check
@@ -256,7 +259,7 @@ private fun TourCard(
     val shape = RoundedCornerShape(size = 24.dp)
     val surface = colors.surface
     val title = stringResource(resource = step.title)
-    val middleCount = TourStep.entries.size - 2
+    val middleCount = TourStep.shown.size - 2
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -305,16 +308,19 @@ private fun TourCard(
                 )
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
             Text(
                 text = stringResource(resource = step.screenLabel).uppercase(),
                 style = typography.bold12,
                 color = colors.accentInk,
-                modifier = Modifier.weight(weight = 1f)
+                maxLines = 1
             )
+            // The screens behind the tour show the sample user's log, not the person's own.
+            if (step.targets.isNotEmpty()) ExampleDataTag()
+            Spacer(modifier = Modifier.weight(weight = 1f))
             if (!step.isFirst && !step.isLast) {
                 Text(
-                    text = stringResource(resource = Res.string.tour_step_of, step.ordinal, middleCount),
+                    text = stringResource(resource = Res.string.tour_step_of, step.index, middleCount),
                     style = typography.regular11,
                     color = colors.muted
                 )
@@ -339,7 +345,7 @@ private fun TourCard(
                 text = when {
                     step.isFirst -> Res.string.tour_start
                     step.isLast -> Res.string.tour_start_logging
-                    step.ordinal == TourStep.entries.lastIndex - 1 -> Res.string.tour_finish
+                    step.index == TourStep.shown.lastIndex - 1 -> Res.string.tour_finish
                     else -> Res.string.tour_next
                 },
                 onClick = callbacks::onNextClicked
@@ -349,19 +355,39 @@ private fun TourCard(
 }
 
 @Composable
+private fun ExampleDataTag() {
+    val dashed = colors.dashed
+    Text(
+        text = stringResource(resource = Res.string.tour_example_data),
+        style = typography.bold11,
+        color = colors.muted,
+        maxLines = 1,
+        modifier = Modifier
+            .drawBehind {
+                drawRoundRect(
+                    color = dashed,
+                    style = Stroke(width = 1.dp.toPx(), pathEffect = PathEffect.dashPathEffect(intervals = floatArrayOf(4.dp.toPx(), 3.dp.toPx()))),
+                    cornerRadius = CornerRadius(x = 6.dp.toPx(), y = 6.dp.toPx())
+                )
+            }
+            .padding(horizontal = 7.dp, vertical = 2.dp)
+    )
+}
+
+@Composable
 private fun StepDots(current: TourStep) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
     ) {
-        TourStep.entries.forEach { step ->
+        TourStep.shown.forEach { step ->
             val weight by animateFloatAsState(targetValue = if (step == current) 3f else 1f)
             Box(
                 modifier = Modifier
                     .weight(weight = weight)
                     .height(height = 6.dp)
                     .background(
-                        color = if (step.ordinal <= current.ordinal) colors.accent else colors.divider,
+                        color = if (step.index <= current.index) colors.accent else colors.divider,
                         shape = CircleShape
                     )
             )

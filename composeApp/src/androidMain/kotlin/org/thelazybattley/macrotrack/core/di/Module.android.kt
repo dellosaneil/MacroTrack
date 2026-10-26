@@ -24,10 +24,14 @@ import org.thelazybattley.macrotrack.core.platform.StepSensor
 import org.thelazybattley.macrotrack.core.telemetry.FirebaseTelemetry
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.data.local.AppDatabase
+import org.koin.core.qualifier.named
 
 actual val platformModule: Module = module {
     single {
         getDatabaseBuilder(get())
+    }
+    factory(qualifier = named(name = SAMPLE_DATABASE)) {
+        Room.inMemoryDatabaseBuilder<AppDatabase>(context = get<Context>().applicationContext)
     }
     // Created with Koin so it sees the first activity resume; it needs that activity to open the purchase sheet.
     single<BillingService>(createdAtStart = true) { PlayBillingService(context = get(), telemetry = get()) }

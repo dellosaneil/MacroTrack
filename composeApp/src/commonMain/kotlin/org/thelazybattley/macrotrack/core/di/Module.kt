@@ -79,6 +79,31 @@ import org.thelazybattley.macrotrack.features.calendar.CalendarViewModel
 import org.thelazybattley.macrotrack.features.profile.pastgoal.PastGoalViewModel
 import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
 import org.koin.dsl.module
+import org.koin.core.qualifier.named
+import org.thelazybattley.macrotrack.data.local.dao.ActivityDao
+import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
+import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
+import org.thelazybattley.macrotrack.data.local.dao.FoodDao
+import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
+import org.thelazybattley.macrotrack.data.local.dao.MealPlanDao
+import org.thelazybattley.macrotrack.data.local.dao.MeasurementDao
+import org.thelazybattley.macrotrack.data.local.dao.ProgressPhotoDao
+import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
+import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
+import org.thelazybattley.macrotrack.data.local.dao.WeightDao
+import org.thelazybattley.macrotrack.data.local.tour.TourActivityDao
+import org.thelazybattley.macrotrack.data.local.tour.TourDailyGoalDao
+import org.thelazybattley.macrotrack.data.local.tour.TourDatabaseSwitch
+import org.thelazybattley.macrotrack.data.local.tour.TourFavoriteDao
+import org.thelazybattley.macrotrack.data.local.tour.TourFoodDao
+import org.thelazybattley.macrotrack.data.local.tour.TourFoodLogDao
+import org.thelazybattley.macrotrack.data.local.tour.TourMealPlanDao
+import org.thelazybattley.macrotrack.data.local.tour.TourMeasurementDao
+import org.thelazybattley.macrotrack.data.local.tour.TourProgressPhotoDao
+import org.thelazybattley.macrotrack.data.local.tour.TourRecipeDao
+import org.thelazybattley.macrotrack.data.local.tour.TourSampleData
+import org.thelazybattley.macrotrack.data.local.tour.TourUserDetailsDao
+import org.thelazybattley.macrotrack.data.local.tour.TourWeightDao
 import org.thelazybattley.macrotrack.data.local.AppDatabase
 import org.thelazybattley.macrotrack.data.repository.FoodLogRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.FoodRepositoryImpl
@@ -201,21 +226,34 @@ import org.thelazybattley.macrotrack.features.photos.ProgressPhotosViewModel
 
 expect val platformModule: Module
 
+/** Names the in-memory database builder for the tour's example log; each platform provides it as a factory. */
+const val SAMPLE_DATABASE = "sample_database"
+
 val sharedModule = module {
     single<AppDatabase> { getRoomDatabase(get()) }
-    single { get<AppDatabase>().foodDao() }
-    single { get<AppDatabase>().recipeDao() }
-    single { get<AppDatabase>().userDetailsDao() }
-    single { get<AppDatabase>().foodLogDao() }
-    single { get<AppDatabase>().weightDao() }
-    single { get<AppDatabase>().measurementDao() }
-    single { get<AppDatabase>().dailyGoalDao() }
-    single { get<AppDatabase>().favoriteDao() }
+    // The first-run tour's example log, in a fresh in-memory database each time the tour starts.
+    single {
+        val scope = this
+        TourSampleData(
+            newDatabase = { getRoomDatabase(scope.get(qualifier = named(name = SAMPLE_DATABASE))) },
+            calculateMacrosGoalUseCase = get()
+        )
+    }
+    single { TourDatabaseSwitch(real = get(), sample = get()) }
+    // The DAOs behind the screens the tour shows follow the switch. Backup and app flags are always the user's own.
+    single<FoodDao> { TourFoodDao(db = get()) }
+    single<RecipeDao> { TourRecipeDao(db = get()) }
+    single<UserDetailsDao> { TourUserDetailsDao(db = get()) }
+    single<FoodLogDao> { TourFoodLogDao(db = get()) }
+    single<WeightDao> { TourWeightDao(db = get()) }
+    single<MeasurementDao> { TourMeasurementDao(db = get()) }
+    single<DailyGoalDao> { TourDailyGoalDao(db = get()) }
+    single<FavoriteDao> { TourFavoriteDao(db = get()) }
     single { get<AppDatabase>().appFlagDao() }
     single { get<AppDatabase>().backupDao() }
-    single { get<AppDatabase>().mealPlanDao() }
-    single { get<AppDatabase>().activityDao() }
-    single { get<AppDatabase>().progressPhotoDao() }
+    single<MealPlanDao> { TourMealPlanDao(db = get()) }
+    single<ActivityDao> { TourActivityDao(db = get()) }
+    single<ProgressPhotoDao> { TourProgressPhotoDao(db = get()) }
     singleOf(::MeasurementUnitPreference)
     singleOf(::AppLinks)
     single {

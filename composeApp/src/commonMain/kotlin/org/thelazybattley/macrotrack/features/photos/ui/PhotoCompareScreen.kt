@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.photos.ui
 
+import org.thelazybattley.macrotrack.features.tour.TourTarget
+import org.thelazybattley.macrotrack.features.tour.tourTarget
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -151,20 +153,22 @@ fun PhotoCompareScreen(onBack: () -> Unit) {
             label = { stringResource(resource = if (it == CompareMode.SLIDER) Res.string.photo_mode_slider else Res.string.photo_mode_side) },
             onSelect = viewModel::onModeSelected
         )
-        when (viewState.mode) {
-            CompareMode.SLIDER -> CompareSlider(
-                before = before,
-                after = after,
-                split = viewState.split,
-                isOverlayShown = viewState.summary?.album?.isDateAndWeightShown ?: true,
-                onSplitChanged = viewModel::onSplitChanged
-            )
-            CompareMode.SIDE_BY_SIDE -> SideBySide(
-                before = before,
-                after = after,
-                isOverlayShown = viewState.summary?.album?.isDateAndWeightShown ?: true,
-                onExpand = { isFullScreen = true }
-            )
+        Box(modifier = Modifier.tourTarget(target = TourTarget.PHOTO_COMPARE)) {
+            when (viewState.mode) {
+                CompareMode.SLIDER -> CompareSlider(
+                    before = before,
+                    after = after,
+                    split = viewState.split,
+                    isOverlayShown = viewState.summary?.album?.isDateAndWeightShown ?: true,
+                    onSplitChanged = viewModel::onSplitChanged
+                )
+                CompareMode.SIDE_BY_SIDE -> SideBySide(
+                    before = before,
+                    after = after,
+                    isOverlayShown = viewState.summary?.album?.isDateAndWeightShown ?: true,
+                    onExpand = { isFullScreen = true }
+                )
+            }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
             listOf(ComparePick.BEFORE to before, ComparePick.AFTER to after).forEach { (pick, item) ->

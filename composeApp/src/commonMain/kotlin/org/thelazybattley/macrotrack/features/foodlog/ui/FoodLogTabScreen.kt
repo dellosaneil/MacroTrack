@@ -88,6 +88,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.isActivityEnabled
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.platform.rememberReviewPrompt
 import kotlinx.coroutines.delay
@@ -235,7 +236,9 @@ private fun FoodLogTabScreen(
                 )
             }
             FoodLogDateChips(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tourTarget(target = TourTarget.TODAY_DATES),
                 dates = viewState.availableDates,
                 dateSelected = viewState.selectedDate,
                 onPlan = onOpenPlan
@@ -250,9 +253,11 @@ private fun FoodLogTabScreen(
             )
             // The suggestion is Pro, so free users never see "New".
             val isNewSuggestion = viewState.isNewCheckInSuggestion && LocalProAccess.current.isActive
-            if (isToday && recording != null) {
+            if (isToday && isActivityEnabled && recording != null) {
                 LiveRecordingCard(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .tourTarget(target = TourTarget.TODAY_STEPS),
                     recording = recording,
                     todaySteps = viewState.todayActivity.totalSteps,
                     goal = viewState.stepGoal,
@@ -263,7 +268,21 @@ private fun FoodLogTabScreen(
                 )
                 viewState.weekBalance?.let { balance ->
                     WeekBalanceLine(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .tourTarget(target = TourTarget.TODAY_WEEK),
+                        balance = balance,
+                        isNewSuggestion = isNewSuggestion,
+                        onClick = onOpenCheckIn
+                    )
+                }
+            } else if (isToday && !isActivityEnabled) {
+                // Steps aren't shipped yet, so the week balance fills the row.
+                viewState.weekBalance?.let { balance ->
+                    WeekBalanceTile(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .tourTarget(target = TourTarget.TODAY_WEEK),
                         balance = balance,
                         isNewSuggestion = isNewSuggestion,
                         onClick = onOpenCheckIn
@@ -278,7 +297,10 @@ private fun FoodLogTabScreen(
                     horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
                 ) {
                     TodayStepsCard(
-                        modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                        modifier = Modifier
+                            .weight(weight = 1f)
+                            .fillMaxHeight()
+                            .tourTarget(target = TourTarget.TODAY_STEPS),
                         steps = viewState.todayActivity.totalSteps,
                         goal = viewState.stepGoal,
                         isCounting = viewState.isCountingSteps,
@@ -286,7 +308,10 @@ private fun FoodLogTabScreen(
                     )
                     viewState.weekBalance?.let { balance ->
                         WeekBalanceTile(
-                            modifier = Modifier.weight(weight = 1f).fillMaxHeight(),
+                            modifier = Modifier
+                                .weight(weight = 1f)
+                                .fillMaxHeight()
+                                .tourTarget(target = TourTarget.TODAY_WEEK),
                             balance = balance,
                             isNewSuggestion = isNewSuggestion,
                             onClick = onOpenCheckIn
@@ -308,10 +333,12 @@ private fun FoodLogTabScreen(
                     color = colors.muted
                 )
             }
+            val firstMealWithFood = meals.indexOfFirst { it.foodList.isNotEmpty() }
             meals.forEachIndexed { index, meal ->
                 LoggedFoodMealType(
                     modifier = Modifier.fillMaxWidth(),
                     addButtonModifier = if (index == 0) Modifier.tourTarget(target = TourTarget.TODAY_ADD_MEAL) else Modifier,
+                    firstEntryModifier = if (index == firstMealWithFood) Modifier.tourTarget(target = TourTarget.TODAY_ENTRY) else Modifier,
                     foodList = meal,
                     foodUnit = viewState.foodUnit,
                     recipeCalories = viewState.recipeCalories,
@@ -545,6 +572,7 @@ private fun MealsHeader(
             val shape = RoundedCornerShape(size = 10.dp)
             Row(
                 modifier = Modifier
+                    .tourTarget(target = TourTarget.TODAY_COPY)
                     .height(height = 30.dp)
                     .clip(shape = shape)
                     .background(color = colors.surface)
@@ -570,6 +598,8 @@ private fun MealsHeader(
 private fun LoggedFoodMealType(
     modifier: Modifier = Modifier,
     addButtonModifier: Modifier = Modifier,
+    /** Goes on the meal's first entry. */
+    firstEntryModifier: Modifier = Modifier,
     foodList: FoodLogFoodListByMealType,
     foodUnit: Map<String, String>,
     recipeCalories: Map<String, Int>,
@@ -621,7 +651,9 @@ private fun LoggedFoodMealType(
             foodList.foodList.forEachIndexed { index, food ->
                 key(food.id) {
                     CommonSwipeToDelete(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(other = if (index == 0) firstEntryModifier else Modifier),
                         onDelete = {
                             onDeleteFoodLog(food.id)
                         }

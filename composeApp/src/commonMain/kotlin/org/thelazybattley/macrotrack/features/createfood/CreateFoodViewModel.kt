@@ -24,6 +24,9 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.FOO
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LIBRARY_FOOD
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PREFILL_NAME
 
+private const val DEFAULT_SERVING_AMOUNT = 100.0
+private const val DEFAULT_SERVING_UNIT = "g"
+
 class CreateFoodViewModel(
     private val insertFoodUseCase: InsertFoodUseCase,
     private val calculateCaloriesFromMacrosUseCase: CalculateCaloriesFromMacrosUseCase,
@@ -68,8 +71,9 @@ class CreateFoodViewModel(
                         protein = foodDetails?.macros?.protein?.toString(),
                         carbs = foodDetails?.macros?.carbs?.toString(),
                         fat = foodDetails?.macros?.fat?.toString(),
-                        unit = shownServing?.second ?: foodDetails?.unit ?: "",
-                        weight = shownServing?.first ?: foodDetails?.weight ?: 0.0,
+                        // A new food starts at 100 g, as on most food labels, whatever the app's units.
+                        unit = shownServing?.second ?: foodDetails?.unit ?: DEFAULT_SERVING_UNIT,
+                        weight = shownServing?.first ?: foodDetails?.weight ?: DEFAULT_SERVING_AMOUNT,
                         unitSystem = unitSystem,
                         storedServing = foodDetails?.takeIf { shownServing != null }?.let { it.weight to it.unit },
                         shownServing = shownServing,
