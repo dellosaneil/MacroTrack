@@ -107,9 +107,9 @@ android {
 
     val appMajor = 1
     val appMinor = 2
-    val appPatch = 0
+    val appPatch = 1
 
-    val appBuild = 1
+    val appBuild = 0
     val isForClosedTesting = false
 
     val appSuffix = if (isForClosedTesting) {
