@@ -1,5 +1,18 @@
 package org.thelazybattley.macrotrack.core.di
 
+import org.thelazybattley.macrotrack.data.repository.LogReminderRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.LogReminderRepository
+import org.thelazybattley.macrotrack.domain.usecase.reminder.GetDueLogRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.reminder.GetLogReminderMessageUseCase
+import org.thelazybattley.macrotrack.domain.usecase.reminder.GetLogReminderSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.reminder.LogReminderActions
+import org.thelazybattley.macrotrack.domain.usecase.reminder.LogReminderMessages
+import org.thelazybattley.macrotrack.domain.usecase.reminder.SaveLogReminderSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.reminder.ScheduleLogRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.reminder.SendTestLogReminderUseCase
+import org.thelazybattley.macrotrack.domain.usecase.reminder.SyncLogRemindersUseCase
+import org.thelazybattley.macrotrack.features.reminders.NotificationRouteRequest
+import org.thelazybattley.macrotrack.features.reminders.RemindersViewModel
 import io.ktor.client.HttpClient
 import org.thelazybattley.macrotrack.domain.usecase.backup.RecordBackupUseCase
 import org.thelazybattley.macrotrack.domain.usecase.backup.GetLastBackupUseCase
@@ -250,6 +263,8 @@ val repositoryModule = module {
     singleOf(::MealPlanRepositoryImpl) { bind<MealPlanRepository>() }
     singleOf(::ProgressPhotoRepositoryImpl) { bind<ProgressPhotoRepository>() }
     singleOf(::PhotoDrafts)
+    singleOf(::LogReminderRepositoryImpl) { bind<LogReminderRepository>() }
+    singleOf(::NotificationRouteRequest)
 }
 
 val useCaseModule = module {
@@ -334,6 +349,15 @@ val useCaseModule = module {
     factoryOf(::SaveProgressPhotosUseCase)
     factoryOf(::DeleteProgressPhotoUseCase)
     factoryOf(::SchedulePhotoRemindersUseCase)
+    factoryOf(::LogReminderMessages)
+    factoryOf(::GetLogReminderSettingsUseCase)
+    factoryOf(::SaveLogReminderSettingsUseCase)
+    factoryOf(::ScheduleLogRemindersUseCase)
+    factoryOf(::SyncLogRemindersUseCase)
+    factoryOf(::GetDueLogRemindersUseCase)
+    factoryOf(::GetLogReminderMessageUseCase)
+    factoryOf(::SendTestLogReminderUseCase)
+    factoryOf(::LogReminderActions)
 }
 
 val viewModelModule = module {
@@ -373,6 +397,7 @@ val viewModelModule = module {
     viewModelOf(::PhotoCameraViewModel)
     viewModelOf(::PhotoSaveViewModel)
     viewModelOf(::PhotoCompareViewModel)
+    viewModelOf(::RemindersViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

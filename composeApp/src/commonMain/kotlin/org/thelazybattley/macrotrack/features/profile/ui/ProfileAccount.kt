@@ -37,6 +37,8 @@ import macrotrack.composeapp.generated.resources.pro_name
 import macrotrack.composeapp.generated.resources.pro_status_active
 import macrotrack.composeapp.generated.resources.pro_status_trial
 import macrotrack.composeapp.generated.resources.pro_upgrade
+import macrotrack.composeapp.generated.resources.reminders_profile_value
+import macrotrack.composeapp.generated.resources.reminders_title
 import macrotrack.composeapp.generated.resources.replay_app_tour
 import macrotrack.composeapp.generated.resources.target_weight
 import macrotrack.composeapp.generated.resources.units
@@ -68,6 +70,7 @@ fun ProfileAccount(
     onNavigate: (ProfileSectionEnum) -> Unit,
     onTargetWeightClick: () -> Unit,
     onUnitSystemSelected: (UnitSystem) -> Unit = {},
+    onRemindersClick: () -> Unit = {},
     onReplayTour: () -> Unit = {}
 ) {
     Column(
@@ -145,6 +148,12 @@ fun ProfileAccount(
             )
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             UnitsRow(onSelected = onUnitSystemSelected)
+            HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            AccountRow(
+                label = Res.string.reminders_title,
+                value = stringResource(resource = Res.string.reminders_profile_value),
+                onClick = onRemindersClick
+            )
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             AccountRow(
                 label = Res.string.replay_app_tour,

@@ -57,6 +57,8 @@ object TelemetryEvent {
     const val REPEATING_MEAL_SAVED = "repeating_meal_saved"
     const val ACTIVITY_RECORDED = "activity_recorded"
     const val STEP_GOAL_SET = "step_goal_set"
+    const val LOG_REMINDERS_SET = "log_reminders_set"
+    const val LOG_REMINDER_ACTION = "log_reminder_action"
 
     const val PARAM_GOAL = "goal"
     const val PARAM_MEAL_TYPE = "meal_type"

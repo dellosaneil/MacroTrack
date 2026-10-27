@@ -38,7 +38,7 @@ import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
     entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, PhotoAlbumEntity::class, ProgressPhotoEntity::class],
-    version = 20, exportSchema = true,
+    version = 21, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -238,6 +238,13 @@ abstract class AppDatabase : RoomDatabase() {
                         "'step_notifications', 'step_counting_off', 'step_notification_hidden_on', 'goal_alert_sent_on', " +
                         "'step_sensor_reading', 'steps_synced_until', 'active_recording')"
                 )
+            }
+        }
+
+        /** Keeps when each log was added, for the reminders' "you usually log lunch around…". */
+        val MIGRATION_20_21 = object : Migration(20, 21) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE `FoodLogEntity` ADD COLUMN `loggedAt` INTEGER")
             }
         }
     }

@@ -126,6 +126,8 @@ sealed class AppDestinations {
 
         object DeleteData : Root(route = "delete_data")
 
+        object Reminders : Root(route = "reminders")
+
         object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
             fun createRoute(mealType: String, logDate: LocalDate? = null): String =
                 "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())

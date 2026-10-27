@@ -3,6 +3,7 @@ package org.thelazybattley.macrotrack.features.navigation
 import androidx.compose.foundation.gestures.detectTapGestures
 import org.thelazybattley.macrotrack.features.backup.ui.BackupScreen
 import androidx.lifecycle.Lifecycle
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.AFTER_ID
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ALBUM_ID
@@ -17,6 +18,9 @@ import org.thelazybattley.macrotrack.features.photos.ui.PhotoCompareScreen
 import org.thelazybattley.macrotrack.features.photos.ui.PhotoSaveScreen
 import org.thelazybattley.macrotrack.features.photos.ui.ProgressPhotosScreen
 import org.thelazybattley.macrotrack.features.deletedata.ui.DeleteDataScreen
+import org.thelazybattley.macrotrack.features.reminders.NotificationRouteRequest
+import org.thelazybattley.macrotrack.features.reminders.ui.RemindersScreen
+import org.thelazybattley.macrotrack.domain.usecase.reminder.SyncLogRemindersUseCase
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -29,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -134,6 +139,11 @@ fun AppBottomNav() {
     LaunchedEffect(key1 = Unit) {
         schedulePhotoReminders()
     }
+    val syncLogReminders = koinInject<SyncLogRemindersUseCase>()
+    // Sets missed-log reminders again as the log changes, so a meal logged now takes back its reminder.
+    LaunchedEffect(key1 = Unit) {
+        syncLogReminders()
+    }
     // The tabs inside the main screen log their own views.
     TrackScreenViews(navController = navController, ignore = setOf(AppDestinations.Root.MainScreen.route))
     val openPaywall: (ProFeature?) -> Unit = { feature ->
@@ -154,6 +164,17 @@ fun AppBottomNav() {
     }
     SideEffect {
         tourTargets.step = tourState.step
+    }
+    val notificationRouteRequest = koinInject<NotificationRouteRequest>()
+    val latestNavigate by rememberUpdatedState(newValue = navigate)
+    // A tapped reminder opens its screen over the main one, after the splash has had its say.
+    LaunchedEffect(key1 = Unit) {
+        notificationRouteRequest.route.filterNotNull().collect { route ->
+            navController.currentBackStackEntryFlow.first { navController.hasMainScreen() }
+            notificationRouteRequest.consume()
+            navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
+            latestNavigate(route)
+        }
     }
     val getProgressPhotos = koinInject<GetProgressPhotosUseCase>()
     LaunchedEffect(key1 = tourState.step?.screen) {
@@ -351,6 +372,9 @@ fun AppBottomNav() {
                                 navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
                             }
                         )
+                    }
+                    composable(route = AppDestinations.Root.Reminders.route) {
+                        RemindersScreen(onBack = { navController.popBack() })
                     }
                     composable(route = AppDestinations.Root.DeleteData.route) {
                         DeleteDataScreen(
@@ -760,6 +784,9 @@ private fun NavHostController.popBack(): Boolean {
     if (current.lifecycle.currentState != Lifecycle.State.RESUMED || previousBackStackEntry == null) return false
     return popBackStack()
 }
+
+private fun NavHostController.hasMainScreen(): Boolean =
+    runCatching { getBackStackEntry(route = AppDestinations.Root.MainScreen.route) }.isSuccess
 
 /**
  * After saving photos, the album they went to, in place of the camera and Save screens: back to that album if it's

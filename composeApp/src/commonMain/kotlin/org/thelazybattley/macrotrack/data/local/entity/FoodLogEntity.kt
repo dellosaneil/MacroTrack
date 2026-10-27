@@ -23,7 +23,9 @@ data class FoodLogEntity(
     val weight: Double,
     val dominantMacro: String,
     /** Logged with Quick add: calories and macros typed in without a food. */
-    val isQuickAdd: Boolean = false
+    val isQuickAdd: Boolean = false,
+    /** When it was added, in epoch milliseconds; null for logs from before this was kept. */
+    val loggedAt: Long? = null
 )
 
 fun FoodLogEntity.toDomain() = FoodLog(
@@ -37,5 +39,6 @@ fun FoodLogEntity.toDomain() = FoodLog(
     weight = weight,
     dominantMacro = MacroType.valueOf(value = dominantMacro),
     date = date,
-    isQuickAdd = isQuickAdd
+    isQuickAdd = isQuickAdd,
+    loggedAtMillis = loggedAt
 )

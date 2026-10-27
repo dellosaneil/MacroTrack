@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.data.repository
 
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
@@ -11,6 +13,7 @@ import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
 
+@OptIn(ExperimentalTime::class)
 class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
     override suspend fun insertFoodLog(
         foodName: String,
@@ -34,7 +37,8 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
             protein = protein,
             weight = weight,
             dominantMacro = dominantMacro.name,
-            isQuickAdd = isQuickAdd
+            isQuickAdd = isQuickAdd,
+            loggedAt = Clock.System.now().toEpochMilliseconds()
         )
     )
 

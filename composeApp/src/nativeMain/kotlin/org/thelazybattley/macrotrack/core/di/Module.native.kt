@@ -6,7 +6,9 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.core.billing.BillingService
 import org.thelazybattley.macrotrack.core.billing.UnavailableBillingService
+import org.thelazybattley.macrotrack.core.platform.IosLogReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.IosPhotoReminderScheduler
+import org.thelazybattley.macrotrack.core.platform.LogReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.IosPhotoStorage
 import org.thelazybattley.macrotrack.core.platform.PhotoReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.PhotoStorage
@@ -21,12 +23,13 @@ actual val platformModule: Module = module {
         val dbFilePath = documentDirectory() + "/my_room.db"
         Room.databaseBuilder<AppDatabase>(
             name = dbFilePath,
-        ).addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16, AppDatabase.MIGRATION_16_17, AppDatabase.MIGRATION_17_18, AppDatabase.MIGRATION_18_19, AppDatabase.MIGRATION_19_20)
+        ).addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16, AppDatabase.MIGRATION_16_17, AppDatabase.MIGRATION_17_18, AppDatabase.MIGRATION_18_19, AppDatabase.MIGRATION_19_20, AppDatabase.MIGRATION_20_21)
     }
     factory(qualifier = named(name = SAMPLE_DATABASE)) { Room.inMemoryDatabaseBuilder<AppDatabase>() }
     single<BillingService> { UnavailableBillingService() }
     single<PhotoStorage> { IosPhotoStorage() }
     single<PhotoReminderScheduler> { IosPhotoReminderScheduler() }
+    single<LogReminderScheduler> { IosLogReminderScheduler() }
 }
 
 @OptIn(ExperimentalForeignApi::class)

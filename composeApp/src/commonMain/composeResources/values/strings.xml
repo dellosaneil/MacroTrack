@@ -1515,4 +1515,95 @@
     </plurals>
     <string name="photo_reminder_title">Time for a progress photo</string>
     <string name="photo_reminder_body">%1$s · line up with your last one in FitMetric.</string>
+    <!-- Missed-log reminders: the notifications. -->
+    <string name="reminder_channel">Missed-log reminders</string>
+    <string name="reminder_meal_title">%1$s isn’t logged yet</string>
+    <string name="reminder_usual">You usually log it around %1$s.</string>
+    <string name="reminder_yesterday">Yesterday: %1$s, %2$s kcal.</string>
+    <plurals name="reminder_yesterday_more">
+        <item quantity="one">Yesterday: %1$s and %2$d more, %3$s kcal.</item>
+        <item quantity="other">Yesterday: %1$s and %2$d more, %3$s kcal.</item>
+    </plurals>
+    <string name="reminder_kcal_left">%1$s kcal left today.</string>
+    <string name="reminder_log_now">Log %1$s now while you remember.</string>
+    <string name="reminder_weight_title">Time to weigh in</string>
+    <string name="reminder_weight_body">No weight logged yet today.</string>
+    <string name="reminder_weight_body_yesterday">No weight logged yet today. Last weigh-in: %1$s yesterday.</string>
+    <string name="reminder_weight_body_on">No weight logged yet today. Last weigh-in: %1$s on %2$s.</string>
+    <string name="reminder_paused_title">Still want reminders?</string>
+    <string name="reminder_paused_body">We’ve paused them since nothing’s been logged since %1$s. Pick up whenever you’re ready.</string>
+    <string name="reminder_action_log">Log %1$s</string>
+    <string name="reminder_action_log_weight">Log weight</string>
+    <string name="reminder_action_same">Same as yesterday</string>
+    <string name="reminder_action_quick_add">Quick add</string>
+    <string name="reminder_action_later">Later (1 hr)</string>
+    <string name="reminder_action_skip">Skip today</string>
+    <string name="reminder_action_keep">Keep them on</string>
+    <string name="reminder_action_change">Change times</string>
+    <string name="reminder_done_logged">Logged %1$s: %2$s, %3$s kcal</string>
+    <plurals name="reminder_done_logged_more">
+        <item quantity="one">Logged %1$s: %2$s and %3$d more, %4$s kcal</item>
+        <item quantity="other">Logged %1$s: %2$s and %3$d more, %4$s kcal</item>
+    </plurals>
+    <string name="reminder_done_later">We’ll remind you again at %1$s</string>
+    <string name="reminder_done_skipped">%1$s marked as skipped for today</string>
+    <string name="reminder_done_skipped_weight">No weigh-in reminder for the rest of today</string>
+    <string name="reminder_done_kept">Reminders are back on</string>
+    <!-- Missed-log reminders: the settings screen. -->
+    <string name="reminders_title">Reminders</string>
+    <string name="reminders_profile_value">Meals &amp; weigh-in</string>
+    <string name="reminders_hero_title">Only when you forget</string>
+    <string name="reminders_hero_body">At each time below we check your log. If that meal or today’s weight is already there, nothing is sent.</string>
+    <string name="reminders_master">Missed-log reminders</string>
+    <plurals name="reminders_master_on">
+        <item quantity="one">%1$d reminder on · only if you haven’t logged</item>
+        <item quantity="other">%1$d reminders on · only if you haven’t logged</item>
+    </plurals>
+    <string name="reminders_master_off">Off. You won’t get any meal or weigh-in reminders.</string>
+    <string name="reminders_meals_header">Meals · remind me if nothing is logged by</string>
+    <string name="reminders_meal_sub">Nothing logged by %1$s</string>
+    <string name="reminders_off">Off</string>
+    <string name="reminders_weight_header">Weigh-in · remind me if no weight is logged by</string>
+    <string name="reminders_weight">Weight</string>
+    <string name="reminders_weight_sub">Skipped if you’ve weighed in today</string>
+    <string name="reminders_days_every">Every day. Weighing in daily gives the smoothest trend.</string>
+    <string name="reminders_days_none">No days picked, so no weigh-in reminders.</string>
+    <plurals name="reminders_days_some">
+        <item quantity="one">%1$d day a week. Pick the same days each week for a fair comparison.</item>
+        <item quantity="other">%1$d days a week. Pick the same days each week for a fair comparison.</item>
+    </plurals>
+    <string name="reminders_weigh_in_days">Weigh-in days</string>
+    <string name="reminders_options">Options</string>
+    <string name="reminders_quick_title">Quick actions</string>
+    <string name="reminders_quick_sub">Log it, Same as yesterday, or Skip today, right from the notification.</string>
+    <string name="reminders_ease_title">Ease off when I take a break</string>
+    <string name="reminders_ease_sub">After 3 days with nothing logged, reminders pause and we ask once if you want them back.</string>
+    <string name="reminders_quiet_title">Quiet on weekends</string>
+    <string name="reminders_quiet_sub">No meal reminders on Saturday and Sunday. Weigh-in follows its own days.</string>
+    <string name="reminders_test">Send a test reminder</string>
+    <string name="reminders_test_sent">Test reminder sent</string>
+    <string name="reminders_perm_allowed">Notifications are allowed for FitMetric.</string>
+    <string name="reminders_perm_blocked">Reminders won’t show until notifications are allowed.</string>
+    <string name="reminders_perm_title">Notifications are off for FitMetric</string>
+    <string name="reminders_perm_body">Your reminders are saved, but the phone won’t show them until you allow notifications.</string>
+    <string name="reminders_perm_settings">Open phone settings</string>
+    <string name="reminders_perm_allow">Allow notifications</string>
+    <string name="reminders_time_a11y">%1$s reminder time, %2$s</string>
+    <string name="reminders_switch_a11y">%1$s reminder</string>
+    <string name="reminders_weigh_in_switch">Weigh-in reminder</string>
+    <string name="reminders_picker_meal_title">Remind me about %1$s</string>
+    <string name="reminders_picker_meal_sub">If nothing is logged for %1$s by</string>
+    <string name="reminders_picker_weight_title">Weigh-in reminder</string>
+    <string name="reminders_picker_weight_sub">If no weight is logged by</string>
+    <string name="reminders_picker_suggested">Suggested</string>
+    <string name="reminders_picker_habit">You usually log %1$s around %2$s. A reminder about an hour after that catches a forgotten meal.</string>
+    <string name="reminders_picker_no_habit">Pick a time about an hour after you usually have %1$s, so a forgotten meal gets caught.</string>
+    <string name="reminders_picker_snack">Snacks are logged at different times, so this is off by default.</string>
+    <string name="reminders_picker_weight_habit">A reminder an hour or two after you usually weigh in catches a missed morning.</string>
+    <string name="reminders_picker_hour_up">Later hour</string>
+    <string name="reminders_picker_hour_down">Earlier hour</string>
+    <string name="reminders_picker_minute_up">15 minutes later</string>
+    <string name="reminders_picker_minute_down">15 minutes earlier</string>
+    <string name="reminders_am">AM</string>
+    <string name="reminders_pm">PM</string>
 </resources>

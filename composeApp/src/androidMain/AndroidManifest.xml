@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Progress photo reminders. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Sets reminders again after a restart, which clears them. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- The barcode scanner needs a camera, but the app works without one. -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -34,6 +36,19 @@
         <!-- Reminds on the days picked for each progress photo album. -->
         <receiver
             android:name=".core.platform.PhotoReminderReceiver"
+            android:exported="false" />
+        <!-- Missed-log reminders: goes off at each reminder time, and after a restart or update sets them again. -->
+        <receiver
+            android:name=".core.platform.LogReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+        <!-- The buttons on a missed-log reminder that don't open the app. -->
+        <receiver
+            android:name=".core.platform.LogReminderActionReceiver"
             android:exported="false" />
         <!-- Shares exports and backups with other apps. -->
         <provider
