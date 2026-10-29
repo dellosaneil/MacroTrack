@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -28,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -119,6 +123,8 @@ private fun QuickAddScreen(
     onBack: () -> Unit
 ) {
     val defaultName = stringResource(resource = Res.string.quick_add)
+    // The label is typed on the soft keyboard, so the number keypad steps aside while it's up.
+    val isImeVisible = WindowInsets.ime.getBottom(density = LocalDensity.current) > 0
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -134,13 +140,17 @@ private fun QuickAddScreen(
         Readout(viewState = viewState, onFieldSelected = callbacks::onFieldSelected)
         LabelField(label = viewState.label, onLabelChange = callbacks::onLabelChanged)
         MealPicker(selected = viewState.mealType, onSelected = callbacks::onMealSelected)
-        CommonKeypad(
-            modifier = Modifier.weight(weight = 1f).fillMaxWidth(),
-            isDecimalEnabled = viewState.mode == QuickAddMode.MACROS,
-            fillHeight = true,
-            keyColor = colors.surface,
-            onKey = callbacks::onKey
-        )
+        if (isImeVisible) {
+            Spacer(modifier = Modifier.weight(weight = 1f))
+        } else {
+            CommonKeypad(
+                modifier = Modifier.weight(weight = 1f).fillMaxWidth(),
+                isDecimalEnabled = viewState.mode == QuickAddMode.MACROS,
+                fillHeight = true,
+                keyColor = colors.surface,
+                onKey = callbacks::onKey
+            )
+        }
         AddButton(viewState = viewState, onClick = { callbacks.onAdd(defaultName = defaultName) })
     }
 }
