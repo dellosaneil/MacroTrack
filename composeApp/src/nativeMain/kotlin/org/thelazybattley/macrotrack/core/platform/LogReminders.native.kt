@@ -32,6 +32,7 @@ class IosLogReminderScheduler : LogReminderScheduler {
     @OptIn(ExperimentalTime::class)
     override suspend fun schedule(upcoming: List<LogReminder>, message: suspend (LogReminder) -> LogReminderMessage) {
         val now = Clock.System.now().toLocalDateTime(timeZone = TimeZone.currentSystemDefault())
+        platform.Foundation.NSLog("DBGNOTIF log schedule upcoming=${upcoming.size} now=$now first=${upcoming.firstOrNull()}")
         // A time already past can't be set here.
         val requests = upcoming.filter { it.at > now }.map { reminder ->
             val written = message(reminder)

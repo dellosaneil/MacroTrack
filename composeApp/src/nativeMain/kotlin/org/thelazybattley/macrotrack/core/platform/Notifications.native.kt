@@ -36,13 +36,21 @@ internal suspend fun replacePendingNotifications(prefix: String, requests: List<
             )
         }
     }
+    platform.Foundation.NSLog("DBGNOTIF replace prefix=$prefix old=${old.size} new=${requests.size}")
     center.removePendingNotificationRequestsWithIdentifiers(identifiers = old)
-    if (requests.isEmpty() || !requestNotificationAuthorization()) return@withLock
+    if (requests.isEmpty()) return@withLock
+    val granted = requestNotificationAuthorization()
+    platform.Foundation.NSLog("DBGNOTIF granted=$granted")
+    if (!granted) return@withLock
     requests.forEach { request ->
         suspendCoroutine { continuation ->
-            center.addNotificationRequest(request = request) { continuation.resume(value = Unit) }
+            center.addNotificationRequest(request = request) { error ->
+                platform.Foundation.NSLog("DBGNOTIF add ${request.identifier} next=${(request.trigger as? platform.UserNotifications.UNCalendarNotificationTrigger)?.nextTriggerDate()} error=${error?.localizedDescription}")
+                continuation.resume(value = Unit)
+            }
         }
     }
+    platform.Foundation.NSLog("DBGNOTIF done prefix=$prefix")
 }
 
 /**
