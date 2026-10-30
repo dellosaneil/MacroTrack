@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.BarcodeLookup
 import org.thelazybattley.macrotrack.domain.model.Food
+import org.thelazybattley.macrotrack.domain.model.uniqueFoodName
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
@@ -268,15 +269,8 @@ class ScanBarcodeViewModel(
         }
     }
 
-    /** Foods are keyed by name, so a product never replaces a saved food that happens to share its name. */
-    private fun uniqueName(name: String, brand: String?, barcode: String?): String {
-        val taken = savedFoods.map { it.name.lowercase() }.toSet()
-        return listOfNotNull(
-            name,
-            brand?.let { "$name ($it)" },
-            barcode?.let { "$name (${it.takeLast(n = 4)})" }
-        ).firstOrNull { it.lowercase() !in taken } ?: "$name ($barcode)"
-    }
+    private fun uniqueName(name: String, brand: String?, barcode: String?): String =
+        uniqueFoodName(name = name, brand = brand, barcode = barcode, takenNames = savedFoods.map { it.name })
 
     private fun Double.roundToTenth(): Double = (this * 10).roundToInt() / 10.0
 

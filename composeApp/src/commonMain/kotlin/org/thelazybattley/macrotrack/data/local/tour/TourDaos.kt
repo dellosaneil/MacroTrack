@@ -11,6 +11,7 @@ import org.thelazybattley.macrotrack.data.local.dao.MeasurementDao
 import org.thelazybattley.macrotrack.data.local.dao.ProgressPhotoDao
 import org.thelazybattley.macrotrack.data.local.dao.RecipeDao
 import org.thelazybattley.macrotrack.data.local.dao.UserDetailsDao
+import org.thelazybattley.macrotrack.data.local.dao.WaterDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
@@ -23,6 +24,7 @@ import org.thelazybattley.macrotrack.data.local.entity.ProgressPhotoEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
+import org.thelazybattley.macrotrack.data.local.entity.WaterEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlanStatus
@@ -68,6 +70,12 @@ class TourFoodLogDao(private val db: TourDatabaseSwitch) : FoodLogDao {
 class TourWeightDao(private val db: TourDatabaseSwitch) : WeightDao {
     override suspend fun insertWeight(weight: WeightEntity) = db.run { it.weightDao().insertWeight(weight = weight) }
     override fun getAllWeight(): Flow<List<WeightEntity>> = db.flow { it.weightDao().getAllWeight() }
+}
+
+class TourWaterDao(private val db: TourDatabaseSwitch) : WaterDao {
+    override suspend fun insertWater(water: WaterEntity): Long = db.run { it.waterDao().insertWater(water = water) }
+    override suspend fun deleteWater(id: Long) = db.run { it.waterDao().deleteWater(id = id) }
+    override fun getWaterSince(from: LocalDate): Flow<List<WaterEntity>> = db.flow { it.waterDao().getWaterSince(from = from) }
 }
 
 class TourMeasurementDao(private val db: TourDatabaseSwitch) : MeasurementDao {

@@ -64,6 +64,8 @@ import macrotrack.composeapp.generated.resources.tour_streak_body
 import macrotrack.composeapp.generated.resources.tour_streak_title
 import macrotrack.composeapp.generated.resources.tour_trend_body
 import macrotrack.composeapp.generated.resources.tour_trend_title
+import macrotrack.composeapp.generated.resources.tour_water_body
+import macrotrack.composeapp.generated.resources.tour_water_title
 import macrotrack.composeapp.generated.resources.tour_week_body
 import macrotrack.composeapp.generated.resources.tour_week_title
 import macrotrack.composeapp.generated.resources.tour_weight_history_body
@@ -102,6 +104,7 @@ enum class TourTarget(val cornerRadius: Dp) {
     /** The first food logged today. */
     TODAY_ENTRY(cornerRadius = 0.dp),
     TODAY_WEEK(cornerRadius = 18.dp),
+    TODAY_WATER(cornerRadius = 18.dp),
     CHECK_IN_WEEK(cornerRadius = 24.dp),
     BOTTOM_NAVIGATION(cornerRadius = 0.dp),
     ADD_MEAL_SEARCH(cornerRadius = 20.dp),
@@ -172,6 +175,13 @@ enum class TourStep(
         screenLabel = Res.string.tour_screen_today,
         title = Res.string.tour_remaining_title,
         body = Res.string.tour_remaining_body
+    ),
+    TODAY_WATER(
+        screen = TourScreen.LOG,
+        targets = listOf(TourTarget.TODAY_WATER),
+        screenLabel = Res.string.tour_screen_today,
+        title = Res.string.tour_water_title,
+        body = Res.string.tour_water_body
     ),
     TODAY_COPY(
         screen = TourScreen.LOG,

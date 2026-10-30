@@ -6,6 +6,8 @@ import org.thelazybattley.macrotrack.ui.common.formatPortion
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -105,6 +107,7 @@ import org.thelazybattley.macrotrack.features.foodlog.FoodLogViewState
 import org.thelazybattley.macrotrack.features.pro.ui.ProTrialBanner
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.checkin.ui.WeekBalanceTile
+import org.thelazybattley.macrotrack.features.water.ui.WaterTile
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
@@ -163,7 +166,8 @@ fun FoodLogTabScreen(
         onOpenPlan = { onNavigate(AppDestinations.Root.MealPlan.createRoute()) },
         onRepeat = { mealType ->
             onNavigate(AppDestinations.Root.RepeatMeal.createRoute(sourceDate = viewState.selectedDate, mealType = mealType.name))
-        }
+        },
+        onOpenWater = { onNavigate(AppDestinations.Root.Water.route) }
     )
 }
 
@@ -181,7 +185,8 @@ private fun FoodLogTabScreen(
     onCopyFrom: (MealType) -> Unit,
     onOpenPlan: () -> Unit,
     /** Sets up repeating [MealType] from the selected day. */
-    onRepeat: (MealType) -> Unit
+    onRepeat: (MealType) -> Unit,
+    onOpenWater: () -> Unit
 ) {
     val today = getCurrentDate()
     val isToday = viewState.selectedDate == today
@@ -233,14 +238,28 @@ private fun FoodLogTabScreen(
             // The suggestion is Pro, so free users never see "New".
             val isNewSuggestion = viewState.isNewCheckInSuggestion && LocalProAccess.current.isActive
             if (isToday) {
-                viewState.weekBalance?.let { balance ->
-                    WeekBalanceTile(
+                // This week and water side by side; either one takes the row when the other isn't shown.
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(intrinsicSize = IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+                ) {
+                    viewState.weekBalance?.let { balance ->
+                        WeekBalanceTile(
+                            modifier = Modifier
+                                .weight(weight = 1f)
+                                .fillMaxHeight()
+                                .tourTarget(target = TourTarget.TODAY_WEEK),
+                            balance = balance,
+                            isNewSuggestion = isNewSuggestion,
+                            onClick = onOpenCheckIn
+                        )
+                    }
+                    WaterTile(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .tourTarget(target = TourTarget.TODAY_WEEK),
-                        balance = balance,
-                        isNewSuggestion = isNewSuggestion,
-                        onClick = onOpenCheckIn
+                            .weight(weight = 1f)
+                            .fillMaxHeight()
+                            .tourTarget(target = TourTarget.TODAY_WATER),
+                        onOpen = onOpenWater
                     )
                 }
             }
@@ -914,7 +933,8 @@ private fun PreviewFoodLogTabScreen() {
             onCopyTo = {},
             onCopyFrom = {},
             onOpenPlan = {},
-            onRepeat = {}
+            onRepeat = {},
+            onOpenWater = {}
         )
     }
 }

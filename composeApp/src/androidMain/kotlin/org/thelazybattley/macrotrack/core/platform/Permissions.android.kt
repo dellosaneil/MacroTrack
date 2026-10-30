@@ -33,6 +33,29 @@ actual fun rememberNotificationPermissionState(): PermissionState =
     }
 
 @Composable
+actual fun rememberExactAlarmPermissionState(): PermissionState {
+    val context = LocalContext.current
+    var isGranted by remember { mutableStateOf(value = context.canSetExactAlarms()) }
+    // Picks up the change when coming back from the settings page.
+    LifecycleResumeEffect(key1 = Unit) {
+        isGranted = context.canSetExactAlarms()
+        onPauseOrDispose {}
+    }
+    return PermissionState(
+        isGranted = isGranted,
+        isPermanentlyDenied = true,
+        request = {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                context.startActivity(
+                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", context.packageName, null))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }
+        }
+    )
+}
+
+@Composable
 private fun rememberPermissionState(permission: String): PermissionState {
     val context = LocalContext.current
     val activity = LocalActivity.current

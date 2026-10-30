@@ -6,13 +6,10 @@ import macrotrack.composeapp.generated.resources.photo_reminder_title
 import org.jetbrains.compose.resources.getString
 import org.thelazybattley.macrotrack.domain.model.PhotoAlbum
 import platform.Foundation.NSDateComponents
-import platform.UserNotifications.UNAuthorizationOptionAlert
-import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNCalendarNotificationTrigger
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
-import platform.UserNotifications.UNUserNotificationCenter
 
 private const val ID_PREFIX = "photo-reminder-"
 
@@ -20,7 +17,6 @@ private const val ID_PREFIX = "photo-reminder-"
 class IosPhotoReminderScheduler : PhotoReminderScheduler {
 
     override suspend fun schedule(albums: List<PhotoAlbum>) {
-        val center = UNUserNotificationCenter.currentNotificationCenter()
         val requests = albums.flatMap { album ->
             val title = getString(resource = Res.string.photo_reminder_title)
             val body = getString(resource = Res.string.photo_reminder_body, album.name)
@@ -43,14 +39,6 @@ class IosPhotoReminderScheduler : PhotoReminderScheduler {
                 )
             }
         }
-        center.getPendingNotificationRequestsWithCompletionHandler { pending ->
-            val old = pending.orEmpty().filterIsInstance<UNNotificationRequest>().map { it.identifier }.filter { it.startsWith(prefix = ID_PREFIX) }
-            center.removePendingNotificationRequestsWithIdentifiers(identifiers = old)
-            if (requests.isEmpty()) return@getPendingNotificationRequestsWithCompletionHandler
-            // Asks the first time; after that it answers straight away with what was chosen.
-            center.requestAuthorizationWithOptions(options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound) { isGranted, _ ->
-                if (isGranted) requests.forEach { center.addNotificationRequest(request = it, withCompletionHandler = null) }
-            }
-        }
+        replacePendingNotifications(prefix = ID_PREFIX, requests = requests)
     }
 }

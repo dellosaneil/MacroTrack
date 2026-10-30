@@ -12,6 +12,7 @@ import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
+import org.thelazybattley.macrotrack.data.local.entity.WaterEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 
 /** Marks a JSON file as a MacroTrack backup. */
@@ -38,7 +39,9 @@ data class BackupFile(
     val appFlags: List<AppFlagEntity> = emptyList(),
     /** Missing from backups made before the meal plan; they restore with an empty plan. */
     val plannedFoods: List<PlannedFoodEntity> = emptyList(),
-    val repeatingMeals: List<RepeatingMealEntity> = emptyList()
+    val repeatingMeals: List<RepeatingMealEntity> = emptyList(),
+    /** Missing from backups made before water intake. */
+    val water: List<WaterEntity> = emptyList()
 ) {
     fun toSnapshot() = DatabaseSnapshot(
         foods = foods,
@@ -51,6 +54,7 @@ data class BackupFile(
         favorites = favorites,
         appFlags = appFlags,
         plannedFoods = plannedFoods,
-        repeatingMeals = repeatingMeals
+        repeatingMeals = repeatingMeals,
+        water = water
     )
 }

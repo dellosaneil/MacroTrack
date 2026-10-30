@@ -31,7 +31,7 @@ import org.thelazybattley.macrotrack.domain.repository.ProgressPhotoRepository
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-/** One inexact alarm for the next day any album has a reminder; [PhotoReminderReceiver] sets the one after. */
+/** One alarm for the next day any album has a reminder; [PhotoReminderReceiver] sets the one after. */
 class AndroidPhotoReminderScheduler(private val context: Context) : PhotoReminderScheduler {
 
     override suspend fun schedule(albums: List<PhotoAlbum>) {
@@ -44,7 +44,7 @@ class AndroidPhotoReminderScheduler(private val context: Context) : PhotoReminde
         )
         alarmManager.cancel(intent)
         nextReminderMillis(albums = albums)?.let { atMillis ->
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
+            context.setReminderAlarm(atMillis = atMillis, intent = intent)
         }
     }
 

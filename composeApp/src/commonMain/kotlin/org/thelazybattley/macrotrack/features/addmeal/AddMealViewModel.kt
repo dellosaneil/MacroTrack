@@ -3,7 +3,11 @@ package org.thelazybattley.macrotrack.features.addmeal
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
@@ -13,6 +17,10 @@ import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.OnlineFood
+import org.thelazybattley.macrotrack.domain.usecase.food.GetOnlineFoodDetailsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.SaveOnlineFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.SearchOnlineFoodsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.favorite.GetFavoriteKeysUseCase
 import org.thelazybattley.macrotrack.domain.usecase.favorite.SetFavoriteUseCase
@@ -30,6 +38,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.LOG_DATE
 import org.thelazybattley.macrotrack.ui.navigation.logDateOf
 
+@OptIn(FlowPreview::class)
 class AddMealViewModel(
     private val getAllFoodUseCase: GetAllFoodUseCase,
     private val insertFoodLogUseCase: InsertFoodLogUseCase,
@@ -43,12 +52,22 @@ class AddMealViewModel(
     private val setFavoriteUseCase: SetFavoriteUseCase,
     private val scannedFoodRequest: ScannedFoodRequest,
     private val getFoodLibraryUseCase: GetFoodLibraryUseCase,
+    private val searchOnlineFoodsUseCase: SearchOnlineFoodsUseCase,
+    private val getOnlineFoodDetailsUseCase: GetOnlineFoodDetailsUseCase,
+    private val saveOnlineFoodUseCase: SaveOnlineFoodUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks {
 
     private val _state = MutableStateFlow(value = AddMealViewState())
     val state = _state.asStateFlow()
     private val mealType: String? = savedStateHandle["mealType"]
+
+    /** The online search to run; [attempt] goes up on Try again, so the same words are sent again. */
+    private data class OnlineRequest(val query: String, val attempt: Int)
+
+    private val onlineRequest = MutableStateFlow(value = OnlineRequest(query = "", attempt = 0))
+    private var showMoreJob: Job? = null
+    private var onlineSaveJob: Job? = null
 
     init {
         _state.update { currentState ->
@@ -93,6 +112,14 @@ class AddMealViewModel(
         }
 
         viewModelScope.launch {
+            // Waits for a pause in typing, and a newer search drops the one still on its way.
+            onlineRequest.debounce(timeoutMillis = ONLINE_DEBOUNCE_MILLIS).collectLatest { request ->
+                showMoreJob?.cancel()
+                searchOnline(query = request.query)
+            }
+        }
+
+        viewModelScope.launch {
             getRemainingCaloriesUseCase(date = _state.value.logDate).collect { remainingCalories ->
                 _state.update { currentState -> currentState.copy(remainingCalories = remainingCalories) }
             }
@@ -105,6 +132,158 @@ class AddMealViewModel(
 
     override fun onSearchQuery(query: String) {
         _state.update { currentState -> currentState.copy(searchQuery = query) }
+        onlineRequest.update { it.copy(query = query.trim()) }
+    }
+
+    override fun onSearchScopeSelected(scope: SearchScope) {
+        _state.update { currentState -> currentState.copy(searchScope = scope) }
+    }
+
+    override fun onRetryOnline() {
+        onlineRequest.update { it.copy(attempt = it.attempt + 1) }
+    }
+
+    override fun onShowMoreOnline() {
+        val online = _state.value.online
+        if (!online.canShowMore || showMoreJob?.isActive == true) return
+        showMoreJob = viewModelScope.launch {
+            _state.update { it.copy(online = it.online.copy(status = OnlineStatus.LOADING_MORE)) }
+            val result = searchOnlineFoodsUseCase(query = online.query, page = online.page + 1)
+            _state.update { currentState ->
+                if (currentState.online.query != online.query) return@update currentState
+                val page = result.getOrNull()
+                currentState.copy(
+                    online = currentState.online.copy(
+                        status = OnlineStatus.DONE,
+                        foods = if (page == null) currentState.online.foods else (currentState.online.foods + page.foods).distinctBy { it.barcode },
+                        // A page that fails or comes back empty ends the list.
+                        totalCount = if (page == null || page.foods.isEmpty()) currentState.online.foods.size else page.totalCount,
+                        page = if (page == null) online.page else online.page + 1
+                    )
+                )
+            }
+        }
+    }
+
+    override fun onAddOnlineFood(food: OnlineFood) {
+        if (_state.value.isOnlineSelected(food = food)) return
+        saveOnline(food = food, select = true, amount = { getOnlineFoodDetailsUseCase(food = food).portion })
+    }
+
+    override fun onOpenOnlineFood(food: OnlineFood) {
+        _state.update { it.copy(openOnlineFood = food) }
+        viewModelScope.launch {
+            val details = getOnlineFoodDetailsUseCase(food = food)
+            _state.update { currentState ->
+                if (currentState.openOnlineFood?.barcode != food.barcode) currentState else currentState.copy(openOnlineFood = details)
+            }
+        }
+    }
+
+    override fun onCloseOnlineFood() {
+        _state.update { it.copy(openOnlineFood = null) }
+    }
+
+    override fun onAddOnlineFoodPortion(food: OnlineFood, amount: Double) {
+        _state.update { it.copy(openOnlineFood = null) }
+        saveOnline(food = food, select = true, amount = { amount })
+    }
+
+    override fun onSaveOnlineFood(food: OnlineFood) {
+        _state.update { it.copy(openOnlineFood = null) }
+        saveOnline(food = food, select = false)
+    }
+
+    /** Wrong numbers get fixed on the copy in My foods; nothing is sent anywhere. */
+    override fun onFixOnlineFood(food: OnlineFood) {
+        _state.update { it.copy(openOnlineFood = null) }
+        saveOnline(food = food, select = false, showNotice = false, then = { saved ->
+            onNavigateScreen(route = AppDestinations.Root.CreateFood.createRoute(foodName = saved.name))
+        })
+    }
+
+    override fun onUndoOnlineNotice() {
+        val notice = _state.value.onlineNotice ?: return
+        val key = mealItemKey(name = notice.savedName, kind = MealItemKind.FOOD)
+        _state.update { currentState ->
+            currentState.copy(
+                onlineNotice = null,
+                selection = currentState.selection.filterNot { it.key == key },
+                focusedKey = currentState.focusedKey.takeIf { it != key },
+                savedOnline = if (notice.isNew) currentState.savedOnline.filterValues { it != notice.savedName } else currentState.savedOnline
+            )
+        }
+        if (notice.isNew) {
+            viewModelScope.launch { deleteFoodUseCase(name = notice.savedName) }
+        }
+    }
+
+    override fun onDismissOnlineNotice() {
+        _state.update { it.copy(onlineNotice = null) }
+    }
+
+    private suspend fun searchOnline(query: String) {
+        if (query.length < AddMealViewState.ONLINE_MIN_QUERY) {
+            _state.update { it.copy(online = OnlineResults(query = query)) }
+            return
+        }
+        _state.update { it.copy(online = OnlineResults(query = query, status = OnlineStatus.LOADING)) }
+        val result = searchOnlineFoodsUseCase(query = query, page = 1)
+        _state.update { currentState ->
+            val page = result.getOrNull()
+            currentState.copy(
+                online = if (page == null) {
+                    OnlineResults(query = query, status = OnlineStatus.OFFLINE)
+                } else {
+                    OnlineResults(query = query, status = OnlineStatus.DONE, foods = page.foods, totalCount = page.totalCount, page = 1)
+                }
+            )
+        }
+    }
+
+    /**
+     * Saves [food] to My foods, picks it for the meal when [select] (at the portion [amount] works out), and says
+     * so with Undo; then hands the saved food to [then].
+     */
+    private fun saveOnline(
+        food: OnlineFood,
+        select: Boolean,
+        showNotice: Boolean = true,
+        amount: suspend () -> Double = { food.portion },
+        then: (Food) -> Unit = {}
+    ) {
+        if (onlineSaveJob?.isActive == true) return
+        onlineSaveJob = viewModelScope.launch {
+            val portion = if (select) amount() else food.portion
+            val saved = saveOnlineFoodUseCase(food = food)
+            val key = mealItemKey(name = saved.food.name, kind = MealItemKind.FOOD)
+            _state.update { currentState ->
+                val picked = SelectedMealItem(
+                    key = key,
+                    isRecipe = false,
+                    baseFood = saved.food,
+                    amount = portion,
+                    food = adjustedFood(baseFood = saved.food, isRecipe = false, amount = portion)
+                )
+                currentState.copy(
+                    savedOnline = currentState.savedOnline + (food.barcode to saved.food.name),
+                    selection = if (select) currentState.selection.filterNot { it.key == key } + picked else currentState.selection,
+                    focusedKey = if (select) key else currentState.focusedKey,
+                    onlineNotice = if (showNotice) {
+                        OnlineNotice(
+                            foodName = saved.food.name,
+                            savedName = saved.food.name,
+                            isSelected = select,
+                            isNew = saved.isNew,
+                            id = (currentState.onlineNotice?.id ?: 0) + 1
+                        )
+                    } else {
+                        currentState.onlineNotice
+                    }
+                )
+            }
+            then(saved.food)
+        }
     }
 
     override fun onToggleItem(item: MealListItem) {
@@ -282,5 +461,9 @@ class AddMealViewModel(
                 )
             }
             .toMap()
+    }
+
+    private companion object {
+        const val ONLINE_DEBOUNCE_MILLIS = 450L
     }
 }

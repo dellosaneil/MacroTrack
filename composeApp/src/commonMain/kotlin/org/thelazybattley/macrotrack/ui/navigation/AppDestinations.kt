@@ -128,6 +128,11 @@ sealed class AppDestinations {
 
         object Reminders : Root(route = "reminders")
 
+        /** Today's water, and its settings. */
+        object Water : Root(route = "water")
+
+        object WaterSettings : Root(route = "water_settings")
+
         object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
             fun createRoute(mealType: String, logDate: LocalDate? = null): String =
                 "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())

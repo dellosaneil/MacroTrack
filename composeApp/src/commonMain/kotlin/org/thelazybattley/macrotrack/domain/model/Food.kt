@@ -23,6 +23,18 @@ fun Food.toEntity() = FoodEntity(
     barcode = barcode
 )
 
+/**
+ * Foods are keyed by name, so a packaged food never replaces a saved food that happens to share its name: it takes
+ * its brand, then the end of its barcode, as needed.
+ */
+fun uniqueFoodName(name: String, brand: String?, barcode: String?, takenNames: Collection<String>): String {
+    val taken = takenNames.map { it.lowercase() }.toSet()
+    return listOfNotNull(
+        name,
+        brand?.let { "$name ($it)" },
+        barcode?.let { "$name (${it.takeLast(n = 4)})" }
+    ).firstOrNull { it.lowercase() !in taken } ?: "$name ($barcode)"
+}
 
 val dummyFood = Food(
     name = "Rice",

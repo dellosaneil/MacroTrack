@@ -1,5 +1,20 @@
 package org.thelazybattley.macrotrack.core.di
 
+import org.thelazybattley.macrotrack.data.local.dao.WaterDao
+import org.thelazybattley.macrotrack.data.local.tour.TourWaterDao
+import org.thelazybattley.macrotrack.data.repository.WaterRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.WaterRepository
+import org.thelazybattley.macrotrack.domain.usecase.water.AddWaterUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.DeleteWaterUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.GetDueWaterReminderUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.GetWaterSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.GetWaterSummaryUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.GetWaterWeightUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.SaveWaterSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.ScheduleWaterRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.SyncWaterRemindersUseCase
+import org.thelazybattley.macrotrack.features.water.WaterSettingsViewModel
+import org.thelazybattley.macrotrack.features.water.WaterViewModel
 import org.thelazybattley.macrotrack.data.repository.LogReminderRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.LogReminderRepository
 import org.thelazybattley.macrotrack.domain.usecase.reminder.GetDueLogRemindersUseCase
@@ -40,7 +55,10 @@ import org.thelazybattley.macrotrack.domain.repository.FoodLibraryRepository
 import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
 import org.thelazybattley.macrotrack.features.foodlibrary.FoodLibraryViewModel
 import org.thelazybattley.macrotrack.domain.repository.ProductRepository
+import org.thelazybattley.macrotrack.domain.usecase.food.GetOnlineFoodDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.LookUpBarcodeUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.SaveOnlineFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.food.SearchOnlineFoodsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetRemainingCaloriesUseCase
 import org.thelazybattley.macrotrack.features.scanbarcode.ScanBarcodeViewModel
 import org.thelazybattley.macrotrack.features.scanbarcode.ScannedFoodRequest
@@ -225,6 +243,7 @@ val sharedModule = module {
     single<UserDetailsDao> { TourUserDetailsDao(db = get()) }
     single<FoodLogDao> { TourFoodLogDao(db = get()) }
     single<WeightDao> { TourWeightDao(db = get()) }
+    single<WaterDao> { TourWaterDao(db = get()) }
     single<MeasurementDao> { TourMeasurementDao(db = get()) }
     single<DailyGoalDao> { TourDailyGoalDao(db = get()) }
     single<FavoriteDao> { TourFavoriteDao(db = get()) }
@@ -264,6 +283,7 @@ val repositoryModule = module {
     singleOf(::ProgressPhotoRepositoryImpl) { bind<ProgressPhotoRepository>() }
     singleOf(::PhotoDrafts)
     singleOf(::LogReminderRepositoryImpl) { bind<LogReminderRepository>() }
+    singleOf(::WaterRepositoryImpl) { bind<WaterRepository>() }
     singleOf(::NotificationRouteRequest)
 }
 
@@ -317,6 +337,9 @@ val useCaseModule = module {
     factoryOf(::IsTrialEndedNoticeDismissedUseCase)
     factoryOf(::DismissTrialEndedNoticeUseCase)
     factoryOf(::LookUpBarcodeUseCase)
+    factoryOf(::SearchOnlineFoodsUseCase)
+    factoryOf(::GetOnlineFoodDetailsUseCase)
+    factoryOf(::SaveOnlineFoodUseCase)
     factoryOf(::GetRemainingCaloriesUseCase)
     factoryOf(::GetWeeklyCheckInUseCase)
     factoryOf(::CompleteCheckInUseCase)
@@ -354,6 +377,15 @@ val useCaseModule = module {
     factoryOf(::SaveLogReminderSettingsUseCase)
     factoryOf(::ScheduleLogRemindersUseCase)
     factoryOf(::SyncLogRemindersUseCase)
+    factoryOf(::GetWaterWeightUseCase)
+    factoryOf(::GetWaterSummaryUseCase)
+    factoryOf(::GetWaterSettingsUseCase)
+    factoryOf(::SaveWaterSettingsUseCase)
+    factoryOf(::AddWaterUseCase)
+    factoryOf(::DeleteWaterUseCase)
+    factoryOf(::ScheduleWaterRemindersUseCase)
+    factoryOf(::SyncWaterRemindersUseCase)
+    factoryOf(::GetDueWaterReminderUseCase)
     factoryOf(::GetDueLogRemindersUseCase)
     factoryOf(::GetLogReminderMessageUseCase)
     factoryOf(::SendTestLogReminderUseCase)
@@ -398,6 +430,8 @@ val viewModelModule = module {
     viewModelOf(::PhotoSaveViewModel)
     viewModelOf(::PhotoCompareViewModel)
     viewModelOf(::RemindersViewModel)
+    viewModelOf(::WaterViewModel)
+    viewModelOf(::WaterSettingsViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

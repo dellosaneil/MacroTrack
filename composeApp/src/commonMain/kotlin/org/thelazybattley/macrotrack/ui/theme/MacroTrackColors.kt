@@ -63,6 +63,10 @@ data class MacroTrackColors(
     val warmInk: Color,
     val nightSoft: Color,
     val nightInk: Color,
+    /** Water intake, and online food results. */
+    val water: Color,
+    val waterSoft: Color,
+    val waterInk: Color,
     /** Destructive actions, like deleting all data. */
     val danger: Color,
     val onDanger: Color,

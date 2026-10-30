@@ -6,6 +6,7 @@ import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.Ingredient
 import org.thelazybattley.macrotrack.domain.model.LibraryFood
 import org.thelazybattley.macrotrack.domain.model.MealType
+import org.thelazybattley.macrotrack.domain.model.OnlineFood
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 
 data class AddMealViewState(
@@ -28,7 +29,15 @@ data class AddMealViewState(
     val justScannedName: String? = null,
     val remainingCalories: Int? = null,
     val destinationRoute: String? = null,
-    val isSaved: Boolean = false
+    val isSaved: Boolean = false,
+    /** Which group of search results shows: all of them, or only one. */
+    val searchScope: SearchScope = SearchScope.ALL,
+    val online: OnlineResults = OnlineResults(),
+    /** The online food whose details are open. */
+    val openOnlineFood: OnlineFood? = null,
+    /** Online foods saved to My foods while on this screen: barcode to the name they were saved under. */
+    val savedOnline: Map<String, String> = emptyMap(),
+    val onlineNotice: OnlineNotice? = null
 ) {
     /** Opens on Recent once anything has been logged, otherwise on My foods. */
     val activeFilter: MealFilter
@@ -66,6 +75,12 @@ data class AddMealViewState(
 
     val favoriteCount: Int get() = allItems.count { it.isFavorite }
 
+    /** Whether an online food is picked for the meal, through the copy saved in My foods. */
+    fun isOnlineSelected(food: OnlineFood): Boolean {
+        val name = savedOnline[food.barcode] ?: return false
+        return selection.any { it.key == mealItemKey(name = name, kind = MealItemKind.FOOD) }
+    }
+
     val focusedItem: SelectedMealItem? get() = selection.find { it.key == focusedKey }
 
     val selectionCalories: Int get() = selection.sumOf { it.food.macros.calories }
@@ -95,8 +110,46 @@ data class AddMealViewState(
     companion object {
         const val RECENT_LIMIT = 20
         const val LIBRARY_PREVIEW_LIMIT = 3
+
+        /** Shorter searches aren't sent online: too many loose matches. */
+        const val ONLINE_MIN_QUERY = 3
     }
 }
+
+/** The groups of search results; [ALL] shows each in turn. */
+enum class SearchScope { ALL, YOURS, LIBRARY, ONLINE }
+
+enum class OnlineStatus {
+    /** The search is too short to send. */
+    IDLE,
+    LOADING,
+    LOADING_MORE,
+    OFFLINE,
+    DONE
+}
+
+/** Online results for [query], [page] pages of them so far. */
+data class OnlineResults(
+    val query: String = "",
+    val status: OnlineStatus = OnlineStatus.IDLE,
+    val foods: List<OnlineFood> = emptyList(),
+    val totalCount: Int = 0,
+    val page: Int = 0
+) {
+    val canShowMore: Boolean get() = status == OnlineStatus.DONE && foods.size < totalCount && foods.isNotEmpty()
+}
+
+/**
+ * What was just done with an online food, with Undo: saved to My foods and, when [isSelected], picked for the meal.
+ * [isNew] is false when it was already in My foods, so Undo leaves it there. [id] tells two in a row apart.
+ */
+data class OnlineNotice(
+    val foodName: String,
+    val savedName: String,
+    val isSelected: Boolean,
+    val isNew: Boolean,
+    val id: Long
+)
 
 data class MealListItem(
     val food: Food,

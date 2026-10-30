@@ -21,6 +21,9 @@ import org.thelazybattley.macrotrack.features.deletedata.ui.DeleteDataScreen
 import org.thelazybattley.macrotrack.features.reminders.NotificationRouteRequest
 import org.thelazybattley.macrotrack.features.reminders.ui.RemindersScreen
 import org.thelazybattley.macrotrack.domain.usecase.reminder.SyncLogRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.SyncWaterRemindersUseCase
+import org.thelazybattley.macrotrack.features.water.ui.WaterScreen
+import org.thelazybattley.macrotrack.features.water.ui.WaterSettingsScreen
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -143,6 +146,11 @@ fun AppBottomNav() {
     // Sets missed-log reminders again as the log changes, so a meal logged now takes back its reminder.
     LaunchedEffect(key1 = Unit) {
         syncLogReminders()
+    }
+    val syncWaterReminders = koinInject<SyncWaterRemindersUseCase>()
+    // Sets water reminders again as drinks are logged, so catching up takes back the ones no longer due.
+    LaunchedEffect(key1 = Unit) {
+        syncWaterReminders()
     }
     // The tabs inside the main screen log their own views.
     TrackScreenViews(navController = navController, ignore = setOf(AppDestinations.Root.MainScreen.route))
@@ -375,6 +383,15 @@ fun AppBottomNav() {
                     }
                     composable(route = AppDestinations.Root.Reminders.route) {
                         RemindersScreen(onBack = { navController.popBack() })
+                    }
+                    composable(route = AppDestinations.Root.Water.route) {
+                        WaterScreen(
+                            onBack = { navController.popBack() },
+                            onOpenSettings = { navigate(AppDestinations.Root.WaterSettings.route) }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.WaterSettings.route) {
+                        WaterSettingsScreen(onBack = { navController.popBack() })
                     }
                     composable(route = AppDestinations.Root.DeleteData.route) {
                         DeleteDataScreen(

@@ -41,6 +41,7 @@ import org.thelazybattley.macrotrack.domain.usecase.reminder.LogReminderActions
 import org.thelazybattley.macrotrack.domain.usecase.reminder.ScheduleLogRemindersUseCase
 import org.thelazybattley.macrotrack.domain.usecase.reminder.formatClockTime
 import org.thelazybattley.macrotrack.domain.usecase.reminder.toEpochMillis
+import org.thelazybattley.macrotrack.domain.usecase.water.ScheduleWaterRemindersUseCase
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.reminders.logReminderRoute
 
@@ -64,7 +65,7 @@ class AndroidLogReminderScheduler(private val context: Context) : LogReminderSch
         )
         alarmManager.cancel(intent)
         upcoming.firstOrNull()?.let { next ->
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, next.at.toEpochMillis(), intent)
+            context.setReminderAlarm(atMillis = next.at.toEpochMillis(), intent = intent)
         }
     }
 
@@ -87,20 +88,28 @@ private fun BroadcastReceiver.runAsync(block: suspend (Koin) -> Unit) {
 
 /**
  * Goes off at a reminder time: shows what's due and still not logged, then sets the next alarm. After a restart or
- * an app update, when alarms are cleared, it sets them again, photo reminders too.
+ * an app update, when alarms are cleared, it sets them again, photo and water reminders too; likewise once on-time reminders
+ * are allowed, so the ones already set become exact.
  */
 class LogReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) = runAsync { koin ->
         val appContext = context.applicationContext
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+        if (intent.action in RESCHEDULE_ACTIONS) {
             koin.get<SchedulePhotoRemindersUseCase>()()
+            koin.get<ScheduleWaterRemindersUseCase>()()
         } else {
             koin.get<GetDueLogRemindersUseCase>()().forEach { LogReminderNotifications.post(context = appContext, message = it) }
         }
         koin.get<ScheduleLogRemindersUseCase>()()
     }
 }
+
+private val RESCHEDULE_ACTIONS = setOf(
+    Intent.ACTION_BOOT_COMPLETED,
+    Intent.ACTION_MY_PACKAGE_REPLACED,
+    AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED
+)
 
 /** The buttons on a reminder that don't open the app, and Undo on what they did. */
 class LogReminderActionReceiver : BroadcastReceiver() {

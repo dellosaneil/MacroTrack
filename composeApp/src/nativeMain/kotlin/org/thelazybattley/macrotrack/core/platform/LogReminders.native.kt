@@ -3,9 +3,8 @@ package org.thelazybattley.macrotrack.core.platform
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.thelazybattley.macrotrack.domain.model.LogReminder
+import org.thelazybattley.macrotrack.features.reminders.logReminderRoute
 import platform.Foundation.NSDateComponents
-import platform.UserNotifications.UNAuthorizationOptionAlert
-import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNCalendarNotificationTrigger
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
@@ -20,15 +19,15 @@ private const val ID_PREFIX = "log-reminder-"
 /**
  * iOS can't check the log when a reminder is due, so each one is set ahead, written against the log as it is, and
  * they're all set again whenever the log changes while the app is open: logging lunch takes back today's lunch
- * reminder. A few days ahead keeps well under the 64 iOS allows, alongside photo reminders. The buttons and
- * opening a screen from a tap are Android only for now.
+ * reminder. A few days ahead keeps well under the 64 iOS allows, alongside photo reminders. A tap opens the
+ * reminder's screen; the buttons are Android only for now.
  */
 class IosLogReminderScheduler : LogReminderScheduler {
 
     override val daysAhead: Int = 4
 
-    // iOS doesn't show an app's notifications while it's open.
-    override val canSendTest: Boolean = false
+    // Shows while the app is open through the notification delegate.
+    override val canSendTest: Boolean = true
 
     @OptIn(ExperimentalTime::class)
     override suspend fun schedule(upcoming: List<LogReminder>, message: suspend (LogReminder) -> LogReminderMessage) {
@@ -45,20 +44,11 @@ class IosLogReminderScheduler : LogReminderScheduler {
             }
             UNNotificationRequest.requestWithIdentifier(
                 identifier = "$ID_PREFIX${reminder.kind.name}-${reminder.at.date}",
-                content = written.toContent(),
+                content = written.toContent(route = logReminderRoute(kind = reminder.kind, date = reminder.at.date)),
                 trigger = UNCalendarNotificationTrigger.triggerWithDateMatchingComponents(dateComponents = components, repeats = false)
             )
         }
-        val center = UNUserNotificationCenter.currentNotificationCenter()
-        center.getPendingNotificationRequestsWithCompletionHandler { pending ->
-            val old = pending.orEmpty().filterIsInstance<UNNotificationRequest>().map { it.identifier }.filter { it.startsWith(prefix = ID_PREFIX) }
-            center.removePendingNotificationRequestsWithIdentifiers(identifiers = old)
-            if (requests.isEmpty()) return@getPendingNotificationRequestsWithCompletionHandler
-            // Asks the first time; after that it answers straight away with what was chosen.
-            center.requestAuthorizationWithOptions(options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound) { isGranted, _ ->
-                if (isGranted) requests.forEach { center.addNotificationRequest(request = it, withCompletionHandler = null) }
-            }
-        }
+        replacePendingNotifications(prefix = ID_PREFIX, requests = requests)
     }
 
     override suspend fun sendTest(message: LogReminderMessage) {
@@ -67,12 +57,14 @@ class IosLogReminderScheduler : LogReminderScheduler {
             content = message.toContent(),
             trigger = UNTimeIntervalNotificationTrigger.triggerWithTimeInterval(timeInterval = 1.0, repeats = false)
         )
+        if (!requestNotificationAuthorization()) return
         UNUserNotificationCenter.currentNotificationCenter().addNotificationRequest(request = request, withCompletionHandler = null)
     }
 }
 
-private fun LogReminderMessage.toContent() = UNMutableNotificationContent().apply {
+private fun LogReminderMessage.toContent(route: String? = null) = UNMutableNotificationContent().apply {
     setTitle(title)
     setBody(body)
     setSound(UNNotificationSound.defaultSound)
+    route?.let { setUserInfo(mapOf(NOTIFICATION_ROUTE_KEY to it)) }
 }

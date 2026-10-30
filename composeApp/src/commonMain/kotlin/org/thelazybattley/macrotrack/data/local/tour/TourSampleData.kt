@@ -22,7 +22,9 @@ import org.thelazybattley.macrotrack.data.local.entity.PhotoAlbumEntity
 import org.thelazybattley.macrotrack.data.local.entity.ProgressPhotoEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
+import org.thelazybattley.macrotrack.data.local.entity.WaterEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
+import org.thelazybattley.macrotrack.domain.model.WaterKind
 import org.thelazybattley.macrotrack.domain.model.ActivityLevel
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.Ingredient
@@ -178,6 +180,21 @@ class TourSampleData(
 
         val photos = database.progressPhotoDao()
         fun millisOf(days: Int) = daysAgo(days).atStartOfDayIn(timeZone = TimeZone.currentSystemDefault()).toEpochMilliseconds()
+
+        // Water: the last six days around the goal, and today's morning so far.
+        val minuteMillis = 60_000L
+        listOf(6 to 2_650, 5 to 1_900, 4 to 2_200, 3 to 2_750, 2 to 2_600, 1 to 2_450).forEach { (days, total) ->
+            listOf(8 * 60 to 500, 11 * 60 to total / 2 - 500, 16 * 60 to total - total / 2).forEach { (minutes, amount) ->
+                database.waterDao().insertWater(
+                    water = WaterEntity(date = daysAgo(days), amountMl = amount, kind = WaterKind.OTHER.name, loggedAt = millisOf(days) + minutes * minuteMillis)
+                )
+            }
+        }
+        listOf(Triple(7 * 60 + 40, 250, WaterKind.GLASS), Triple(10 * 60 + 15, 500, WaterKind.BOTTLE), Triple(12 * 60 + 30, 250, WaterKind.GLASS)).forEach { (minutes, amount, kind) ->
+            database.waterDao().insertWater(
+                water = WaterEntity(date = today, amountMl = amount, kind = kind.name, loggedAt = millisOf(days = 0) + minutes * minuteMillis)
+            )
+        }
         val pumpCheck = photos.upsertAlbum(
             album = PhotoAlbumEntity(
                 name = "Push Day Pump Check",

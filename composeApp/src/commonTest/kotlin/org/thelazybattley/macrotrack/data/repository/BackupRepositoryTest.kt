@@ -15,6 +15,7 @@ import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
+import org.thelazybattley.macrotrack.data.local.entity.WaterEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.domain.model.BackupException
@@ -36,6 +37,7 @@ class BackupRepositoryTest {
         var weights = listOf<WeightEntity>()
         var flags = listOf<AppFlagEntity>()
         var repeatingMeals = listOf<RepeatingMealEntity>()
+        var water = listOf<WaterEntity>()
 
         override suspend fun getFoods() = foods
         override suspend fun getRecipes() = emptyList<RecipeEntity>()
@@ -48,6 +50,7 @@ class BackupRepositoryTest {
         override suspend fun getAppFlags() = flags
         override suspend fun getPlannedFoods() = emptyList<PlannedFoodEntity>()
         override suspend fun getRepeatingMeals() = repeatingMeals
+        override suspend fun getWater() = water
         override suspend fun deleteFoods() { foods = emptyList() }
         override suspend fun deleteRecipes() {}
         override suspend fun deleteUserDetails() {}
@@ -58,6 +61,7 @@ class BackupRepositoryTest {
         override suspend fun deleteFavorites() {}
         override suspend fun deletePlannedFoods() {}
         override suspend fun deleteRepeatingMeals() { repeatingMeals = emptyList() }
+        override suspend fun deleteWater() { water = emptyList() }
         override suspend fun deleteAppFlagsExcept(keepKeys: List<String>) { flags = flags.filter { it.key in keepKeys } }
         override suspend fun insertFoods(foods: List<FoodEntity>) { this.foods += foods }
         override suspend fun insertRecipes(recipes: List<RecipeEntity>) {}
@@ -70,6 +74,7 @@ class BackupRepositoryTest {
         override suspend fun insertAppFlags(appFlags: List<AppFlagEntity>) { flags += appFlags }
         override suspend fun insertPlannedFoods(plannedFoods: List<PlannedFoodEntity>) {}
         override suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>) { this.repeatingMeals += repeatingMeals }
+        override suspend fun insertWater(water: List<WaterEntity>) { this.water += water }
     }
 
     private class FakeAppFlagDao : AppFlagDao {

@@ -15,6 +15,7 @@ import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
+import org.thelazybattley.macrotrack.data.local.entity.WaterEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 
 /**
@@ -57,6 +58,9 @@ abstract class BackupDao {
     @Query("SELECT * FROM RepeatingMealEntity")
     abstract suspend fun getRepeatingMeals(): List<RepeatingMealEntity>
 
+    @Query("SELECT * FROM WaterEntity")
+    abstract suspend fun getWater(): List<WaterEntity>
+
     @Query("DELETE FROM FoodEntity")
     protected abstract suspend fun deleteFoods()
 
@@ -77,6 +81,9 @@ abstract class BackupDao {
 
     @Query("DELETE FROM WeightEntity")
     protected abstract suspend fun deleteWeights()
+
+    @Query("DELETE FROM WaterEntity")
+    protected abstract suspend fun deleteWater()
 
     @Query("DELETE FROM MeasurementEntity")
     protected abstract suspend fun deleteMeasurements()
@@ -123,12 +130,16 @@ abstract class BackupDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     protected abstract suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>)
 
-    /** The food log, with the meal plan and repeating meals that feed it. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    protected abstract suspend fun insertWater(water: List<WaterEntity>)
+
+    /** The food log, with the meal plan and repeating meals that feed it, and water. */
     @Transaction
     open suspend fun deleteFoodLogsAndPlans() {
         deleteFoodLogs()
         deletePlannedFoods()
         deleteRepeatingMeals()
+        deleteWater()
     }
 
     /** Weigh-ins and measurements. */
@@ -169,6 +180,7 @@ abstract class BackupDao {
         deleteFavorites()
         deletePlannedFoods()
         deleteRepeatingMeals()
+        deleteWater()
         deleteAppFlagsExcept(keepKeys = deviceFlagKeys)
         insertFoods(foods = snapshot.foods)
         insertRecipes(recipes = snapshot.recipes)
@@ -180,6 +192,7 @@ abstract class BackupDao {
         insertFavorites(favorites = snapshot.favorites)
         insertPlannedFoods(plannedFoods = snapshot.plannedFoods)
         insertRepeatingMeals(repeatingMeals = snapshot.repeatingMeals)
+        insertWater(water = snapshot.water)
         insertAppFlags(appFlags = snapshot.appFlags.filter { it.key !in deviceFlagKeys })
     }
 }
@@ -196,5 +209,6 @@ data class DatabaseSnapshot(
     val favorites: List<FavoriteEntity>,
     val appFlags: List<AppFlagEntity>,
     val plannedFoods: List<PlannedFoodEntity>,
-    val repeatingMeals: List<RepeatingMealEntity>
+    val repeatingMeals: List<RepeatingMealEntity>,
+    val water: List<WaterEntity>
 )

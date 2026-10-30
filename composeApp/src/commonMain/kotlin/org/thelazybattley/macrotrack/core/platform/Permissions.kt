@@ -15,3 +15,10 @@ class PermissionState(
 /** Permission to post photo reminders. Granted where the platform doesn't ask. */
 @Composable
 expect fun rememberNotificationPermissionState(): PermissionState
+
+/**
+ * Permission for reminders to go off on the minute; without it Android can hold them back many minutes. Granted
+ * where the platform doesn't ask.
+ */
+@Composable
+expect fun rememberExactAlarmPermissionState(): PermissionState

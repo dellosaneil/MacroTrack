@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Sets reminders again after a restart, which clears them. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Reminders on the minute; inexact alarms can come many minutes late. Android 14+ asks for it in settings. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!-- The barcode scanner needs a camera, but the app works without one. -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -44,8 +46,13 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
             </intent-filter>
         </receiver>
+        <!-- Water reminders: checks the pace at each reminder time. -->
+        <receiver
+            android:name=".core.platform.WaterReminderReceiver"
+            android:exported="false" />
         <!-- The buttons on a missed-log reminder that don't open the app. -->
         <receiver
             android:name=".core.platform.LogReminderActionReceiver"

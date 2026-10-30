@@ -58,6 +58,9 @@ import macrotrack.composeapp.generated.resources.reminders_meal_sub
 import macrotrack.composeapp.generated.resources.reminders_meals_header
 import macrotrack.composeapp.generated.resources.reminders_off
 import macrotrack.composeapp.generated.resources.reminders_options
+import macrotrack.composeapp.generated.resources.reminders_exact_allow
+import macrotrack.composeapp.generated.resources.reminders_exact_body
+import macrotrack.composeapp.generated.resources.reminders_exact_title
 import macrotrack.composeapp.generated.resources.reminders_perm_allow
 import macrotrack.composeapp.generated.resources.reminders_perm_allowed
 import macrotrack.composeapp.generated.resources.reminders_perm_blocked
@@ -83,6 +86,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.platform.rememberExactAlarmPermissionState
 import org.thelazybattley.macrotrack.core.platform.rememberNotificationPermissionState
 import org.thelazybattley.macrotrack.domain.model.LogReminderKind
 import org.thelazybattley.macrotrack.domain.model.LogReminderSettings
@@ -105,6 +109,7 @@ fun RemindersScreen(
     val viewModel = koinViewModel<RemindersViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     val permission = rememberNotificationPermissionState()
+    val exactAlarms = rememberExactAlarmPermissionState()
     RemindersScreen(
         modifier = modifier,
         viewState = viewState,
@@ -112,6 +117,8 @@ fun RemindersScreen(
         isPermissionGranted = permission.isGranted,
         isPermanentlyDenied = permission.isPermanentlyDenied,
         onRequestPermission = permission.request,
+        isOnTime = exactAlarms.isGranted,
+        onAllowOnTime = exactAlarms.request,
         onBack = onBack
     )
 }
@@ -124,6 +131,8 @@ private fun RemindersScreen(
     isPermissionGranted: Boolean,
     isPermanentlyDenied: Boolean,
     onRequestPermission: () -> Unit,
+    isOnTime: Boolean,
+    onAllowOnTime: () -> Unit,
     onBack: () -> Unit
 ) {
     val settings = viewState.settings
@@ -142,7 +151,19 @@ private fun RemindersScreen(
             verticalArrangement = Arrangement.spacedBy(space = 16.dp)
         ) {
             if (settings.isOn && !isPermissionGranted) {
-                PermissionBanner(isPermanentlyDenied = isPermanentlyDenied, onClick = onRequestPermission)
+                PermissionBanner(
+                    title = Res.string.reminders_perm_title,
+                    body = Res.string.reminders_perm_body,
+                    button = if (isPermanentlyDenied) Res.string.reminders_perm_settings else Res.string.reminders_perm_allow,
+                    onClick = onRequestPermission
+                )
+            } else if (settings.isOn && !isOnTime) {
+                PermissionBanner(
+                    title = Res.string.reminders_exact_title,
+                    body = Res.string.reminders_exact_body,
+                    button = Res.string.reminders_exact_allow,
+                    onClick = onAllowOnTime
+                )
             }
             HeroCard()
             MasterRow(
@@ -185,7 +206,7 @@ private fun RemindersScreen(
 }
 
 @Composable
-private fun PermissionBanner(isPermanentlyDenied: Boolean, onClick: () -> Unit) {
+private fun PermissionBanner(title: StringResource, body: StringResource, button: StringResource, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -202,8 +223,8 @@ private fun PermissionBanner(isPermanentlyDenied: Boolean, onClick: () -> Unit) 
         )
         Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
             Column {
-                Text(text = stringResource(resource = Res.string.reminders_perm_title), style = typography.bold14, color = colors.warmInk)
-                Text(text = stringResource(resource = Res.string.reminders_perm_body), style = typography.regular13, color = colors.warmInk)
+                Text(text = stringResource(resource = title), style = typography.bold14, color = colors.warmInk)
+                Text(text = stringResource(resource = body), style = typography.regular13, color = colors.warmInk)
             }
             Box(
                 modifier = Modifier
@@ -214,13 +235,7 @@ private fun PermissionBanner(isPermanentlyDenied: Boolean, onClick: () -> Unit) 
                     .padding(horizontal = 14.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = stringResource(
-                        resource = if (isPermanentlyDenied) Res.string.reminders_perm_settings else Res.string.reminders_perm_allow
-                    ),
-                    style = typography.bold14,
-                    color = colors.ink
-                )
+                Text(text = stringResource(resource = button), style = typography.bold14, color = colors.ink)
             }
         }
     }
@@ -546,6 +561,8 @@ private fun PreviewRemindersScreen() {
             isPermissionGranted = false,
             isPermanentlyDenied = true,
             onRequestPermission = {},
+            isOnTime = true,
+            onAllowOnTime = {},
             onBack = {}
         )
     }

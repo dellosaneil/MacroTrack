@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -120,6 +121,8 @@ import org.thelazybattley.macrotrack.domain.model.dummyFood
 import org.thelazybattley.macrotrack.features.addmeal.AddMealCallbacks
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewModel
 import org.thelazybattley.macrotrack.features.addmeal.AddMealViewState
+import org.thelazybattley.macrotrack.features.addmeal.OnlineStatus
+import org.thelazybattley.macrotrack.features.addmeal.SearchScope
 import org.thelazybattley.macrotrack.features.addmeal.MealListItem
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.tour.TourTarget
@@ -164,9 +167,23 @@ private fun AddMealScreen(
     callbacks: AddMealCallbacks,
     onBack: () -> Unit
 ) {
+    val mealTitle = stringResource(resource = viewState.selectedMealType.title)
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = colors.background,
+        bottomBar = {
+            viewState.onlineNotice?.let { notice ->
+                OnlineNoticeBar(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    notice = notice,
+                    mealTitle = mealTitle,
+                    onUndo = callbacks::onUndoOnlineNotice,
+                    onDismiss = callbacks::onDismissOnlineNotice
+                )
+            }
+        },
         topBar = {
             AddMealHeader(
                 mealType = viewState.selectedMealType,
@@ -263,6 +280,12 @@ private fun AddMealScreen(
                         favoriteCount = viewState.favoriteCount,
                         onFilterSelected = callbacks::onMealFilterSelected
                     )
+                } else {
+                    SearchScopeChips(
+                        modifier = Modifier.fillMaxWidth(),
+                        selected = viewState.searchScope,
+                        onSelected = callbacks::onSearchScopeSelected
+                    )
                 }
                 if (viewState.selection.isNotEmpty()) {
                     SelectionSummary(
@@ -343,11 +366,22 @@ private fun AddMealScreen(
             }
         }
     }
+    viewState.openOnlineFood?.let { food ->
+        OnlineFoodSheet(
+            food = food,
+            mealTitle = mealTitle,
+            onAdd = { amount -> callbacks.onAddOnlineFoodPortion(food = food, amount = amount) },
+            onSave = { callbacks.onSaveOnlineFood(food = food) },
+            onFix = { callbacks.onFixOnlineFood(food = food) },
+            onDismiss = callbacks::onCloseOnlineFood
+        )
+    }
 }
 
 /**
- * While searching, results come in two groups: the user's own foods and recipes, then the food library (a short
- * preview that links to the full library). With no match anywhere, the screen offers ways to add the food instead.
+ * While searching, results come in three groups: the user's own foods and recipes, the food library (a short preview
+ * that links to the full library), then foods found online, which fill in after. The chips narrow it to one group.
+ * With no match anywhere, the screen offers ways to add the food instead.
  */
 private fun LazyListScope.searchResults(
     viewState: AddMealViewState,
@@ -355,15 +389,18 @@ private fun LazyListScope.searchResults(
     openLibrary: (String?) -> Unit
 ) {
     val query = viewState.searchQuery.trim()
+    val scope = viewState.searchScope
     val matches = viewState.searchMatches
     val libraryMatches = viewState.librarySearchMatches
+    val online = viewState.online
     val createFood = {
         callbacks.onNavigateScreen(route = AppDestinations.Root.CreateFood.createRoute(foodName = "", prefillName = query))
     }
     val createRecipe = {
         callbacks.onNavigateScreen(route = AppDestinations.Root.CreateRecipe.createRoute(recipeName = ""))
     }
-    if (matches.isEmpty() && libraryMatches.isEmpty()) {
+    val isOnlineEmpty = online.status == OnlineStatus.IDLE || (online.status == OnlineStatus.DONE && online.foods.isEmpty())
+    if (scope == SearchScope.ALL && matches.isEmpty() && libraryMatches.isEmpty() && isOnlineEmpty) {
         item(key = "no_matches") {
             NoMatches(
                 query = query,
@@ -382,39 +419,47 @@ private fun LazyListScope.searchResults(
         }
         return
     }
-    item(key = "matches_header") {
-        GroupHeader(title = stringResource(resource = Res.string.your_foods_and_recipes), count = matches.size)
+    if (scope == SearchScope.ALL || scope == SearchScope.YOURS) {
+        item(key = "matches_header") {
+            GroupHeader(title = stringResource(resource = Res.string.your_foods_and_recipes), count = matches.size)
+        }
+        if (matches.isEmpty()) {
+            item(key = "no_saved_matches") {
+                NoSavedMatches(
+                    query = query,
+                    hasLibraryMatches = scope == SearchScope.ALL && libraryMatches.isNotEmpty(),
+                    onNewFood = createFood,
+                    onNewRecipe = createRecipe
+                )
+            }
+        }
+        mealItems(items = matches, viewState = viewState, callbacks = callbacks, showLastLogged = false, isTourList = false)
     }
-    if (matches.isEmpty()) {
-        item(key = "no_saved_matches") {
-            NoSavedMatches(
-                query = query,
-                hasLibraryMatches = libraryMatches.isNotEmpty(),
-                onNewFood = createFood,
-                onNewRecipe = createRecipe
+    if (scope == SearchScope.ALL || scope == SearchScope.LIBRARY) {
+        item(key = "library_header") {
+            LibraryGroupHeader(count = libraryMatches.size, query = query)
+        }
+        mealItems(
+            items = libraryMatches.take(n = AddMealViewState.LIBRARY_PREVIEW_LIMIT),
+            viewState = viewState,
+            callbacks = callbacks,
+            showLastLogged = false,
+            isTourList = false
+        )
+        item(key = "library_more") {
+            LibraryMoreButton(
+                text = if (libraryMatches.size > AddMealViewState.LIBRARY_PREVIEW_LIMIT) {
+                    stringResource(resource = Res.string.see_all_in_library, libraryMatches.size)
+                } else {
+                    stringResource(resource = Res.string.browse_the_food_library)
+                },
+                onClick = { openLibrary(query) }
             )
         }
     }
-    mealItems(items = matches, viewState = viewState, callbacks = callbacks, showLastLogged = false, isTourList = false)
-    item(key = "library_header") {
-        LibraryGroupHeader(count = libraryMatches.size, query = query)
-    }
-    mealItems(
-        items = libraryMatches.take(n = AddMealViewState.LIBRARY_PREVIEW_LIMIT),
-        viewState = viewState,
-        callbacks = callbacks,
-        showLastLogged = false,
-        isTourList = false
-    )
-    item(key = "library_more") {
-        LibraryMoreButton(
-            text = if (libraryMatches.size > AddMealViewState.LIBRARY_PREVIEW_LIMIT) {
-                stringResource(resource = Res.string.see_all_in_library, libraryMatches.size)
-            } else {
-                stringResource(resource = Res.string.browse_the_food_library)
-            },
-            onClick = { openLibrary(query) }
-        )
+    if (scope == SearchScope.ALL || scope == SearchScope.ONLINE) {
+        onlineResults(viewState = viewState, callbacks = callbacks)
+        item(key = "online_privacy") { OnlinePrivacyNote() }
     }
 }
 

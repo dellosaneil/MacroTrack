@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.addmeal
 
+import org.thelazybattley.macrotrack.domain.model.OnlineFood
 import org.thelazybattley.macrotrack.features.addmeal.ui.MealFilter
 
 interface AddMealCallbacks {
@@ -14,6 +15,17 @@ interface AddMealCallbacks {
     fun onDeleteItem(item: MealListItem)
     fun onNavigateScreen(route: String)
     fun resetNavigateScreen()
+    fun onSearchScopeSelected(scope: SearchScope)
+    fun onAddOnlineFood(food: OnlineFood)
+    fun onOpenOnlineFood(food: OnlineFood)
+    fun onCloseOnlineFood()
+    fun onAddOnlineFoodPortion(food: OnlineFood, amount: Double)
+    fun onSaveOnlineFood(food: OnlineFood)
+    fun onFixOnlineFood(food: OnlineFood)
+    fun onRetryOnline()
+    fun onShowMoreOnline()
+    fun onUndoOnlineNotice()
+    fun onDismissOnlineNotice()
 
     companion object {
         fun default() = object : AddMealCallbacks {
@@ -28,6 +40,17 @@ interface AddMealCallbacks {
             override fun onDeleteItem(item: MealListItem) {}
             override fun onNavigateScreen(route: String) {}
             override fun resetNavigateScreen() {}
+            override fun onSearchScopeSelected(scope: SearchScope) {}
+            override fun onAddOnlineFood(food: OnlineFood) {}
+            override fun onOpenOnlineFood(food: OnlineFood) {}
+            override fun onCloseOnlineFood() {}
+            override fun onAddOnlineFoodPortion(food: OnlineFood, amount: Double) {}
+            override fun onSaveOnlineFood(food: OnlineFood) {}
+            override fun onFixOnlineFood(food: OnlineFood) {}
+            override fun onRetryOnline() {}
+            override fun onShowMoreOnline() {}
+            override fun onUndoOnlineNotice() {}
+            override fun onDismissOnlineNotice() {}
         }
     }
 }
