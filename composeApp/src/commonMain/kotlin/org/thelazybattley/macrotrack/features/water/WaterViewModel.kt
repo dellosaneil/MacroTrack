@@ -1,9 +1,11 @@
 package org.thelazybattley.macrotrack.features.water
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.WATER_AMOUNT_MAX_ML
@@ -14,6 +16,7 @@ import org.thelazybattley.macrotrack.domain.model.WaterSummary
 import org.thelazybattley.macrotrack.domain.usecase.water.AddWaterUseCase
 import org.thelazybattley.macrotrack.domain.usecase.water.DeleteWaterUseCase
 import org.thelazybattley.macrotrack.domain.usecase.water.GetWaterSummaryUseCase
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
 /** [lastAdded] is the drink just added, shown with Undo; [isTyping] when the keypad is open for another amount. */
 data class WaterViewState(
@@ -46,6 +49,7 @@ interface WaterCallbacks {
 
 /** Today's water, on the Water screen and the card on Today. */
 class WaterViewModel(
+    savedStateHandle: SavedStateHandle,
     getWaterSummaryUseCase: GetWaterSummaryUseCase,
     private val addWaterUseCase: AddWaterUseCase,
     private val deleteWaterUseCase: DeleteWaterUseCase
@@ -57,6 +61,15 @@ class WaterViewModel(
     init {
         viewModelScope.launch {
             getWaterSummaryUseCase().collect { summary -> _state.update { it.copy(summary = summary) } }
+        }
+        // Opened from Add water on the app icon: a glass goes in once the sizes are known, with Undo. Cleared so
+        // the screen coming back after the app was closed doesn't add another.
+        if (savedStateHandle.get<String>(key = AppDestinations.ADD_GLASS) == "true") {
+            savedStateHandle[AppDestinations.ADD_GLASS] = null
+            viewModelScope.launch {
+                _state.first { it.summary != null }
+                onAdd(kind = WaterKind.GLASS)
+            }
         }
     }
 

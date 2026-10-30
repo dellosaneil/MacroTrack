@@ -19,6 +19,9 @@ import org.thelazybattley.macrotrack.features.photos.ui.PhotoSaveScreen
 import org.thelazybattley.macrotrack.features.photos.ui.ProgressPhotosScreen
 import org.thelazybattley.macrotrack.features.deletedata.ui.DeleteDataScreen
 import org.thelazybattley.macrotrack.features.reminders.NotificationRouteRequest
+import org.jetbrains.compose.resources.getString
+import org.thelazybattley.macrotrack.core.platform.AppShortcut
+import org.thelazybattley.macrotrack.core.platform.AppShortcutPublisher
 import org.thelazybattley.macrotrack.features.reminders.ui.RemindersScreen
 import org.thelazybattley.macrotrack.domain.usecase.reminder.SyncLogRemindersUseCase
 import org.thelazybattley.macrotrack.domain.usecase.water.SyncWaterRemindersUseCase
@@ -183,6 +186,12 @@ fun AppBottomNav() {
             navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false)
             latestNavigate(route)
         }
+    }
+    val appShortcutPublisher = koinInject<AppShortcutPublisher>()
+    // The app icon's shortcuts, once there's a main screen for them to open over; set each launch to follow the language.
+    LaunchedEffect(key1 = Unit) {
+        navController.currentBackStackEntryFlow.first { navController.hasMainScreen() }
+        appShortcutPublisher.publish(titles = AppShortcut.entries.associateWith { getString(resource = it.title) })
     }
     val getProgressPhotos = koinInject<GetProgressPhotosUseCase>()
     LaunchedEffect(key1 = tourState.step?.screen) {
@@ -384,7 +393,16 @@ fun AppBottomNav() {
                     composable(route = AppDestinations.Root.Reminders.route) {
                         RemindersScreen(onBack = { navController.popBack() })
                     }
-                    composable(route = AppDestinations.Root.Water.route) {
+                    composable(
+                        route = AppDestinations.Root.Water.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = AppDestinations.ADD_GLASS) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
                         WaterScreen(
                             onBack = { navController.popBack() },
                             onOpenSettings = { navigate(AppDestinations.Root.WaterSettings.route) }

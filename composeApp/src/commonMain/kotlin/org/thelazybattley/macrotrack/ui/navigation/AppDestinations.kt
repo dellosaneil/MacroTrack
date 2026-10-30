@@ -128,8 +128,11 @@ sealed class AppDestinations {
 
         object Reminders : Root(route = "reminders")
 
-        /** Today's water, and its settings. */
-        object Water : Root(route = "water")
+        /** Today's water, and its settings. [ADD_GLASS] adds a glass as it opens, for the shortcut on the app icon. */
+        object Water : Root(route = "water", routeWithArgs = "water?$ADD_GLASS={$ADD_GLASS}") {
+            fun createRoute(isAddingGlass: Boolean = false): String =
+                route + queryString(ADD_GLASS to if (isAddingGlass) "true" else null)
+        }
 
         object WaterSettings : Root(route = "water_settings")
 
@@ -241,6 +244,7 @@ sealed class AppDestinations {
         const val BEFORE_ID = "beforeId"
         const val AFTER_ID = "afterId"
         const val SIDE_BY_SIDE = "sideBySide"
+        const val ADD_GLASS = "addGlass"
     }
 }
 

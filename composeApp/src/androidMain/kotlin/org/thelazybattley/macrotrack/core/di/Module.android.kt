@@ -7,7 +7,9 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.thelazybattley.macrotrack.core.billing.BillingService
 import org.thelazybattley.macrotrack.core.billing.PlayBillingService
+import org.thelazybattley.macrotrack.core.platform.AndroidAppShortcutPublisher
 import org.thelazybattley.macrotrack.core.platform.AndroidLogReminderScheduler
+import org.thelazybattley.macrotrack.core.platform.AppShortcutPublisher
 import org.thelazybattley.macrotrack.core.platform.AndroidPhotoReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.LogReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.AndroidPhotoStorage
@@ -34,6 +36,7 @@ actual val platformModule: Module = module {
     single<PhotoReminderScheduler> { AndroidPhotoReminderScheduler(context = get()) }
     single<LogReminderScheduler> { AndroidLogReminderScheduler(context = get()) }
     single<WaterReminderScheduler> { AndroidWaterReminderScheduler(context = get()) }
+    single<AppShortcutPublisher> { AndroidAppShortcutPublisher(context = get()) }
 }
 
 fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {

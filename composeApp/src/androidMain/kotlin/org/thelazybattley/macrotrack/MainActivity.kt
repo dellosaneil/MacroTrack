@@ -6,14 +6,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.pm.ShortcutManagerCompat
 import org.koin.android.ext.android.get
+import org.thelazybattley.macrotrack.core.platform.AppShortcut
 import org.thelazybattley.macrotrack.core.platform.EXTRA_ACTION
+import org.thelazybattley.macrotrack.core.platform.EXTRA_APP_SHORTCUT
 import org.thelazybattley.macrotrack.core.platform.EXTRA_REMINDER_NOTIFICATION
 import org.thelazybattley.macrotrack.core.platform.EXTRA_REMINDER_ROUTE
 import org.thelazybattley.macrotrack.core.platform.LogReminderAction
 import org.thelazybattley.macrotrack.domain.usecase.reminder.LogReminderActions
 import org.thelazybattley.macrotrack.features.navigation.AppBottomNav
 import org.thelazybattley.macrotrack.features.reminders.NotificationRouteRequest
+import org.thelazybattley.macrotrack.features.shortcuts.appShortcutRoute
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,8 +25,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        // A recreated activity keeps the intent it started with; the reminder was already handled then.
-        if (savedInstanceState == null) openReminder(intent = intent)
+        // A recreated activity keeps the intent it started with; the reminder or shortcut was already handled then.
+        if (savedInstanceState == null) {
+            openReminder(intent = intent)
+            openShortcut(intent = intent)
+        }
         setContent {
             MacroTrackTheme() {
                 AppBottomNav()
@@ -33,6 +40,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         openReminder(intent = intent)
+        openShortcut(intent = intent)
     }
 
     /** A tapped missed-log reminder: takes it away and asks for the screen it leads to. */
@@ -44,5 +52,13 @@ class MainActivity : ComponentActivity() {
             get<LogReminderActions>().opened(action = action)
         }
         get<NotificationRouteRequest>().request(route = route)
+    }
+
+    /** A shortcut tapped on the app icon: asks for its screen, worked out for the time it was tapped. */
+    private fun openShortcut(intent: Intent) {
+        val shortcut = AppShortcut.of(id = intent.getStringExtra(EXTRA_APP_SHORTCUT)) ?: return
+        intent.removeExtra(EXTRA_APP_SHORTCUT)
+        ShortcutManagerCompat.reportShortcutUsed(this, shortcut.name)
+        get<NotificationRouteRequest>().request(route = appShortcutRoute(shortcut = shortcut))
     }
 }

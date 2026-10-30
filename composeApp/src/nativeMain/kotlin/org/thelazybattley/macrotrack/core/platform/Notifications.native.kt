@@ -53,13 +53,17 @@ internal suspend fun replacePendingNotifications(prefix: String, requests: List<
     platform.Foundation.NSLog("DBGNOTIF done prefix=$prefix")
 }
 
-/**
- * Shows reminders while the app is open too (iOS hides them otherwise) and opens the screen a tapped one asks for.
- * A tap that launches the app can come before the app has started, so its screen waits for [deliverPendingRoute].
- */
-private class NotificationDelegate : NSObject(), UNUserNotificationCenterDelegateProtocol {
+// A screen asked for before the app had started, by a tapped notification or app icon shortcut.
+private var pendingRoute: String? = null
 
-    var pendingRoute: String? = null
+/** Opens [route] over the main screen, or once the app has started when it hasn't yet (see [deliverPendingRoute]). */
+internal fun requestRoute(route: String) {
+    val request = KoinPlatform.getKoinOrNull()?.getOrNull<NotificationRouteRequest>()
+    if (request != null) request.request(route = route) else pendingRoute = route
+}
+
+/** Shows reminders while the app is open too (iOS hides them otherwise) and opens the screen a tapped one asks for. */
+private class NotificationDelegate : NSObject(), UNUserNotificationCenterDelegateProtocol {
 
     override fun userNotificationCenter(
         center: UNUserNotificationCenter,
@@ -75,10 +79,7 @@ private class NotificationDelegate : NSObject(), UNUserNotificationCenterDelegat
         withCompletionHandler: () -> Unit
     ) {
         val route = didReceiveNotificationResponse.notification.request.content.userInfo[NOTIFICATION_ROUTE_KEY] as? String
-        if (route != null) {
-            val request = KoinPlatform.getKoinOrNull()?.getOrNull<NotificationRouteRequest>()
-            if (request != null) request.request(route = route) else pendingRoute = route
-        }
+        if (route != null) requestRoute(route = route)
         withCompletionHandler()
     }
 }
@@ -91,9 +92,9 @@ fun installNotificationDelegate() {
     UNUserNotificationCenter.currentNotificationCenter().delegate = delegate
 }
 
-/** Opens the screen a notification tapped before the app had started asked for. */
+/** Opens the screen a notification or shortcut tapped before the app had started asked for. */
 fun deliverPendingRoute() {
-    val route = delegate.pendingRoute ?: return
-    delegate.pendingRoute = null
+    val route = pendingRoute ?: return
+    pendingRoute = null
     KoinPlatform.getKoinOrNull()?.getOrNull<NotificationRouteRequest>()?.request(route = route)
 }

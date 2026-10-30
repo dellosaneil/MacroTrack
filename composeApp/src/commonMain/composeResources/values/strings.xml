@@ -1733,4 +1733,9 @@
     <string name="water_reminder_title">Time for some water</string>
     <string name="water_reminder_body">You’re at %1$s of %2$s. By %3$s you’re usually near %4$s.</string>
     <string name="water_reminder_channel">Water reminders</string>
+    <string name="shortcut_scan_barcode">Scan barcode</string>
+    <string name="shortcut_log_food">Log food</string>
+    <string name="shortcut_quick_add">Quick add</string>
+    <string name="shortcut_add_water">Add water</string>
+    <string name="shortcut_log_weight">Log weight</string>
 </resources>
