@@ -8,6 +8,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>FitMetric uses your camera to read barcodes on food packaging and to take progress photos, which stay on this phone.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>FitMetric saves the progress cards you make to your photos.</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

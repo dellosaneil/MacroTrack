@@ -1,5 +1,8 @@
 package org.thelazybattley.macrotrack.features.photos.ui
 
+import org.thelazybattley.macrotrack.ui.common.CommonPrimaryButton
+import macrotrack.composeapp.generated.resources.share_as_image
+import macrotrack.composeapp.generated.resources.ic_share_out
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import androidx.compose.foundation.background
@@ -107,7 +110,11 @@ import kotlin.math.round
 import kotlin.math.roundToInt
 
 @Composable
-fun PhotoCompareScreen(onBack: () -> Unit) {
+fun PhotoCompareScreen(
+    onBack: () -> Unit,
+    /** Opens the before & after card for the album and the two photos being compared. */
+    onShare: (albumId: Long, beforeId: Long, afterId: Long) -> Unit
+) {
     val viewModel = koinViewModel<PhotoCompareViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(key1 = viewState.isLoaded, key2 = viewState.summary) {
@@ -144,6 +151,14 @@ fun PhotoCompareScreen(onBack: () -> Unit) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(text = stringResource(resource = Res.string.photo_before_after), style = typography.bold18, color = colors.ink)
+            }
+            val album = viewState.summary?.album
+            if (album != null && before != null && after != null && before != after) {
+                SquareIconButton(
+                    icon = { PhotoIcon(resource = Res.drawable.ic_share_out, size = 18) },
+                    description = stringResource(resource = Res.string.share_as_image),
+                    onClick = { onShare(album.id, before.photo.id, after.photo.id) }
+                )
             }
         }
         if (before == null || after == null) return@Column
@@ -185,6 +200,14 @@ fun PhotoCompareScreen(onBack: () -> Unit) {
             PhotoStrip(viewState = viewState, picking = picking, onPick = viewModel::onPhotoPicked)
         }
         CompareStats(viewState = viewState, before = before, after = after)
+        val album = viewState.summary?.album
+        if (album != null && before != after) {
+            CommonPrimaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(resource = Res.string.share_as_image),
+                onClick = { onShare(album.id, before.photo.id, after.photo.id) }
+            )
+        }
     }
 }
 

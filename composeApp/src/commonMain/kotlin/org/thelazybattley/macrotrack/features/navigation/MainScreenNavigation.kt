@@ -88,7 +88,9 @@ fun MainScreenNavigation(
                 }
             }
             composable(route = AppDestinations.BottomNavigation.Insights.route) {
-                InsightsScreen(modifier = Modifier.fillMaxSize())
+                InsightsScreen(modifier = Modifier.fillMaxSize()) { route ->
+                    onNavigate(route)
+                }
             }
             composable(route = AppDestinations.BottomNavigation.Progress.route) {
                 ProgressScreen(modifier = Modifier.fillMaxSize()) { route ->

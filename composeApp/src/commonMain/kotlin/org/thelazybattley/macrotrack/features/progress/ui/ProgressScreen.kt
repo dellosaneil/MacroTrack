@@ -1,5 +1,9 @@
 package org.thelazybattley.macrotrack.features.progress.ui
 
+import androidx.compose.ui.semantics.Role
+import macrotrack.composeapp.generated.resources.share_weight_description
+import macrotrack.composeapp.generated.resources.ic_share_out
+import org.thelazybattley.macrotrack.features.share.ShareCardKind
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.ui.text.style.TextOverflow
@@ -141,7 +145,8 @@ private fun ProgressScreen(
         }
         WeightCard(
             viewState = viewState,
-            onOpenHistory = { onNavigate(AppDestinations.Profile.WeightHistory.route) }
+            onOpenHistory = { onNavigate(AppDestinations.Profile.WeightHistory.route) },
+            onShare = { onNavigate(AppDestinations.Root.ShareCard.createRoute(kind = ShareCardKind.WEIGHT.name)) }
         )
         PhotosCard(
             modifier = Modifier.tourTarget(target = TourTarget.PROGRESS_PHOTOS),
@@ -223,7 +228,8 @@ private fun ProgressCard(modifier: Modifier = Modifier, content: @Composable () 
 @Composable
 private fun WeightCard(
     viewState: ProgressViewState,
-    onOpenHistory: () -> Unit
+    onOpenHistory: () -> Unit,
+    onShare: () -> Unit
 ) {
     val weight = viewState.latestWeight?.weight ?: viewState.userDetails?.weight
     ProgressCard {
@@ -271,6 +277,25 @@ private fun WeightCard(
                 Column(horizontalAlignment = Alignment.End) {
                     Text(text = stringResource(resource = Res.string.last_logged), style = typography.regular11, color = colors.muted)
                     Text(text = latest.date.toAbbreviatedMonthDay(), style = typography.bold13, color = colors.ink)
+                }
+            }
+            if (viewState.canShareWeight) {
+                val shape = RoundedCornerShape(size = 12.dp)
+                Box(
+                    modifier = Modifier
+                        .padding(start = 10.dp)
+                        .size(size = 40.dp)
+                        .clip(shape = shape)
+                        .border(width = 1.dp, color = colors.line, shape = shape)
+                        .clickable(role = Role.Button, onClick = onShare),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_share_out),
+                        contentDescription = stringResource(resource = Res.string.share_weight_description),
+                        tint = colors.ink,
+                        modifier = Modifier.size(size = 18.dp)
+                    )
                 }
             }
         }

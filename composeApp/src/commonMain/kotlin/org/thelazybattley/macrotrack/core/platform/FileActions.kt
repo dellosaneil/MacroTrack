@@ -11,6 +11,12 @@ interface FileActions {
     /** Lets the user pick where to save [file]; [onResult] gets true once it's written, false if they cancel. */
     fun save(file: SharedFile, onResult: (Boolean) -> Unit)
 
+    /**
+     * Saves the image in [file] to the phone's photos; [onResult] gets true once it's there. Where that isn't
+     * possible without asking for storage access, it falls back to [save].
+     */
+    fun saveImage(file: SharedFile, onResult: (Boolean) -> Unit)
+
     /** Opens the share sheet with [file]. */
     fun share(file: SharedFile)
 

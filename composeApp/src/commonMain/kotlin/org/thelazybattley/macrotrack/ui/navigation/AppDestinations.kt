@@ -195,6 +195,22 @@ sealed class AppDestinations {
                 )
         }
 
+        /**
+         * A progress card to save or share: [SHARE_KIND] picks the one it opens on. Before & after uses [ALBUM_ID] with
+         * [BEFORE_ID] and [AFTER_ID] when given, otherwise the album with the latest photos.
+         */
+        object ShareCard : Root(
+            route = "share_card",
+            routeWithArgs = "share_card/{$SHARE_KIND}?$ALBUM_ID={$ALBUM_ID}&$BEFORE_ID={$BEFORE_ID}&$AFTER_ID={$AFTER_ID}"
+        ) {
+            fun createRoute(kind: String, albumId: Long? = null, beforeId: Long? = null, afterId: Long? = null): String =
+                "$route/$kind" + queryString(
+                    ALBUM_ID to albumId?.toString(),
+                    BEFORE_ID to beforeId?.toString(),
+                    AFTER_ID to afterId?.toString()
+                )
+        }
+
         object Calendar : Root(route = "calendar")
 
         object PastGoal : Root(route = "past_goal")
@@ -245,6 +261,7 @@ sealed class AppDestinations {
         const val AFTER_ID = "afterId"
         const val SIDE_BY_SIDE = "sideBySide"
         const val ADD_GLASS = "addGlass"
+        const val SHARE_KIND = "shareKind"
         /** Set on Repeating meals' back stack entry when Edit repeating meal asks for that one to be deleted. */
         const val DELETE_REPEATING_MEAL_ID = "deleteRepeatingMealId"
     }

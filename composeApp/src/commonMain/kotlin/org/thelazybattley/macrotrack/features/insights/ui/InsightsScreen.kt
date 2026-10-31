@@ -5,6 +5,13 @@ import org.thelazybattley.macrotrack.features.tour.TourTarget
 import androidx.compose.foundation.Canvas
 import org.thelazybattley.macrotrack.ui.common.portionUnit
 import androidx.compose.foundation.background
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import org.thelazybattley.macrotrack.features.share.ShareCardKind
+import org.jetbrains.compose.resources.painterResource
+import macrotrack.composeapp.generated.resources.share_week_button
+import macrotrack.composeapp.generated.resources.ic_share_out
+import androidx.compose.ui.semantics.Role
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -85,14 +92,15 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.roundToInt
 
 @Composable
-fun InsightsScreen(modifier: Modifier = Modifier) {
+fun InsightsScreen(modifier: Modifier = Modifier, onNavigate: (String) -> Unit) {
     val viewModel = koinViewModel<InsightsViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     InsightsScreen(
         modifier = modifier,
         insights = viewState?.insights,
         foodUnits = viewState?.foodUnits.orEmpty(),
-        onRangeSelected = viewModel::onRangeSelected
+        onRangeSelected = viewModel::onRangeSelected,
+        onShareWeek = { onNavigate(AppDestinations.Root.ShareCard.createRoute(kind = ShareCardKind.WEEK.name)) }
     )
 }
 
@@ -101,7 +109,8 @@ private fun InsightsScreen(
     modifier: Modifier = Modifier,
     insights: Insights?,
     foodUnits: Map<String, String>,
-    onRangeSelected: (InsightsRange) -> Unit
+    onRangeSelected: (InsightsRange) -> Unit,
+    onShareWeek: () -> Unit
 ) {
     Column(
         modifier = modifier.verticalScroll(state = rememberScrollState()),
@@ -112,7 +121,16 @@ private fun InsightsScreen(
         LaunchedEffect(key1 = pro.isActive, key2 = insights?.range) {
             if (!pro.isActive && insights?.range == InsightsRange.MONTH) onRangeSelected(InsightsRange.WEEK)
         }
-        Text(text = stringResource(resource = Res.string.insights), style = typography.bold32, color = colors.ink)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 12.dp)) {
+            Text(
+                text = stringResource(resource = Res.string.insights),
+                style = typography.bold32,
+                color = colors.ink,
+                modifier = Modifier.weight(weight = 1f)
+            )
+            // The recap is always of the last 7 days, whichever range is showing.
+            if ((insights?.loggedDays ?: 0) > 0) ShareWeekButton(onClick = onShareWeek)
+        }
         RangeTabs(
             modifier = Modifier.tourTarget(target = TourTarget.INSIGHTS_RANGE),
             selected = insights?.range ?: InsightsRange.WEEK,
@@ -493,11 +511,35 @@ private fun MostLoggedList(insights: Insights, foodUnits: Map<String, String>) {
     }
 }
 
+@Composable
+private fun ShareWeekButton(onClick: () -> Unit) {
+    val shape = RoundedCornerShape(size = 12.dp)
+    Row(
+        modifier = Modifier
+            .height(height = 40.dp)
+            .clip(shape = shape)
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
+    ) {
+        Icon(
+            painter = painterResource(resource = Res.drawable.ic_share_out),
+            contentDescription = null,
+            tint = colors.ink,
+            modifier = Modifier.size(size = 16.dp)
+        )
+        Text(text = stringResource(resource = Res.string.share_week_button), style = typography.bold13, color = colors.ink)
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun PreviewInsightsScreen() {
     MacroTrackTheme {
-        InsightsScreen(insights = null, foodUnits = emptyMap(), onRangeSelected = {})
+        InsightsScreen(insights = null, foodUnits = emptyMap(), onRangeSelected = {}, onShareWeek = {})
     }
 }
 

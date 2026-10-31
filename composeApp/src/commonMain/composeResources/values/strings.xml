@@ -1373,6 +1373,53 @@
 
     <string name="save">Save</string>
 
+    <!-- Shareable progress cards -->
+    <string name="share_title">Share a card</string>
+    <string name="share_week_button">Share week</string>
+    <string name="share_weight_description">Share your weight trend as an image</string>
+    <string name="share_as_image">Share as image</string>
+    <string name="share_kind_week">Weekly recap</string>
+    <string name="share_kind_weight">Weight trend</string>
+    <string name="share_size">Size</string>
+    <string name="share_story">Story 9:16</string>
+    <string name="share_square">Square 1:1</string>
+    <string name="share_color">Card color</string>
+    <string name="share_style_light">Light</string>
+    <string name="share_style_dark">Dark</string>
+    <string name="share_style_green">Green</string>
+    <string name="share_show_weight">Show weight numbers</string>
+    <string name="share_show_weight_photos">Show weight on photos</string>
+    <string name="share_show_weight_hint">Off: shows change as a percent, or leaves weight out</string>
+    <string name="share_save">Save image</string>
+    <string name="share_footnote">The image is made on your phone. Nothing leaves it until you pick an app.</string>
+    <string name="share_saved">Saved to your photos</string>
+    <string name="share_save_failed">Couldn't save the image</string>
+    <string name="share_week_range">Week of %1$s – %2$s</string>
+    <string name="share_week_on_target">%1$d/7</string>
+    <string name="share_within_goal">within 10% of goal</string>
+    <string name="share_avg_calories">Avg calories</string>
+    <string name="share_avg_protein">Avg protein</string>
+    <string name="share_down">Down</string>
+    <string name="share_up">Up</string>
+    <string name="share_same">Same</string>
+    <!-- %1$s and %2$s are the first and latest weigh-in days, %3$d the year. -->
+    <string name="share_weight_range">%1$s → %2$s, %3$d</string>
+    <plurals name="share_in_days">
+        <item quantity="one">in %1$d day</item>
+        <item quantity="other">in %1$d days</item>
+    </plurals>
+    <string name="share_of_progress">of progress</string>
+    <string name="share_start">Start</string>
+    <string name="share_now">Now</string>
+    <string name="share_per_week">Per week</string>
+    <string name="share_change">Change</string>
+    <string name="share_days">Days</string>
+    <string name="share_weigh_ins">Weigh-ins</string>
+    <string name="share_photos">Photos</string>
+    <string name="share_week_alt">Weekly recap card: %1$d of 7 days on target</string>
+    <string name="share_weight_alt">Weight trend card</string>
+    <string name="share_photos_alt">Before and after card</string>
+
     <!-- Progress photos -->
     <string name="progress_photos">Progress photos</string>
     <string name="photo">Photo</string>

@@ -183,6 +183,7 @@ import org.thelazybattley.macrotrack.domain.usecase.mealplan.UndoPlannedFoodUseC
 import org.thelazybattley.macrotrack.features.mealplan.MealPlanViewModel
 import org.thelazybattley.macrotrack.features.mealplan.RepeatMealViewModel
 import org.thelazybattley.macrotrack.features.mealplan.RepeatingMealsViewModel
+import org.thelazybattley.macrotrack.features.share.ShareCardViewModel
 import org.thelazybattley.macrotrack.domain.usecase.recipe.DeleteRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.recipe.GetRecipeByNameUseCase
@@ -426,6 +427,7 @@ val viewModelModule = module {
     viewModelOf(::MealPlanViewModel)
     viewModelOf(::RepeatingMealsViewModel)
     viewModelOf(::RepeatMealViewModel)
+    viewModelOf(::ShareCardViewModel)
     viewModelOf(::ProgressPhotosViewModel)
     viewModelOf(::PhotoAlbumViewModel)
     viewModelOf(::PhotoCameraViewModel)

@@ -1,9 +1,13 @@
 package org.thelazybattley.macrotrack.core.platform
 
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
@@ -64,6 +68,31 @@ private class AndroidFileActions(
         }
     }
 
+    override fun saveImage(file: SharedFile, onResult: (Boolean) -> Unit) {
+        // Before Android 10, writing to the shared Pictures folder needs the storage permission.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return save(file = file, onResult = onResult)
+        scope.launch {
+            val isSaved = withContext(context = Dispatchers.IO) {
+                runCatching {
+                    val resolver = context.contentResolver
+                    val details = ContentValues().apply {
+                        put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
+                        put(MediaStore.Images.Media.MIME_TYPE, file.mimeType)
+                        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/" + PICTURES_FOLDER)
+                        put(MediaStore.Images.Media.IS_PENDING, 1)
+                    }
+                    val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, details) ?: return@runCatching false
+                    resolver.openOutputStream(uri)?.use { it.write(file.bytes) }
+                    details.clear()
+                    details.put(MediaStore.Images.Media.IS_PENDING, 0)
+                    resolver.update(uri, details, null, null)
+                    true
+                }.getOrDefault(defaultValue = false)
+            }
+            onResult(isSaved)
+        }
+    }
+
     override fun share(file: SharedFile) {
         scope.launch {
             val uri = withContext(context = Dispatchers.IO) {
@@ -106,6 +135,9 @@ private class AndroidFileActions(
     companion object {
         /** Matches the cache-path in res/xml/file_paths.xml. */
         const val SHARE_FOLDER = "shared"
+
+        /** Saved images go in Pictures/FitMetric. */
+        const val PICTURES_FOLDER = "FitMetric"
     }
 }
 

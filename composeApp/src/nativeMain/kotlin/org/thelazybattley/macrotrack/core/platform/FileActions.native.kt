@@ -15,7 +15,10 @@ import platform.Foundation.create
 import platform.Foundation.dataWithContentsOfURL
 import platform.Foundation.writeToURL
 import platform.UIKit.UIActivityViewController
+import platform.Photos.PHAssetChangeRequest
+import platform.Photos.PHPhotoLibrary
 import platform.UIKit.UIApplication
+import platform.UIKit.UIImage
 import platform.UIKit.UIDocumentPickerDelegateProtocol
 import platform.UIKit.UIDocumentPickerViewController
 import platform.UIKit.UIViewController
@@ -23,6 +26,8 @@ import platform.UIKit.popoverPresentationController
 import platform.UniformTypeIdentifiers.UTTypeData
 import platform.UniformTypeIdentifiers.UTTypeJSON
 import platform.darwin.NSObject
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import platform.posix.memcpy
 
 @Composable
@@ -40,6 +45,15 @@ private class IosFileActions : FileActions {
             onCancelled = { onResult(false) }
         ).also { picker.delegate = it }
         topViewController()?.presentViewController(picker, animated = true, completion = null)
+    }
+
+    override fun saveImage(file: SharedFile, onResult: (Boolean) -> Unit) {
+        val image = UIImage.imageWithData(data = file.bytes.toNSData()) ?: return onResult(false)
+        // Asks for add-only access the first time; the result comes back off the main thread.
+        PHPhotoLibrary.sharedPhotoLibrary().performChanges(
+            changeBlock = { PHAssetChangeRequest.creationRequestForAssetFromImage(image = image) },
+            completionHandler = { isSaved, _ -> dispatch_async(queue = dispatch_get_main_queue()) { onResult(isSaved) } }
+        )
     }
 
     override fun share(file: SharedFile) {

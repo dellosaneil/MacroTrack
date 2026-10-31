@@ -45,7 +45,9 @@ data class ProgressViewState(
     val previousMeasured: LocalDate? = null,
     val highlights: List<Pair<MeasurementType, MeasurementSummary>> = emptyList(),
     val measurementCount: Int = 0,
-    val photoAlbums: List<AlbumSummary> = emptyList()
+    val photoAlbums: List<AlbumSummary> = emptyList(),
+    /** A weight trend card needs two weigh-ins. */
+    val canShareWeight: Boolean = false
 )
 
 class ProgressViewModel(
@@ -98,7 +100,8 @@ class ProgressViewModel(
                 summaries.bicepAverage()?.let { MeasurementType.LEFT_BICEP to it }
             ),
             measurementCount = summaries.size,
-            photoAlbums = photoAlbums
+            photoAlbums = photoAlbums,
+            canShareWeight = sorted.size > 1
         )
     }.stateIn(
         scope = viewModelScope,

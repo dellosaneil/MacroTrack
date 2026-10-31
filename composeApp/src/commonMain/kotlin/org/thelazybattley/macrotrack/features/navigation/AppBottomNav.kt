@@ -10,7 +10,10 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.ALB
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.BEFORE_ID
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.NEW_ALBUM
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.OPEN_ADD
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.SHARE_KIND
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.SIDE_BY_SIDE
+import org.thelazybattley.macrotrack.features.share.ShareCardKind
+import org.thelazybattley.macrotrack.features.share.ui.ShareCardScreen
 import org.thelazybattley.macrotrack.domain.usecase.photo.SchedulePhotoRemindersUseCase
 import org.thelazybattley.macrotrack.features.photos.ui.PhotoAlbumScreen
 import org.thelazybattley.macrotrack.features.photos.ui.PhotoCameraScreen
@@ -764,7 +767,33 @@ fun AppBottomNav() {
                             }
                         )
                     ) {
-                        PhotoCompareScreen(onBack = { navController.popBack() })
+                        PhotoCompareScreen(
+                            onBack = { navController.popBack() },
+                            onShare = { albumId, beforeId, afterId ->
+                                navigate(
+                                    AppDestinations.Root.ShareCard.createRoute(
+                                        kind = ShareCardKind.PHOTOS.name,
+                                        albumId = albumId,
+                                        beforeId = beforeId,
+                                        afterId = afterId
+                                    )
+                                )
+                            }
+                        )
+                    }
+                    composable(
+                        route = AppDestinations.Root.ShareCard.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = SHARE_KIND) { type = NavType.StringType }
+                        ) + listOf(ALBUM_ID, BEFORE_ID, AFTER_ID).map { name ->
+                            navArgument(name = name) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        }
+                    ) {
+                        ShareCardScreen(onClose = { navController.popBack() })
                     }
                     composable(
                         route = AppDestinations.Root.Calendar.route
