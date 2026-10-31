@@ -174,6 +174,7 @@ import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetRepeatingMealsUs
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.MarkPlannedEatenUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.PlanFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.RemovePlannedFoodUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.RestoreRepeatingMealUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.SaveRepeatingMealUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.SetRepeatingMealActiveUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.SkipPlannedFoodUseCase
@@ -365,6 +366,7 @@ val useCaseModule = module {
     factoryOf(::SaveRepeatingMealUseCase)
     factoryOf(::SetRepeatingMealActiveUseCase)
     factoryOf(::DeleteRepeatingMealUseCase)
+    factoryOf(::RestoreRepeatingMealUseCase)
     factoryOf(::GetPhotoAlbumsUseCase)
     factoryOf(::GetProgressPhotosUseCase)
     factoryOf(::SavePhotoAlbumUseCase)

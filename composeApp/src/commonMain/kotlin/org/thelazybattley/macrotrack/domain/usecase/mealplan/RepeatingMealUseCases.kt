@@ -97,3 +97,14 @@ class DeleteRepeatingMealUseCase(private val repository: MealPlanRepository) {
         repository.deleteRepeatingMeal(id = id)
     }
 }
+
+/** Brings back [repeatingMeal] after it was deleted, with its id, and fills its days in again. */
+class RestoreRepeatingMealUseCase(
+    private val repository: MealPlanRepository,
+    private val syncRepeatingMealsUseCase: SyncRepeatingMealsUseCase
+) {
+    suspend operator fun invoke(repeatingMeal: RepeatingMeal) {
+        repository.saveRepeatingMeal(repeatingMeal = repeatingMeal)
+        syncRepeatingMealsUseCase()
+    }
+}

@@ -398,6 +398,10 @@
         <item quantity="one">%1$d time</item>
         <item quantity="other">%1$d times</item>
     </plurals>
+    <plurals name="repeat_added_times">
+        <item quantity="one">added %1$d time</item>
+        <item quantity="other">added %1$d times</item>
+    </plurals>
     <plurals name="items_planned">
         <item quantity="one">%1$d item planned</item>
         <item quantity="other">%1$d items planned</item>
@@ -1298,8 +1302,19 @@
     <string name="repeating_pause">Pause %1$s</string>
     <string name="repeating_resume">Resume %1$s</string>
     <string name="repeating_new">New repeating meal</string>
-    <string name="repeating_hint">You can also start one from any logged meal: tap ⋮ on the meal, then Repeat this meal.</string>
-    <string name="repeating_empty">No repeating meals yet.</string>
+    <string name="repeating_hint">Start from scratch with New repeating meal, or from food you already logged: tap ⋮ on the meal, then Repeat this meal.</string>
+    <string name="repeating_empty">No repeating meals</string>
+    <string name="repeating_empty_body">Eat the same breakfast most days? Set it up once and it fills in your plan on the days you choose.</string>
+    <string name="repeating_empty_hint">Or tap ⋮ on any logged meal, then Repeat this meal.</string>
+    <string name="repeating_more">More for %1$s</string>
+    <string name="repeating_menu_edit">Edit</string>
+    <string name="repeating_menu_edit_hint">Food, days, meal and when it ends</string>
+    <string name="repeating_menu_pause">Pause</string>
+    <string name="repeating_menu_pause_hint">Keep it, but add nothing until you resume</string>
+    <string name="repeating_menu_resume">Resume</string>
+    <string name="repeating_menu_resume_hint">Start adding it to your plan again</string>
+    <string name="repeating_menu_delete_hint">Stops it for good</string>
+    <string name="repeating_deleted">%1$s deleted</string>
     <string name="days_every_day">Every day</string>
     <string name="days_weekdays">Weekdays</string>
     <string name="days_weekends">Weekends</string>
@@ -1314,8 +1329,25 @@
     <string name="repeat_name_weekends">Weekend %1$s</string>
     <string name="repeat_name_every_day">Daily %1$s</string>
     <string name="repeat_food">Food</string>
-    <string name="repeat_pick_meal">Start from a meal you logged</string>
-    <string name="repeat_nothing_recent">Nothing logged in the last 7 days. Log a meal first, then repeat it from its ⋮ menu.</string>
+    <string name="repeat_new_hint">Pick the food, then the days it repeats</string>
+    <!-- %1$s is the day it started; %2$s how often it was eaten. -->
+    <string name="repeat_since">Since %1$s · %2$s</string>
+    <string name="repeat_not_added">nothing added yet</string>
+    <string name="repeat_no_food">No food yet</string>
+    <string name="repeat_no_food_hint">Add what you eat each time. It doesn't need to be in today's log.</string>
+    <string name="repeat_add_food">Add food</string>
+    <string name="repeat_add_food_hint">From your recent food, My foods and recipes.</string>
+    <string name="repeat_search_food">Search your food</string>
+    <string name="repeat_picker_none">Nothing saved matches. Create it as a new food in My foods first.</string>
+    <string name="repeat_picker_empty">Nothing here yet.</string>
+    <string name="repeat_picker_done">Done · %1$s</string>
+    <string name="repeat_remove_food">Remove %1$s</string>
+    <string name="repeat_add_one_food">Add at least one food</string>
+    <string name="repeat_create_cta">Create · repeats %1$s</string>
+    <string name="repeat_no_food_each_time">%1$s, no food added yet</string>
+    <string name="repeat_delete_title">Delete “%1$s”?</string>
+    <string name="repeat_delete_body">It stops from today, and planned days ahead are cleared. Food you already logged stays in your log.</string>
+    <string name="repeat_pause_instead">Pause it instead</string>
     <string name="repeat_on">Repeat on</string>
     <string name="repeat_ends">Ends</string>
     <string name="repeat_end_never">Never</string>

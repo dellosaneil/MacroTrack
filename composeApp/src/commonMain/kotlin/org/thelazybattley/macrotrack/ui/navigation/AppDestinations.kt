@@ -108,7 +108,7 @@ sealed class AppDestinations {
 
         /**
          * Sets up a repeating meal: from [MEAL_TYPE] on [SOURCE_DATE] (⋮ on a meal → Repeat this meal), or editing
-         * [REPEATING_MEAL_ID]. With neither, the user picks a recent meal to start from.
+         * [REPEATING_MEAL_ID]. With neither, it starts from scratch and the food is picked from saved food.
          */
         object RepeatMeal : Root(
             route = "repeat_meal",
@@ -245,6 +245,8 @@ sealed class AppDestinations {
         const val AFTER_ID = "afterId"
         const val SIDE_BY_SIDE = "sideBySide"
         const val ADD_GLASS = "addGlass"
+        /** Set on Repeating meals' back stack entry when Edit repeating meal asks for that one to be deleted. */
+        const val DELETE_REPEATING_MEAL_ID = "deleteRepeatingMealId"
     }
 }
 

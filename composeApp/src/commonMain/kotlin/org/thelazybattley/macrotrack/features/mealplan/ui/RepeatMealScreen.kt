@@ -13,18 +13,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -56,10 +63,24 @@ import macrotrack.composeapp.generated.resources.days_custom
 import macrotrack.composeapp.generated.resources.days_every_day
 import macrotrack.composeapp.generated.resources.days_weekdays
 import macrotrack.composeapp.generated.resources.days_weekends
+import macrotrack.composeapp.generated.resources.done
+import macrotrack.composeapp.generated.resources.ic_check
+import macrotrack.composeapp.generated.resources.ic_close
+import macrotrack.composeapp.generated.resources.ic_meal_lunch
 import macrotrack.composeapp.generated.resources.ic_minus
 import macrotrack.composeapp.generated.resources.ic_plus
+import macrotrack.composeapp.generated.resources.ic_search
+import macrotrack.composeapp.generated.resources.ic_trash
 import macrotrack.composeapp.generated.resources.items
 import macrotrack.composeapp.generated.resources.kcal_text
+import macrotrack.composeapp.generated.resources.my_foods
+import macrotrack.composeapp.generated.resources.recent
+import macrotrack.composeapp.generated.resources.recipes
+import macrotrack.composeapp.generated.resources.repeat_add_food
+import macrotrack.composeapp.generated.resources.repeat_add_food_hint
+import macrotrack.composeapp.generated.resources.repeat_add_one_food
+import macrotrack.composeapp.generated.resources.repeat_added_times
+import macrotrack.composeapp.generated.resources.repeat_create_cta
 import macrotrack.composeapp.generated.resources.repeat_cta
 import macrotrack.composeapp.generated.resources.repeat_delete
 import macrotrack.composeapp.generated.resources.repeat_each_time
@@ -80,21 +101,30 @@ import macrotrack.composeapp.generated.resources.repeat_name
 import macrotrack.composeapp.generated.resources.repeat_name_every_day
 import macrotrack.composeapp.generated.resources.repeat_name_weekdays
 import macrotrack.composeapp.generated.resources.repeat_name_weekends
+import macrotrack.composeapp.generated.resources.repeat_new_hint
 import macrotrack.composeapp.generated.resources.repeat_next_up
 import macrotrack.composeapp.generated.resources.repeat_no_end
-import macrotrack.composeapp.generated.resources.repeat_nothing_recent
+import macrotrack.composeapp.generated.resources.repeat_no_food
+import macrotrack.composeapp.generated.resources.repeat_no_food_each_time
+import macrotrack.composeapp.generated.resources.repeat_no_food_hint
+import macrotrack.composeapp.generated.resources.repeat_not_added
 import macrotrack.composeapp.generated.resources.repeat_on
+import macrotrack.composeapp.generated.resources.repeat_pause_instead
 import macrotrack.composeapp.generated.resources.repeat_pick_day
 import macrotrack.composeapp.generated.resources.repeat_pick_food
-import macrotrack.composeapp.generated.resources.repeat_pick_meal
+import macrotrack.composeapp.generated.resources.repeat_picker_done
+import macrotrack.composeapp.generated.resources.repeat_picker_empty
+import macrotrack.composeapp.generated.resources.repeat_picker_none
+import macrotrack.composeapp.generated.resources.repeat_remove_food
 import macrotrack.composeapp.generated.resources.repeat_save
+import macrotrack.composeapp.generated.resources.repeat_search_food
+import macrotrack.composeapp.generated.resources.repeat_since
 import macrotrack.composeapp.generated.resources.repeat_times
 import macrotrack.composeapp.generated.resources.repeat_times_fewer
 import macrotrack.composeapp.generated.resources.repeat_times_more
 import macrotrack.composeapp.generated.resources.repeat_title
 import macrotrack.composeapp.generated.resources.repeat_total_times
 import macrotrack.composeapp.generated.resources.repeating_new
-import macrotrack.composeapp.generated.resources.today
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -103,18 +133,17 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toAbbreviatedMonthDay
 import org.thelazybattley.macrotrack.core.toDayMonthDay
-import org.thelazybattley.macrotrack.core.toShortDayMonthDay
 import org.thelazybattley.macrotrack.core.toShortDayName
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlanFood
-import org.thelazybattley.macrotrack.features.copy.PastMeal
 import org.thelazybattley.macrotrack.features.copy.ui.CheckState
 import org.thelazybattley.macrotrack.features.copy.ui.CopyCheckBox
 import org.thelazybattley.macrotrack.features.copy.ui.CopyHeader
 import org.thelazybattley.macrotrack.features.copy.ui.CopySectionLabel
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.mealplan.DayPattern
+import org.thelazybattley.macrotrack.features.mealplan.FoodSource
 import org.thelazybattley.macrotrack.features.mealplan.RepeatEnd
 import org.thelazybattley.macrotrack.features.mealplan.RepeatMealCallbacks
 import org.thelazybattley.macrotrack.features.mealplan.RepeatMealViewModel
@@ -129,7 +158,9 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun RepeatMealScreen(
     onClose: () -> Unit,
-    onDone: () -> Unit
+    onDone: () -> Unit,
+    /** Delete confirmed for the one being edited; Repeating meals deletes it, with Undo. */
+    onDelete: (Long) -> Unit
 ) {
     val viewModel = koinViewModel<RepeatMealViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -138,16 +169,19 @@ fun RepeatMealScreen(
         if (viewState.isDone) onDone()
     }
 
-    RepeatMealScreen(viewState = viewState, callbacks = viewModel, onClose = onClose)
+    RepeatMealScreen(viewState = viewState, callbacks = viewModel, onClose = onClose, onDelete = onDelete)
 }
 
 @Composable
 private fun RepeatMealScreen(
     viewState: RepeatMealViewState,
     callbacks: RepeatMealCallbacks,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onDelete: (Long) -> Unit
 ) {
     var isPickingEndDate by rememberSaveable { mutableStateOf(value = false) }
+    var isPickingFood by rememberSaveable { mutableStateOf(value = false) }
+    var isConfirmingDelete by rememberSaveable { mutableStateOf(value = false) }
     val mealName = stringResource(resource = viewState.mealType.title)
     val suggestedName = when (viewState.pattern) {
         DayPattern.WEEKDAYS -> stringResource(resource = Res.string.repeat_name_weekdays, mealName.lowercase())
@@ -162,24 +196,46 @@ private fun RepeatMealScreen(
             CopyHeader(
                 title = when {
                     viewState.isEditing -> stringResource(resource = Res.string.repeat_edit_title)
-                    viewState.needsSource -> stringResource(resource = Res.string.repeating_new)
-                    else -> stringResource(resource = Res.string.repeat_title, mealName.lowercase())
+                    viewState.isFromMeal -> stringResource(resource = Res.string.repeat_title, mealName.lowercase())
+                    else -> stringResource(resource = Res.string.repeating_new)
                 },
                 subtitle = headerSubtitle(viewState = viewState),
                 onClose = onClose
             )
         },
         bottomBar = {
-            if (!viewState.needsSource) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 22.dp),
+                verticalArrangement = Arrangement.spacedBy(space = 6.dp)
+            ) {
                 CommonPrimaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     text = ctaText(viewState = viewState),
                     enabled = viewState.canSave,
                     onClick = { callbacks.onSave(suggestedName = suggestedName) }
                 )
+                if (viewState.isEditing) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(height = 50.dp)
+                            .clip(shape = RoundedCornerShape(size = 16.dp))
+                            .clickable(role = Role.Button) { isConfirmingDelete = true },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterHorizontally)
+                    ) {
+                        Icon(
+                            painter = painterResource(resource = Res.drawable.ic_trash),
+                            contentDescription = null,
+                            tint = colors.danger,
+                            modifier = Modifier.size(size = 17.dp)
+                        )
+                        Text(text = stringResource(resource = Res.string.repeat_delete), style = typography.bold14, color = colors.danger)
+                    }
+                }
             }
         }
     ) { innerPadding ->
@@ -190,10 +246,6 @@ private fun RepeatMealScreen(
                 .padding(horizontal = 20.dp, vertical = 18.dp),
             verticalArrangement = Arrangement.spacedBy(space = 18.dp)
         ) {
-            if (viewState.needsSource) {
-                if (viewState.isLoaded) SourcePicker(viewState = viewState, onPicked = callbacks::onSourcePicked)
-                return@Column
-            }
             Column(verticalArrangement = Arrangement.spacedBy(space = 6.dp)) {
                 CopySectionLabel(text = stringResource(resource = Res.string.repeat_name))
                 CommonTextField(
@@ -205,25 +257,35 @@ private fun RepeatMealScreen(
                     onValueChanged = callbacks::onNameChanged
                 )
             }
-            FoodList(viewState = viewState, onToggled = callbacks::onFoodToggled)
+            if (viewState.isFromMeal) {
+                FoodList(viewState = viewState, onToggled = callbacks::onFoodToggled)
+            } else {
+                OwnFoodList(viewState = viewState, onRemoved = callbacks::onFoodRemoved, onAdd = { isPickingFood = true })
+            }
             MealPicker(selected = viewState.mealType, onSelected = callbacks::onMealSelected)
             DaysPicker(viewState = viewState, callbacks = callbacks)
             EndsPicker(viewState = viewState, callbacks = callbacks, onPickDate = { isPickingEndDate = true })
             HowPicker(isAutoLog = viewState.isAutoLog, onSelected = callbacks::onAutoLogSelected)
             NextUpCard(viewState = viewState)
-            if (viewState.isEditing) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(height = 48.dp)
-                        .clip(shape = RoundedCornerShape(size = 14.dp))
-                        .clickable(role = Role.Button, onClick = callbacks::onDelete),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = stringResource(resource = Res.string.repeat_delete), style = typography.bold14, color = colors.crimsonRed)
-                }
-            }
         }
+    }
+    if (isPickingFood) {
+        AddFoodSheet(viewState = viewState, onPicked = callbacks::onFoodPicked, onDismiss = { isPickingFood = false })
+    }
+    val existing = viewState.existing
+    if (isConfirmingDelete && existing != null) {
+        DeleteSheet(
+            name = existing.name,
+            onDelete = {
+                isConfirmingDelete = false
+                onDelete(existing.id)
+            },
+            onPause = {
+                isConfirmingDelete = false
+                callbacks.onPause()
+            },
+            onDismiss = { isConfirmingDelete = false }
+        )
     }
     if (isPickingEndDate) {
         val tomorrow = viewState.today.plus(period = DatePeriod(days = 1))
@@ -248,59 +310,323 @@ private fun headerSubtitle(viewState: RepeatMealViewState): String {
         viewState.foods.sumOf { it.calories }.withThousands()
     )
     val source = viewState.sourceDate
+    val existing = viewState.existing
     return when {
-        viewState.isEditing -> summary
+        existing != null -> stringResource(
+            resource = Res.string.repeat_since,
+            existing.startDate.toAbbreviatedMonthDay(),
+            if (viewState.eatenTimes == 0) {
+                stringResource(resource = Res.string.repeat_not_added)
+            } else {
+                pluralStringResource(resource = Res.plurals.repeat_added_times, quantity = viewState.eatenTimes, viewState.eatenTimes)
+            }
+        )
         source != null -> stringResource(resource = Res.string.repeat_from, source.toDayMonthDay(), summary)
-        else -> stringResource(resource = Res.string.repeat_pick_meal)
+        else -> stringResource(resource = Res.string.repeat_new_hint)
     }
 }
 
-/** With nothing to start from, the meals logged over the last week to pick one. */
+/** Food added by hand, from scratch or when editing: each can be removed, and more added from the Add food sheet. */
 @Composable
-private fun SourcePicker(viewState: RepeatMealViewState, onPicked: (PastMeal) -> Unit) {
-    if (viewState.recentMeals.isEmpty()) {
-        Text(text = stringResource(resource = Res.string.repeat_nothing_recent), style = typography.regular13, color = colors.muted)
-        return
-    }
-    val shape = RoundedCornerShape(size = 18.dp)
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape = shape)
-            .background(color = colors.surface)
-            .border(width = 1.dp, color = colors.line, shape = shape)
-    ) {
-        viewState.recentMeals.forEachIndexed { index, meal ->
-            val dayName = if (meal.date == viewState.today) stringResource(resource = Res.string.today) else meal.date.toShortDayMonthDay()
+private fun OwnFoodList(viewState: RepeatMealViewState, onRemoved: (Int) -> Unit, onAdd: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        FoodLabel(viewState = viewState)
+        val shape = RoundedCornerShape(size = 18.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape = shape)
+                .background(color = colors.surface)
+                .border(width = 1.dp, color = colors.line, shape = shape)
+        ) {
+            if (viewState.foods.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(size = 44.dp)
+                            .background(color = colors.accentSoft, shape = RoundedCornerShape(size = 14.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(resource = Res.drawable.ic_meal_lunch),
+                            contentDescription = null,
+                            tint = colors.accentInk,
+                            modifier = Modifier.size(size = 22.dp)
+                        )
+                    }
+                    Text(
+                        text = stringResource(resource = Res.string.repeat_no_food),
+                        style = typography.bold14,
+                        color = colors.ink,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                    Text(
+                        text = stringResource(resource = Res.string.repeat_no_food_hint),
+                        style = typography.regular11,
+                        color = colors.muted,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            viewState.foods.forEachIndexed { index, food ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 60.dp)
+                        .padding(start = 14.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+                ) {
+                    Column(modifier = Modifier.weight(weight = 1f)) {
+                        Text(text = food.foodName, style = typography.medium13, color = colors.ink, maxLines = 1)
+                        Text(
+                            text = food.calories.withThousands() + " " + stringResource(resource = Res.string.kcal_text),
+                            style = typography.regular11,
+                            color = colors.muted
+                        )
+                    }
+                    Text(
+                        text = food.amountText(foodUnit = viewState.foodUnit),
+                        style = typography.bold13,
+                        color = colors.ink,
+                        modifier = Modifier
+                            .background(color = colors.background, shape = RoundedCornerShape(size = 10.dp))
+                            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 10.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(size = 44.dp)
+                            .clip(shape = RoundedCornerShape(size = 12.dp))
+                            .clickable(role = Role.Button) { onRemoved(index) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(resource = Res.drawable.ic_close),
+                            contentDescription = stringResource(resource = Res.string.repeat_remove_food, food.foodName),
+                            tint = colors.muted,
+                            modifier = Modifier.size(size = 16.dp)
+                        )
+                    }
+                }
+                HorizontalDivider(color = colors.divider)
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 56.dp)
-                    .clickable(role = Role.Button) { onPicked(meal) }
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                    .height(height = 54.dp)
+                    .clickable(role = Role.Button, onClick = onAdd),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+                horizontalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.CenterHorizontally)
             ) {
-                Column(modifier = Modifier.weight(weight = 1f)) {
-                    Text(
-                        text = stringResource(resource = meal.mealType.title) + " · " + dayName,
-                        style = typography.bold14,
-                        color = colors.ink
-                    )
-                    Text(
-                        text = meal.logs.joinToString(separator = ", ") { it.foodName },
-                        style = typography.regular11,
-                        color = colors.muted,
-                        maxLines = 1
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_plus),
+                    contentDescription = null,
+                    tint = colors.accentInk,
+                    modifier = Modifier.size(size = 18.dp)
+                )
+                Text(text = stringResource(resource = Res.string.repeat_add_food), style = typography.bold14, color = colors.accentInk)
+            }
+        }
+    }
+}
+
+/** "Food", with how many items and calories are picked so far. */
+@Composable
+private fun FoodLabel(viewState: RepeatMealViewState) {
+    val count = viewState.selectedFoods.size
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        CopySectionLabel(text = stringResource(resource = Res.string.repeat_food))
+        if (count > 0) {
+            CopySectionLabel(
+                text = stringResource(
+                    resource = Res.string.copy_summary,
+                    pluralStringResource(resource = Res.plurals.items, quantity = count, count),
+                    viewState.selectedCalories.withThousands()
+                )
+            )
+        }
+    }
+}
+
+/** Picks food from recent food, My foods and recipes; tapping a row adds it or takes it out. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddFoodSheet(viewState: RepeatMealViewState, onPicked: (PlanFood) -> Unit, onDismiss: () -> Unit) {
+    var query by rememberSaveable { mutableStateOf(value = "") }
+    var source by rememberSaveable { mutableStateOf(value = FoodSource.RECENT) }
+    val rows = viewState.pickerFoods(source = source, query = query)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = colors.surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .imePadding()
+                .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 12.dp)
+        ) {
+            Column {
+                Text(text = stringResource(resource = Res.string.repeat_add_food), style = typography.bold18, color = colors.ink)
+                Text(text = stringResource(resource = Res.string.repeat_add_food_hint), style = typography.regular11, color = colors.muted)
+            }
+            CommonTextField(
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = stringResource(resource = Res.string.repeat_search_food),
+                textValue = query,
+                prefixIcon = Res.drawable.ic_search,
+                onValueChanged = { query = it }
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(shape = RoundedCornerShape(size = 12.dp))
+                    .background(color = colors.background)
+                    .padding(all = 3.dp),
+                horizontalArrangement = Arrangement.spacedBy(space = 4.dp)
+            ) {
+                listOf(
+                    FoodSource.RECENT to Res.string.recent,
+                    FoodSource.MY_FOODS to Res.string.my_foods,
+                    FoodSource.RECIPES to Res.string.recipes
+                ).forEach { (tab, label) ->
+                    val isSelected = tab == source && query.isBlank()
+                    Box(
+                        modifier = Modifier
+                            .weight(weight = 1f)
+                            .height(height = 36.dp)
+                            .clip(shape = RoundedCornerShape(size = 9.dp))
+                            .background(color = if (isSelected) colors.surface else Color.Transparent)
+                            .clickable(role = Role.Tab) {
+                                source = tab
+                                query = ""
+                            }
+                            .semantics { selected = isSelected },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(resource = label),
+                            style = typography.bold13,
+                            color = if (isSelected) colors.ink else colors.muted
+                        )
+                    }
+                }
+            }
+            LazyColumn(modifier = Modifier.heightIn(max = 380.dp)) {
+                if (rows.isEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(
+                                resource = if (query.isBlank()) Res.string.repeat_picker_empty else Res.string.repeat_picker_none
+                            ),
+                            style = typography.regular13,
+                            color = colors.muted,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 18.dp)
+                        )
+                    }
+                }
+                items(items = rows, key = { it.foodName }) { food ->
+                    PickerRow(
+                        food = food,
+                        amount = food.amountText(foodUnit = viewState.foodUnit),
+                        isAdded = viewState.isAdded(food = food),
+                        onClick = { onPicked(food) }
                     )
                 }
+            }
+            CommonPrimaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = if (viewState.foods.isEmpty()) {
+                    stringResource(resource = Res.string.done)
+                } else {
+                    stringResource(
+                        resource = Res.string.repeat_picker_done,
+                        pluralStringResource(resource = Res.plurals.items, quantity = viewState.foods.size, viewState.foods.size)
+                    )
+                },
+                onClick = onDismiss
+            )
+        }
+    }
+}
+
+@Composable
+private fun PickerRow(food: PlanFood, amount: String, isAdded: Boolean, onClick: () -> Unit) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 58.dp)
+                .clickable(role = Role.Checkbox, onClick = onClick)
+                .semantics { selected = isAdded }
+                .padding(horizontal = 4.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+        ) {
+            Column(modifier = Modifier.weight(weight = 1f)) {
+                Text(text = food.foodName, style = typography.medium13, color = colors.ink, maxLines = 1)
                 Text(
-                    text = meal.calories.withThousands() + " " + stringResource(resource = Res.string.kcal_text),
-                    style = typography.bold13,
-                    color = colors.ink
+                    text = amount + " · " + food.calories.withThousands() + " " + stringResource(resource = Res.string.kcal_text),
+                    style = typography.regular11,
+                    color = colors.muted
                 )
             }
-            if (index != viewState.recentMeals.lastIndex) HorizontalDivider(color = colors.divider)
+            Box(
+                modifier = Modifier
+                    .size(size = 32.dp)
+                    .background(color = if (isAdded) colors.accent else Color.Transparent, shape = CircleShape)
+                    .border(width = 1.5.dp, color = if (isAdded) colors.accent else colors.line, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(resource = if (isAdded) Res.drawable.ic_check else Res.drawable.ic_plus),
+                    contentDescription = null,
+                    tint = if (isAdded) colors.onAccent else colors.accentInk,
+                    modifier = Modifier.size(size = 15.dp)
+                )
+            }
+        }
+        HorizontalDivider(color = colors.divider)
+    }
+}
+
+/** Asks before deleting, with Pause it instead as the gentler choice. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DeleteSheet(name: String, onDelete: () -> Unit, onPause: () -> Unit, onDismiss: () -> Unit) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = colors.surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(start = 12.dp, end = 12.dp, bottom = 24.dp)
+        ) {
+            DeleteConfirm(name = name, onDelete = onDelete, onCancel = onDismiss) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(height = 50.dp)
+                        .clip(shape = RoundedCornerShape(size = 16.dp))
+                        .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 16.dp))
+                        .clickable(role = Role.Button, onClick = onPause),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = stringResource(resource = Res.string.repeat_pause_instead), style = typography.bold14, color = colors.ink)
+                }
+            }
         }
     }
 }
@@ -308,7 +634,7 @@ private fun SourcePicker(viewState: RepeatMealViewState, onPicked: (PastMeal) ->
 @Composable
 private fun FoodList(viewState: RepeatMealViewState, onToggled: (Int) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        CopySectionLabel(text = stringResource(resource = Res.string.repeat_food))
+        FoodLabel(viewState = viewState)
         val shape = RoundedCornerShape(size = 18.dp)
         Column(
             modifier = Modifier
@@ -571,11 +897,15 @@ private fun HowPicker(isAutoLog: Boolean, onSelected: (Boolean) -> Unit) {
 private fun NextUpCard(viewState: RepeatMealViewState) {
     val upcoming = viewState.upcoming
     val total = viewState.draft.totalTimes
-    val eachTime = stringResource(
-        resource = Res.string.repeat_each_time,
-        stringResource(resource = viewState.mealType.title),
-        viewState.selectedCalories.withThousands()
-    )
+    val eachTime = if (viewState.selectedFoods.isEmpty()) {
+        stringResource(resource = Res.string.repeat_no_food_each_time, stringResource(resource = viewState.mealType.title))
+    } else {
+        stringResource(
+            resource = Res.string.repeat_each_time,
+            stringResource(resource = viewState.mealType.title),
+            viewState.selectedCalories.withThousands()
+        )
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -638,14 +968,16 @@ private fun Choice(
 }
 
 @Composable
-private fun ctaText(viewState: RepeatMealViewState): String = when {
-    viewState.selectedFoods.isEmpty() -> stringResource(resource = Res.string.repeat_pick_food)
-    viewState.days.isEmpty() -> stringResource(resource = Res.string.repeat_pick_day)
-    viewState.isEditing -> stringResource(resource = Res.string.repeat_save)
-    else -> stringResource(
-        resource = Res.string.repeat_cta,
-        daysLabel(days = viewState.days).let { if (viewState.pattern != null) it.lowercase() else it }
-    )
+private fun ctaText(viewState: RepeatMealViewState): String {
+    val days = daysLabel(days = viewState.days).let { if (viewState.pattern != null) it.lowercase() else it }
+    return when {
+        viewState.selectedFoods.isEmpty() ->
+            stringResource(resource = if (viewState.isFromMeal) Res.string.repeat_pick_food else Res.string.repeat_add_one_food)
+        viewState.days.isEmpty() -> stringResource(resource = Res.string.repeat_pick_day)
+        viewState.isEditing -> stringResource(resource = Res.string.repeat_save)
+        viewState.isFromMeal -> stringResource(resource = Res.string.repeat_cta, days)
+        else -> stringResource(resource = Res.string.repeat_create_cta, days)
+    }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F3EE)
@@ -680,7 +1012,8 @@ private fun PreviewRepeatMealScreen() {
                 isLoaded = true
             ),
             callbacks = RepeatMealCallbacks.default(),
-            onClose = {}
+            onClose = {},
+            onDelete = {}
         )
     }
 }

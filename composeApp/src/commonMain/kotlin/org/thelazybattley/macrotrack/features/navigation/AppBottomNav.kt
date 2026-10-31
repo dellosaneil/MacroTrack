@@ -102,6 +102,7 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.QUE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEASUREMENT_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.PRO_FEATURE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.RECIPE_NAME
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.DELETE_REPEATING_MEAL_ID
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.REPEATING_MEAL_ID
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
 import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
@@ -490,11 +491,16 @@ fun AppBottomNav() {
                             onOpenRepeatingMeals = { navigate(AppDestinations.Root.RepeatingMeals.route) }
                         )
                     }
-                    composable(route = AppDestinations.Root.RepeatingMeals.route) {
+                    composable(route = AppDestinations.Root.RepeatingMeals.route) { entry ->
+                        val deleteRequestId by entry.savedStateHandle
+                            .getStateFlow<Long?>(key = DELETE_REPEATING_MEAL_ID, initialValue = null)
+                            .collectAsStateWithLifecycle()
                         RepeatingMealsScreen(
                             onBack = { navController.popBack() },
                             onOpen = { meal -> navigate(AppDestinations.Root.RepeatMeal.createRoute(repeatingMealId = meal.id)) },
-                            onNew = { navigate(AppDestinations.Root.RepeatMeal.createRoute()) }
+                            onNew = { navigate(AppDestinations.Root.RepeatMeal.createRoute()) },
+                            deleteRequestId = deleteRequestId,
+                            onDeleteRequestHandled = { entry.savedStateHandle[DELETE_REPEATING_MEAL_ID] = null }
                         )
                     }
                     composable(
@@ -515,6 +521,12 @@ fun AppBottomNav() {
                                     popUpTo(route = AppDestinations.Root.RepeatMeal.routeWithArgs!!) { inclusive = true }
                                     launchSingleTop = true
                                 }
+                            },
+                            onDelete = { id ->
+                                // Edit is opened from Repeating meals, which deletes it so it can offer Undo.
+                                runCatching { navController.getBackStackEntry(route = AppDestinations.Root.RepeatingMeals.route) }
+                                    .getOrNull()?.savedStateHandle?.set(DELETE_REPEATING_MEAL_ID, id)
+                                navController.popBack()
                             }
                         )
                     }

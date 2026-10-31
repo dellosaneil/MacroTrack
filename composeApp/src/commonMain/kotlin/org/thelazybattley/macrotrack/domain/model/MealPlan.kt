@@ -51,6 +51,17 @@ fun FoodLog.toPlanFood() = PlanFood(
     isQuickAdd = isQuickAdd
 )
 
+/** One serving of a saved food, or a whole recipe (weight 0.0), as it would be planned. */
+fun Food.toPlanFood() = PlanFood(
+    foodName = name,
+    calories = macros.calories,
+    protein = macros.protein,
+    carbs = macros.carbs,
+    fat = macros.fat,
+    weight = weight,
+    dominantMacro = dominantMacro
+)
+
 enum class PlanStatus {
     /** Waiting for Ate it or Skip; not counted. */
     PENDING,

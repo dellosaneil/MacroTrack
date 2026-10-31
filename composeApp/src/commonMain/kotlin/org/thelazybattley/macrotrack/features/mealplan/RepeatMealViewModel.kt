@@ -12,21 +12,24 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.FoodLog
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlanFood
+import org.thelazybattley.macrotrack.domain.model.PlanStatus
 import org.thelazybattley.macrotrack.domain.model.RepeatingMeal
 import org.thelazybattley.macrotrack.domain.model.toPlanFood
+import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
 import org.thelazybattley.macrotrack.domain.usecase.food.GetAllFoodUseCase
 import org.thelazybattley.macrotrack.domain.usecase.foodlog.GetAllFoodLogUseCase
 import org.thelazybattley.macrotrack.domain.usecase.library.GetFoodLibraryUseCase
-import org.thelazybattley.macrotrack.domain.usecase.mealplan.DeleteRepeatingMealUseCase
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetPlannedFoodsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.GetRepeatingMealsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.mealplan.SaveRepeatingMealUseCase
-import org.thelazybattley.macrotrack.features.copy.PastMeal
+import org.thelazybattley.macrotrack.domain.usecase.mealplan.SetRepeatingMealActiveUseCase
+import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
+import org.thelazybattley.macrotrack.features.addmeal.toRecipeMeals
 import org.thelazybattley.macrotrack.features.copy.toggled
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.MEAL_TYPE
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations.Companion.REPEATING_MEAL_ID
@@ -45,9 +48,13 @@ enum class DayPattern(val days: Set<DayOfWeek>) {
     }
 }
 
+/** Where the Add food sheet picks from. */
+enum class FoodSource { RECENT, MY_FOODS, RECIPES }
+
 /**
- * Setting up a repeating meal from a logged meal ([sourceDate]), or changing [existing]. Every food starts picked;
- * [unchecked] holds the indexes of the ones left out.
+ * Setting up a repeating meal from a logged meal ([sourceDate]), from scratch, or changing [existing]. From a logged
+ * meal every food starts picked and [unchecked] holds the indexes of the ones left out; otherwise [foods] is exactly
+ * what's added each time, picked from [recentFoods], [myFoods] and [recipes].
  */
 data class RepeatMealViewState(
     val today: LocalDate,
@@ -62,18 +69,42 @@ data class RepeatMealViewState(
     val endDate: LocalDate = today.plus(period = DatePeriod(days = DEFAULT_END_DAYS)),
     val times: Int = DEFAULT_TIMES,
     val isAutoLog: Boolean = false,
-    /** Recent meals to start from, when there's no logged meal or repeating meal to begin with. */
-    val recentMeals: List<PastMeal> = emptyList(),
+    /** Food logged lately, newest first, each once, at the amount last logged. */
+    val recentFoods: List<PlanFood> = emptyList(),
+    /** One serving of each saved food, A to Z. */
+    val myFoods: List<PlanFood> = emptyList(),
+    /** Each recipe as one full serving, A to Z. */
+    val recipes: List<PlanFood> = emptyList(),
+    /** How many days [existing] has been eaten on. */
+    val eatenTimes: Int = 0,
     val foodUnit: Map<String, String> = emptyMap(),
     val isLoaded: Boolean = false,
     val isDone: Boolean = false
 ) {
     val isEditing: Boolean get() = existing != null
 
-    /** Nothing to start from yet: a recent meal has to be picked first. */
-    val needsSource: Boolean get() = existing == null && sourceDate == null
+    /** Started from a logged meal: its food is ticked or left out rather than added and removed. */
+    val isFromMeal: Boolean get() = existing == null && sourceDate != null
 
-    val selectedFoods: List<PlanFood> get() = foods.filterIndexed { index, _ -> index !in unchecked }
+    val selectedFoods: List<PlanFood>
+        get() = if (isFromMeal) foods.filterIndexed { index, _ -> index !in unchecked } else foods
+
+    fun isAdded(food: PlanFood): Boolean = foods.any { it.foodName == food.foodName }
+
+    /** The Add food sheet's rows: [source], or, while searching, everything saved that matches [query]. */
+    fun pickerFoods(source: FoodSource, query: String): List<PlanFood> {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) {
+            return when (source) {
+                FoodSource.RECENT -> recentFoods
+                FoodSource.MY_FOODS -> myFoods
+                FoodSource.RECIPES -> recipes
+            }
+        }
+        return (recentFoods + myFoods + recipes)
+            .distinctBy { it.foodName }
+            .filter { it.foodName.contains(other = trimmed, ignoreCase = true) }
+    }
 
     val selectedCalories: Int get() = selectedFoods.sumOf { it.calories }
 
@@ -105,7 +136,7 @@ data class RepeatMealViewState(
         const val MAX_TIMES = 99
         const val PREVIEW_DAYS = 4
         private const val DEFAULT_END_DAYS = 28
-        const val RECENT_DAYS = 7
+        const val RECENT_LIMIT = 20
     }
 }
 
@@ -120,12 +151,15 @@ interface RepeatMealCallbacks {
     fun onTimesChanged(times: Int)
     fun onAutoLogSelected(isAutoLog: Boolean)
 
-    /** Starts from [meal], when there was nothing to start from. */
-    fun onSourcePicked(meal: PastMeal)
+    /** Adds [food] from the Add food sheet, or takes it out when it's already added. */
+    fun onFoodPicked(food: PlanFood)
+    fun onFoodRemoved(index: Int)
 
     /** Saves, named [suggestedName] when the name was left empty. */
     fun onSave(suggestedName: String)
-    fun onDelete()
+
+    /** Pauses [RepeatMealViewState.existing], offered instead of deleting it. */
+    fun onPause()
 
     companion object {
         fun default() = object : RepeatMealCallbacks {
@@ -138,9 +172,10 @@ interface RepeatMealCallbacks {
             override fun onEndDatePicked(date: LocalDate) = Unit
             override fun onTimesChanged(times: Int) = Unit
             override fun onAutoLogSelected(isAutoLog: Boolean) = Unit
-            override fun onSourcePicked(meal: PastMeal) = Unit
+            override fun onFoodPicked(food: PlanFood) = Unit
+            override fun onFoodRemoved(index: Int) = Unit
             override fun onSave(suggestedName: String) = Unit
-            override fun onDelete() = Unit
+            override fun onPause() = Unit
         }
     }
 }
@@ -150,8 +185,11 @@ class RepeatMealViewModel(
     getRepeatingMealsUseCase: GetRepeatingMealsUseCase,
     getAllFoodUseCase: GetAllFoodUseCase,
     getFoodLibraryUseCase: GetFoodLibraryUseCase,
+    getAllRecipeUseCase: GetAllRecipeUseCase,
+    getPlannedFoodsUseCase: GetPlannedFoodsUseCase,
+    calculateAdjustMacrosUseCase: CalculateAdjustMacrosUseCase,
     private val saveRepeatingMealUseCase: SaveRepeatingMealUseCase,
-    private val deleteRepeatingMealUseCase: DeleteRepeatingMealUseCase,
+    private val setRepeatingMealActiveUseCase: SetRepeatingMealActiveUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), RepeatMealCallbacks {
 
@@ -167,6 +205,12 @@ class RepeatMealViewModel(
         viewModelScope.launch {
             val existing = repeatingMealId?.let { id -> getRepeatingMealsUseCase().first().find { it.id == id } }
             val logs = getAllFoodLogUseCase().first()
+            val eatenTimes = existing?.let { meal ->
+                getPlannedFoodsUseCase().first()
+                    .filter { it.repeatingMealId == meal.id && it.status == PlanStatus.EATEN }
+                    .distinctBy { it.date }
+                    .size
+            } ?: 0
             _state.update { currentState ->
                 when {
                     existing != null -> currentState.copy(
@@ -182,15 +226,16 @@ class RepeatMealViewModel(
                         },
                         endDate = existing.endDate ?: currentState.endDate,
                         times = existing.maxTimes ?: currentState.times,
-                        isAutoLog = existing.isAutoLog
+                        isAutoLog = existing.isAutoLog,
+                        eatenTimes = eatenTimes
                     )
                     sourceDate != null && sourceMeal != null -> currentState.withSource(
                         date = sourceDate,
                         mealType = sourceMeal,
                         logs = logs.filter { it.date == sourceDate && it.mealType == sourceMeal }
                     )
-                    else -> currentState.copy(recentMeals = recentMeals(logs = logs, today = currentState.today))
-                }.copy(isLoaded = true)
+                    else -> currentState
+                }.copy(isLoaded = true, recentFoods = recentFoods(logs = logs))
             }
         }
         viewModelScope.launch {
@@ -198,6 +243,18 @@ class RepeatMealViewModel(
                 libraryFoods.associate { it.food.name to it.food.unit } + foods.associate { it.name to it.unit }
             }.collect { foodUnit ->
                 _state.update { it.copy(foodUnit = foodUnit) }
+            }
+        }
+        viewModelScope.launch {
+            combine(flow = getAllFoodUseCase(), flow2 = getAllRecipeUseCase()) { foods, recipes ->
+                foods to recipes.toRecipeMeals(foods = foods, calculateAdjustMacros = calculateAdjustMacrosUseCase)
+            }.collect { (foods, recipeMeals) ->
+                _state.update { currentState ->
+                    currentState.copy(
+                        myFoods = foods.sortedBy { it.name.lowercase() }.map { it.toPlanFood() },
+                        recipes = recipeMeals.sortedBy { it.name.lowercase() }.map { it.food.toPlanFood() }
+                    )
+                }
             }
         }
     }
@@ -239,8 +296,20 @@ class RepeatMealViewModel(
         _state.update { it.copy(isAutoLog = isAutoLog) }
     }
 
-    override fun onSourcePicked(meal: PastMeal) {
-        _state.update { it.withSource(date = meal.date, mealType = meal.mealType, logs = meal.logs) }
+    override fun onFoodPicked(food: PlanFood) {
+        _state.update { currentState ->
+            currentState.copy(
+                foods = if (currentState.isAdded(food = food)) {
+                    currentState.foods.filterNot { it.foodName == food.foodName }
+                } else {
+                    currentState.foods + food
+                }
+            )
+        }
+    }
+
+    override fun onFoodRemoved(index: Int) {
+        _state.update { it.copy(foods = it.foods.filterIndexed { i, _ -> i != index }) }
     }
 
     override fun onSave(suggestedName: String) {
@@ -254,12 +323,12 @@ class RepeatMealViewModel(
         }
     }
 
-    override fun onDelete() {
+    override fun onPause() {
         val existing = _state.value.existing ?: return
         if (isSaving) return
         isSaving = true
         viewModelScope.launch {
-            deleteRepeatingMealUseCase(id = existing.id)
+            setRepeatingMealActiveUseCase(id = existing.id, isActive = false)
             _state.update { it.copy(isDone = true) }
         }
     }
@@ -274,14 +343,12 @@ class RepeatMealViewModel(
     companion object {
         private val CUSTOM_DAYS = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY)
 
-        /** Every meal logged over the last week, newest first. */
-        internal fun recentMeals(logs: List<FoodLog>, today: LocalDate): List<PastMeal> =
-            (0 until RepeatMealViewState.RECENT_DAYS).flatMap { back ->
-                val date = today.minus(period = DatePeriod(days = back))
-                logs.filter { it.date == date }
-                    .groupBy { it.mealType }
-                    .map { (meal, mealLogs) -> PastMeal(date = date, mealType = meal, logs = mealLogs) }
-                    .sortedBy { it.mealType.ordinal }
-            }
+        /** Each food logged, newest first, at the amount it was last logged. Quick adds are left out. */
+        internal fun recentFoods(logs: List<FoodLog>): List<PlanFood> =
+            logs.filter { !it.isQuickAdd }
+                .sortedWith(compareByDescending<FoodLog> { it.date }.thenByDescending { it.loggedAtMillis ?: it.id })
+                .distinctBy { it.foodName }
+                .take(n = RepeatMealViewState.RECENT_LIMIT)
+                .map { it.toPlanFood() }
     }
 }
