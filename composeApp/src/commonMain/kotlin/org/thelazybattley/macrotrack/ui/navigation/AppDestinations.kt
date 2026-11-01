@@ -128,6 +128,8 @@ sealed class AppDestinations {
 
         object Reminders : Root(route = "reminders")
 
+        object HomeWidgets : Root(route = "home_widgets")
+
         /** Today's water, and its settings. [ADD_GLASS] adds a glass as it opens, for the shortcut on the app icon. */
         object Water : Root(route = "water", routeWithArgs = "water?$ADD_GLASS={$ADD_GLASS}") {
             fun createRoute(isAddingGlass: Boolean = false): String =

@@ -1,5 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.ui
 
+import org.thelazybattley.macrotrack.core.platform.HomeWidgetRefresher
+import org.koin.compose.koinInject
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import androidx.compose.foundation.layout.Arrangement
@@ -75,6 +77,11 @@ fun ProfileScreen(
         onOpenBackup = { onNavigate(AppDestinations.Root.Backup.route) },
         onOpenDeleteData = { onNavigate(AppDestinations.Root.DeleteData.route) },
         onOpenReminders = { onNavigate(AppDestinations.Root.Reminders.route) },
+        onOpenWidgets = if (koinInject<HomeWidgetRefresher>().isSupported) {
+            { onNavigate(AppDestinations.Root.HomeWidgets.route) }
+        } else {
+            null
+        },
         onReplayTour = onReplayTour
     )
 }
@@ -88,6 +95,7 @@ fun ProfileScreen(
     onOpenBackup: () -> Unit = {},
     onOpenDeleteData: () -> Unit = {},
     onOpenReminders: () -> Unit = {},
+    onOpenWidgets: (() -> Unit)? = null,
     onReplayTour: () -> Unit = {}
 ) {
     var showTargetKeypad by rememberSaveable { mutableStateOf(value = false) }
@@ -125,6 +133,7 @@ fun ProfileScreen(
             onTargetWeightClick = { showTargetKeypad = true },
             onUnitSystemSelected = callbacks::onUnitSystemSelected,
             onRemindersClick = onOpenReminders,
+            onWidgetsClick = onOpenWidgets,
             onReplayTour = onReplayTour
         )
         ProfileYourData(

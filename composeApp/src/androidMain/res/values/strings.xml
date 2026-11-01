@@ -3,4 +3,15 @@
     <string name="photo_reminder_channel">Progress photo reminders</string>
     <string name="photo_reminder_title">Time for a progress photo</string>
     <string name="photo_reminder_body">%1$s · line up with your last one in FitMetric.</string>
+    <!-- The widget list on the home screen. -->
+    <string name="widget_today_label">Today</string>
+    <string name="widget_today_description">Calories and macros left, with buttons to log food or water. Make it taller to see each meal.</string>
+    <string name="widget_water_label">Water</string>
+    <string name="widget_water_description">How much you’ve had, and a button to add a glass.</string>
+    <string name="widget_weight_label">Weight</string>
+    <string name="widget_weight_description">Your trend weight and how it moved this week.</string>
+    <string name="widget_streak_label">Streak</string>
+    <string name="widget_streak_description">Days in a row with food logged.</string>
+    <string name="widget_quick_log_label">Quick log</string>
+    <string name="widget_quick_log_description">Log food, scan a barcode, add water or log your weight.</string>
 </resources>

@@ -30,4 +30,9 @@ interface AppFlagRepository {
     fun getSeenCheckInSuggestion(): Flow<Int?>
 
     suspend fun setSeenCheckInSuggestion(calories: Int)
+
+    /** Whether the weight widget shows the weight itself; off, it shows only the change. On until turned off. */
+    fun isWidgetWeightShown(): Flow<Boolean>
+
+    suspend fun setWidgetWeightShown(isShown: Boolean)
 }

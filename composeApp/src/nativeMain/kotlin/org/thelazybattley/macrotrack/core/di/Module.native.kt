@@ -14,6 +14,8 @@ import org.thelazybattley.macrotrack.core.platform.PhotoReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.PhotoStorage
 import org.thelazybattley.macrotrack.core.platform.IosWaterReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.AppShortcutPublisher
+import org.thelazybattley.macrotrack.core.platform.HomeWidgetRefresher
+import org.thelazybattley.macrotrack.core.platform.NoHomeWidgets
 import org.thelazybattley.macrotrack.core.platform.IosAppShortcutPublisher
 import org.thelazybattley.macrotrack.core.platform.WaterReminderScheduler
 import org.thelazybattley.macrotrack.data.local.AppDatabase
@@ -36,6 +38,7 @@ actual val platformModule: Module = module {
     single<LogReminderScheduler> { IosLogReminderScheduler() }
     single<WaterReminderScheduler> { IosWaterReminderScheduler() }
     single<AppShortcutPublisher> { IosAppShortcutPublisher() }
+    single<HomeWidgetRefresher> { NoHomeWidgets }
 }
 
 @OptIn(ExperimentalForeignApi::class)

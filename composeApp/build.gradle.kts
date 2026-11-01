@@ -55,6 +55,9 @@ kotlin {
             implementation(libs.firebase.analytics)
             implementation(libs.firebase.crashlytics)
             implementation(libs.play.review)
+            // Home screen widgets.
+            implementation(libs.glance.appwidget)
+            implementation(libs.glance.material3)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

@@ -46,6 +46,7 @@ import macrotrack.composeapp.generated.resources.units_imperial_detail
 import macrotrack.composeapp.generated.resources.units_metric_detail
 import macrotrack.composeapp.generated.resources.value_unit
 import macrotrack.composeapp.generated.resources.weight_history
+import macrotrack.composeapp.generated.resources.widgets_title
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -71,6 +72,7 @@ fun ProfileAccount(
     onTargetWeightClick: () -> Unit,
     onUnitSystemSelected: (UnitSystem) -> Unit = {},
     onRemindersClick: () -> Unit = {},
+    onWidgetsClick: (() -> Unit)? = null,
     onReplayTour: () -> Unit = {}
 ) {
     Column(
@@ -155,6 +157,10 @@ fun ProfileAccount(
                 onClick = onRemindersClick
             )
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            if (onWidgetsClick != null) {
+                AccountRow(label = Res.string.widgets_title, onClick = onWidgetsClick)
+                HorizontalDivider(thickness = 1.dp, color = colors.divider)
+            }
             AccountRow(
                 label = Res.string.replay_app_tour,
                 onClick = onReplayTour

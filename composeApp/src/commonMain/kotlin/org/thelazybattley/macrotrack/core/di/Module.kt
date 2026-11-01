@@ -28,6 +28,11 @@ import org.thelazybattley.macrotrack.domain.usecase.reminder.SendTestLogReminder
 import org.thelazybattley.macrotrack.domain.usecase.reminder.SyncLogRemindersUseCase
 import org.thelazybattley.macrotrack.features.reminders.NotificationRouteRequest
 import org.thelazybattley.macrotrack.features.reminders.RemindersViewModel
+import org.thelazybattley.macrotrack.domain.usecase.widget.GetWidgetSnapshotUseCase
+import org.thelazybattley.macrotrack.domain.usecase.widget.IsWidgetWeightShownUseCase
+import org.thelazybattley.macrotrack.domain.usecase.widget.SetWidgetWeightShownUseCase
+import org.thelazybattley.macrotrack.domain.usecase.widget.SyncHomeWidgetsUseCase
+import org.thelazybattley.macrotrack.features.widgets.WidgetsViewModel
 import io.ktor.client.HttpClient
 import org.thelazybattley.macrotrack.domain.usecase.backup.RecordBackupUseCase
 import org.thelazybattley.macrotrack.domain.usecase.backup.GetLastBackupUseCase
@@ -393,6 +398,10 @@ val useCaseModule = module {
     factoryOf(::GetLogReminderMessageUseCase)
     factoryOf(::SendTestLogReminderUseCase)
     factoryOf(::LogReminderActions)
+    factoryOf(::GetWidgetSnapshotUseCase)
+    factoryOf(::SyncHomeWidgetsUseCase)
+    factoryOf(::IsWidgetWeightShownUseCase)
+    factoryOf(::SetWidgetWeightShownUseCase)
 }
 
 val viewModelModule = module {
@@ -434,6 +443,7 @@ val viewModelModule = module {
     viewModelOf(::PhotoSaveViewModel)
     viewModelOf(::PhotoCompareViewModel)
     viewModelOf(::RemindersViewModel)
+    viewModelOf(::WidgetsViewModel)
     viewModelOf(::WaterViewModel)
     viewModelOf(::WaterSettingsViewModel)
 }

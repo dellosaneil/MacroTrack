@@ -10,6 +10,8 @@ import org.thelazybattley.macrotrack.core.billing.PlayBillingService
 import org.thelazybattley.macrotrack.core.platform.AndroidAppShortcutPublisher
 import org.thelazybattley.macrotrack.core.platform.AndroidLogReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.AppShortcutPublisher
+import org.thelazybattley.macrotrack.core.platform.HomeWidgetRefresher
+import org.thelazybattley.macrotrack.widget.AndroidHomeWidgetRefresher
 import org.thelazybattley.macrotrack.core.platform.AndroidPhotoReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.LogReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.AndroidPhotoStorage
@@ -37,6 +39,7 @@ actual val platformModule: Module = module {
     single<LogReminderScheduler> { AndroidLogReminderScheduler(context = get()) }
     single<WaterReminderScheduler> { AndroidWaterReminderScheduler(context = get()) }
     single<AppShortcutPublisher> { AndroidAppShortcutPublisher(context = get()) }
+    single<HomeWidgetRefresher> { AndroidHomeWidgetRefresher(context = get()) }
 }
 
 fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {

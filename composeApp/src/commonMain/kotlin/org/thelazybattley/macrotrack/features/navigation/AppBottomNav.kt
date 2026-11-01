@@ -28,6 +28,8 @@ import org.thelazybattley.macrotrack.core.platform.AppShortcutPublisher
 import org.thelazybattley.macrotrack.features.reminders.ui.RemindersScreen
 import org.thelazybattley.macrotrack.domain.usecase.reminder.SyncLogRemindersUseCase
 import org.thelazybattley.macrotrack.domain.usecase.water.SyncWaterRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.widget.SyncHomeWidgetsUseCase
+import org.thelazybattley.macrotrack.features.widgets.ui.WidgetsScreen
 import org.thelazybattley.macrotrack.features.water.ui.WaterScreen
 import org.thelazybattley.macrotrack.features.water.ui.WaterSettingsScreen
 import androidx.compose.foundation.layout.PaddingValues
@@ -158,6 +160,11 @@ fun AppBottomNav() {
     // Sets water reminders again as drinks are logged, so catching up takes back the ones no longer due.
     LaunchedEffect(key1 = Unit) {
         syncWaterReminders()
+    }
+    val syncHomeWidgets = koinInject<SyncHomeWidgetsUseCase>()
+    // Redraws the home screen widgets as food, water and weight are logged.
+    LaunchedEffect(key1 = Unit) {
+        syncHomeWidgets()
     }
     // The tabs inside the main screen log their own views.
     TrackScreenViews(navController = navController, ignore = setOf(AppDestinations.Root.MainScreen.route))
@@ -396,6 +403,9 @@ fun AppBottomNav() {
                     }
                     composable(route = AppDestinations.Root.Reminders.route) {
                         RemindersScreen(onBack = { navController.popBack() })
+                    }
+                    composable(route = AppDestinations.Root.HomeWidgets.route) {
+                        WidgetsScreen(onBack = { navController.popBack() })
                     }
                     composable(
                         route = AppDestinations.Root.Water.routeWithArgs!!,

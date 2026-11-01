@@ -19,6 +19,7 @@ import org.thelazybattley.macrotrack.features.navigation.AppBottomNav
 import org.thelazybattley.macrotrack.features.reminders.NotificationRouteRequest
 import org.thelazybattley.macrotrack.features.shortcuts.appShortcutRoute
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme
+import org.thelazybattley.macrotrack.widget.EXTRA_WIDGET_ROUTE
 
 class MainActivity : ComponentActivity() {
 
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) {
             openReminder(intent = intent)
             openShortcut(intent = intent)
+            openWidgetRoute(intent = intent)
         }
         setContent {
             MacroTrackTheme() {
@@ -41,6 +43,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         openReminder(intent = intent)
         openShortcut(intent = intent)
+        openWidgetRoute(intent = intent)
     }
 
     /** A tapped missed-log reminder: takes it away and asks for the screen it leads to. */
@@ -60,5 +63,12 @@ class MainActivity : ComponentActivity() {
         intent.removeExtra(EXTRA_APP_SHORTCUT)
         ShortcutManagerCompat.reportShortcutUsed(this, shortcut.name)
         get<NotificationRouteRequest>().request(route = appShortcutRoute(shortcut = shortcut))
+    }
+
+    /** A tapped meal on the Today widget: asks for Add meal for it. */
+    private fun openWidgetRoute(intent: Intent) {
+        val route = intent.getStringExtra(EXTRA_WIDGET_ROUTE) ?: return
+        intent.removeExtra(EXTRA_WIDGET_ROUTE)
+        get<NotificationRouteRequest>().request(route = route)
     }
 }
