@@ -146,4 +146,37 @@ class HomeWidgetTest {
             actual = streak.week.take(n = 4).map { it.state }
         )
     }
+
+    @Test
+    fun nextDayStartsEmptyAndKeepsTheStreakIfTodayWasLogged() {
+        val logs = listOf(5, 6, 7, 8).map { day ->
+            log(id = day.toLong(), mealType = MealType.LUNCH, calories = 500, date = LocalDate(year = 2026, monthNumber = 10, dayOfMonth = day))
+        }
+        val next = snapshot(foodLogs = logs).nextDay()
+        assertEquals(expected = LocalDate(year = 2026, monthNumber = 10, dayOfMonth = 9), actual = next.date)
+        assertEquals(expected = 0, actual = next.calories.eaten)
+        assertEquals(expected = 0, actual = next.water.totalMl)
+        assertTrue(actual = next.meals.none { it.isLogged })
+        assertEquals(expected = 4, actual = next.streak.days)
+        assertEquals(
+            expected = List(size = 4) { StreakDayState.LOGGED } + StreakDayState.OPEN + List(size = 2) { StreakDayState.LATER },
+            actual = next.streak.week.map { it.state }
+        )
+    }
+
+    @Test
+    fun nextDayAfterAnUnloggedSundayStartsANewWeek() {
+        val sunday = LocalDate(year = 2026, monthNumber = 10, dayOfMonth = 11)
+        val result = widgetSnapshot(
+            today = sunday,
+            foodLogs = emptyList(),
+            macroGoals = null,
+            water = water(totalMl = 0),
+            weights = emptyList(),
+            unitSystem = UnitSystem.METRIC,
+            isWeightShown = true
+        ).nextDay()
+        assertEquals(expected = 0, actual = result.streak.days)
+        assertEquals(expected = listOf(StreakDayState.OPEN) + List(size = 6) { StreakDayState.LATER }, actual = result.streak.week.map { it.state })
+    }
 }

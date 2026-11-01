@@ -43,7 +43,8 @@ data class WidgetStreak(val days: Int, val isTodayLogged: Boolean, val week: Lis
 
 /**
  * Everything the home screen widgets show, for [date]. [isSetUp] is false until onboarding is done, when the
- * widgets ask to finish setting up instead. [isWeightShown] off hides the weight itself and keeps the change.
+ * widgets ask to finish setting up instead. [isWeightShown] off hides the weight itself and keeps the change;
+ * [isLockNumbersShown] off hides numbers on the iPhone Lock Screen until it's unlocked.
  */
 data class WidgetSnapshot(
     val date: LocalDate,
@@ -57,8 +58,36 @@ data class WidgetSnapshot(
     val weight: WidgetWeight?,
     val streak: WidgetStreak,
     val unitSystem: UnitSystem,
-    val isWeightShown: Boolean
-)
+    val isWeightShown: Boolean,
+    val isLockNumbersShown: Boolean = true
+) {
+    /**
+     * The day after, before anything's logged on it, for widgets to switch to at midnight while the app is closed.
+     * The weight trend stays as it is.
+     */
+    fun nextDay(): WidgetSnapshot {
+        val tomorrow = date.plus(period = DatePeriod(days = 1))
+        val isNewWeek = tomorrow.dayOfWeek == DayOfWeek.MONDAY
+        val week = streak.week.map { day ->
+            when {
+                isNewWeek -> day.copy(state = if (day.dayOfWeek == DayOfWeek.MONDAY) StreakDayState.OPEN else StreakDayState.LATER)
+                day.dayOfWeek == date.dayOfWeek -> day.copy(state = if (streak.isTodayLogged) StreakDayState.LOGGED else StreakDayState.MISSED)
+                day.dayOfWeek == tomorrow.dayOfWeek -> day.copy(state = StreakDayState.OPEN)
+                else -> day
+            }
+        }
+        return copy(
+            date = tomorrow,
+            calories = calories.copy(eaten = 0),
+            protein = protein.copy(eaten = 0),
+            carbs = carbs.copy(eaten = 0),
+            fat = fat.copy(eaten = 0),
+            meals = meals.map { it.copy(foodNames = emptyList(), calories = 0) },
+            water = water.copy(totalMl = 0),
+            streak = WidgetStreak(days = if (streak.isTodayLogged) streak.days else 0, isTodayLogged = false, week = week)
+        )
+    }
+}
 
 fun widgetSnapshot(
     today: LocalDate,
@@ -67,7 +96,8 @@ fun widgetSnapshot(
     water: WaterSummary,
     weights: List<Weight>,
     unitSystem: UnitSystem,
-    isWeightShown: Boolean
+    isWeightShown: Boolean,
+    isLockNumbersShown: Boolean = true
 ): WidgetSnapshot {
     val todayLogs = foodLogs.filter { it.date == today }
     val loggedDates = foodLogs.map { it.date }.toSet()
@@ -86,7 +116,8 @@ fun widgetSnapshot(
         weight = widgetWeight(today = today, weights = weights),
         streak = widgetStreak(today = today, loggedDates = loggedDates),
         unitSystem = unitSystem,
-        isWeightShown = isWeightShown
+        isWeightShown = isWeightShown,
+        isLockNumbersShown = isLockNumbersShown
     )
 }
 

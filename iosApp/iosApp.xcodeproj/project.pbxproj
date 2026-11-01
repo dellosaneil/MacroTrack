@@ -9,11 +9,37 @@
 /* Begin PBXBuildFile section */
 		0BB3CA7A3082247700026671 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB3CA793082247700026671 /* FirebaseAnalytics */; };
 		0BB3CA7C3082247700026671 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB3CA7B3082247700026671 /* FirebaseCrashlytics */; };
+		A1F0C0DE000000000000000C /* FitMetricWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1F0C0DE0000000000000001 /* FitMetricWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5DA3E81E08984A362881F202 /* MacroTrack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacroTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1F0C0DE0000000000000001 /* FitMetricWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FitMetricWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+		A1F0C0DE000000000000000D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 651300CE20ADF1B1AE609392 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1F0C0DE0000000000000007;
+			remoteInfo = FitMetricWidgetsExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A1F0C0DE000000000000000B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1F0C0DE000000000000000C /* FitMetricWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		6D35AD7071787225C2D906CA /* Exceptions for "iosApp" folder in "iosApp" target */ = {
@@ -22,6 +48,13 @@
 				Info.plist,
 			);
 			target = 7F21F21AD63414FBD82A292B /* iosApp */;
+		};
+		A1F0C0DE0000000000000003 /* Exceptions for "FitMetricWidgets" folder in "FitMetricWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A1F0C0DE0000000000000007 /* FitMetricWidgetsExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -39,6 +72,14 @@
 			path = Configuration;
 			sourceTree = "<group>";
 		};
+		A1F0C0DE0000000000000002 /* FitMetricWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1F0C0DE0000000000000003 /* Exceptions for "FitMetricWidgets" folder in "FitMetricWidgetsExtension" target */,
+			);
+			path = FitMetricWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +92,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1F0C0DE0000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -59,6 +107,7 @@
 			children = (
 				C6ED7C02CC06F8D5829DF963 /* Configuration */,
 				7FBFD3D18A27D0264040C419 /* iosApp */,
+				A1F0C0DE0000000000000002 /* FitMetricWidgets */,
 				F006976BD68A29CCDFFDAA5D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,6 +116,7 @@
 			isa = PBXGroup;
 			children = (
 				5DA3E81E08984A362881F202 /* MacroTrack.app */,
+				A1F0C0DE0000000000000001 /* FitMetricWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -82,10 +132,12 @@
 				3D7AE4B4E54DB6E204364AD7 /* Sources */,
 				FB21E5D871A71B9FAEF89964 /* Frameworks */,
 				82A45BB94463954EAD0D80D2 /* Resources */,
+				A1F0C0DE000000000000000B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A1F0C0DE000000000000000E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				7FBFD3D18A27D0264040C419 /* iosApp */,
@@ -99,6 +151,28 @@
 			productReference = 5DA3E81E08984A362881F202 /* MacroTrack.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A1F0C0DE0000000000000007 /* FitMetricWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1F0C0DE000000000000000A /* Build configuration list for PBXNativeTarget "FitMetricWidgetsExtension" */;
+			buildPhases = (
+				A1F0C0DE0000000000000004 /* Sources */,
+				A1F0C0DE0000000000000005 /* Frameworks */,
+				A1F0C0DE0000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A1F0C0DE0000000000000002 /* FitMetricWidgets */,
+			);
+			name = FitMetricWidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = FitMetricWidgetsExtension;
+			productReference = A1F0C0DE0000000000000001 /* FitMetricWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -111,6 +185,9 @@
 				TargetAttributes = {
 					7F21F21AD63414FBD82A292B = {
 						CreatedOnToolsVersion = 16.2;
+					};
+					A1F0C0DE0000000000000007 = {
+						CreatedOnToolsVersion = 26.3;
 					};
 				};
 			};
@@ -132,12 +209,20 @@
 			projectRoot = "";
 			targets = (
 				7F21F21AD63414FBD82A292B /* iosApp */,
+				A1F0C0DE0000000000000007 /* FitMetricWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		82A45BB94463954EAD0D80D2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1F0C0DE0000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -176,7 +261,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1F0C0DE0000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A1F0C0DE000000000000000E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1F0C0DE0000000000000007 /* FitMetricWidgetsExtension */;
+			targetProxy = A1F0C0DE000000000000000D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		60C8EB6B33636B7D882FD462 /* Debug */ = {
@@ -250,6 +350,7 @@
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Configuration/iosApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
@@ -283,6 +384,7 @@
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Configuration/iosApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
@@ -368,6 +470,54 @@
 			};
 			name = Release;
 		};
+		A1F0C0DE0000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configuration/FitMetricWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = FLT7896493;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FitMetricWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FitMetric;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "org.thelazybattley.macrotrack.MacroTrack$(TEAM_ID).Widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1F0C0DE0000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configuration/FitMetricWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = FLT7896493;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FitMetricWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FitMetric;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "org.thelazybattley.macrotrack.MacroTrack$(TEAM_ID).Widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -385,6 +535,15 @@
 			buildConfigurations = (
 				867ADE0E751C0D5441E91B31 /* Debug */,
 				99623494123D0635A0BC483D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A1F0C0DE000000000000000A /* Build configuration list for PBXNativeTarget "FitMetricWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1F0C0DE0000000000000008 /* Debug */,
+				A1F0C0DE0000000000000009 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

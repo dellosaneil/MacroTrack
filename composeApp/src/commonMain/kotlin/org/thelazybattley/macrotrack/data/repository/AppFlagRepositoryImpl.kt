@@ -75,6 +75,16 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         }
     }
 
+    override fun isWidgetLockNumbersShown(): Flow<Boolean> = dao.isFlagSet(key = WIDGET_LOCK_NUMBERS_HIDDEN).map { !it }
+
+    override suspend fun setWidgetLockNumbersShown(isShown: Boolean) {
+        if (isShown) {
+            dao.deleteFlag(key = WIDGET_LOCK_NUMBERS_HIDDEN)
+        } else {
+            dao.insertFlag(flag = AppFlagEntity(key = WIDGET_LOCK_NUMBERS_HIDDEN))
+        }
+    }
+
     companion object {
         /** Also seeded by AppDatabase.MIGRATION_8_9 for people who set up the app before the tour existed. */
         const val TOUR_COMPLETED = "tour_completed"
@@ -84,5 +94,6 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         const val REVIEW_TIMES_ASKED = "review_times_asked"
         const val SEEN_CHECK_IN_SUGGESTION = "seen_check_in_suggestion"
         const val WIDGET_WEIGHT_HIDDEN = "widget_weight_hidden"
+        const val WIDGET_LOCK_NUMBERS_HIDDEN = "widget_lock_numbers_hidden"
     }
 }

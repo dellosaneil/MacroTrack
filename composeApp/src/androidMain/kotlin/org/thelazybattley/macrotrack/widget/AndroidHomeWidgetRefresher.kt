@@ -6,6 +6,7 @@ import androidx.core.content.edit
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
 import org.thelazybattley.macrotrack.core.platform.HomeWidgetRefresher
+import org.thelazybattley.macrotrack.core.platform.WidgetPlatform
 
 /** Every widget the app has, with its receiver. */
 private val WIDGETS = listOf(
@@ -19,6 +20,8 @@ private val WIDGETS = listOf(
 class AndroidHomeWidgetRefresher(private val context: Context) : HomeWidgetRefresher {
 
     override val isSupported: Boolean = true
+
+    override val platform: WidgetPlatform = WidgetPlatform.ANDROID
 
     override suspend fun refresh() {
         WIDGETS.forEach { (widget, _) -> widget.updateAll(context = context) }

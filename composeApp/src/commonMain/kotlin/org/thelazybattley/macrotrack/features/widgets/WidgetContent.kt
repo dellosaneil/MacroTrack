@@ -1,4 +1,4 @@
-package org.thelazybattley.macrotrack.widget
+package org.thelazybattley.macrotrack.features.widgets
 
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.carbs
@@ -11,6 +11,7 @@ import macrotrack.composeapp.generated.resources.widget_add_amount
 import macrotrack.composeapp.generated.resources.widget_eaten
 import macrotrack.composeapp.generated.resources.widget_food
 import macrotrack.composeapp.generated.resources.widget_grams
+import macrotrack.composeapp.generated.resources.widget_grams_left
 import macrotrack.composeapp.generated.resources.widget_kcal_left
 import macrotrack.composeapp.generated.resources.widget_kcal_over
 import macrotrack.composeapp.generated.resources.widget_log_food
@@ -49,17 +50,17 @@ import org.thelazybattley.macrotrack.ui.common.SAME_WEIGHT_THRESHOLD_KG
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** A macro row: its name, "74 / 160g", and how far along it is. */
-internal data class MacroText(val name: String, val value: String, val progress: Float)
+/** A macro row: its name, "74 / 160g", "86g left", and how far along it is. */
+data class MacroText(val name: String, val value: String, val left: String, val progress: Float)
 
 /** A meal row in the large Today widget: "Lunch", "2 items · Chicken rice bowl, iced latte", and "640", or no calories when empty. */
-internal data class MealText(val name: String, val detail: String, val calories: String?)
+data class MealText(val name: String, val detail: String, val calories: String?)
 
 /**
  * A [WidgetSnapshot] with every word and number written out, since widgets can't read the app's strings while
  * they draw. [bigNumber] and [bigLabel] are for the ring, by whether it shows calories or protein.
  */
-internal data class WidgetContent(
+data class WidgetContent(
     val snapshot: WidgetSnapshot,
     val today: String,
     val date: String,
@@ -97,7 +98,7 @@ internal data class WidgetContent(
     fun bigProgress(isProtein: Boolean): Float = if (isProtein) snapshot.protein.progress else snapshot.calories.progress
 }
 
-internal suspend fun WidgetSnapshot.toContent(): WidgetContent {
+suspend fun WidgetSnapshot.toContent(): WidgetContent {
     val weight = weight
     val units = unitSystem
     val weightUnit = getString(resource = if (units == UnitSystem.IMPERIAL) Res.string.lb else Res.string.kg)
@@ -173,6 +174,7 @@ internal suspend fun WidgetSnapshot.toContent(): WidgetContent {
 private suspend fun macroText(name: String, amount: WidgetAmount) = MacroText(
     name = name,
     value = getString(resource = Res.string.widget_macro_value, amount.eaten.withThousands(), amount.goal.withThousands()),
+    left = getString(resource = Res.string.widget_grams_left, amount.left.coerceAtLeast(minimumValue = 0).withThousands()),
     progress = amount.progress
 )
 

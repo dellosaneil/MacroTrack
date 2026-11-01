@@ -41,17 +41,24 @@ import macrotrack.composeapp.generated.resources.widget_kcal_over
 import macrotrack.composeapp.generated.resources.widget_macro_value
 import macrotrack.composeapp.generated.resources.widget_today
 import macrotrack.composeapp.generated.resources.widgets_blurb
+import macrotrack.composeapp.generated.resources.widgets_blurb_ios
+import macrotrack.composeapp.generated.resources.widgets_lock_sub
+import macrotrack.composeapp.generated.resources.widgets_lock_title
 import macrotrack.composeapp.generated.resources.widgets_footer
 import macrotrack.composeapp.generated.resources.widgets_privacy
 import macrotrack.composeapp.generated.resources.widgets_step_1
 import macrotrack.composeapp.generated.resources.widgets_step_2
 import macrotrack.composeapp.generated.resources.widgets_step_3
+import macrotrack.composeapp.generated.resources.widgets_step_1_ios
+import macrotrack.composeapp.generated.resources.widgets_step_2_ios
+import macrotrack.composeapp.generated.resources.widgets_step_3_ios
 import macrotrack.composeapp.generated.resources.widgets_title
 import macrotrack.composeapp.generated.resources.widgets_weight_sub
 import macrotrack.composeapp.generated.resources.widgets_weight_title
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.core.platform.WidgetPlatform
 import org.thelazybattley.macrotrack.domain.model.WidgetAmount
 import org.thelazybattley.macrotrack.domain.model.WidgetSnapshot
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
@@ -65,7 +72,8 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
 
-private val STEPS = listOf(Res.string.widgets_step_1, Res.string.widgets_step_2, Res.string.widgets_step_3)
+private val ANDROID_STEPS = listOf(Res.string.widgets_step_1, Res.string.widgets_step_2, Res.string.widgets_step_3)
+private val IOS_STEPS = listOf(Res.string.widgets_step_1_ios, Res.string.widgets_step_2_ios, Res.string.widgets_step_3_ios)
 
 @Composable
 fun WidgetsScreen(
@@ -98,11 +106,29 @@ private fun WidgetsScreen(
                 .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(space = 16.dp)
         ) {
+            val isIos = viewState.platform == WidgetPlatform.IOS
             viewState.snapshot?.let { PreviewStage(snapshot = it) }
-            Text(text = stringResource(resource = Res.string.widgets_blurb), style = typography.regular13, color = colors.muted)
-            Steps()
+            Text(
+                text = stringResource(resource = if (isIos) Res.string.widgets_blurb_ios else Res.string.widgets_blurb),
+                style = typography.regular13,
+                color = colors.muted
+            )
+            Steps(steps = if (isIos) IOS_STEPS else ANDROID_STEPS)
             Text(text = stringResource(resource = Res.string.widgets_privacy), style = typography.bold12, color = colors.muted)
-            WeightRow(isOn = viewState.snapshot?.isWeightShown ?: true, onToggle = callbacks::onWeightShownToggled)
+            if (isIos) {
+                SwitchRow(
+                    title = Res.string.widgets_lock_title,
+                    detail = Res.string.widgets_lock_sub,
+                    isOn = viewState.snapshot?.isLockNumbersShown ?: true,
+                    onToggle = callbacks::onLockNumbersToggled
+                )
+            }
+            SwitchRow(
+                title = Res.string.widgets_weight_title,
+                detail = Res.string.widgets_weight_sub,
+                isOn = viewState.snapshot?.isWeightShown ?: true,
+                onToggle = callbacks::onWeightShownToggled
+            )
             Text(text = stringResource(resource = Res.string.widgets_footer), style = typography.regular11, color = colors.muted)
         }
     }
@@ -190,7 +216,7 @@ private fun MacroBar(name: StringResource, amount: WidgetAmount, color: Color) {
 }
 
 @Composable
-private fun Steps() {
+private fun Steps(steps: List<StringResource>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -199,7 +225,7 @@ private fun Steps() {
             .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 18.dp))
             .padding(horizontal = 14.dp, vertical = 6.dp)
     ) {
-        STEPS.forEachIndexed { index, step ->
+        steps.forEachIndexed { index, step ->
             if (index > 0) HorizontalDivider(thickness = 1.dp, color = colors.divider)
             Row(
                 modifier = Modifier.padding(vertical = 12.dp),
@@ -221,8 +247,8 @@ private fun Steps() {
 }
 
 @Composable
-private fun WeightRow(isOn: Boolean, onToggle: () -> Unit) {
-    val title = stringResource(resource = Res.string.widgets_weight_title)
+private fun SwitchRow(title: StringResource, detail: StringResource, isOn: Boolean, onToggle: () -> Unit) {
+    val title = stringResource(resource = title)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -235,7 +261,7 @@ private fun WeightRow(isOn: Boolean, onToggle: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(weight = 1f)) {
             Text(text = title, style = typography.bold14, color = colors.ink)
-            Text(text = stringResource(resource = Res.string.widgets_weight_sub), style = typography.regular11, color = colors.muted)
+            Text(text = stringResource(resource = detail), style = typography.regular11, color = colors.muted)
         }
         CommonSwitch(isOn = isOn, description = title, onToggle = onToggle)
     }

@@ -44,6 +44,7 @@ import org.thelazybattley.macrotrack.domain.repository.WeightRepository
 import org.thelazybattley.macrotrack.domain.usecase.reminder.formatClockTime
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.time.ExperimentalTime
 
 /** The last 7 days, today included. */
@@ -108,15 +109,19 @@ class SaveWaterSettingsUseCase(private val repository: WaterRepository) {
     }
 }
 
-/** Adds a drink now, to today; returns it with its id for Undo. */
+/**
+ * Adds a drink now, to today, or at [atMillis] to that day, for one added from a widget while the app was closed.
+ * Returns it with its id for Undo.
+ */
 @OptIn(ExperimentalTime::class)
 class AddWaterUseCase(private val repository: WaterRepository, private val telemetry: Telemetry) {
-    suspend operator fun invoke(amountMl: Int, kind: WaterKind): WaterEntry {
+    suspend operator fun invoke(amountMl: Int, kind: WaterKind, atMillis: Long? = null): WaterEntry {
+        val at = atMillis?.let { Instant.fromEpochMilliseconds(epochMilliseconds = it) } ?: Clock.System.now()
         val entry = WaterEntry(
-            date = getCurrentDate(),
+            date = at.toLocalDateTime(timeZone = TimeZone.currentSystemDefault()).date,
             amountMl = amountMl,
             kind = kind,
-            loggedAtMillis = Clock.System.now().toEpochMilliseconds()
+            loggedAtMillis = at.toEpochMilliseconds()
         )
         val id = repository.addWater(entry = entry)
         telemetry.logEvent(name = TelemetryEvent.WATER_LOGGED, params = mapOf(TelemetryEvent.PARAM_TYPE to kind.name.lowercase()))

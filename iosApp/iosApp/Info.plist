@@ -10,6 +10,17 @@
 	<string>FitMetric uses your camera to read barcodes on food packaging and to take progress photos, which stay on this phone.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>FitMetric saves the progress cards you make to your photos.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>org.thelazybattley.macrotrack.widgets</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fitmetric</string>
+			</array>
+		</dict>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

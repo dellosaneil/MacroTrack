@@ -35,6 +35,7 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import org.thelazybattley.macrotrack.R
+import org.thelazybattley.macrotrack.features.widgets.WidgetContent
 import org.thelazybattley.macrotrack.core.platform.AppShortcut
 import org.thelazybattley.macrotrack.domain.model.StreakDayState
 

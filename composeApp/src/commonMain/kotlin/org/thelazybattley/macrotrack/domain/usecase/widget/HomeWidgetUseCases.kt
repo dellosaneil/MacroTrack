@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.platform.HomeWidgetRefresher
+import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.WidgetSnapshot
 import org.thelazybattley.macrotrack.domain.model.widgetSnapshot
 import org.thelazybattley.macrotrack.domain.repository.AppFlagRepository
@@ -37,21 +38,29 @@ class GetWidgetSnapshotUseCase(
                 flow2 = getUserDetailsUseCase(),
                 flow3 = getWaterSummaryUseCase(),
                 flow4 = getAllWeightUseCase(),
-                flow5 = combine(flow = appFlagRepository.getUnitSystem(), flow2 = appFlagRepository.isWidgetWeightShown()) { units, shown -> units to shown }
-            ) { foodLogs, userDetails, water, weights, (unitSystem, isWeightShown) ->
+                flow5 = combine(
+                    flow = appFlagRepository.getUnitSystem(),
+                    flow2 = appFlagRepository.isWidgetWeightShown(),
+                    flow3 = appFlagRepository.isWidgetLockNumbersShown(),
+                    transform = ::WidgetFlags
+                )
+            ) { foodLogs, userDetails, water, weights, flags ->
                 widgetSnapshot(
                     today = today,
                     foodLogs = foodLogs,
                     macroGoals = userDetails?.let { calculateMacrosGoalUseCase(userDetails = it) },
                     water = water,
                     weights = weights,
-                    unitSystem = unitSystem,
-                    isWeightShown = isWeightShown
+                    unitSystem = flags.unitSystem,
+                    isWeightShown = flags.isWeightShown,
+                    isLockNumbersShown = flags.isLockNumbersShown
                 )
             }
         )
     }
 }
+
+private data class WidgetFlags(val unitSystem: UnitSystem, val isWeightShown: Boolean, val isLockNumbersShown: Boolean)
 
 /** Redraws the widgets as food, water, weight or goals change while the app is open. */
 class SyncHomeWidgetsUseCase(
@@ -78,5 +87,11 @@ class IsWidgetWeightShownUseCase(private val repository: AppFlagRepository) {
 class SetWidgetWeightShownUseCase(private val repository: AppFlagRepository) {
     suspend operator fun invoke(isShown: Boolean) {
         repository.setWidgetWeightShown(isShown = isShown)
+    }
+}
+
+class SetWidgetLockNumbersShownUseCase(private val repository: AppFlagRepository) {
+    suspend operator fun invoke(isShown: Boolean) {
+        repository.setWidgetLockNumbersShown(isShown = isShown)
     }
 }

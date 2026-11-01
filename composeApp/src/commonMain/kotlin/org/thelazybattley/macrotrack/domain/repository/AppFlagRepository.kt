@@ -35,4 +35,9 @@ interface AppFlagRepository {
     fun isWidgetWeightShown(): Flow<Boolean>
 
     suspend fun setWidgetWeightShown(isShown: Boolean)
+
+    /** Whether iPhone Lock Screen widgets show numbers while the phone is locked. On until turned off. */
+    fun isWidgetLockNumbersShown(): Flow<Boolean>
+
+    suspend fun setWidgetLockNumbersShown(isShown: Boolean)
 }

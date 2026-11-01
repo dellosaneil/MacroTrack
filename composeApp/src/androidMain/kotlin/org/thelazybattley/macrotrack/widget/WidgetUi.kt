@@ -47,6 +47,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.koin.core.context.GlobalContext
 import org.thelazybattley.macrotrack.R
+import org.thelazybattley.macrotrack.features.widgets.MacroText
+import org.thelazybattley.macrotrack.features.widgets.WidgetContent
+import org.thelazybattley.macrotrack.features.widgets.toContent
 import org.thelazybattley.macrotrack.domain.usecase.widget.GetWidgetSnapshotUseCase
 
 /** What each placed widget was set up to show, kept per widget. */

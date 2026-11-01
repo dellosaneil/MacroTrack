@@ -4,7 +4,7 @@ import ComposeApp
 
 struct ComposeView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController(firebase: TelemetrySetup.bridge)
+        MainViewControllerKt.MainViewController(firebase: TelemetrySetup.bridge, widgets: HomeWidgetSetup.bridge)
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}

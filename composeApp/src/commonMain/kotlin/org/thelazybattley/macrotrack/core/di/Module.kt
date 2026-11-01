@@ -31,6 +31,7 @@ import org.thelazybattley.macrotrack.features.reminders.RemindersViewModel
 import org.thelazybattley.macrotrack.domain.usecase.widget.GetWidgetSnapshotUseCase
 import org.thelazybattley.macrotrack.domain.usecase.widget.IsWidgetWeightShownUseCase
 import org.thelazybattley.macrotrack.domain.usecase.widget.SetWidgetWeightShownUseCase
+import org.thelazybattley.macrotrack.domain.usecase.widget.SetWidgetLockNumbersShownUseCase
 import org.thelazybattley.macrotrack.domain.usecase.widget.SyncHomeWidgetsUseCase
 import org.thelazybattley.macrotrack.features.widgets.WidgetsViewModel
 import io.ktor.client.HttpClient
@@ -402,6 +403,7 @@ val useCaseModule = module {
     factoryOf(::SyncHomeWidgetsUseCase)
     factoryOf(::IsWidgetWeightShownUseCase)
     factoryOf(::SetWidgetWeightShownUseCase)
+    factoryOf(::SetWidgetLockNumbersShownUseCase)
 }
 
 val viewModelModule = module {
