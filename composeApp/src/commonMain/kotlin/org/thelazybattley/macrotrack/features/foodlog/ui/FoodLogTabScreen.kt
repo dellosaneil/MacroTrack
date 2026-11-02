@@ -114,8 +114,6 @@ import org.thelazybattley.macrotrack.domain.model.toFitMacros
 import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsRow
 import org.thelazybattley.macrotrack.features.whatfits.ui.whatFitsCount
 import androidx.compose.runtime.remember
-import macrotrack.composeapp.generated.resources.ic_bulb
-import macrotrack.composeapp.generated.resources.what_fits
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
@@ -177,7 +175,7 @@ fun FoodLogTabScreen(
         },
         onOpenWater = { onNavigate(AppDestinations.Root.Water.route) },
         onOpenChecklist = { onNavigate(AppDestinations.Root.Checklist.route) },
-        onWhatFits = { mealType -> onNavigate(AppDestinations.Root.WhatFits.createRoute(mealType = mealType?.name)) }
+        onWhatFits = { onNavigate(AppDestinations.Root.WhatFits.createRoute()) }
     )
 }
 
@@ -198,8 +196,8 @@ private fun FoodLogTabScreen(
     onRepeat: (MealType) -> Unit,
     onOpenWater: () -> Unit,
     onOpenChecklist: () -> Unit,
-    /** Opens What fits? for a meal, or the next meal of the day when null. */
-    onWhatFits: (MealType?) -> Unit
+    /** Opens What fits? for the next meal of the day. */
+    onWhatFits: () -> Unit
 ) {
     val today = getCurrentDate()
     val isToday = viewState.selectedDate == today
@@ -264,7 +262,7 @@ private fun FoodLogTabScreen(
                             modifier = Modifier.fillMaxWidth(),
                             count = count,
                             isLocked = !LocalProAccess.current.isActive,
-                            onClick = { onWhatFits(null) }
+                            onClick = onWhatFits
                         )
                     }
                 }
@@ -330,7 +328,6 @@ private fun FoodLogTabScreen(
                     },
                     onMore = { copyMenuMeal = meal.mealType },
                     onCopyFrom = if (isToday) ({ onCopyFrom(meal.mealType) }) else null,
-                    onWhatFits = if (isToday) ({ onWhatFits(meal.mealType) }) else null,
                     // Planned food waits on the day it's for, so only today shows it. Eaten food is in the meal now.
                     planned = if (isToday) {
                         viewState.plannedToday.filter { it.mealType == meal.mealType && it.status != PlanStatus.EATEN }
@@ -589,7 +586,6 @@ private fun LoggedFoodMealType(
     onMore: () -> Unit,
     /** Offered on an empty meal on today; null hides it. */
     onCopyFrom: (() -> Unit)?,
-    onWhatFits: (() -> Unit)?,
     planned: List<PlannedFood>,
     callbacks: FoodLogCallbacks
 ) {
@@ -625,7 +621,6 @@ private fun LoggedFoodMealType(
             onNavigate = onNavigate,
             onMore = onMore,
             onCopyFrom = onCopyFrom.takeIf { planned.isEmpty() },
-            onWhatFits = onWhatFits,
             plannedCount = planned.size
         )
         if (!isEmpty) {
@@ -683,7 +678,6 @@ private fun MealTypeHeader(
     onNavigate: () -> Unit,
     onMore: () -> Unit,
     onCopyFrom: (() -> Unit)?,
-    onWhatFits: (() -> Unit)?,
     plannedCount: Int
 ) {
     val isEmpty = foodList.foodList.isEmpty()
@@ -730,15 +724,8 @@ private fun MealTypeHeader(
                 style = typography.regular11,
                 color = colors.muted
             )
-            if (isEmpty && (onCopyFrom != null || onWhatFits != null)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(space = 14.dp)) {
-                    if (onCopyFrom != null) {
-                        MealLink(icon = Res.drawable.ic_copy, text = stringResource(resource = Res.string.copy_from_another_day), onClick = onCopyFrom)
-                    }
-                    if (onWhatFits != null) {
-                        MealLink(icon = Res.drawable.ic_bulb, text = stringResource(resource = Res.string.what_fits), onClick = onWhatFits)
-                    }
-                }
+            if (isEmpty && onCopyFrom != null) {
+                MealLink(icon = Res.drawable.ic_copy, text = stringResource(resource = Res.string.copy_from_another_day), onClick = onCopyFrom)
             }
         }
         if (!isEmpty) {

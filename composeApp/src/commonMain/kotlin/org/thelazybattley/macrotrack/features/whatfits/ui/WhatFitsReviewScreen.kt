@@ -59,6 +59,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.thelazybattley.macrotrack.domain.model.MacroType
+import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.usecase.whatfits.FitPick
 import org.thelazybattley.macrotrack.features.whatfits.WhatFitsCallbacks
 import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
@@ -105,7 +106,7 @@ private fun WhatFitsReviewScreen(
         }
     ) {
         AfterHero(viewState = viewState)
-        WhatFitsMealTabs(options = viewState.mealOptions, selected = viewState.mealType, onSelect = callbacks::onMealSelected)
+        WhatFitsMealTabs(options = MealType.entries, selected = viewState.mealType, onSelect = callbacks::onMealSelected)
         if (picks.isEmpty()) {
             Text(text = stringResource(resource = Res.string.what_fits_review_empty), style = typography.regular13, color = colors.muted)
             return@WhatFitsScaffold
@@ -121,7 +122,7 @@ private fun WhatFitsReviewScreen(
             ) {
                 picks.forEachIndexed { index, pick ->
                     if (index > 0) HorizontalDivider(thickness = 1.dp, color = colors.divider)
-                    PickRow(pick = pick, onStep = { steps -> callbacks.onStepPick(key = pick.food.key, steps = steps) })
+                    PickRow(pick = pick, mealType = viewState.mealType, onStep = { steps -> callbacks.onStepPick(key = pick.food.key, steps = steps) })
                 }
             }
         }
@@ -183,10 +184,10 @@ private fun AfterHero(viewState: WhatFitsViewState) {
 }
 
 @Composable
-private fun PickRow(pick: FitPick, onStep: (Int) -> Unit) {
+private fun PickRow(pick: FitPick, mealType: MealType, onStep: (Int) -> Unit) {
     val food = pick.food
     val macros = food.macrosFor(amount = pick.amount)
-    val last = food.last.amount
+    val last = food.lastFor(mealType = mealType).amount
     Row(
         modifier = Modifier
             .fillMaxWidth()

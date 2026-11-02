@@ -52,7 +52,7 @@ class WhatFitsTest {
             foods = listOf(chicken),
             left = left,
             settings = WhatFitsSettings(amountBasis = FitAmountBasis.USUAL),
-            mealType = MealType.DINNER,
+            mealType = MealType.LUNCH,
             eatenToday = emptySet()
         )
         assertEquals(expected = 150.0, actual = ideas.ideas.single().amount)
@@ -66,7 +66,7 @@ class WhatFitsTest {
             foods = listOf(chicken),
             left = tight,
             settings = WhatFitsSettings(spareCalories = 0),
-            mealType = MealType.SNACK,
+            mealType = MealType.DINNER,
             eatenToday = emptySet()
         ).ideas.single()
         assertEquals(expected = 120.0, actual = idea.amount)
@@ -82,7 +82,7 @@ class WhatFitsTest {
             foods = listOf(salmon, chicken),
             left = tight,
             settings = WhatFitsSettings(spareCalories = 0),
-            mealType = MealType.SNACK,
+            mealType = MealType.DINNER,
             eatenToday = emptySet()
         )
         assertEquals(expected = listOf("Chicken breast"), actual = ideas.ideas.map { it.food.name })
@@ -96,7 +96,7 @@ class WhatFitsTest {
             foods = listOf(chicken),
             left = tight,
             settings = WhatFitsSettings(spareCalories = 0, tooBig = FitTooBig.HIDE),
-            mealType = MealType.SNACK,
+            mealType = MealType.DINNER,
             eatenToday = emptySet()
         )
         assertTrue(actual = ideas.ideas.isEmpty())
@@ -170,17 +170,37 @@ class WhatFitsTest {
     }
 
     @Test
-    fun mealOptionsAreTheEmptyMealsAfterTheLastOneLogged() {
-        assertEquals(
-            expected = listOf(MealType.DINNER, MealType.SNACK),
-            actual = fitMealOptions(loggedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH), selected = null)
+    fun ideasAreForTheMealAfterTheLastOneLogged() {
+        assertEquals(expected = MealType.DINNER, actual = defaultFitMeal(loggedMeals = setOf(MealType.BREAKFAST, MealType.LUNCH)))
+        assertEquals(expected = MealType.BREAKFAST, actual = defaultFitMeal(loggedMeals = emptySet()))
+        assertEquals(expected = MealType.SNACK, actual = defaultFitMeal(loggedMeals = setOf(MealType.SNACK)))
+    }
+
+    @Test
+    fun onlyFoodEatenAtTheMealIsSuggestedAndTheRestCounted() {
+        // The salmon recipe has only been eaten at dinner.
+        val ideas = findFitIdeas(foods = listOf(salmon, chicken), left = left, settings = WhatFitsSettings(), mealType = MealType.LUNCH, eatenToday = emptySet())
+        assertEquals(expected = listOf("Chicken breast"), actual = ideas.ideas.map { it.food.name })
+        assertEquals(expected = 1, actual = ideas.otherMealCount)
+        val everyMeal = findFitIdeas(
+            foods = listOf(salmon, chicken),
+            left = left,
+            settings = WhatFitsSettings(isMealOnly = false),
+            mealType = MealType.LUNCH,
+            eatenToday = emptySet()
         )
-        assertEquals(expected = MealType.entries, actual = fitMealOptions(loggedMeals = emptySet(), selected = null))
-        assertEquals(expected = listOf(MealType.SNACK), actual = fitMealOptions(loggedMeals = setOf(MealType.SNACK), selected = null))
-        assertEquals(
-            expected = listOf(MealType.LUNCH, MealType.SNACK),
-            actual = fitMealOptions(loggedMeals = setOf(MealType.DINNER), selected = MealType.LUNCH)
-        )
+        assertEquals(expected = 2, actual = everyMeal.ideas.size)
+        assertEquals(expected = 0, actual = everyMeal.otherMealCount)
+    }
+
+    @Test
+    fun amountsStartFromTheLastTimeAtThatMeal() {
+        // 180 g at dinner, 150 g the last time at lunch.
+        val lunch = findFitIdeas(foods = listOf(chicken), left = left, settings = WhatFitsSettings(), mealType = MealType.LUNCH, eatenToday = emptySet())
+        assertEquals(expected = 150.0, actual = lunch.ideas.single().amount)
+        assertEquals(expected = 2, actual = chicken.timesAt(mealType = MealType.DINNER))
+        // Never had at breakfast: from every meal.
+        assertEquals(expected = 180.0, actual = chicken.startAmount(basis = FitAmountBasis.LAST_TIME, mealType = MealType.BREAKFAST))
     }
 
     @Test

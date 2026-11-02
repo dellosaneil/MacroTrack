@@ -65,14 +65,10 @@ fun FoodMacros.toFitMacros() = FitMacros(calories = calories.toDouble(), protein
 
 fun FoodLog.toFitMacros() = FitMacros(calories = calories.toDouble(), protein = protein, carbs = carbs, fat = fat)
 
-/**
- * The meals ideas can go to: the empty ones after the last meal logged today, or Snack once the day's meals are in.
- * The first is where ideas go unless another is picked; [selected] always stays on the list.
- */
-fun fitMealOptions(loggedMeals: Set<MealType>, selected: MealType?): List<MealType> {
+/** The meal ideas are for unless another is picked: the first one after the last meal logged today, or Snack. */
+fun defaultFitMeal(loggedMeals: Set<MealType>): MealType {
     val lastLogged = MealType.entries.lastOrNull { it in loggedMeals }
-    val later = MealType.entries.filter { lastLogged == null || it > lastLogged }.ifEmpty { listOf(MealType.SNACK) }
-    return (later + listOfNotNull(selected)).distinct().sortedBy { it.ordinal }
+    return MealType.entries.firstOrNull { lastLogged == null || it > lastLogged } ?: MealType.SNACK
 }
 
 /** Where an idea comes from, and the switch in settings that turns it off. */
@@ -98,7 +94,9 @@ data class WhatFitsSettings(
     val isMyFoodsOn: Boolean = true,
     val isRecentOn: Boolean = true,
     /** Leaves out food already logged today, so ideas aren't a repeat of lunch. */
-    val isSkippingEatenToday: Boolean = true
+    val isSkippingEatenToday: Boolean = true,
+    /** Only food eaten at the meal ideas are for: breakfast ideas come from breakfasts, and so on. */
+    val isMealOnly: Boolean = true
 ) {
     fun isOn(source: FitSource): Boolean = when (source) {
         FitSource.RECIPE -> isRecipesOn
@@ -139,13 +137,33 @@ data class FitFood(
     val last: FitPastAmount get() = history.first()
 
     /** The amount logged most often; a tie goes to the one logged most recently. */
-    val usualAmount: Double
-        get() = history.groupBy { it.amount }.maxWith(
-            comparator = compareBy<Map.Entry<Double, List<FitPastAmount>>> { it.value.size }
-                .thenByDescending { entry -> history.indexOfFirst { it.amount == entry.key } }
-        ).key
+    val usualAmount: Double get() = usualOf(logs = history)
 
     val usualCount: Int get() = history.count { it.amount == usualAmount }
+
+    /** Its logs at [mealType], newest first. */
+    fun historyAt(mealType: MealType): List<FitPastAmount> = history.filter { it.mealType == mealType }
+
+    /** How many times it was logged at [mealType]. */
+    fun timesAt(mealType: MealType): Int = history.count { it.mealType == mealType }
+
+    /** The last time it was logged at [mealType], or at any meal when never at that one. */
+    fun lastFor(mealType: MealType): FitPastAmount = historyAt(mealType = mealType).firstOrNull() ?: last
+
+    /** The usual amount at [mealType], or at any meal when never at that one. */
+    fun usualFor(mealType: MealType): Double = usualOf(logs = historyAt(mealType = mealType).ifEmpty { history })
+
+    /** How many of [usualFor]'s logs had that amount, out of how many. */
+    fun usualCountFor(mealType: MealType): Pair<Int, Int> {
+        val logs = historyAt(mealType = mealType).ifEmpty { history }
+        val usual = usualOf(logs = logs)
+        return logs.count { it.amount == usual } to logs.size
+    }
+
+    private fun usualOf(logs: List<FitPastAmount>): Double = logs.groupBy { it.amount }.maxWith(
+        comparator = compareBy<Map.Entry<Double, List<FitPastAmount>>> { it.value.size }
+            .thenByDescending { entry -> logs.indexOfFirst { it.amount == entry.key } }
+    ).key
 
     val servingAmount: Double get() = if (isRecipe) FIT_FULL_RECIPE_PERCENT else baseAmount
 
@@ -169,9 +187,10 @@ data class FitFood(
 
     fun macrosFor(amount: Double): FitMacros = if (baseAmount > 0) baseMacros * (amount / baseAmount) else FitMacros()
 
-    fun startAmount(basis: FitAmountBasis): Double = when (basis) {
-        FitAmountBasis.LAST_TIME -> last.amount
-        FitAmountBasis.USUAL -> usualAmount
+    /** Where an idea at [mealType] starts: from that meal's logs when there are any, otherwise from every log. */
+    fun startAmount(basis: FitAmountBasis, mealType: MealType): Double = when (basis) {
+        FitAmountBasis.LAST_TIME -> lastFor(mealType = mealType).amount
+        FitAmountBasis.USUAL -> usualFor(mealType = mealType)
         FitAmountBasis.SERVING -> servingAmount
     }
 
@@ -213,16 +232,17 @@ data class FitIdea(
     val over: Set<MacroType>
 )
 
-/** The ideas, best first, and how many didn't fit at all. */
+/** The ideas, best first, how many didn't fit at all, and how many were left out as never eaten at that meal. */
 data class FitIdeas(
     val ideas: List<FitIdea>,
-    val hiddenCount: Int
+    val hiddenCount: Int,
+    val otherMealCount: Int = 0
 )
 
 /**
  * The foods that fit in [left] once the settings' spare calories are kept back, best first by the settings' ranking.
- * [amounts] holds amounts the user set by hand, which are used as they are. Food the user logged in [mealType] before
- * ranks a little higher.
+ * [amounts] holds amounts the user set by hand, which are used as they are. With the meal filter on, only food logged
+ * at [mealType] before is suggested; with it off, that food still ranks a little higher.
  */
 fun findFitIdeas(
     foods: List<FitFood>,
@@ -235,11 +255,16 @@ fun findFitIdeas(
 ): FitIdeas {
     val budget = left.calories - settings.spareCalories
     var hiddenCount = 0
+    var otherMealCount = 0
     val scored = foods
         .filter { settings.isOn(source = it.source) }
         .filterNot { settings.isSkippingEatenToday && it.name in eatenToday && it.key !in amounts }
         .mapNotNull { food ->
-            val start = food.startAmount(basis = settings.amountBasis)
+            if (settings.isMealOnly && !food.isUsualIn(mealType = mealType) && food.key !in amounts) {
+                otherMealCount++
+                return@mapNotNull null
+            }
+            val start = food.startAmount(basis = settings.amountBasis, mealType = mealType)
             val setByHand = amounts[food.key]
             var amount = setByHand ?: start
             var isShrunk = false
@@ -271,7 +296,8 @@ fun findFitIdeas(
         }
     return FitIdeas(
         ideas = scored.sortedByDescending { it.second }.take(n = limit).map { it.first },
-        hiddenCount = hiddenCount
+        hiddenCount = hiddenCount,
+        otherMealCount = otherMealCount
     )
 }
 

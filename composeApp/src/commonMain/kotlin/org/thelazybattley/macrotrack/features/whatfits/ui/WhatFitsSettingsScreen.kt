@@ -40,6 +40,8 @@ import macrotrack.composeapp.generated.resources.what_fits_basis_serving_sub
 import macrotrack.composeapp.generated.resources.what_fits_basis_serving_title
 import macrotrack.composeapp.generated.resources.what_fits_basis_usual_sub
 import macrotrack.composeapp.generated.resources.what_fits_basis_usual_title
+import macrotrack.composeapp.generated.resources.what_fits_meal_only_sub
+import macrotrack.composeapp.generated.resources.what_fits_meal_only_title
 import macrotrack.composeapp.generated.resources.what_fits_put_first
 import macrotrack.composeapp.generated.resources.what_fits_rank_calories
 import macrotrack.composeapp.generated.resources.what_fits_rank_carbs
@@ -193,6 +195,9 @@ private fun WhatFitsSettingsScreen(
                 .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 18.dp))
         ) {
             val rows = listOf(
+                SwitchRow(Res.string.what_fits_meal_only_title, Res.string.what_fits_meal_only_sub, settings.isMealOnly) {
+                    callbacks.onToggleMealOnly()
+                },
                 SwitchRow(Res.string.what_fits_source_recipes_title, Res.string.what_fits_source_recipes_sub, settings.isRecipesOn) {
                     callbacks.onToggleSource(FitSource.RECIPE)
                 },

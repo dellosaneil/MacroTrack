@@ -2368,10 +2368,6 @@
     <string name="what_fits_nothing_spare">Nothing kept spare</string>
     <string name="what_fits_value_g">%1$s g</string>
     <string name="what_fits_meal">Meal</string>
-    <string name="what_fits_basis_last">Amounts are what you ate the last time you had each food.</string>
-    <string name="what_fits_basis_usual">Amounts are what you eat most often.</string>
-    <string name="what_fits_basis_serving">Amounts are one serving.</string>
-    <string name="what_fits_basis_shrink">Amounts that would go over are cut down to what fits.</string>
     <string name="what_fits_change">Change</string>
     <string name="what_fits_list_protein">Best for protein first</string>
     <string name="what_fits_list_calories">Uses up calories first</string>
@@ -2380,7 +2376,6 @@
     <string name="what_fits_source_recipe">Recipe</string>
     <string name="what_fits_source_my_food">My food</string>
     <string name="what_fits_source_recent">Recent</string>
-    <string name="what_fits_tag_last">as last time, %1$s</string>
     <string name="what_fits_tag_usual">your usual</string>
     <string name="what_fits_tag_serving">one serving</string>
     <string name="what_fits_tag_shrunk">less than last time (%1$s)</string>
@@ -2490,4 +2485,26 @@
         <item quantity="one">%1$s serving</item>
         <item quantity="other">%1$s servings</item>
     </plurals>
+    <string name="what_fits_kcal_left_for">%1$s kcal left · for %2$s</string>
+    <string name="what_fits_kcal_over_for">%1$s kcal over · for %2$s</string>
+    <string name="what_fits_from_meal_history">From your %1$s history</string>
+    <string name="what_fits_times_at">%1$d× at %2$s</string>
+    <string name="what_fits_not_at_yet">Not at %1$s yet</string>
+    <string name="what_fits_tag_last">last time, %1$s</string>
+    <string name="what_fits_tag_last_at">last at %1$s, %2$s</string>
+    <string name="what_fits_tag_usual_at">your usual at %1$s</string>
+    <string name="what_fits_note_meal">Foods you’ve had at %1$s, %2$s</string>
+    <string name="what_fits_note_any">Foods from any meal, %1$s</string>
+    <string name="what_fits_note_last_at">at the amount you had last time at %1$s.</string>
+    <string name="what_fits_note_last">at the amount you had last time.</string>
+    <string name="what_fits_note_usual">at your usual amount.</string>
+    <string name="what_fits_note_serving">at one serving.</string>
+    <string name="what_fits_note_cut">%1$s Amounts that would go over are cut down.</string>
+    <string name="what_fits_show_other_meals">Show food from other meals (%1$d)</string>
+    <string name="what_fits_only_meal">Only food I’ve had at %1$s</string>
+    <string name="what_fits_none_at_meal">Nothing you’ve had at %1$s fits what’s left.</string>
+    <string name="what_fits_never_at_meal">You haven’t logged anything at %1$s yet.</string>
+    <string name="what_fits_meal_only_title">Only food eaten at this meal</string>
+    <string name="what_fits_meal_only_sub">Breakfast ideas come from your breakfasts, and so on</string>
+    <string name="what_fits_chip_last_at">Last at %1$s</string>
 </resources>

@@ -22,7 +22,7 @@ import org.thelazybattley.macrotrack.domain.model.FitTooBig
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.WhatFitsSettings
 import org.thelazybattley.macrotrack.domain.model.findFitIdeas
-import org.thelazybattley.macrotrack.domain.model.fitMealOptions
+import org.thelazybattley.macrotrack.domain.model.defaultFitMeal
 import org.thelazybattley.macrotrack.domain.model.sum
 import org.thelazybattley.macrotrack.domain.model.toFitMacros
 import org.thelazybattley.macrotrack.domain.usecase.CalculateMacrosGoalUseCase
@@ -71,12 +71,10 @@ data class WhatFitsViewState(
             amounts = amounts
         )
 
-    val mealOptions: List<MealType> get() = fitMealOptions(loggedMeals = loggedMeals, selected = mealType)
-
     val picks: List<FitPick>
         get() = picked.mapNotNull { key ->
             val food = foods.find { it.key == key } ?: return@mapNotNull null
-            FitPick(food = food, amount = amounts[key] ?: food.startAmount(basis = settings.amountBasis))
+            FitPick(food = food, amount = amounts[key] ?: food.startAmount(basis = settings.amountBasis, mealType = mealType))
         }
 
     val pickedMacros: FitMacros get() = picks.map { it.food.macrosFor(amount = it.amount) }.sum()
@@ -124,6 +122,9 @@ interface WhatFitsCallbacks {
     fun onToggleSource(source: FitSource)
     fun onToggleSkipEatenToday()
 
+    /** Only food eaten at the picked meal, or food from every meal. */
+    fun onToggleMealOnly()
+
     companion object {
         fun default() = object : WhatFitsCallbacks {
             override fun onMealSelected(mealType: MealType) = Unit
@@ -142,6 +143,7 @@ interface WhatFitsCallbacks {
             override fun onSpareCalories(calories: Int) = Unit
             override fun onToggleSource(source: FitSource) = Unit
             override fun onToggleSkipEatenToday() = Unit
+            override fun onToggleMealOnly() = Unit
         }
     }
 }
@@ -187,7 +189,7 @@ class WhatFitsViewModel(
                         mealType = if (currentState.isLoaded) {
                             currentState.mealType
                         } else {
-                            requestedMeal ?: fitMealOptions(loggedMeals = loggedMeals, selected = null).first()
+                            requestedMeal ?: defaultFitMeal(loggedMeals = loggedMeals)
                         }
                     )
                 }
@@ -218,7 +220,7 @@ class WhatFitsViewModel(
             // Starts from the amount shown on the idea, or what it was last set to.
             val amount = currentState.amounts[key]
                 ?: currentState.ideas.ideas.find { it.food.key == key }?.amount
-                ?: food.last.amount
+                ?: food.lastFor(mealType = currentState.mealType).amount
             currentState.copy(amountKey = key, draftAmount = amount)
         }
     }
@@ -291,6 +293,8 @@ class WhatFitsViewModel(
     }
 
     override fun onToggleSkipEatenToday() = saveSettings { it.copy(isSkippingEatenToday = !it.isSkippingEatenToday) }
+
+    override fun onToggleMealOnly() = saveSettings { it.copy(isMealOnly = !it.isMealOnly) }
 
     private fun saveSettings(change: (WhatFitsSettings) -> WhatFitsSettings) {
         val settings = change(_state.value.settings)

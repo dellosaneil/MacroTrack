@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,6 +30,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,10 +49,6 @@ import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.what_fits
 import macrotrack.composeapp.generated.resources.what_fits_bars_aria
-import macrotrack.composeapp.generated.resources.what_fits_basis_last
-import macrotrack.composeapp.generated.resources.what_fits_basis_serving
-import macrotrack.composeapp.generated.resources.what_fits_basis_shrink
-import macrotrack.composeapp.generated.resources.what_fits_basis_usual
 import macrotrack.composeapp.generated.resources.what_fits_change
 import macrotrack.composeapp.generated.resources.what_fits_change_amount
 import macrotrack.composeapp.generated.resources.what_fits_empty_body
@@ -62,8 +60,6 @@ import macrotrack.composeapp.generated.resources.what_fits_full_title
 import macrotrack.composeapp.generated.resources.what_fits_hidden
 import macrotrack.composeapp.generated.resources.what_fits_hidden_off
 import macrotrack.composeapp.generated.resources.what_fits_keeping_spare
-import macrotrack.composeapp.generated.resources.what_fits_kcal_left_today
-import macrotrack.composeapp.generated.resources.what_fits_kcal_over_today
 import macrotrack.composeapp.generated.resources.what_fits_left_today
 import macrotrack.composeapp.generated.resources.what_fits_list_calories
 import macrotrack.composeapp.generated.resources.what_fits_list_carbs
@@ -76,10 +72,25 @@ import macrotrack.composeapp.generated.resources.what_fits_pick
 import macrotrack.composeapp.generated.resources.what_fits_picked_kcal
 import macrotrack.composeapp.generated.resources.what_fits_review
 import macrotrack.composeapp.generated.resources.what_fits_settings_open
-import macrotrack.composeapp.generated.resources.what_fits_source_my_food
-import macrotrack.composeapp.generated.resources.what_fits_source_recent
-import macrotrack.composeapp.generated.resources.what_fits_source_recipe
 import macrotrack.composeapp.generated.resources.what_fits_tag_last
+import macrotrack.composeapp.generated.resources.what_fits_kcal_left_for
+import macrotrack.composeapp.generated.resources.what_fits_kcal_over_for
+import macrotrack.composeapp.generated.resources.what_fits_from_meal_history
+import macrotrack.composeapp.generated.resources.what_fits_times_at
+import macrotrack.composeapp.generated.resources.what_fits_not_at_yet
+import macrotrack.composeapp.generated.resources.what_fits_tag_last_at
+import macrotrack.composeapp.generated.resources.what_fits_tag_usual_at
+import macrotrack.composeapp.generated.resources.what_fits_note_meal
+import macrotrack.composeapp.generated.resources.what_fits_note_any
+import macrotrack.composeapp.generated.resources.what_fits_note_last_at
+import macrotrack.composeapp.generated.resources.what_fits_note_last
+import macrotrack.composeapp.generated.resources.what_fits_note_usual
+import macrotrack.composeapp.generated.resources.what_fits_note_serving
+import macrotrack.composeapp.generated.resources.what_fits_note_cut
+import macrotrack.composeapp.generated.resources.what_fits_show_other_meals
+import macrotrack.composeapp.generated.resources.what_fits_only_meal
+import macrotrack.composeapp.generated.resources.what_fits_none_at_meal
+import macrotrack.composeapp.generated.resources.what_fits_never_at_meal
 import macrotrack.composeapp.generated.resources.what_fits_tag_serving
 import macrotrack.composeapp.generated.resources.what_fits_tag_set
 import macrotrack.composeapp.generated.resources.what_fits_tag_shrunk
@@ -149,11 +160,14 @@ private fun WhatFitsScreen(
 ) {
     val left = viewState.left
     val leftCalories = left.calories.roundToInt()
+    val mealName = stringResource(resource = viewState.mealType.title)
+    val meal = mealName.lowercase()
     WhatFitsScaffold(
         title = stringResource(resource = Res.string.what_fits),
         subtitle = stringResource(
-            resource = if (leftCalories >= 0) Res.string.what_fits_kcal_left_today else Res.string.what_fits_kcal_over_today,
-            kotlin.math.abs(leftCalories).withThousands()
+            resource = if (leftCalories >= 0) Res.string.what_fits_kcal_left_for else Res.string.what_fits_kcal_over_for,
+            kotlin.math.abs(leftCalories).withThousands(),
+            mealName
         ),
         onBack = onBack,
         trailing = {
@@ -169,7 +183,7 @@ private fun WhatFitsScreen(
     ) {
         if (!viewState.isLoaded) return@WhatFitsScaffold
         LeftHero(left = left, spareCalories = viewState.settings.spareCalories)
-        WhatFitsMealTabs(options = viewState.mealOptions, selected = viewState.mealType, onSelect = callbacks::onMealSelected)
+        WhatFitsMealTabs(options = MealType.entries, selected = viewState.mealType, onSelect = callbacks::onMealSelected)
         val fitIdeas = viewState.ideas
         when {
             viewState.foods.isEmpty() -> EmptyNote(
@@ -181,8 +195,15 @@ private fun WhatFitsScreen(
                 body = stringResource(resource = Res.string.what_fits_full_body)
             )
             else -> {
-                BasisNote(viewState = viewState, onChange = onOpenSettings)
-                if (fitIdeas.ideas.isEmpty()) {
+                BasisNote(viewState = viewState, meal = meal, onChange = onOpenSettings)
+                if (fitIdeas.ideas.isEmpty() && viewState.settings.isMealOnly) {
+                    NoneAtMeal(
+                        text = stringResource(
+                            resource = if (fitIdeas.hiddenCount > 0) Res.string.what_fits_none_at_meal else Res.string.what_fits_never_at_meal,
+                            meal
+                        )
+                    )
+                } else if (fitIdeas.ideas.isEmpty()) {
                     EmptyNote(
                         title = stringResource(resource = Res.string.what_fits_none_title),
                         body = stringResource(resource = Res.string.what_fits_none_body)
@@ -201,13 +222,32 @@ private fun WhatFitsScreen(
                             color = colors.muted,
                             modifier = Modifier.weight(weight = 1f)
                         )
-                        Text(text = stringResource(resource = Res.string.what_fits_from_eaten), style = typography.medium11, color = colors.muted)
+                        Text(
+                            text = if (viewState.settings.isMealOnly) {
+                                stringResource(resource = Res.string.what_fits_from_meal_history, meal)
+                            } else {
+                                stringResource(resource = Res.string.what_fits_from_eaten)
+                            },
+                            style = typography.medium11,
+                            color = colors.muted
+                        )
                     }
                     IdeaList(
                         ideas = fitIdeas.ideas,
                         viewState = viewState,
+                        meal = meal,
                         onOpen = onOpenAmount,
                         onTogglePick = callbacks::onTogglePick
+                    )
+                }
+                if (fitIdeas.otherMealCount > 0 || !viewState.settings.isMealOnly) {
+                    OtherMealsButton(
+                        text = if (viewState.settings.isMealOnly) {
+                            stringResource(resource = Res.string.what_fits_show_other_meals, fitIdeas.otherMealCount)
+                        } else {
+                            stringResource(resource = Res.string.what_fits_only_meal, meal)
+                        },
+                        onClick = callbacks::onToggleMealOnly
                     )
                 }
                 if (fitIdeas.hiddenCount > 0) {
@@ -289,14 +329,23 @@ private fun LeftHero(left: FitMacros, spareCalories: Int) {
 
 /** How the amounts were picked, with a way to change it. */
 @Composable
-private fun BasisNote(viewState: WhatFitsViewState, onChange: () -> Unit) {
-    val hasShrunk = viewState.ideas.ideas.any { it.isShrunk }
-    val text = when {
-        hasShrunk -> Res.string.what_fits_basis_shrink
-        viewState.settings.amountBasis == FitAmountBasis.USUAL -> Res.string.what_fits_basis_usual
-        viewState.settings.amountBasis == FitAmountBasis.SERVING -> Res.string.what_fits_basis_serving
-        else -> Res.string.what_fits_basis_last
+private fun BasisNote(viewState: WhatFitsViewState, meal: String, onChange: () -> Unit) {
+    val settings = viewState.settings
+    val amount = when (settings.amountBasis) {
+        FitAmountBasis.LAST_TIME -> if (settings.isMealOnly) {
+            stringResource(resource = Res.string.what_fits_note_last_at, meal)
+        } else {
+            stringResource(resource = Res.string.what_fits_note_last)
+        }
+        FitAmountBasis.USUAL -> stringResource(resource = Res.string.what_fits_note_usual)
+        FitAmountBasis.SERVING -> stringResource(resource = Res.string.what_fits_note_serving)
     }
+    val note = if (settings.isMealOnly) {
+        stringResource(resource = Res.string.what_fits_note_meal, meal, amount)
+    } else {
+        stringResource(resource = Res.string.what_fits_note_any, amount)
+    }
+    val text = if (viewState.ideas.ideas.any { it.isShrunk }) stringResource(resource = Res.string.what_fits_note_cut, note) else note
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -311,7 +360,7 @@ private fun BasisNote(viewState: WhatFitsViewState, onChange: () -> Unit) {
             tint = colors.nightInk,
             modifier = Modifier.padding(top = 1.dp).size(size = 18.dp)
         )
-        Text(text = stringResource(resource = text), style = typography.regular13, color = colors.ink, modifier = Modifier.weight(weight = 1f))
+        Text(text = text, style = typography.regular13, color = colors.ink, modifier = Modifier.weight(weight = 1f))
         Text(
             text = stringResource(resource = Res.string.what_fits_change),
             style = typography.bold13,
@@ -328,6 +377,7 @@ private fun BasisNote(viewState: WhatFitsViewState, onChange: () -> Unit) {
 private fun IdeaList(
     ideas: List<FitIdea>,
     viewState: WhatFitsViewState,
+    meal: String,
     onOpen: (String) -> Unit,
     onTogglePick: (String) -> Unit
 ) {
@@ -345,6 +395,8 @@ private fun IdeaList(
                 isPicked = idea.food.key in viewState.picked,
                 isSetByHand = viewState.amounts[idea.food.key]?.let { it != idea.startAmount } == true,
                 basis = viewState.settings.amountBasis,
+                mealType = viewState.mealType,
+                meal = meal,
                 onOpen = { onOpen(idea.food.key) },
                 onTogglePick = { onTogglePick(idea.food.key) }
             )
@@ -358,17 +410,26 @@ private fun IdeaRow(
     isPicked: Boolean,
     isSetByHand: Boolean,
     basis: FitAmountBasis,
+    mealType: MealType,
+    meal: String,
     onOpen: () -> Unit,
     onTogglePick: () -> Unit
 ) {
     val food = idea.food
+    val timesAtMeal = food.timesAt(mealType = mealType)
     val tag = when {
         isSetByHand -> stringResource(resource = Res.string.what_fits_tag_set)
         idea.isShrunk && basis == FitAmountBasis.LAST_TIME ->
             stringResource(resource = Res.string.what_fits_tag_shrunk, fitAmount(food = food, amount = idea.startAmount))
         idea.isShrunk -> stringResource(resource = Res.string.what_fits_tag_shrunk_start, fitAmount(food = food, amount = idea.startAmount))
+        basis == FitAmountBasis.USUAL && timesAtMeal > 0 -> stringResource(resource = Res.string.what_fits_tag_usual_at, meal)
         basis == FitAmountBasis.USUAL -> stringResource(resource = Res.string.what_fits_tag_usual)
         basis == FitAmountBasis.SERVING -> stringResource(resource = Res.string.what_fits_tag_serving)
+        timesAtMeal > 0 -> stringResource(
+            resource = Res.string.what_fits_tag_last_at,
+            meal,
+            food.lastFor(mealType = mealType).date.toShortDayMonthDay()
+        )
         else -> stringResource(resource = Res.string.what_fits_tag_last, food.last.date.toShortDayMonthDay())
     }
     val shares = listOf(MacroType.PROTEIN, MacroType.CARBS, MacroType.FAT).map { (idea.shares.getValue(it) * 100).roundToInt() }
@@ -400,13 +461,11 @@ private fun IdeaRow(
                     modifier = Modifier.weight(weight = 1f, fill = false)
                 )
                 Text(
-                    text = stringResource(
-                        resource = when (food.source) {
-                            FitSource.RECIPE -> Res.string.what_fits_source_recipe
-                            FitSource.MY_FOOD -> Res.string.what_fits_source_my_food
-                            FitSource.RECENT -> Res.string.what_fits_source_recent
-                        }
-                    ),
+                    text = if (timesAtMeal > 0) {
+                        stringResource(resource = Res.string.what_fits_times_at, timesAtMeal, meal)
+                    } else {
+                        stringResource(resource = Res.string.what_fits_not_at_yet, meal)
+                    },
                     style = typography.regular11,
                     color = colors.muted,
                     maxLines = 1
@@ -541,6 +600,41 @@ private fun PickedTray(viewState: WhatFitsViewState, onReview: () -> Unit) {
                 Text(text = stringResource(resource = Res.string.what_fits_review), style = typography.bold14, color = colors.onAccent)
             }
         }
+    }
+}
+
+/** Shown in place of the list when nothing eaten at the meal fits, or nothing was ever eaten at it. */
+@Composable
+private fun NoneAtMeal(text: String) {
+    Text(
+        text = text,
+        style = typography.regular13,
+        color = colors.muted,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(width = 1.5.dp, color = colors.dashed, shape = RoundedCornerShape(size = 18.dp))
+            .padding(horizontal = 16.dp, vertical = 18.dp)
+    )
+}
+
+/** Turns the meal filter off to add food from other meals, or back on. */
+@Composable
+private fun OtherMealsButton(text: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 46.dp)
+            .clip(shape = RoundedCornerShape(size = 14.dp))
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 14.dp))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(space = 6.dp, alignment = Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(painter = painterResource(resource = Res.drawable.ic_sliders), contentDescription = null, tint = colors.accentInk, modifier = Modifier.size(size = 16.dp))
+        Text(text = text, style = typography.bold14, color = colors.accentInk)
     }
 }
 

@@ -45,6 +45,7 @@ import macrotrack.composeapp.generated.resources.what_fits_amount_same
 import macrotrack.composeapp.generated.resources.what_fits_amount_usual
 import macrotrack.composeapp.generated.resources.what_fits_chip_fill
 import macrotrack.composeapp.generated.resources.what_fits_chip_last
+import macrotrack.composeapp.generated.resources.what_fits_chip_last_at
 import macrotrack.composeapp.generated.resources.what_fits_chip_usual
 import macrotrack.composeapp.generated.resources.what_fits_in_use
 import macrotrack.composeapp.generated.resources.what_fits_kcal_macros
@@ -156,16 +157,20 @@ private fun AmountCard(
     val amount = viewState.draftAmount
     val macros = food.macrosFor(amount = amount)
     val fill = viewState.fillProteinAmount
+    val mealType = viewState.mealType
+    val last = food.lastFor(mealType = mealType)
+    val usual = food.usualFor(mealType = mealType)
+    val (usualTimes, loggedTimes) = food.usualCountFor(mealType = mealType)
     val tag = when (amount) {
-        food.last.amount -> stringResource(resource = Res.string.what_fits_amount_same)
-        food.usualAmount -> stringResource(resource = Res.string.what_fits_amount_usual)
+        last.amount -> stringResource(resource = Res.string.what_fits_amount_same)
+        usual -> stringResource(resource = Res.string.what_fits_amount_usual)
         fill -> stringResource(resource = Res.string.what_fits_amount_fill)
         else -> stringResource(
-            resource = if (amount > food.last.amount) Res.string.what_fits_amount_more else Res.string.what_fits_amount_less,
-            fitAmount(food = food, amount = abs(amount - food.last.amount))
+            resource = if (amount > last.amount) Res.string.what_fits_amount_more else Res.string.what_fits_amount_less,
+            fitAmount(food = food, amount = abs(amount - last.amount))
         )
     }
-    val isPreset = amount == food.last.amount || amount == food.usualAmount || amount == fill
+    val isPreset = amount == last.amount || amount == usual || amount == fill
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -200,11 +205,19 @@ private fun AmountCard(
             WhatFitsSectionLabel(text = stringResource(resource = Res.string.what_fits_start_from))
             Row(modifier = Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
                 val chips = listOfNotNull(
-                    Triple(stringResource(resource = Res.string.what_fits_chip_last), food.last.amount, food.last.date.toShortDayMonthDay()),
+                    Triple(
+                        if (food.timesAt(mealType = mealType) > 0) {
+                            stringResource(resource = Res.string.what_fits_chip_last_at, stringResource(resource = mealType.title).lowercase())
+                        } else {
+                            stringResource(resource = Res.string.what_fits_chip_last)
+                        },
+                        last.amount,
+                        last.date.toShortDayMonthDay()
+                    ),
                     Triple(
                         stringResource(resource = Res.string.what_fits_chip_usual),
-                        food.usualAmount,
-                        pluralStringResource(resource = Res.plurals.what_fits_usual_times, quantity = food.history.size, food.usualCount, food.history.size)
+                        usual,
+                        pluralStringResource(resource = Res.plurals.what_fits_usual_times, quantity = loggedTimes, usualTimes, loggedTimes)
                     ),
                     fill?.let { Triple(stringResource(resource = Res.string.what_fits_chip_fill), it, stringResource(resource = Res.string.what_fits_uses_it_all)) }
                 )

@@ -34,7 +34,7 @@ import org.thelazybattley.macrotrack.domain.model.FitMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.WhatFitsSettings
 import org.thelazybattley.macrotrack.domain.model.findFitIdeas
-import org.thelazybattley.macrotrack.domain.model.fitMealOptions
+import org.thelazybattley.macrotrack.domain.model.defaultFitMeal
 import org.thelazybattley.macrotrack.features.pro.ui.ProBadge
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
@@ -52,7 +52,7 @@ fun whatFitsCount(
         foods = foods,
         left = left,
         settings = settings,
-        mealType = fitMealOptions(loggedMeals = loggedMeals, selected = null).first(),
+        mealType = defaultFitMeal(loggedMeals = loggedMeals),
         eatenToday = eatenToday
     ).ideas.size
 }
