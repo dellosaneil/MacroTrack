@@ -37,6 +37,11 @@ import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistHistoryScree
 import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistItemScreen
 import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistManageScreen
 import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistScreen
+import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
+import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsAmountScreen
+import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsReviewScreen
+import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsScreen
+import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsSettingsScreen
 import org.thelazybattley.macrotrack.features.water.ui.WaterSettingsScreen
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -71,6 +76,7 @@ import org.thelazybattley.macrotrack.features.tour.TourScreen
 import org.thelazybattley.macrotrack.features.tour.TourTargetRegistry
 import org.thelazybattley.macrotrack.features.tour.TourViewModel
 import org.thelazybattley.macrotrack.features.tour.ui.TourOverlay
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -467,6 +473,46 @@ fun AppBottomNav() {
                     }
                     composable(route = AppDestinations.Root.ChecklistManage.route) {
                         ChecklistManageScreen(onBack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(
+                        route = AppDestinations.Root.WhatFits.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = AppDestinations.MEAL_TYPE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        WhatFitsScreen(
+                            viewModel = koinViewModel(),
+                            onBack = { navController.popBack() },
+                            onOpenAmount = { navController.navigate(route = AppDestinations.Root.WhatFitsAmount.route) },
+                            onOpenReview = { navController.navigate(route = AppDestinations.Root.WhatFitsReview.route) },
+                            onOpenSettings = { navController.navigate(route = AppDestinations.Root.WhatFitsSettings.route) },
+                            onDone = { navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false) }
+                        )
+                    }
+                    // The amount, review and settings screens share the ideas screen's state, so they take its view model.
+                    composable(route = AppDestinations.Root.WhatFitsAmount.route) { entry ->
+                        WhatFitsAmountScreen(
+                            viewModel = navController.whatFitsViewModel(entry = entry),
+                            onBack = { navController.popBack() },
+                            onDone = { navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false) }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.WhatFitsReview.route) { entry ->
+                        WhatFitsReviewScreen(
+                            viewModel = navController.whatFitsViewModel(entry = entry),
+                            onBack = { navController.popBack() },
+                            onDone = { navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false) }
+                        )
+                    }
+                    composable(route = AppDestinations.Root.WhatFitsSettings.route) { entry ->
+                        WhatFitsSettingsScreen(
+                            viewModel = navController.whatFitsViewModel(entry = entry),
+                            onBack = { navController.popBack() }
+                        )
                     }
                     composable(route = AppDestinations.Root.DeleteData.route) {
                         DeleteDataScreen(
@@ -930,6 +976,13 @@ private fun NavHostController.popBack(): Boolean {
     val current = currentBackStackEntry ?: return false
     if (current.lifecycle.currentState != Lifecycle.State.RESUMED || previousBackStackEntry == null) return false
     return popBackStack()
+}
+
+/** The view model of the What fits? screen under [entry] on the back stack. */
+@Composable
+private fun NavHostController.whatFitsViewModel(entry: NavBackStackEntry): WhatFitsViewModel {
+    val parent = remember(entry) { getBackStackEntry(route = AppDestinations.Root.WhatFits.routeWithArgs!!) }
+    return koinViewModel(viewModelStoreOwner = parent)
 }
 
 private fun NavHostController.hasMainScreen(): Boolean =

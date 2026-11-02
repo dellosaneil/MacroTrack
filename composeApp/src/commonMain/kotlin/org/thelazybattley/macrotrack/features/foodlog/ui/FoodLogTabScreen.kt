@@ -109,6 +109,13 @@ import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.checkin.ui.WeekBalanceTile
 import org.thelazybattley.macrotrack.features.water.ui.WaterTile
 import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistTile
+import org.thelazybattley.macrotrack.domain.model.FitMacros
+import org.thelazybattley.macrotrack.domain.model.toFitMacros
+import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsRow
+import org.thelazybattley.macrotrack.features.whatfits.ui.whatFitsCount
+import androidx.compose.runtime.remember
+import macrotrack.composeapp.generated.resources.ic_bulb
+import macrotrack.composeapp.generated.resources.what_fits
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
@@ -169,7 +176,8 @@ fun FoodLogTabScreen(
             onNavigate(AppDestinations.Root.RepeatMeal.createRoute(sourceDate = viewState.selectedDate, mealType = mealType.name))
         },
         onOpenWater = { onNavigate(AppDestinations.Root.Water.route) },
-        onOpenChecklist = { onNavigate(AppDestinations.Root.Checklist.route) }
+        onOpenChecklist = { onNavigate(AppDestinations.Root.Checklist.route) },
+        onWhatFits = { mealType -> onNavigate(AppDestinations.Root.WhatFits.createRoute(mealType = mealType?.name)) }
     )
 }
 
@@ -189,7 +197,9 @@ private fun FoodLogTabScreen(
     /** Sets up repeating [MealType] from the selected day. */
     onRepeat: (MealType) -> Unit,
     onOpenWater: () -> Unit,
-    onOpenChecklist: () -> Unit
+    onOpenChecklist: () -> Unit,
+    /** Opens What fits? for a meal, or the next meal of the day when null. */
+    onWhatFits: (MealType?) -> Unit
 ) {
     val today = getCurrentDate()
     val isToday = viewState.selectedDate == today
@@ -232,11 +242,32 @@ private fun FoodLogTabScreen(
             ) { date ->
                 callbacks.onDateFilterSelected(date = date)
             }
+            val goals = viewState.macroGoals
+            val left = goals?.toFitMacros()?.let { it - (viewState.totalFoodMacros?.toFitMacros() ?: FitMacros()) }
             FoodLogTotalMacros(
                 modifier = Modifier
                     .fillMaxWidth()
                     .tourTarget(target = TourTarget.TODAY_REMAINING),
-                viewState = viewState
+                viewState = viewState,
+                footer = {
+                    if (isToday && left != null && left.calories > 0) {
+                        val count = remember(viewState.fitFoods, viewState.fitSettings, left, meals) {
+                            whatFitsCount(
+                                foods = viewState.fitFoods,
+                                settings = viewState.fitSettings,
+                                left = left,
+                                loggedMeals = meals.filter { it.foodList.isNotEmpty() }.map { it.mealType }.toSet(),
+                                eatenToday = meals.flatMap { meal -> meal.foodList.map { it.foodName } }.toSet()
+                            )
+                        }
+                        WhatFitsRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            count = count,
+                            isLocked = !LocalProAccess.current.isActive,
+                            onClick = { onWhatFits(null) }
+                        )
+                    }
+                }
             )
             // The suggestion is Pro, so free users never see "New".
             val isNewSuggestion = viewState.isNewCheckInSuggestion && LocalProAccess.current.isActive
@@ -299,6 +330,7 @@ private fun FoodLogTabScreen(
                     },
                     onMore = { copyMenuMeal = meal.mealType },
                     onCopyFrom = if (isToday) ({ onCopyFrom(meal.mealType) }) else null,
+                    onWhatFits = if (isToday) ({ onWhatFits(meal.mealType) }) else null,
                     // Planned food waits on the day it's for, so only today shows it. Eaten food is in the meal now.
                     planned = if (isToday) {
                         viewState.plannedToday.filter { it.mealType == meal.mealType && it.status != PlanStatus.EATEN }
@@ -557,6 +589,7 @@ private fun LoggedFoodMealType(
     onMore: () -> Unit,
     /** Offered on an empty meal on today; null hides it. */
     onCopyFrom: (() -> Unit)?,
+    onWhatFits: (() -> Unit)?,
     planned: List<PlannedFood>,
     callbacks: FoodLogCallbacks
 ) {
@@ -592,6 +625,7 @@ private fun LoggedFoodMealType(
             onNavigate = onNavigate,
             onMore = onMore,
             onCopyFrom = onCopyFrom.takeIf { planned.isEmpty() },
+            onWhatFits = onWhatFits,
             plannedCount = planned.size
         )
         if (!isEmpty) {
@@ -649,6 +683,7 @@ private fun MealTypeHeader(
     onNavigate: () -> Unit,
     onMore: () -> Unit,
     onCopyFrom: (() -> Unit)?,
+    onWhatFits: (() -> Unit)?,
     plannedCount: Int
 ) {
     val isEmpty = foodList.foodList.isEmpty()
@@ -695,27 +730,14 @@ private fun MealTypeHeader(
                 style = typography.regular11,
                 color = colors.muted
             )
-            if (isEmpty && onCopyFrom != null) {
-                Row(
-                    modifier = Modifier
-                        .padding(top = 2.dp)
-                        .clip(shape = RoundedCornerShape(size = 8.dp))
-                        .clickable(role = Role.Button, onClick = onCopyFrom)
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(space = 5.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(resource = Res.drawable.ic_copy),
-                        contentDescription = null,
-                        tint = colors.accentInk,
-                        modifier = Modifier.size(size = 14.dp)
-                    )
-                    Text(
-                        text = stringResource(resource = Res.string.copy_from_another_day),
-                        style = typography.bold12,
-                        color = colors.accentInk
-                    )
+            if (isEmpty && (onCopyFrom != null || onWhatFits != null)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(space = 14.dp)) {
+                    if (onCopyFrom != null) {
+                        MealLink(icon = Res.drawable.ic_copy, text = stringResource(resource = Res.string.copy_from_another_day), onClick = onCopyFrom)
+                    }
+                    if (onWhatFits != null) {
+                        MealLink(icon = Res.drawable.ic_bulb, text = stringResource(resource = Res.string.what_fits), onClick = onWhatFits)
+                    }
                 }
             }
         }
@@ -783,6 +805,28 @@ private fun MealTypeHeader(
                 )
             }
         }
+    }
+}
+
+/** A small link under an empty meal's name. */
+@Composable
+private fun MealLink(icon: DrawableResource, text: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .padding(top = 2.dp)
+            .clip(shape = RoundedCornerShape(size = 8.dp))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 5.dp)
+    ) {
+        Icon(
+            painter = painterResource(resource = icon),
+            contentDescription = null,
+            tint = colors.accentInk,
+            modifier = Modifier.size(size = 14.dp)
+        )
+        Text(text = text, style = typography.bold12, color = colors.accentInk)
     }
 }
 
@@ -939,7 +983,8 @@ private fun PreviewFoodLogTabScreen() {
             onOpenPlan = {},
             onRepeat = {},
             onOpenWater = {},
-            onOpenChecklist = {}
+            onOpenChecklist = {},
+            onWhatFits = {}
         )
     }
 }

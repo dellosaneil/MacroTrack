@@ -6,6 +6,7 @@ import org.thelazybattley.macrotrack.domain.model.CustomMilestone
 import org.thelazybattley.macrotrack.domain.model.ForecastSettings
 import org.thelazybattley.macrotrack.domain.model.ReviewHistory
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.domain.model.WhatFitsSettings
 
 interface AppFlagRepository {
 
@@ -51,4 +52,8 @@ interface AppFlagRepository {
     fun getCustomMilestones(): Flow<List<CustomMilestone>>
 
     suspend fun setCustomMilestones(milestones: List<CustomMilestone>)
+
+    fun getWhatFitsSettings(): Flow<WhatFitsSettings>
+
+    suspend fun setWhatFitsSettings(settings: WhatFitsSettings)
 }

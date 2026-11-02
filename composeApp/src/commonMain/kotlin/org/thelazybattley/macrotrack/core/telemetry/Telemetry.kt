@@ -47,6 +47,7 @@ object TelemetryEvent {
     const val WATER_LOGGED = "water_logged"
     const val CHECKLIST_ITEM_ADDED = "checklist_item_added"
     const val CHECKLIST_TICKED = "checklist_ticked"
+    const val WHAT_FITS_USED = "what_fits_used"
     const val PAYWALL_SHOWN = "paywall_shown"
     const val PURCHASE_STARTED = "purchase_started"
     const val PURCHASE_UNAVAILABLE = "purchase_unavailable"

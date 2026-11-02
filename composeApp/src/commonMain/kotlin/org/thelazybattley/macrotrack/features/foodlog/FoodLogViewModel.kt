@@ -43,6 +43,7 @@ import org.thelazybattley.macrotrack.features.addmeal.recipePercentEaten
 import org.thelazybattley.macrotrack.features.addmeal.toRecipeMeals
 import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
 import org.thelazybattley.macrotrack.features.calendar.currentStreak
+import org.thelazybattley.macrotrack.domain.usecase.whatfits.GetWhatFitsInputsUseCase
 
 class FoodLogViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
@@ -65,7 +66,8 @@ class FoodLogViewModel(
     private val undoFoodLogCopyUseCase: UndoFoodLogCopyUseCase,
     private val copyEvents: FoodLogCopyEvents,
     getPlannedTodayUseCase: GetPlannedTodayUseCase,
-    private val plannedFoodActions: PlannedFoodActions
+    private val plannedFoodActions: PlannedFoodActions,
+    getWhatFitsInputsUseCase: GetWhatFitsInputsUseCase
 ) : ViewModel(), FoodLogCallbacks {
 
     private val _state = MutableStateFlow(value = FoodLogViewState())
@@ -123,6 +125,11 @@ class FoodLogViewModel(
         viewModelScope.launch {
             getPlannedTodayUseCase().collect { plannedToday ->
                 _state.update { it.copy(plannedToday = plannedToday) }
+            }
+        }
+        viewModelScope.launch {
+            getWhatFitsInputsUseCase().collect { (foods, settings) ->
+                _state.update { it.copy(fitFoods = foods, fitSettings = settings) }
             }
         }
         updateMacroGoals()

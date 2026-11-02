@@ -12,6 +12,8 @@ import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlannedFood
 import org.thelazybattley.macrotrack.domain.model.WeekBalance
+import org.thelazybattley.macrotrack.domain.model.FitFood
+import org.thelazybattley.macrotrack.domain.model.WhatFitsSettings
 
 data class FoodLogViewState(
     val breakfast: FoodLogFoodListByMealType = FoodLogFoodListByMealType(
@@ -55,7 +57,10 @@ data class FoodLogViewState(
     /** Food planned for today that waits for Ate it or Skip, and what was already done with it. */
     val plannedToday: List<PlannedFood> = emptyList(),
     /** Planned food just marked eaten, shown with Undo until it's dismissed. */
-    val plannedToast: PlannedToast? = null
+    val plannedToast: PlannedToast? = null,
+    /** Food logged before, which What fits? suggests from, and its settings, to count today's ideas. */
+    val fitFoods: List<FitFood> = emptyList(),
+    val fitSettings: WhatFitsSettings = WhatFitsSettings()
 )
 
 data class FoodLogFoodListByMealType(

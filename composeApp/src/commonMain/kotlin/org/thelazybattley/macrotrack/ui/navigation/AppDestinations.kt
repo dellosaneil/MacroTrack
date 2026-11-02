@@ -159,6 +159,19 @@ sealed class AppDestinations {
 
         object ChecklistManage : Root(route = "checklist_manage")
 
+        /** What fits?: ideas for [MEAL_TYPE] today from food already logged; the next meal of the day when it's left out. */
+        object WhatFits : Root(route = "what_fits", routeWithArgs = "what_fits?$MEAL_TYPE={$MEAL_TYPE}") {
+            fun createRoute(mealType: String? = null): String = route + queryString(MEAL_TYPE to mealType)
+        }
+
+        /** The amount of the idea opened on What fits?, which shares its screen's state. */
+        object WhatFitsAmount : Root(route = "what_fits_amount")
+
+        /** The picked ideas, before they're logged or planned. */
+        object WhatFitsReview : Root(route = "what_fits_review")
+
+        object WhatFitsSettings : Root(route = "what_fits_settings")
+
         object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
             fun createRoute(mealType: String, logDate: LocalDate? = null): String =
                 "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())

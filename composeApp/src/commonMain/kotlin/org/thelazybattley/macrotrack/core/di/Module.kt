@@ -24,6 +24,13 @@ import org.thelazybattley.macrotrack.features.checklist.ChecklistHistoryViewMode
 import org.thelazybattley.macrotrack.features.checklist.ChecklistItemViewModel
 import org.thelazybattley.macrotrack.features.checklist.ChecklistManageViewModel
 import org.thelazybattley.macrotrack.features.checklist.ChecklistViewModel
+import org.thelazybattley.macrotrack.domain.usecase.whatfits.GetFitFoodsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.whatfits.GetWhatFitsSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.whatfits.GetWhatFitsInputsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.whatfits.LogFitPicksUseCase
+import org.thelazybattley.macrotrack.domain.usecase.whatfits.PlanFitPicksUseCase
+import org.thelazybattley.macrotrack.domain.usecase.whatfits.SetWhatFitsSettingsUseCase
+import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
 import org.thelazybattley.macrotrack.data.local.tour.TourWaterDao
 import org.thelazybattley.macrotrack.data.repository.WaterRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.WaterRepository
@@ -354,6 +361,12 @@ val useCaseModule = module {
     factoryOf(::GetAllWeightUseCase)
     factoryOf(::GetGoalForecastUseCase)
     factoryOf(::SetForecastSettingsUseCase)
+    factoryOf(::GetFitFoodsUseCase)
+    factoryOf(::GetWhatFitsSettingsUseCase)
+    factoryOf(::GetWhatFitsInputsUseCase)
+    factoryOf(::SetWhatFitsSettingsUseCase)
+    factoryOf(::LogFitPicksUseCase)
+    factoryOf(::PlanFitPicksUseCase)
     factoryOf(::AddCustomMilestoneUseCase)
     factoryOf(::DeleteCustomMilestoneUseCase)
     factoryOf(::ApplyDailyCaloriesUseCase)
@@ -504,6 +517,7 @@ val viewModelModule = module {
     viewModelOf(::ChecklistItemViewModel)
     viewModelOf(::ChecklistHistoryViewModel)
     viewModelOf(::ChecklistManageViewModel)
+    viewModelOf(::WhatFitsViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

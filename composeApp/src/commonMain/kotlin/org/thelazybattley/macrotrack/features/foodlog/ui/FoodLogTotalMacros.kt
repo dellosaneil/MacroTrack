@@ -62,7 +62,9 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 @Composable
 fun FoodLogTotalMacros(
     modifier: Modifier = Modifier,
-    viewState: FoodLogViewState
+    viewState: FoodLogViewState,
+    /** Shown under the summary, open or closed. */
+    footer: @Composable () -> Unit = {}
 ) {
     var isExpanded by rememberSaveable { mutableStateOf(value = false) }
     val totalCalories = viewState.totalFoodMacros?.calories ?: 0
@@ -116,6 +118,7 @@ fun FoodLogTotalMacros(
                 onToggle = { isExpanded = true }
             )
         }
+        footer()
     }
 }
 
