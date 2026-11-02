@@ -1,6 +1,7 @@
 package org.thelazybattley.macrotrack.features.profile.weighthistory
 
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.domain.model.GoalForecast
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageWindow
@@ -23,7 +24,9 @@ data class WeightHistoryViewState(
     val previousPeriod: WeightPeriod? = null,
     val previousWeights: List<Weight> = emptyList(),
     val canGoBack: Boolean = false,
-    val canGoNext: Boolean = false
+    val canGoNext: Boolean = false,
+    /** For the Goal forecast row; null without a goal weight or weigh-ins. */
+    val forecast: GoalForecast? = null
 ) {
     val average: Double? get() = periodWeights.takeIf { it.isNotEmpty() }?.map { it.weight }?.average()
     val previousAverage: Double? get() = previousWeights.takeIf { it.isNotEmpty() }?.map { it.weight }?.average()

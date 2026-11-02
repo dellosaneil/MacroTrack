@@ -173,7 +173,7 @@ fun ProfileScreen(
 
 /** Types the target on the shared keypad, one decimal in the app's weight unit. Done saves it and closes. */
 @Composable
-private fun TargetWeightKeypad(
+internal fun TargetWeightKeypad(
     currentTarget: Double?,
     currentWeight: Double?,
     heightCm: Double?,

@@ -2,6 +2,8 @@ package org.thelazybattley.macrotrack.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.domain.model.CustomMilestone
+import org.thelazybattley.macrotrack.domain.model.ForecastSettings
 import org.thelazybattley.macrotrack.domain.model.ReviewHistory
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 
@@ -40,4 +42,13 @@ interface AppFlagRepository {
     fun isWidgetLockNumbersShown(): Flow<Boolean>
 
     suspend fun setWidgetLockNumbersShown(isShown: Boolean)
+
+    fun getForecastSettings(): Flow<ForecastSettings>
+
+    suspend fun setForecastSettings(settings: ForecastSettings)
+
+    /** Milestones the user added to the goal forecast, in the order added. */
+    fun getCustomMilestones(): Flow<List<CustomMilestone>>
+
+    suspend fun setCustomMilestones(milestones: List<CustomMilestone>)
 }

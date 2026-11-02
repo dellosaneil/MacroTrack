@@ -8,6 +8,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.data.local.dao.AppFlagDao
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
+import org.thelazybattley.macrotrack.domain.model.CustomMilestone
+import org.thelazybattley.macrotrack.domain.model.ForecastSettings
 import org.thelazybattley.macrotrack.domain.model.ReviewHistory
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.repository.AppFlagRepository
@@ -85,7 +89,26 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         }
     }
 
+    override fun getForecastSettings(): Flow<ForecastSettings> = dao.getFlagValue(key = FORECAST_SETTINGS).map { value ->
+        value?.let { runCatching { json.decodeFromString(ForecastSettings.serializer(), it) }.getOrNull() } ?: ForecastSettings()
+    }
+
+    override suspend fun setForecastSettings(settings: ForecastSettings) {
+        dao.insertFlag(flag = AppFlagEntity(key = FORECAST_SETTINGS, value = json.encodeToString(ForecastSettings.serializer(), settings)))
+    }
+
+    override fun getCustomMilestones(): Flow<List<CustomMilestone>> = dao.getFlagValue(key = FORECAST_MILESTONES).map { value ->
+        value?.let { runCatching { json.decodeFromString(milestonesSerializer, it) }.getOrNull() }.orEmpty()
+    }
+
+    override suspend fun setCustomMilestones(milestones: List<CustomMilestone>) {
+        dao.insertFlag(flag = AppFlagEntity(key = FORECAST_MILESTONES, value = json.encodeToString(milestonesSerializer, milestones)))
+    }
+
     companion object {
+        private val json = Json { ignoreUnknownKeys = true }
+        private val milestonesSerializer = ListSerializer(CustomMilestone.serializer())
+
         /** Also seeded by AppDatabase.MIGRATION_8_9 for people who set up the app before the tour existed. */
         const val TOUR_COMPLETED = "tour_completed"
         const val UNIT_SYSTEM = "unit_system"
@@ -95,5 +118,7 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         const val SEEN_CHECK_IN_SUGGESTION = "seen_check_in_suggestion"
         const val WIDGET_WEIGHT_HIDDEN = "widget_weight_hidden"
         const val WIDGET_LOCK_NUMBERS_HIDDEN = "widget_lock_numbers_hidden"
+        const val FORECAST_SETTINGS = "forecast_settings"
+        const val FORECAST_MILESTONES = "forecast_milestones"
     }
 }

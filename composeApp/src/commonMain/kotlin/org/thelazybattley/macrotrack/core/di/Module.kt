@@ -198,6 +198,11 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.UpdateRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
+import org.thelazybattley.macrotrack.domain.usecase.forecast.AddCustomMilestoneUseCase
+import org.thelazybattley.macrotrack.domain.usecase.forecast.ApplyDailyCaloriesUseCase
+import org.thelazybattley.macrotrack.domain.usecase.forecast.DeleteCustomMilestoneUseCase
+import org.thelazybattley.macrotrack.domain.usecase.forecast.GetGoalForecastUseCase
+import org.thelazybattley.macrotrack.domain.usecase.forecast.SetForecastSettingsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.InsertWeightUseCase
 import org.thelazybattley.macrotrack.domain.usecase.favorite.GetFavoriteKeysUseCase
 import org.thelazybattley.macrotrack.domain.usecase.favorite.SetFavoriteUseCase
@@ -212,6 +217,7 @@ import org.thelazybattley.macrotrack.features.profile.ProfileViewModel
 import org.thelazybattley.macrotrack.features.profile.nutritiongoals.NutritionGoalsViewModel
 import org.thelazybattley.macrotrack.features.profile.personalinformation.PersonalInformationViewModel
 import org.thelazybattley.macrotrack.features.profile.weighthistory.WeightHistoryViewModel
+import org.thelazybattley.macrotrack.features.forecast.GoalForecastViewModel
 import org.thelazybattley.macrotrack.features.splash.SplashViewModel
 import org.thelazybattley.macrotrack.data.repository.ProgressPhotoRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.ProgressPhotoRepository
@@ -321,6 +327,11 @@ val useCaseModule = module {
     factoryOf(::CalculateBMIUseCase)
     factoryOf(::InsertWeightUseCase)
     factoryOf(::GetAllWeightUseCase)
+    factoryOf(::GetGoalForecastUseCase)
+    factoryOf(::SetForecastSettingsUseCase)
+    factoryOf(::AddCustomMilestoneUseCase)
+    factoryOf(::DeleteCustomMilestoneUseCase)
+    factoryOf(::ApplyDailyCaloriesUseCase)
     factoryOf(::UpdateFoodUseCase)
     factoryOf(::DeleteFoodUseCase)
     factoryOf(::GetAllMeasurementsUseCase)
@@ -417,6 +428,7 @@ val viewModelModule = module {
     viewModelOf(::PersonalInformationViewModel)
     viewModelOf(::NutritionGoalsViewModel)
     viewModelOf(::WeightHistoryViewModel)
+    viewModelOf(::GoalForecastViewModel)
     viewModelOf(::MeasurementsViewModel)
     viewModelOf(::MeasurementsLogViewModel)
     viewModelOf(::MeasurementDetailViewModel)

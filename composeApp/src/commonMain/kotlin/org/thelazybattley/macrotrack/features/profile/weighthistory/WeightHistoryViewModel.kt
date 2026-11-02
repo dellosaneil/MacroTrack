@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.forecast.GetGoalForecastUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageWindow
@@ -18,7 +19,8 @@ import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHis
 class WeightHistoryViewModel(
     private val getAllWeightUseCase: GetAllWeightUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
-    private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase
+    private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase,
+    private val getGoalForecastUseCase: GetGoalForecastUseCase
 ) : ViewModel(), WeightHistoryCallbacks {
 
     private val _state = MutableStateFlow(value = WeightHistoryViewState())
@@ -52,6 +54,9 @@ class WeightHistoryViewModel(
                     ).withPeriod(period = period)
                 }
             }.collect()
+        }
+        viewModelScope.launch {
+            getGoalForecastUseCase().collect { snapshot -> _state.update { it.copy(forecast = snapshot?.forecast) } }
         }
     }
 

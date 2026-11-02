@@ -221,6 +221,16 @@ sealed class AppDestinations {
 
         object MovingAverage : Root(route = "moving_average")
 
+        object GoalForecast : Root(route = "goal_forecast")
+
+        object ForecastWhatIf : Root(route = "forecast_what_if")
+
+        object ForecastDeadline : Root(route = "forecast_deadline")
+
+        object ForecastMilestones : Root(route = "forecast_milestones")
+
+        object ForecastSettings : Root(route = "forecast_settings")
+
         object Paywall : Root(route = "paywall", routeWithArgs = "paywall?$PRO_FEATURE={$PRO_FEATURE}") {
             fun createRoute(feature: String?): String {
                 return if (feature == null) route else "$route?$PRO_FEATURE=$feature"

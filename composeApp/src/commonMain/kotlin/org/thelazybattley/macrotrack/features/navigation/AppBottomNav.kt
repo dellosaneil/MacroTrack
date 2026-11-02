@@ -93,6 +93,11 @@ import org.thelazybattley.macrotrack.features.profile.pastgoal.ui.PastGoalScreen
 import org.thelazybattley.macrotrack.features.checkin.ui.CheckInScreen
 import org.thelazybattley.macrotrack.features.profile.personalinformation.ui.PersonalInformationScreen
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageScreen
+import org.thelazybattley.macrotrack.features.forecast.ui.ForecastDeadlineScreen
+import org.thelazybattley.macrotrack.features.forecast.ui.ForecastMilestonesScreen
+import org.thelazybattley.macrotrack.features.forecast.ui.ForecastSettingsScreen
+import org.thelazybattley.macrotrack.features.forecast.ui.ForecastWhatIfScreen
+import org.thelazybattley.macrotrack.features.forecast.ui.GoalForecastScreen
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryScreen
 import org.thelazybattley.macrotrack.features.splash.ui.SplashScreen
 import org.thelazybattley.macrotrack.features.walkthrough.ui.WalkthroughScreen
@@ -684,6 +689,21 @@ fun AppBottomNav() {
                             },
                             onNavigate = navigate
                         )
+                    }
+                    composable(route = AppDestinations.Root.GoalForecast.route) {
+                        GoalForecastScreen(onPopBackStack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(route = AppDestinations.Root.ForecastWhatIf.route) {
+                        ForecastWhatIfScreen(onPopBackStack = { navController.popBack() })
+                    }
+                    composable(route = AppDestinations.Root.ForecastDeadline.route) {
+                        ForecastDeadlineScreen(onPopBackStack = { navController.popBack() })
+                    }
+                    composable(route = AppDestinations.Root.ForecastMilestones.route) {
+                        ForecastMilestonesScreen(onPopBackStack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(route = AppDestinations.Root.ForecastSettings.route) {
+                        ForecastSettingsScreen(onPopBackStack = { navController.popBack() })
                     }
                     composable(
                         route = AppDestinations.Root.ProgressPhotos.routeWithArgs!!,

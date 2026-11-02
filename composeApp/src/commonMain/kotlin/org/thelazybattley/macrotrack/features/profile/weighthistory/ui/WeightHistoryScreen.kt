@@ -59,7 +59,9 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.thelazybattley.macrotrack.domain.model.GoalForecast
 import org.thelazybattley.macrotrack.domain.model.Weight
+import org.thelazybattley.macrotrack.features.forecast.ui.GoalForecastLink
 import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.pro.ProFeature
@@ -92,7 +94,8 @@ fun WeightHistoryScreen(
         callbacks = viewModel,
         onBack = onPopBackStack,
         onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) },
-        onOpenMovingAverage = { onNavigate(AppDestinations.Root.MovingAverage.route) }
+        onOpenMovingAverage = { onNavigate(AppDestinations.Root.MovingAverage.route) },
+        onOpenForecast = { onNavigate(AppDestinations.Root.GoalForecast.route) }
     )
 }
 
@@ -103,7 +106,8 @@ private fun WeightHistoryScreen(
     callbacks: WeightHistoryCallbacks,
     onBack: () -> Unit,
     onLogWeight: () -> Unit,
-    onOpenMovingAverage: () -> Unit
+    onOpenMovingAverage: () -> Unit,
+    onOpenForecast: () -> Unit
 ) {
 
     Scaffold(
@@ -155,7 +159,9 @@ private fun WeightHistoryScreen(
                     period = period,
                     weightList = viewState.periodWeights,
                     goalPhases = viewState.goalPhases,
-                    onOpenMovingAverage = onOpenMovingAverage
+                    onOpenMovingAverage = onOpenMovingAverage,
+                    forecast = viewState.forecast,
+                    onOpenForecast = onOpenForecast
                 )
             }
             WeightHistoryAverageCard(modifier = Modifier.fillMaxWidth(), viewState = viewState)
@@ -174,7 +180,9 @@ private fun ChartCard(
     period: WeightPeriod,
     weightList: List<Weight>,
     goalPhases: List<GoalPhase>,
-    onOpenMovingAverage: () -> Unit
+    onOpenMovingAverage: () -> Unit,
+    forecast: GoalForecast?,
+    onOpenForecast: () -> Unit
 ) {
     var selection by remember(period) { mutableStateOf<WeightRange?>(value = null) }
     var isSelecting by remember(period) { mutableStateOf(value = false) }
@@ -268,6 +276,7 @@ private fun ChartCard(
             )
         }
         MovingAverageLink(isLocked = !pro.isActive, onClick = onOpenMovingAverage)
+        GoalForecastLink(forecast = forecast, onClick = onOpenForecast)
     }
 }
 
@@ -388,7 +397,8 @@ private fun PreviewWeightHistoryScreen() {
             callbacks = WeightHistoryCallbacks.default(),
             onBack = {},
             onLogWeight = {},
-            onOpenMovingAverage = {}
+            onOpenMovingAverage = {},
+            onOpenForecast = {}
         )
     }
 }
