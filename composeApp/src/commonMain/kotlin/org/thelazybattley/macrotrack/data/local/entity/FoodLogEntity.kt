@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 
@@ -25,7 +26,12 @@ data class FoodLogEntity(
     /** Logged with Quick add: calories and macros typed in without a food. */
     val isQuickAdd: Boolean = false,
     /** When it was added, in epoch milliseconds; null for logs from before this was kept. */
-    val loggedAt: Long? = null
+    val loggedAt: Long? = null,
+    /** A [FoodLogSource] name; null for logs from before this was kept. */
+    val source: String? = null,
+    val copiedFrom: LocalDate? = null,
+    /** The portion first logged, before it was edited. */
+    val editedFrom: Double? = null
 )
 
 fun FoodLogEntity.toDomain() = FoodLog(
@@ -40,5 +46,8 @@ fun FoodLogEntity.toDomain() = FoodLog(
     dominantMacro = MacroType.valueOf(value = dominantMacro),
     date = date,
     isQuickAdd = isQuickAdd,
-    loggedAtMillis = loggedAt
+    loggedAtMillis = loggedAt,
+    source = FoodLogSource.entries.find { it.name == source },
+    copiedFrom = copiedFrom,
+    editedFrom = editedFrom
 )

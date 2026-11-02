@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.foodlibrary
 
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -111,7 +112,8 @@ class FoodLibraryViewModel(
                     mealType = currentState.mealType,
                     weight = food.weight,
                     dominantMacro = food.dominantMacro,
-                    date = currentState.logDate
+                    date = currentState.logDate,
+                    source = FoodLogSource.LIBRARY
                 )
             }
             _state.update { it.copy(isSaved = true) }

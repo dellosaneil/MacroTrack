@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.thelazybattley.macrotrack.domain.model.Food
 import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import org.thelazybattley.macrotrack.domain.model.FoodMacros
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.OnlineFood
@@ -354,7 +355,12 @@ class AddMealViewModel(
                     mealType = currentState.selectedMealType,
                     weight = item.food.weight,
                     dominantMacro = item.food.dominantMacro,
-                    date = currentState.logDate
+                    date = currentState.logDate,
+                    source = when {
+                        item.isRecipe -> FoodLogSource.RECIPES
+                        item.isLibrary -> FoodLogSource.LIBRARY
+                        else -> FoodLogSource.MY_FOODS
+                    }
                 )
             }
             _state.update { it.copy(isSaved = true) }

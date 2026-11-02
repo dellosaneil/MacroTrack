@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlanFood
 import org.thelazybattley.macrotrack.domain.model.PlanStatus
@@ -121,7 +122,8 @@ internal suspend fun MealPlanRepository.markEaten(plannedFood: PlannedFood, food
         weight = food.weight,
         dominantMacro = food.dominantMacro,
         date = plannedFood.date,
-        isQuickAdd = food.isQuickAdd
+        isQuickAdd = food.isQuickAdd,
+        source = if (plannedFood.repeatingMealId != null) FoodLogSource.REPEATING_MEAL else FoodLogSource.MEAL_PLAN
     )
     updatePlannedStatus(id = plannedFood.id, status = PlanStatus.EATEN, logId = logId)
 }

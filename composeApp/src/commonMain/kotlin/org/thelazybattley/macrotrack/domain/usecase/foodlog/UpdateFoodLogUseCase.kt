@@ -12,7 +12,8 @@ class UpdateFoodLogUseCase(private val repository: FoodLogRepository) {
         protein: Double,
         carbs: Double,
         fat: Double,
-        weight: Double
+        weight: Double,
+        editedFrom: Double? = null
     ) {
         repository.updateFoodLog(
             id = id,
@@ -21,7 +22,8 @@ class UpdateFoodLogUseCase(private val repository: FoodLogRepository) {
             protein = protein,
             carbs = carbs,
             fat = fat,
-            weight = weight
+            weight = weight,
+            editedFrom = editedFrom
         )
     }
 }

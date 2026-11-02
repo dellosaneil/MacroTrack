@@ -63,8 +63,10 @@ class TourUserDetailsDao(private val db: TourDatabaseSwitch) : UserDetailsDao {
 class TourFoodLogDao(private val db: TourDatabaseSwitch) : FoodLogDao {
     override suspend fun insertFoodLog(foodLogEntity: FoodLogEntity): Long =
         db.run { it.foodLogDao().insertFoodLog(foodLogEntity = foodLogEntity) }
-    override suspend fun updateFoodLog(id: Long, mealType: MealType, calories: Int, protein: Double, carbs: Double, fat: Double, weight: Double) =
-        db.run { it.foodLogDao().updateFoodLog(id = id, mealType = mealType, calories = calories, protein = protein, carbs = carbs, fat = fat, weight = weight) }
+    override suspend fun updateFoodLog(id: Long, mealType: MealType, calories: Int, protein: Double, carbs: Double, fat: Double, weight: Double, editedFrom: Double?) =
+        db.run {
+            it.foodLogDao().updateFoodLog(id = id, mealType = mealType, calories = calories, protein = protein, carbs = carbs, fat = fat, weight = weight, editedFrom = editedFrom)
+        }
     override suspend fun deleteFoodLog(id: Long) = db.run { it.foodLogDao().deleteFoodLog(id = id) }
     override fun getAllFoodLogs(): Flow<List<FoodLogEntity>> = db.flow { it.foodLogDao().getAllFoodLogs() }
     override fun getFoodLogByDate(date: LocalDate): Flow<List<FoodLogEntity>> = db.flow { it.foodLogDao().getFoodLogByDate(date = date) }

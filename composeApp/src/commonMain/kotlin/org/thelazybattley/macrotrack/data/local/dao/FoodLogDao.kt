@@ -14,9 +14,10 @@ interface FoodLogDao {
     @Insert
     suspend fun insertFoodLog(foodLogEntity: FoodLogEntity) : Long
 
+    /** [editedFrom] is kept only the first time a portion changes, so it stays what was logged. */
     @Query(
         "UPDATE foodlogentity SET mealType = :mealType, calories = :calories, protein = :protein, " +
-            "carbs = :carbs, fat = :fat, weight = :weight WHERE id = :id"
+            "carbs = :carbs, fat = :fat, weight = :weight, editedFrom = COALESCE(editedFrom, :editedFrom) WHERE id = :id"
     )
     suspend fun updateFoodLog(
         id: Long,
@@ -25,7 +26,8 @@ interface FoodLogDao {
         protein: Double,
         carbs: Double,
         fat: Double,
-        weight: Double
+        weight: Double,
+        editedFrom: Double?
     )
 
     @Query("DELETE FROM foodlogentity WHERE id = :id")

@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.scanbarcode
 
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -129,7 +130,8 @@ class ScanBarcodeViewModel(
                 protein = macros.protein,
                 weight = currentState.amount,
                 dominantMacro = food.dominantMacro,
-                date = currentState.logDate
+                date = currentState.logDate,
+                source = FoodLogSource.BARCODE
             )
             _state.update { it.copy(isSaved = true) }
         }

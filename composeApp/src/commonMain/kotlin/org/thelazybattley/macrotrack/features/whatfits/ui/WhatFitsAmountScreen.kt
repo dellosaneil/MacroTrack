@@ -63,6 +63,7 @@ import macrotrack.composeapp.generated.resources.what_fits_use_amount
 import macrotrack.composeapp.generated.resources.what_fits_usual_times
 import macrotrack.composeapp.generated.resources.what_fits_uses_it_all
 import macrotrack.composeapp.generated.resources.what_fits_your_last_times
+import macrotrack.composeapp.generated.resources.what_fits_see_all
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
@@ -85,6 +86,7 @@ import kotlin.math.roundToInt
 fun WhatFitsAmountScreen(
     viewModel: WhatFitsViewModel,
     onBack: () -> Unit,
+    onOpenHistory: (FitFood) -> Unit,
     onDone: () -> Unit
 ) {
     val viewState by viewModel.state.collectAsStateWithLifecycle()
@@ -95,6 +97,7 @@ fun WhatFitsAmountScreen(
         viewState = viewState,
         callbacks = viewModel,
         onBack = onBack,
+        onOpenHistory = onOpenHistory,
         onPick = {
             viewModel.onPickDraft()
             onBack()
@@ -107,6 +110,7 @@ private fun WhatFitsAmountScreen(
     viewState: WhatFitsViewState,
     callbacks: WhatFitsCallbacks,
     onBack: () -> Unit,
+    onOpenHistory: (FitFood) -> Unit,
     onPick: () -> Unit
 ) {
     val food = viewState.amountFood ?: return
@@ -132,7 +136,18 @@ private fun WhatFitsAmountScreen(
             LeftAfterCard(viewState = viewState)
         }
         Column(verticalArrangement = Arrangement.spacedBy(space = 6.dp)) {
-            WhatFitsSectionLabel(text = stringResource(resource = Res.string.what_fits_your_last_times))
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                WhatFitsSectionLabel(text = stringResource(resource = Res.string.what_fits_your_last_times), modifier = Modifier.weight(weight = 1f))
+                Text(
+                    text = stringResource(resource = Res.string.what_fits_see_all),
+                    style = typography.bold12,
+                    color = colors.accentInk,
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(size = 8.dp))
+                        .clickable(role = Role.Button, onClick = { onOpenHistory(food) })
+                        .padding(horizontal = 6.dp, vertical = 4.dp)
+                )
+            }
             PastAmounts(food = food, amount = amount, onUse = callbacks::onDraftAmount)
         }
     }
@@ -355,6 +370,7 @@ private fun PreviewWhatFitsAmountScreen() {
             viewState = previewWhatFitsState.copy(amountKey = "food:Chicken breast", draftAmount = 180.0),
             callbacks = WhatFitsCallbacks.default(),
             onBack = {},
+            onOpenHistory = {},
             onPick = {}
         )
     }

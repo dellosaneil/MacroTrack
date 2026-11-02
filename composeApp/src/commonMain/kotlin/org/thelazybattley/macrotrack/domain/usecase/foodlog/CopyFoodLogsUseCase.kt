@@ -82,5 +82,7 @@ private suspend fun FoodLogRepository.insert(log: FoodLog): Long = insertFoodLog
     weight = log.weight,
     dominantMacro = log.dominantMacro,
     date = log.date,
-    isQuickAdd = log.isQuickAdd
+    isQuickAdd = log.isQuickAdd,
+    source = log.source,
+    copiedFrom = log.copiedFrom
 )

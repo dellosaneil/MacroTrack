@@ -172,6 +172,12 @@ sealed class AppDestinations {
 
         object WhatFitsSettings : Root(route = "what_fits_settings")
 
+        /** Every time [FOOD_NAME] was logged; [IS_RECIPE] tells a recipe from a food of the same name. */
+        object FoodHistory : Root(route = "food_history", routeWithArgs = "food_history/{$FOOD_NAME}?$IS_RECIPE={$IS_RECIPE}") {
+            fun createRoute(foodName: String, isRecipe: Boolean): String =
+                "$route/${foodName.encodeRouteArg()}" + queryString(IS_RECIPE to if (isRecipe) "true" else null)
+        }
+
         object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
             fun createRoute(mealType: String, logDate: LocalDate? = null): String =
                 "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())
@@ -311,6 +317,7 @@ sealed class AppDestinations {
         const val CHECKLIST_ITEM_ID = "checklistItemId"
         const val CHECKLIST_KIND = "checklistKind"
         const val CHECKLIST_PRESET = "checklistPreset"
+        const val IS_RECIPE = "isRecipe"
         /** Set on Repeating meals' back stack entry when Edit repeating meal asks for that one to be deleted. */
         const val DELETE_REPEATING_MEAL_ID = "deleteRepeatingMealId"
     }

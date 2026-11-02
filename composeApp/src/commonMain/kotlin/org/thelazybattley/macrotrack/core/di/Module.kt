@@ -31,6 +31,7 @@ import org.thelazybattley.macrotrack.domain.usecase.whatfits.LogFitPicksUseCase
 import org.thelazybattley.macrotrack.domain.usecase.whatfits.PlanFitPicksUseCase
 import org.thelazybattley.macrotrack.domain.usecase.whatfits.SetWhatFitsSettingsUseCase
 import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
+import org.thelazybattley.macrotrack.features.foodhistory.FoodHistoryViewModel
 import org.thelazybattley.macrotrack.data.local.tour.TourWaterDao
 import org.thelazybattley.macrotrack.data.repository.WaterRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.WaterRepository
@@ -518,6 +519,7 @@ val viewModelModule = module {
     viewModelOf(::ChecklistHistoryViewModel)
     viewModelOf(::ChecklistManageViewModel)
     viewModelOf(::WhatFitsViewModel)
+    viewModelOf(::FoodHistoryViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

@@ -8,10 +8,15 @@ import kotlinx.datetime.LocalDate
  */
 class LogDateRequest {
     private var pending: LocalDate? = null
+    private var pendingEntryId: Long? = null
 
-    fun request(date: LocalDate) {
+    /** [entryId] opens that logged entry once the day shows, as food history does. */
+    fun request(date: LocalDate, entryId: Long? = null) {
         pending = date
+        pendingEntryId = entryId
     }
 
     fun consume(): LocalDate? = pending.also { pending = null }
+
+    fun consumeEntry(): Long? = pendingEntryId.also { pendingEntryId = null }
 }

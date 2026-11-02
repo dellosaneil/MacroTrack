@@ -63,6 +63,9 @@ data class EntryEdit(
     val caloriesChange: Int get() = calories - log.calories
 
     /** The readout shows the logged amount to 2 decimal places, so that is what an unchanged amount looks like. */
+    /** The portion changed, not only the meal. */
+    val isAmountChanged: Boolean get() = amount != shownOriginalAmount.roundToHundredths()
+
     val hasChanges: Boolean get() = amount != shownOriginalAmount.roundToHundredths() || mealType != log.mealType
 
     val canSave: Boolean get() = hasChanges && amount > 0

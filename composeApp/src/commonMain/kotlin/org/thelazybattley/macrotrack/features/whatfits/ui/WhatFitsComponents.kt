@@ -270,11 +270,15 @@ internal fun MacroType.fitColor(): Color = when (this) {
 
 /** An amount of [food]: "180 g" (or oz), or "1.5 servings" for a recipe. */
 @Composable
-internal fun fitAmount(food: FitFood, amount: Double): String = if (food.isRecipe) {
+internal fun fitAmount(food: FitFood, amount: Double): String = portionText(isRecipe = food.isRecipe, unit = food.unit, amount = amount)
+
+/** A food amount in its stored [unit] as shown ("180 g", or oz), or a recipe percentage as servings ("1.5 servings"). */
+@Composable
+internal fun portionText(isRecipe: Boolean, unit: String, amount: Double): String = if (isRecipe) {
     val servings = (amount / FIT_FULL_RECIPE_PERCENT * 10).roundToInt() / 10.0
     pluralStringResource(resource = Res.plurals.what_fits_servings, quantity = if (servings == 1.0) 1 else 2, servings.toCleanString())
 } else {
-    formatPortion(amount = amount, storedUnit = food.unit)
+    formatPortion(amount = amount, storedUnit = unit)
 }
 
 /** "12 g left", or "4 g over" once it's below zero. */

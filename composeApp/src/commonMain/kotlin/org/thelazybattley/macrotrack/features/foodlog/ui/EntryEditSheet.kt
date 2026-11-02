@@ -38,6 +38,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
+import macrotrack.composeapp.generated.resources.food_history_open
+import macrotrack.composeapp.generated.resources.ic_restore
 import macrotrack.composeapp.generated.resources.change_meal
 import macrotrack.composeapp.generated.resources.close
 import macrotrack.composeapp.generated.resources.decrease_portion
@@ -90,7 +92,9 @@ fun EntryEditSheet(
     onMealChanged: (MealType) -> Unit,
     onClose: () -> Unit,
     onSave: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    /** Opens the food's history; null for a quick add, which has none. */
+    onHistory: (() -> Unit)? = null
 ) {
     ModalBottomSheet(
         onDismissRequest = onClose,
@@ -109,7 +113,8 @@ fun EntryEditSheet(
             onMealChanged = onMealChanged,
             onClose = onClose,
             onSave = onSave,
-            onDelete = onDelete
+            onDelete = onDelete,
+            onHistory = onHistory
         )
     }
 }
@@ -125,7 +130,8 @@ private fun EntryEditContent(
     onMealChanged: (MealType) -> Unit,
     onClose: () -> Unit,
     onSave: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onHistory: (() -> Unit)? = null
 ) {
     var isKeypadOpen by rememberSaveable(edit.log.id) { mutableStateOf(value = isKeypadOpenInitially) }
     var isMealPickerOpen by rememberSaveable(edit.log.id) { mutableStateOf(value = false) }
@@ -174,6 +180,25 @@ private fun EntryEditContent(
                     tint = colors.fat,
                     modifier = Modifier.size(size = 18.dp)
                 )
+            }
+            if (onHistory != null) {
+                val historyText = stringResource(resource = Res.string.food_history_open)
+                Box(
+                    modifier = Modifier
+                        .size(size = 54.dp)
+                        .clip(shape = shape)
+                        .border(width = 1.dp, color = colors.line, shape = shape)
+                        .clickable(role = Role.Button, onClick = onHistory)
+                        .semantics { contentDescription = historyText },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_restore),
+                        contentDescription = null,
+                        tint = colors.ink,
+                        modifier = Modifier.size(size = 18.dp)
+                    )
+                }
             }
             CommonPrimaryButton(
                 modifier = Modifier.weight(weight = 1f),

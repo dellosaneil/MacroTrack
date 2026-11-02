@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlanFood
@@ -30,7 +31,8 @@ class InsertFoodLogUseCase(
         weight: Double,
         dominantMacro: MacroType,
         date: LocalDate,
-        isQuickAdd: Boolean = false
+        isQuickAdd: Boolean = false,
+        source: FoodLogSource? = null
     ): Long = if (date > getCurrentDate()) {
         planFoodUseCase(
             food = PlanFood(
@@ -57,7 +59,8 @@ class InsertFoodLogUseCase(
             weight = weight,
             dominantMacro = dominantMacro,
             date = date,
-            isQuickAdd = isQuickAdd
+            isQuickAdd = isQuickAdd,
+            source = source
         ).also {
             telemetry.logEvent(
                 name = TelemetryEvent.FOOD_LOGGED,

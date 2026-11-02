@@ -38,6 +38,7 @@ import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistItemScreen
 import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistManageScreen
 import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistScreen
 import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
+import org.thelazybattley.macrotrack.features.foodhistory.ui.FoodHistoryScreen
 import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsAmountScreen
 import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsReviewScreen
 import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsScreen
@@ -493,11 +494,29 @@ fun AppBottomNav() {
                             onDone = { navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false) }
                         )
                     }
+                    composable(
+                        route = AppDestinations.Root.FoodHistory.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = AppDestinations.FOOD_NAME) { type = NavType.StringType },
+                            navArgument(name = AppDestinations.IS_RECIPE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        FoodHistoryScreen(
+                            onBack = { navController.popBack() },
+                            onNavigate = navigate,
+                            onOpenLog = { navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false) }
+                        )
+                    }
                     // The amount, review and settings screens share the ideas screen's state, so they take its view model.
                     composable(route = AppDestinations.Root.WhatFitsAmount.route) { entry ->
                         WhatFitsAmountScreen(
                             viewModel = navController.whatFitsViewModel(entry = entry),
                             onBack = { navController.popBack() },
+                            onOpenHistory = { food -> navigate(AppDestinations.Root.FoodHistory.createRoute(foodName = food.name, isRecipe = food.isRecipe)) },
                             onDone = { navController.popBackStack(route = AppDestinations.Root.MainScreen.route, inclusive = false) }
                         )
                     }

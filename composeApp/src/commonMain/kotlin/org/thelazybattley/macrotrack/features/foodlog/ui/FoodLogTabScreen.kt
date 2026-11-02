@@ -175,7 +175,8 @@ fun FoodLogTabScreen(
         },
         onOpenWater = { onNavigate(AppDestinations.Root.Water.route) },
         onOpenChecklist = { onNavigate(AppDestinations.Root.Checklist.route) },
-        onWhatFits = { onNavigate(AppDestinations.Root.WhatFits.createRoute()) }
+        onWhatFits = { onNavigate(AppDestinations.Root.WhatFits.createRoute()) },
+        onOpenHistory = { log -> onNavigate(AppDestinations.Root.FoodHistory.createRoute(foodName = log.foodName, isRecipe = log.isRecipe)) }
     )
 }
 
@@ -197,7 +198,8 @@ private fun FoodLogTabScreen(
     onOpenWater: () -> Unit,
     onOpenChecklist: () -> Unit,
     /** Opens What fits? for the next meal of the day. */
-    onWhatFits: () -> Unit
+    onWhatFits: () -> Unit,
+    onOpenHistory: (FoodLog) -> Unit
 ) {
     val today = getCurrentDate()
     val isToday = viewState.selectedDate == today
@@ -395,7 +397,15 @@ private fun FoodLogTabScreen(
             onMealChanged = callbacks::onEntryMealChanged,
             onClose = callbacks::onCloseEntry,
             onSave = callbacks::onSaveEntry,
-            onDelete = callbacks::onDeleteEntry
+            onDelete = callbacks::onDeleteEntry,
+            onHistory = if (edit.isQuickAdd) {
+                null
+            } else {
+                {
+                    callbacks.onCloseEntry()
+                    onOpenHistory(edit.log)
+                }
+            }
         )
     }
 }
@@ -971,7 +981,8 @@ private fun PreviewFoodLogTabScreen() {
             onRepeat = {},
             onOpenWater = {},
             onOpenChecklist = {},
-            onWhatFits = {}
+            onWhatFits = {},
+            onOpenHistory = {}
         )
     }
 }

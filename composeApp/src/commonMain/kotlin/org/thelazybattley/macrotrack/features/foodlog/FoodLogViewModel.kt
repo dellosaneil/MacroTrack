@@ -316,6 +316,7 @@ class FoodLogViewModel(
 
     override fun onScreenShown() {
         onDateFilterSelected(date = logDateRequest.consume() ?: getCurrentDate())
+        logDateRequest.consumeEntry()?.let { id -> _state.value.allFoodLog.find { it.id == id } }?.let(::onOpenEntry)
         // Fills in today's repeating meals, and logs the ones that log themselves, on the first open of the day.
         viewModelScope.launch { plannedFoodActions.sync() }
     }
@@ -377,7 +378,8 @@ class FoodLogViewModel(
                 protein = edit.protein,
                 carbs = edit.carbs,
                 fat = edit.fat,
-                weight = edit.weight
+                weight = edit.weight,
+                editedFrom = edit.originalAmount.takeIf { edit.isAmountChanged }
             )
         }
     }

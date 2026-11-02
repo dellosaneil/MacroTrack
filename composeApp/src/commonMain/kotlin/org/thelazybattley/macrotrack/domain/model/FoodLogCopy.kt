@@ -19,7 +19,9 @@ data class FoodLogCopy(
  */
 fun copiedLogs(logs: List<FoodLog>, targetDates: List<LocalDate>, mealType: MealType?): List<FoodLog> =
     targetDates.flatMap { date ->
-        logs.map { it.copy(id = 0, date = date, mealType = mealType ?: it.mealType) }
+        logs.map {
+            it.copy(id = 0, date = date, mealType = mealType ?: it.mealType, source = FoodLogSource.COPIED, copiedFrom = it.date, editedFrom = null)
+        }
     }
 
 /** The logs "Replace it" removes: [mealType] on each target day, or everything on it for a whole day. */

@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.quickadd
 
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -77,7 +78,8 @@ class QuickAddViewModel(
                 weight = 0.0,
                 dominantMacro = currentState.dominantMacro,
                 date = currentState.logDate,
-                isQuickAdd = true
+                isQuickAdd = true,
+                source = FoodLogSource.QUICK_ADD
             )
             _state.update { it.copy(isSaved = true) }
         }

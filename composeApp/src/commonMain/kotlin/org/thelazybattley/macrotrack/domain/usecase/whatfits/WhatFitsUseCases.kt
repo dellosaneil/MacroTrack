@@ -8,6 +8,7 @@ import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.core.telemetry.TelemetryEvent
 import org.thelazybattley.macrotrack.domain.model.FitFood
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.PlanFood
 import org.thelazybattley.macrotrack.domain.model.WhatFitsSettings
@@ -100,7 +101,8 @@ class LogFitPicksUseCase(
                 protein = food.protein,
                 weight = food.weight,
                 dominantMacro = food.dominantMacro,
-                date = today
+                date = today,
+                source = FoodLogSource.WHAT_FITS
             )
         }
         telemetry.logEvent(name = TelemetryEvent.WHAT_FITS_USED, params = mapOf(TelemetryEvent.PARAM_RESULT to "log"))

@@ -43,7 +43,7 @@ import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
     entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, PhotoAlbumEntity::class, ProgressPhotoEntity::class, WaterEntity::class, ChecklistItemEntity::class, ChecklistEntryEntity::class],
-    version = 23, exportSchema = true,
+    version = 24, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -281,6 +281,15 @@ abstract class AppDatabase : RoomDatabase() {
                         "`status` TEXT NOT NULL, `count` INTEGER NOT NULL, `doneAt` INTEGER, PRIMARY KEY(`itemId`, `date`))"
                 )
                 connection.execSQL("CREATE INDEX IF NOT EXISTS `index_ChecklistEntryEntity_date` ON `ChecklistEntryEntity` (`date`)")
+            }
+        }
+
+        /** Keeps how each food was logged, the day a copy came from, and the portion before an edit, for food history. */
+        val MIGRATION_23_24 = object : Migration(23, 24) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE `FoodLogEntity` ADD COLUMN `source` TEXT")
+                connection.execSQL("ALTER TABLE `FoodLogEntity` ADD COLUMN `copiedFrom` TEXT")
+                connection.execSQL("ALTER TABLE `FoodLogEntity` ADD COLUMN `editedFrom` REAL")
             }
         }
     }

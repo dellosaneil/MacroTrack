@@ -9,6 +9,7 @@ import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.toDomain
 import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.FoodLogSource
 import org.thelazybattley.macrotrack.domain.model.MacroType
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.repository.FoodLogRepository
@@ -25,7 +26,9 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
         weight: Double,
         dominantMacro: MacroType,
         date: LocalDate,
-        isQuickAdd: Boolean
+        isQuickAdd: Boolean,
+        source: FoodLogSource?,
+        copiedFrom: LocalDate?
     ) = dao.insertFoodLog(
         foodLogEntity = FoodLogEntity(
             date = date,
@@ -38,7 +41,9 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
             weight = weight,
             dominantMacro = dominantMacro.name,
             isQuickAdd = isQuickAdd,
-            loggedAt = Clock.System.now().toEpochMilliseconds()
+            loggedAt = Clock.System.now().toEpochMilliseconds(),
+            source = source?.name,
+            copiedFrom = copiedFrom
         )
     )
 
@@ -49,7 +54,8 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
         protein: Double,
         carbs: Double,
         fat: Double,
-        weight: Double
+        weight: Double,
+        editedFrom: Double?
     ) = dao.updateFoodLog(
         id = id,
         mealType = mealType,
@@ -57,7 +63,8 @@ class FoodLogRepositoryImpl(private val dao: FoodLogDao) : FoodLogRepository {
         protein = protein,
         carbs = carbs,
         fat = fat,
-        weight = weight
+        weight = weight,
+        editedFrom = editedFrom
     )
 
     override suspend fun deleteFoodLog(
