@@ -31,6 +31,12 @@ import org.thelazybattley.macrotrack.domain.usecase.water.SyncWaterRemindersUseC
 import org.thelazybattley.macrotrack.domain.usecase.widget.SyncHomeWidgetsUseCase
 import org.thelazybattley.macrotrack.features.widgets.ui.WidgetsScreen
 import org.thelazybattley.macrotrack.features.water.ui.WaterScreen
+import org.thelazybattley.macrotrack.domain.usecase.checklist.SyncChecklistRemindersUseCase
+import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistFormScreen
+import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistHistoryScreen
+import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistItemScreen
+import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistManageScreen
+import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistScreen
 import org.thelazybattley.macrotrack.features.water.ui.WaterSettingsScreen
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -165,6 +171,11 @@ fun AppBottomNav() {
     // Sets water reminders again as drinks are logged, so catching up takes back the ones no longer due.
     LaunchedEffect(key1 = Unit) {
         syncWaterReminders()
+    }
+    val syncChecklistReminders = koinInject<SyncChecklistRemindersUseCase>()
+    // Sets checklist reminders again as items are ticked, so ticking one takes back its reminder.
+    LaunchedEffect(key1 = Unit) {
+        syncChecklistReminders()
     }
     val syncHomeWidgets = koinInject<SyncHomeWidgetsUseCase>()
     // Redraws the home screen widgets as food, water and weight are logged.
@@ -429,6 +440,33 @@ fun AppBottomNav() {
                     }
                     composable(route = AppDestinations.Root.WaterSettings.route) {
                         WaterSettingsScreen(onBack = { navController.popBack() })
+                    }
+                    composable(route = AppDestinations.Root.Checklist.route) {
+                        ChecklistScreen(onBack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(
+                        route = AppDestinations.Root.ChecklistForm.routeWithArgs!!,
+                        arguments = listOf(AppDestinations.CHECKLIST_ITEM_ID, AppDestinations.CHECKLIST_KIND, AppDestinations.CHECKLIST_PRESET).map { name ->
+                            navArgument(name = name) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        }
+                    ) {
+                        ChecklistFormScreen(onClose = { navController.popBack() })
+                    }
+                    composable(
+                        route = AppDestinations.Root.ChecklistItem.routeWithArgs!!,
+                        arguments = listOf(navArgument(name = AppDestinations.CHECKLIST_ITEM_ID) { type = NavType.StringType })
+                    ) {
+                        ChecklistItemScreen(onBack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(route = AppDestinations.Root.ChecklistHistory.route) {
+                        ChecklistHistoryScreen(onBack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(route = AppDestinations.Root.ChecklistManage.route) {
+                        ChecklistManageScreen(onBack = { navController.popBack() }, onNavigate = navigate)
                     }
                     composable(route = AppDestinations.Root.DeleteData.route) {
                         DeleteDataScreen(

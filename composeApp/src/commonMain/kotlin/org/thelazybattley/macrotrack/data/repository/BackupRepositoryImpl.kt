@@ -48,7 +48,9 @@ class BackupRepositoryImpl(
             appFlags = backupDao.getAppFlags().filter { it.key !in deviceFlagKeys },
             plannedFoods = backupDao.getPlannedFoods(),
             repeatingMeals = backupDao.getRepeatingMeals(),
-            water = backupDao.getWater()
+            water = backupDao.getWater(),
+            checklistItems = backupDao.getChecklistItems(),
+            checklistEntries = backupDao.getChecklistEntries()
         )
         return json.encodeToString(serializer = BackupFile.serializer(), value = file).encodeToByteArray()
     }

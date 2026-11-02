@@ -11,6 +11,7 @@ import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 import org.thelazybattley.macrotrack.data.local.dao.AppFlagDao
 import org.thelazybattley.macrotrack.data.local.dao.BackupDao
+import org.thelazybattley.macrotrack.data.local.dao.ChecklistDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
@@ -23,6 +24,8 @@ import org.thelazybattley.macrotrack.data.local.dao.ProgressPhotoDao
 import org.thelazybattley.macrotrack.data.local.dao.WaterDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistEntryEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistItemEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
@@ -39,8 +42,8 @@ import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
 import org.thelazybattley.macrotrack.data.local.typeconverters.RoomConverters
 
 @Database(
-    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, PhotoAlbumEntity::class, ProgressPhotoEntity::class, WaterEntity::class],
-    version = 22, exportSchema = true,
+    entities = [FoodEntity::class, RecipeEntity::class, UserDetailsEntity::class, FoodLogEntity::class, WeightEntity::class, MeasurementEntity::class, DailyGoalEntity::class, FavoriteEntity::class, AppFlagEntity::class, PlannedFoodEntity::class, RepeatingMealEntity::class, PhotoAlbumEntity::class, ProgressPhotoEntity::class, WaterEntity::class, ChecklistItemEntity::class, ChecklistEntryEntity::class],
+    version = 23, exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3)
@@ -62,6 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mealPlanDao(): MealPlanDao
     abstract fun progressPhotoDao(): ProgressPhotoDao
     abstract fun waterDao(): WaterDao
+    abstract fun checklistDao(): ChecklistDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -259,6 +263,24 @@ abstract class AppDatabase : RoomDatabase() {
                         "`date` TEXT NOT NULL, `amountMl` INTEGER NOT NULL, `kind` TEXT NOT NULL, `loggedAt` INTEGER NOT NULL)"
                 )
                 connection.execSQL("CREATE INDEX IF NOT EXISTS `index_WaterEntity_date` ON `WaterEntity` (`date`)")
+            }
+        }
+
+        /** Adds the supplements and habits checklist. */
+        val MIGRATION_22_23 = object : Migration(22, 23) {
+            override fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `ChecklistItemEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`kind` TEXT NOT NULL, `name` TEXT NOT NULL, `icon` TEXT NOT NULL, `amount` REAL NOT NULL, " +
+                        "`unit` TEXT NOT NULL, `goal` TEXT NOT NULL, `goalValue` INTEGER NOT NULL, `time` TEXT NOT NULL, " +
+                        "`days` TEXT NOT NULL, `reminderMinutes` INTEGER, `stock` INTEGER, `stockWarnAt` INTEGER NOT NULL, " +
+                        "`refills` INTEGER NOT NULL, `sortOrder` INTEGER NOT NULL, `pausedOn` TEXT, `createdOn` TEXT NOT NULL)"
+                )
+                connection.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `ChecklistEntryEntity` (`itemId` INTEGER NOT NULL, `date` TEXT NOT NULL, " +
+                        "`status` TEXT NOT NULL, `count` INTEGER NOT NULL, `doneAt` INTEGER, PRIMARY KEY(`itemId`, `date`))"
+                )
+                connection.execSQL("CREATE INDEX IF NOT EXISTS `index_ChecklistEntryEntity_date` ON `ChecklistEntryEntity` (`date`)")
             }
         }
     }

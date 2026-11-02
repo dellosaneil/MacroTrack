@@ -138,6 +138,27 @@ sealed class AppDestinations {
 
         object WaterSettings : Root(route = "water_settings")
 
+        /** The supplements and habits checklist. */
+        object Checklist : Root(route = "checklist")
+
+        /** Adding a [CHECKLIST_KIND] item, filled in from [CHECKLIST_PRESET] when given, or editing [CHECKLIST_ITEM_ID]. */
+        object ChecklistForm : Root(
+            route = "checklist_form",
+            routeWithArgs = "checklist_form?$CHECKLIST_ITEM_ID={$CHECKLIST_ITEM_ID}&$CHECKLIST_KIND={$CHECKLIST_KIND}&$CHECKLIST_PRESET={$CHECKLIST_PRESET}"
+        ) {
+            fun createRoute(itemId: Long? = null, kind: String? = null, preset: String? = null): String =
+                route + queryString(CHECKLIST_ITEM_ID to itemId?.toString(), CHECKLIST_KIND to kind, CHECKLIST_PRESET to preset)
+        }
+
+        /** One item's streak, calendar and stock. */
+        object ChecklistItem : Root(route = "checklist_item", routeWithArgs = "checklist_item/{$CHECKLIST_ITEM_ID}") {
+            fun createRoute(itemId: Long): String = "$route/$itemId"
+        }
+
+        object ChecklistHistory : Root(route = "checklist_history")
+
+        object ChecklistManage : Root(route = "checklist_manage")
+
         object QuickAdd : Root(route = "quick_add", routeWithArgs = "quick_add/{$MEAL_TYPE}?$LOG_DATE={$LOG_DATE}") {
             fun createRoute(mealType: String, logDate: LocalDate? = null): String =
                 "$route/$mealType" + queryString(LOG_DATE to logDate?.toString())
@@ -274,6 +295,9 @@ sealed class AppDestinations {
         const val SIDE_BY_SIDE = "sideBySide"
         const val ADD_GLASS = "addGlass"
         const val SHARE_KIND = "shareKind"
+        const val CHECKLIST_ITEM_ID = "checklistItemId"
+        const val CHECKLIST_KIND = "checklistKind"
+        const val CHECKLIST_PRESET = "checklistPreset"
         /** Set on Repeating meals' back stack entry when Edit repeating meal asks for that one to be deleted. */
         const val DELETE_REPEATING_MEAL_ID = "deleteRepeatingMealId"
     }

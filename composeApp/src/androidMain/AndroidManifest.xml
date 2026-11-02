@@ -53,6 +53,13 @@
         <receiver
             android:name=".core.platform.WaterReminderReceiver"
             android:exported="false" />
+        <!-- Checklist reminders: shows what's due and not yet ticked at each reminder time, and their buttons. -->
+        <receiver
+            android:name=".core.platform.ChecklistReminderReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".core.platform.ChecklistActionReceiver"
+            android:exported="false" />
         <!-- The buttons on a missed-log reminder that don't open the app. -->
         <receiver
             android:name=".core.platform.LogReminderActionReceiver"

@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.data.local.dao.DailyGoalDao
 import org.thelazybattley.macrotrack.data.local.dao.FavoriteDao
+import org.thelazybattley.macrotrack.data.local.dao.ChecklistDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodDao
 import org.thelazybattley.macrotrack.data.local.dao.FoodLogDao
 import org.thelazybattley.macrotrack.data.local.dao.MealPlanDao
@@ -15,6 +16,8 @@ import org.thelazybattley.macrotrack.data.local.dao.WaterDao
 import org.thelazybattley.macrotrack.data.local.dao.WeightDao
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistEntryEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistItemEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodLogEntity
 import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
@@ -76,6 +79,20 @@ class TourWaterDao(private val db: TourDatabaseSwitch) : WaterDao {
     override suspend fun insertWater(water: WaterEntity): Long = db.run { it.waterDao().insertWater(water = water) }
     override suspend fun deleteWater(id: Long) = db.run { it.waterDao().deleteWater(id = id) }
     override fun getWaterSince(from: LocalDate): Flow<List<WaterEntity>> = db.flow { it.waterDao().getWaterSince(from = from) }
+}
+
+class TourChecklistDao(private val db: TourDatabaseSwitch) : ChecklistDao {
+    override fun getItems(): Flow<List<ChecklistItemEntity>> = db.flow { it.checklistDao().getItems() }
+    override suspend fun getItem(id: Long): ChecklistItemEntity? = db.run { it.checklistDao().getItem(id = id) }
+    override suspend fun insertItem(item: ChecklistItemEntity): Long = db.run { it.checklistDao().insertItem(item = item) }
+    override suspend fun updateItems(items: List<ChecklistItemEntity>) = db.run { it.checklistDao().updateItems(items = items) }
+    override suspend fun deleteItem(id: Long) = db.run { it.checklistDao().deleteItem(id = id) }
+    override fun getEntries(): Flow<List<ChecklistEntryEntity>> = db.flow { it.checklistDao().getEntries() }
+    override suspend fun getEntry(itemId: Long, date: LocalDate): ChecklistEntryEntity? =
+        db.run { it.checklistDao().getEntry(itemId = itemId, date = date) }
+    override suspend fun insertEntry(entry: ChecklistEntryEntity) = db.run { it.checklistDao().insertEntry(entry = entry) }
+    override suspend fun deleteEntry(itemId: Long, date: LocalDate) = db.run { it.checklistDao().deleteEntry(itemId = itemId, date = date) }
+    override suspend fun deleteEntriesOf(itemId: Long) = db.run { it.checklistDao().deleteEntriesOf(itemId = itemId) }
 }
 
 class TourMeasurementDao(private val db: TourDatabaseSwitch) : MeasurementDao {

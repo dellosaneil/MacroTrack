@@ -19,6 +19,8 @@ import org.thelazybattley.macrotrack.core.platform.PhotoReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.PhotoStorage
 import org.thelazybattley.macrotrack.core.platform.AndroidWaterReminderScheduler
 import org.thelazybattley.macrotrack.core.platform.WaterReminderScheduler
+import org.thelazybattley.macrotrack.core.platform.AndroidChecklistReminderScheduler
+import org.thelazybattley.macrotrack.core.platform.ChecklistReminderScheduler
 import org.thelazybattley.macrotrack.core.telemetry.FirebaseTelemetry
 import org.thelazybattley.macrotrack.core.telemetry.Telemetry
 import org.thelazybattley.macrotrack.data.local.AppDatabase
@@ -38,6 +40,7 @@ actual val platformModule: Module = module {
     single<PhotoReminderScheduler> { AndroidPhotoReminderScheduler(context = get()) }
     single<LogReminderScheduler> { AndroidLogReminderScheduler(context = get()) }
     single<WaterReminderScheduler> { AndroidWaterReminderScheduler(context = get()) }
+    single<ChecklistReminderScheduler> { AndroidChecklistReminderScheduler(context = get()) }
     single<AppShortcutPublisher> { AndroidAppShortcutPublisher(context = get()) }
     single<HomeWidgetRefresher> { AndroidHomeWidgetRefresher(context = get()) }
 }
@@ -48,5 +51,5 @@ fun getDatabaseBuilder(context: Context): RoomDatabase.Builder<AppDatabase> {
     return Room.databaseBuilder<AppDatabase>(
         context = appContext,
         name = dbFile.absolutePath
-    ).addMigrations(AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16, AppDatabase.MIGRATION_16_17, AppDatabase.MIGRATION_17_18, AppDatabase.MIGRATION_18_19, AppDatabase.MIGRATION_19_20, AppDatabase.MIGRATION_20_21, AppDatabase.MIGRATION_21_22)
+    ).addMigrations(AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8, AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16, AppDatabase.MIGRATION_16_17, AppDatabase.MIGRATION_17_18, AppDatabase.MIGRATION_18_19, AppDatabase.MIGRATION_19_20, AppDatabase.MIGRATION_20_21, AppDatabase.MIGRATION_21_22, AppDatabase.MIGRATION_22_23)
 }

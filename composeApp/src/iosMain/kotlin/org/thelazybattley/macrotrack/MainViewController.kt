@@ -7,6 +7,7 @@ import org.thelazybattley.macrotrack.core.platform.HomeWidgetRefresher
 import org.thelazybattley.macrotrack.core.platform.IosHomeWidgetRefresher
 import org.thelazybattley.macrotrack.core.platform.NoHomeWidgets
 import org.thelazybattley.macrotrack.core.platform.WidgetBridge
+import org.thelazybattley.macrotrack.core.platform.deliverPendingChecklistActions
 import org.thelazybattley.macrotrack.core.platform.deliverPendingRoute
 import org.thelazybattley.macrotrack.core.telemetry.BridgedTelemetry
 import org.thelazybattley.macrotrack.core.telemetry.FirebaseBridge
@@ -33,6 +34,7 @@ fun MainViewController(firebase: FirebaseBridge?, widgets: WidgetBridge?) = Comp
             )
         )
         deliverPendingRoute()
+        deliverPendingChecklistActions()
         // An uncaught Kotlin exception ends the app as a bare native crash, so send its Kotlin stack trace first.
         setUnhandledExceptionHook { throwable ->
             telemetry.recordException(throwable = throwable)

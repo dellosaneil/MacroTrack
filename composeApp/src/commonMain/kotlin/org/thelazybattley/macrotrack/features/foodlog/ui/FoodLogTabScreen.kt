@@ -108,6 +108,7 @@ import org.thelazybattley.macrotrack.features.pro.ui.ProTrialBanner
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.checkin.ui.WeekBalanceTile
 import org.thelazybattley.macrotrack.features.water.ui.WaterTile
+import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistTile
 import org.thelazybattley.macrotrack.features.tour.TourTarget
 import org.thelazybattley.macrotrack.features.tour.tourTarget
 import org.thelazybattley.macrotrack.ui.common.CommonSwipeToDelete
@@ -167,7 +168,8 @@ fun FoodLogTabScreen(
         onRepeat = { mealType ->
             onNavigate(AppDestinations.Root.RepeatMeal.createRoute(sourceDate = viewState.selectedDate, mealType = mealType.name))
         },
-        onOpenWater = { onNavigate(AppDestinations.Root.Water.route) }
+        onOpenWater = { onNavigate(AppDestinations.Root.Water.route) },
+        onOpenChecklist = { onNavigate(AppDestinations.Root.Checklist.route) }
     )
 }
 
@@ -186,7 +188,8 @@ private fun FoodLogTabScreen(
     onOpenPlan: () -> Unit,
     /** Sets up repeating [MealType] from the selected day. */
     onRepeat: (MealType) -> Unit,
-    onOpenWater: () -> Unit
+    onOpenWater: () -> Unit,
+    onOpenChecklist: () -> Unit
 ) {
     val today = getCurrentDate()
     val isToday = viewState.selectedDate == today
@@ -262,6 +265,7 @@ private fun FoodLogTabScreen(
                         onOpen = onOpenWater
                     )
                 }
+                ChecklistTile(modifier = Modifier.fillMaxWidth(), onOpen = onOpenChecklist)
             }
             ProTrialBanner(modifier = Modifier.fillMaxWidth())
             MealsHeader(
@@ -934,7 +938,8 @@ private fun PreviewFoodLogTabScreen() {
             onCopyFrom = {},
             onOpenPlan = {},
             onRepeat = {},
-            onOpenWater = {}
+            onOpenWater = {},
+            onOpenChecklist = {}
         )
     }
 }

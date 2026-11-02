@@ -3,6 +3,8 @@ package org.thelazybattley.macrotrack.data.backup
 import kotlinx.serialization.Serializable
 import org.thelazybattley.macrotrack.data.local.dao.DatabaseSnapshot
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistEntryEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistItemEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
@@ -41,7 +43,10 @@ data class BackupFile(
     val plannedFoods: List<PlannedFoodEntity> = emptyList(),
     val repeatingMeals: List<RepeatingMealEntity> = emptyList(),
     /** Missing from backups made before water intake. */
-    val water: List<WaterEntity> = emptyList()
+    val water: List<WaterEntity> = emptyList(),
+    /** Missing from backups made before the checklist. */
+    val checklistItems: List<ChecklistItemEntity> = emptyList(),
+    val checklistEntries: List<ChecklistEntryEntity> = emptyList()
 ) {
     fun toSnapshot() = DatabaseSnapshot(
         foods = foods,
@@ -55,6 +60,8 @@ data class BackupFile(
         appFlags = appFlags,
         plannedFoods = plannedFoods,
         repeatingMeals = repeatingMeals,
-        water = water
+        water = water,
+        checklistItems = checklistItems,
+        checklistEntries = checklistEntries
     )
 }

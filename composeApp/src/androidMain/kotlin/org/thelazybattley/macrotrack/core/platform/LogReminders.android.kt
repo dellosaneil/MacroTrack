@@ -42,6 +42,7 @@ import org.thelazybattley.macrotrack.domain.usecase.reminder.ScheduleLogReminder
 import org.thelazybattley.macrotrack.domain.usecase.reminder.formatClockTime
 import org.thelazybattley.macrotrack.domain.usecase.reminder.toEpochMillis
 import org.thelazybattley.macrotrack.domain.usecase.water.ScheduleWaterRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.ScheduleChecklistRemindersUseCase
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.reminders.logReminderRoute
 
@@ -75,7 +76,7 @@ class AndroidLogReminderScheduler(private val context: Context) : LogReminderSch
 }
 
 /** Runs [block] off the main thread for as long as a broadcast may, with the app's Koin. */
-private fun BroadcastReceiver.runAsync(block: suspend (Koin) -> Unit) {
+internal fun BroadcastReceiver.runAsync(block: suspend (Koin) -> Unit) {
     val pending = goAsync()
     CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
         try {
@@ -88,7 +89,7 @@ private fun BroadcastReceiver.runAsync(block: suspend (Koin) -> Unit) {
 
 /**
  * Goes off at a reminder time: shows what's due and still not logged, then sets the next alarm. After a restart or
- * an app update, when alarms are cleared, it sets them again, photo and water reminders too; likewise once on-time reminders
+ * an app update, when alarms are cleared, it sets them again, photo, water and checklist reminders too; likewise once on-time reminders
  * are allowed, so the ones already set become exact.
  */
 class LogReminderReceiver : BroadcastReceiver() {
@@ -98,6 +99,7 @@ class LogReminderReceiver : BroadcastReceiver() {
         if (intent.action in RESCHEDULE_ACTIONS) {
             koin.get<SchedulePhotoRemindersUseCase>()()
             koin.get<ScheduleWaterRemindersUseCase>()()
+            koin.get<ScheduleChecklistRemindersUseCase>()()
         } else {
             koin.get<GetDueLogRemindersUseCase>()().forEach { LogReminderNotifications.post(context = appContext, message = it) }
         }

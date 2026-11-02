@@ -6,6 +6,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import org.thelazybattley.macrotrack.data.local.entity.AppFlagEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistEntryEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistItemEntity
 import org.thelazybattley.macrotrack.data.local.entity.DailyGoalEntity
 import org.thelazybattley.macrotrack.data.local.entity.FavoriteEntity
 import org.thelazybattley.macrotrack.data.local.entity.FoodEntity
@@ -61,6 +63,12 @@ abstract class BackupDao {
     @Query("SELECT * FROM WaterEntity")
     abstract suspend fun getWater(): List<WaterEntity>
 
+    @Query("SELECT * FROM ChecklistItemEntity")
+    abstract suspend fun getChecklistItems(): List<ChecklistItemEntity>
+
+    @Query("SELECT * FROM ChecklistEntryEntity")
+    abstract suspend fun getChecklistEntries(): List<ChecklistEntryEntity>
+
     @Query("DELETE FROM FoodEntity")
     protected abstract suspend fun deleteFoods()
 
@@ -84,6 +92,12 @@ abstract class BackupDao {
 
     @Query("DELETE FROM WaterEntity")
     protected abstract suspend fun deleteWater()
+
+    @Query("DELETE FROM ChecklistItemEntity")
+    protected abstract suspend fun deleteChecklistItems()
+
+    @Query("DELETE FROM ChecklistEntryEntity")
+    protected abstract suspend fun deleteChecklistEntries()
 
     @Query("DELETE FROM MeasurementEntity")
     protected abstract suspend fun deleteMeasurements()
@@ -133,13 +147,21 @@ abstract class BackupDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     protected abstract suspend fun insertWater(water: List<WaterEntity>)
 
-    /** The food log, with the meal plan and repeating meals that feed it, and water. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    protected abstract suspend fun insertChecklistItems(items: List<ChecklistItemEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    protected abstract suspend fun insertChecklistEntries(entries: List<ChecklistEntryEntity>)
+
+    /** The food log, with the meal plan and repeating meals that feed it, water and the checklist. */
     @Transaction
     open suspend fun deleteFoodLogsAndPlans() {
         deleteFoodLogs()
         deletePlannedFoods()
         deleteRepeatingMeals()
         deleteWater()
+        deleteChecklistItems()
+        deleteChecklistEntries()
     }
 
     /** Weigh-ins and measurements. */
@@ -181,6 +203,8 @@ abstract class BackupDao {
         deletePlannedFoods()
         deleteRepeatingMeals()
         deleteWater()
+        deleteChecklistItems()
+        deleteChecklistEntries()
         deleteAppFlagsExcept(keepKeys = deviceFlagKeys)
         insertFoods(foods = snapshot.foods)
         insertRecipes(recipes = snapshot.recipes)
@@ -193,6 +217,8 @@ abstract class BackupDao {
         insertPlannedFoods(plannedFoods = snapshot.plannedFoods)
         insertRepeatingMeals(repeatingMeals = snapshot.repeatingMeals)
         insertWater(water = snapshot.water)
+        insertChecklistItems(items = snapshot.checklistItems)
+        insertChecklistEntries(entries = snapshot.checklistEntries)
         insertAppFlags(appFlags = snapshot.appFlags.filter { it.key !in deviceFlagKeys })
     }
 }
@@ -210,5 +236,7 @@ data class DatabaseSnapshot(
     val appFlags: List<AppFlagEntity>,
     val plannedFoods: List<PlannedFoodEntity>,
     val repeatingMeals: List<RepeatingMealEntity>,
-    val water: List<WaterEntity>
+    val water: List<WaterEntity>,
+    val checklistItems: List<ChecklistItemEntity>,
+    val checklistEntries: List<ChecklistEntryEntity>
 )

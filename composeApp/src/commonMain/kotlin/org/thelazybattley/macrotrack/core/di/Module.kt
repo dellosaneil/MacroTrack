@@ -1,6 +1,29 @@
 package org.thelazybattley.macrotrack.core.di
 
 import org.thelazybattley.macrotrack.data.local.dao.WaterDao
+import org.thelazybattley.macrotrack.data.local.dao.ChecklistDao
+import org.thelazybattley.macrotrack.data.local.tour.TourChecklistDao
+import org.thelazybattley.macrotrack.data.repository.ChecklistRepositoryImpl
+import org.thelazybattley.macrotrack.domain.repository.ChecklistRepository
+import org.thelazybattley.macrotrack.domain.usecase.checklist.DeleteChecklistItemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.GetChecklistItemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.GetChecklistUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.GetDueChecklistRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.HandleChecklistReminderActionUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.RefillChecklistItemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.ReorderChecklistUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.SaveChecklistItemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.SaveChecklistSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.ScheduleChecklistRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.SetChecklistItemPausedUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.SnoozeChecklistItemUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.SyncChecklistRemindersUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checklist.UpdateChecklistDayUseCase
+import org.thelazybattley.macrotrack.features.checklist.ChecklistFormViewModel
+import org.thelazybattley.macrotrack.features.checklist.ChecklistHistoryViewModel
+import org.thelazybattley.macrotrack.features.checklist.ChecklistItemViewModel
+import org.thelazybattley.macrotrack.features.checklist.ChecklistManageViewModel
+import org.thelazybattley.macrotrack.features.checklist.ChecklistViewModel
 import org.thelazybattley.macrotrack.data.local.tour.TourWaterDao
 import org.thelazybattley.macrotrack.data.repository.WaterRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.WaterRepository
@@ -258,6 +281,7 @@ val sharedModule = module {
     single<FoodLogDao> { TourFoodLogDao(db = get()) }
     single<WeightDao> { TourWeightDao(db = get()) }
     single<WaterDao> { TourWaterDao(db = get()) }
+    single<ChecklistDao> { TourChecklistDao(db = get()) }
     single<MeasurementDao> { TourMeasurementDao(db = get()) }
     single<DailyGoalDao> { TourDailyGoalDao(db = get()) }
     single<FavoriteDao> { TourFavoriteDao(db = get()) }
@@ -298,6 +322,7 @@ val repositoryModule = module {
     singleOf(::PhotoDrafts)
     singleOf(::LogReminderRepositoryImpl) { bind<LogReminderRepository>() }
     singleOf(::WaterRepositoryImpl) { bind<WaterRepository>() }
+    singleOf(::ChecklistRepositoryImpl) { bind<ChecklistRepository>() }
     singleOf(::NotificationRouteRequest)
 }
 
@@ -406,6 +431,20 @@ val useCaseModule = module {
     factoryOf(::ScheduleWaterRemindersUseCase)
     factoryOf(::SyncWaterRemindersUseCase)
     factoryOf(::GetDueWaterReminderUseCase)
+    factoryOf(::GetChecklistUseCase)
+    factoryOf(::GetChecklistItemUseCase)
+    factoryOf(::UpdateChecklistDayUseCase)
+    factoryOf(::SaveChecklistItemUseCase)
+    factoryOf(::DeleteChecklistItemUseCase)
+    factoryOf(::SetChecklistItemPausedUseCase)
+    factoryOf(::ReorderChecklistUseCase)
+    factoryOf(::RefillChecklistItemUseCase)
+    factoryOf(::SaveChecklistSettingsUseCase)
+    factoryOf(::SnoozeChecklistItemUseCase)
+    factoryOf(::ScheduleChecklistRemindersUseCase)
+    factoryOf(::SyncChecklistRemindersUseCase)
+    factoryOf(::GetDueChecklistRemindersUseCase)
+    factoryOf(::HandleChecklistReminderActionUseCase)
     factoryOf(::GetDueLogRemindersUseCase)
     factoryOf(::GetLogReminderMessageUseCase)
     factoryOf(::SendTestLogReminderUseCase)
@@ -460,6 +499,11 @@ val viewModelModule = module {
     viewModelOf(::WidgetsViewModel)
     viewModelOf(::WaterViewModel)
     viewModelOf(::WaterSettingsViewModel)
+    viewModelOf(::ChecklistViewModel)
+    viewModelOf(::ChecklistFormViewModel)
+    viewModelOf(::ChecklistItemViewModel)
+    viewModelOf(::ChecklistHistoryViewModel)
+    viewModelOf(::ChecklistManageViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

@@ -15,6 +15,8 @@ import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistEntryEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistItemEntity
 import org.thelazybattley.macrotrack.data.local.entity.WaterEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
@@ -38,6 +40,8 @@ class BackupRepositoryTest {
         var flags = listOf<AppFlagEntity>()
         var repeatingMeals = listOf<RepeatingMealEntity>()
         var water = listOf<WaterEntity>()
+        var checklistItems = listOf<ChecklistItemEntity>()
+        var checklistEntries = listOf<ChecklistEntryEntity>()
 
         override suspend fun getFoods() = foods
         override suspend fun getRecipes() = emptyList<RecipeEntity>()
@@ -51,6 +55,8 @@ class BackupRepositoryTest {
         override suspend fun getPlannedFoods() = emptyList<PlannedFoodEntity>()
         override suspend fun getRepeatingMeals() = repeatingMeals
         override suspend fun getWater() = water
+        override suspend fun getChecklistItems() = checklistItems
+        override suspend fun getChecklistEntries() = checklistEntries
         override suspend fun deleteFoods() { foods = emptyList() }
         override suspend fun deleteRecipes() {}
         override suspend fun deleteUserDetails() {}
@@ -62,6 +68,8 @@ class BackupRepositoryTest {
         override suspend fun deletePlannedFoods() {}
         override suspend fun deleteRepeatingMeals() { repeatingMeals = emptyList() }
         override suspend fun deleteWater() { water = emptyList() }
+        override suspend fun deleteChecklistItems() { checklistItems = emptyList() }
+        override suspend fun deleteChecklistEntries() { checklistEntries = emptyList() }
         override suspend fun deleteAppFlagsExcept(keepKeys: List<String>) { flags = flags.filter { it.key in keepKeys } }
         override suspend fun insertFoods(foods: List<FoodEntity>) { this.foods += foods }
         override suspend fun insertRecipes(recipes: List<RecipeEntity>) {}
@@ -75,6 +83,8 @@ class BackupRepositoryTest {
         override suspend fun insertPlannedFoods(plannedFoods: List<PlannedFoodEntity>) {}
         override suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>) { this.repeatingMeals += repeatingMeals }
         override suspend fun insertWater(water: List<WaterEntity>) { this.water += water }
+        override suspend fun insertChecklistItems(items: List<ChecklistItemEntity>) { checklistItems += items }
+        override suspend fun insertChecklistEntries(entries: List<ChecklistEntryEntity>) { checklistEntries += entries }
     }
 
     private class FakeAppFlagDao : AppFlagDao {

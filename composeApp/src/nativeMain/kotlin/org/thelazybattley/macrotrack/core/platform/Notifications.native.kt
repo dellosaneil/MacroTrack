@@ -78,7 +78,10 @@ private class NotificationDelegate : NSObject(), UNUserNotificationCenterDelegat
         didReceiveNotificationResponse: UNNotificationResponse,
         withCompletionHandler: () -> Unit
     ) {
-        val route = didReceiveNotificationResponse.notification.request.content.userInfo[NOTIFICATION_ROUTE_KEY] as? String
+        val userInfo = didReceiveNotificationResponse.notification.request.content.userInfo
+        // A checklist reminder's buttons do their job without opening the app.
+        if (handleChecklistAction(actionIdentifier = didReceiveNotificationResponse.actionIdentifier, userInfo = userInfo, onFinished = withCompletionHandler)) return
+        val route = userInfo[NOTIFICATION_ROUTE_KEY] as? String
         if (route != null) requestRoute(route = route)
         withCompletionHandler()
     }

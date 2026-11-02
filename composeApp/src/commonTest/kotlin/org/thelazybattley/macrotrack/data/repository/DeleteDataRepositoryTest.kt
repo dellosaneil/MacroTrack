@@ -13,6 +13,8 @@ import org.thelazybattley.macrotrack.data.local.entity.MeasurementEntity
 import org.thelazybattley.macrotrack.data.local.entity.PlannedFoodEntity
 import org.thelazybattley.macrotrack.data.local.entity.RecipeEntity
 import org.thelazybattley.macrotrack.data.local.entity.RepeatingMealEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistEntryEntity
+import org.thelazybattley.macrotrack.data.local.entity.ChecklistItemEntity
 import org.thelazybattley.macrotrack.data.local.entity.WaterEntity
 import org.thelazybattley.macrotrack.data.local.entity.UserDetailsEntity
 import org.thelazybattley.macrotrack.data.local.entity.WeightEntity
@@ -43,6 +45,8 @@ class DeleteDataRepositoryTest {
         override suspend fun getPlannedFoods() = emptyList<PlannedFoodEntity>()
         override suspend fun getRepeatingMeals() = emptyList<RepeatingMealEntity>()
         override suspend fun getWater() = emptyList<WaterEntity>()
+        override suspend fun getChecklistItems() = emptyList<ChecklistItemEntity>()
+        override suspend fun getChecklistEntries() = emptyList<ChecklistEntryEntity>()
         override suspend fun deleteFoods() { cleared += "foods" }
         override suspend fun deleteRecipes() { cleared += "recipes" }
         override suspend fun deleteUserDetails() { cleared += "userDetails" }
@@ -54,6 +58,8 @@ class DeleteDataRepositoryTest {
         override suspend fun deletePlannedFoods() { cleared += "plannedFoods" }
         override suspend fun deleteRepeatingMeals() { cleared += "repeatingMeals" }
         override suspend fun deleteWater() { cleared += "water" }
+        override suspend fun deleteChecklistItems() { cleared += "checklistItems" }
+        override suspend fun deleteChecklistEntries() { cleared += "checklistEntries" }
         override suspend fun deleteAppFlagsExcept(keepKeys: List<String>) { flags = flags.filter { it.key in keepKeys } }
         override suspend fun insertFoods(foods: List<FoodEntity>) {}
         override suspend fun insertRecipes(recipes: List<RecipeEntity>) {}
@@ -67,6 +73,8 @@ class DeleteDataRepositoryTest {
         override suspend fun insertPlannedFoods(plannedFoods: List<PlannedFoodEntity>) {}
         override suspend fun insertRepeatingMeals(repeatingMeals: List<RepeatingMealEntity>) {}
         override suspend fun insertWater(water: List<WaterEntity>) {}
+        override suspend fun insertChecklistItems(items: List<ChecklistItemEntity>) {}
+        override suspend fun insertChecklistEntries(entries: List<ChecklistEntryEntity>) {}
     }
 
     /** Records that the photos were deleted, into the same list as the tables. */
@@ -100,7 +108,7 @@ class DeleteDataRepositoryTest {
         assertEquals(
             setOf(
                 "foods", "recipes", "userDetails", "foodLogs", "weights", "measurements", "dailyGoals", "favorites",
-                "plannedFoods", "repeatingMeals", "water", "photos"
+                "plannedFoods", "repeatingMeals", "water", "checklistItems", "checklistEntries", "photos"
             ),
             dao.cleared
         )
