@@ -2,6 +2,7 @@ package org.thelazybattley.macrotrack.core.telemetry
 
 import android.content.Context
 import android.os.Bundle
+import android.provider.Settings
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -10,6 +11,13 @@ class FirebaseTelemetry(context: Context) : Telemetry {
 
     private val analytics = FirebaseAnalytics.getInstance(context)
     private val crashlytics = FirebaseCrashlytics.getInstance()
+
+    // Play's pre-launch report and Firebase Test Lab run the app on robot devices; their taps are not real usage.
+    private val isTestLab = Settings.System.getString(context.contentResolver, "firebase.test.lab") == "true"
+
+    init {
+        if (isTestLab) analytics.setAnalyticsCollectionEnabled(false)
+    }
 
     override fun logEvent(name: String, params: Map<String, Any>) {
         analytics.logEvent(name, params.toBundle())
@@ -24,7 +32,7 @@ class FirebaseTelemetry(context: Context) : Telemetry {
     }
 
     override fun setCollectionEnabled(crashReports: Boolean, analytics: Boolean) {
-        this.analytics.setAnalyticsCollectionEnabled(analytics)
+        this.analytics.setAnalyticsCollectionEnabled(analytics && !isTestLab)
         crashlytics.isCrashlyticsCollectionEnabled = crashReports
     }
 
