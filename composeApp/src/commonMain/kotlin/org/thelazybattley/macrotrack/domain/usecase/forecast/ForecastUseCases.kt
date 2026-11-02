@@ -7,6 +7,12 @@ import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.CustomMilestone
+import org.thelazybattley.macrotrack.domain.model.DailyGoal
+import org.thelazybattley.macrotrack.domain.model.FoodLog
+import org.thelazybattley.macrotrack.domain.model.GoalChange
+import org.thelazybattley.macrotrack.domain.model.Weight
+import org.thelazybattley.macrotrack.domain.usecase.dailygoal.GetAllDailyGoalsUseCase
+import org.thelazybattley.macrotrack.features.profile.weighthistory.goalPhases
 import org.thelazybattley.macrotrack.domain.model.ForecastSettings
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.GoalForecast
@@ -45,6 +51,7 @@ class GetGoalForecastUseCase(
     private val getAllWeightUseCase: GetAllWeightUseCase,
     private val getAllFoodLogUseCase: GetAllFoodLogUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
+    private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase,
     private val appFlagRepository: AppFlagRepository,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
     private val calculateTDEEUseCase: CalculateTDEEUseCase
@@ -53,12 +60,13 @@ class GetGoalForecastUseCase(
         flow = combine(
             flow = getAllWeightUseCase(),
             flow2 = getAllFoodLogUseCase(),
-            flow3 = getUserDetailsUseCase()
-        ) { weights, foodLogs, userDetails -> Triple(weights, foodLogs, userDetails) },
+            flow3 = getUserDetailsUseCase(),
+            flow4 = getAllDailyGoalsUseCase()
+        ) { weights, foodLogs, userDetails, goalRecords -> ForecastInputs(weights, foodLogs, userDetails, goalRecords) },
         flow2 = appFlagRepository.getForecastSettings(),
         flow3 = appFlagRepository.getCustomMilestones(),
         flow4 = appFlagRepository.getUnitSystem()
-    ) { (weights, foodLogs, userDetails), settings, customMilestones, unitSystem ->
+    ) { (weights, foodLogs, userDetails, goalRecords), settings, customMilestones, unitSystem ->
         userDetails ?: return@combine null
         val today = getCurrentDate()
         val maintenance = userDetails.measuredMaintenance ?: calculateTDEEUseCase(
@@ -76,7 +84,11 @@ class GetGoalForecastUseCase(
             startWeight = userDetails.targetStartWeight,
             startDate = userDetails.targetSetDate,
             maintenance = maintenance,
-            basis = settings.basis
+            basis = settings.basis,
+            goalChange = goalPhases(records = goalRecords, today = today, currentGoal = userDetails.goal)
+                .takeIf { it.size > 1 }
+                ?.last()
+                ?.let { GoalChange(date = it.start, goal = it.goal) }
         )
         ForecastSnapshot(
             today = today,
@@ -86,10 +98,17 @@ class GetGoalForecastUseCase(
             settings = settings,
             unitSystem = unitSystem,
             forecast = forecast,
-            milestones = forecast?.milestones(unitSystem = unitSystem, custom = customMilestones).orEmpty()
+            milestones = forecast?.milestones(custom = customMilestones).orEmpty()
         )
     }
 }
+
+private data class ForecastInputs(
+    val weights: List<Weight>,
+    val foodLogs: List<FoodLog>,
+    val userDetails: UserDetails?,
+    val goalRecords: List<DailyGoal>
+)
 
 class SetForecastSettingsUseCase(private val repository: AppFlagRepository) {
 

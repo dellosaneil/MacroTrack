@@ -40,25 +40,29 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.forecast_add_milestone
+import macrotrack.composeapp.generated.resources.forecast_behind_by
+import macrotrack.composeapp.generated.resources.forecast_ms_behind_count
+import macrotrack.composeapp.generated.resources.forecast_ms_empty_body
+import macrotrack.composeapp.generated.resources.forecast_ms_empty_title
+import macrotrack.composeapp.generated.resources.forecast_ms_set
+import macrotrack.composeapp.generated.resources.forecast_ms_sub_by
+import macrotrack.composeapp.generated.resources.forecast_ms_sub_no_date
+import macrotrack.composeapp.generated.resources.forecast_ms_sub_reached
+import macrotrack.composeapp.generated.resources.ic_flag
+import androidx.compose.ui.text.style.TextAlign
 import macrotrack.composeapp.generated.resources.forecast_add_your_own
 import macrotrack.composeapp.generated.resources.forecast_approx
-import macrotrack.composeapp.generated.resources.forecast_behind
-import macrotrack.composeapp.generated.resources.forecast_dash
 import macrotrack.composeapp.generated.resources.forecast_delete_milestone
 import macrotrack.composeapp.generated.resources.forecast_milestones_title
 import macrotrack.composeapp.generated.resources.forecast_ms_behind_preview
 import macrotrack.composeapp.generated.resources.forecast_ms_by_optional
-import macrotrack.composeapp.generated.resources.forecast_ms_custom_sub
 import macrotrack.composeapp.generated.resources.forecast_ms_footnote
-import macrotrack.composeapp.generated.resources.forecast_ms_goal
 import macrotrack.composeapp.generated.resources.forecast_ms_name
 import macrotrack.composeapp.generated.resources.forecast_ms_name_placeholder
-import macrotrack.composeapp.generated.resources.forecast_ms_next
 import macrotrack.composeapp.generated.resources.forecast_ms_no_date
 import macrotrack.composeapp.generated.resources.forecast_ms_on_track_preview
 import macrotrack.composeapp.generated.resources.forecast_ms_over
 import macrotrack.composeapp.generated.resources.forecast_ms_reached
-import macrotrack.composeapp.generated.resources.forecast_ms_to_go
 import macrotrack.composeapp.generated.resources.forecast_ms_under
 import macrotrack.composeapp.generated.resources.forecast_ms_weight_label
 import macrotrack.composeapp.generated.resources.forecast_new_milestone
@@ -66,15 +70,9 @@ import macrotrack.composeapp.generated.resources.forecast_on_track
 import macrotrack.composeapp.generated.resources.forecast_share_card
 import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_plus
-import macrotrack.composeapp.generated.resources.ic_target
 import macrotrack.composeapp.generated.resources.ic_trash
-import macrotrack.composeapp.generated.resources.milestone_first_unit
-import macrotrack.composeapp.generated.resources.milestone_five_percent
-import macrotrack.composeapp.generated.resources.milestone_goal
 import macrotrack.composeapp.generated.resources.milestone_over
-import macrotrack.composeapp.generated.resources.milestone_ten_percent
 import macrotrack.composeapp.generated.resources.milestone_under
-import macrotrack.composeapp.generated.resources.value_unit
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -83,9 +81,7 @@ import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.core.toShortDayMonthDay
 import org.thelazybattley.macrotrack.domain.model.GoalForecast
 import org.thelazybattley.macrotrack.domain.model.Milestone
-import org.thelazybattley.macrotrack.domain.model.MilestoneKind
 import org.thelazybattley.macrotrack.domain.model.MilestoneTrack
-import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.features.forecast.GoalForecastCallbacks
 import org.thelazybattley.macrotrack.features.forecast.GoalForecastViewModel
 import org.thelazybattley.macrotrack.features.forecast.GoalForecastViewState
@@ -101,32 +97,8 @@ import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.colors
 import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 private const val WEIGHT_FIELD = "milestone_weight"
-
-/** What a milestone is called: "First kg", "Under 75 kg", "−5 kg", "Goal" or the user's own name. */
-@Composable
-internal fun Milestone.label(direction: Int): String {
-    val unitSystem = LocalUnitSystem.current
-    val unit = weightUnitLabel()
-    return when (kind) {
-        MilestoneKind.FIRST_UNIT -> stringResource(resource = Res.string.milestone_first_unit, unit)
-        MilestoneKind.ROUND_NUMBER -> stringResource(
-            resource = if (direction < 0) Res.string.milestone_under else Res.string.milestone_over,
-            stringResource(resource = Res.string.value_unit, unitSystem.weightFromKg(kg = weight).roundToInt().toString(), unit)
-        )
-        MilestoneKind.FIVE_PERCENT -> stringResource(resource = Res.string.milestone_five_percent)
-        MilestoneKind.FIVE_UNITS -> stringResource(
-            resource = Res.string.value_unit,
-            (if (direction < 0) "−" else "+") + if (unitSystem == UnitSystem.IMPERIAL) "10" else "5",
-            unit
-        )
-        MilestoneKind.TEN_PERCENT -> stringResource(resource = Res.string.milestone_ten_percent)
-        MilestoneKind.GOAL -> stringResource(resource = Res.string.milestone_goal)
-        MilestoneKind.CUSTOM -> custom?.name.orEmpty()
-    }
-}
 
 @Composable
 fun ForecastMilestonesScreen(
@@ -166,47 +138,70 @@ private fun ForecastMilestonesScreen(
         }
     ) {
         forecast ?: return@ForecastScaffold
-        val today = forecast.today
-        val next = milestones.firstOrNull { !it.isReached && it.kind != MilestoneKind.GOAL }
-        val goal = milestones.firstOrNull { it.kind == MilestoneKind.GOAL }
-        fun approx(date: LocalDate?): String? = date?.forecastDate(today = today)
-        val goalReached = approx(goal?.reachedOn)
-        val goalExpected = approx(goal?.expectedOn)
-        ForecastStatTiles(
-            stats = listOf(
-                ForecastStat(label = stringResource(resource = Res.string.forecast_ms_reached), value = milestones.count { it.isReached }.toString()),
-                ForecastStat(
-                    label = stringResource(resource = Res.string.forecast_ms_next),
-                    value = approx(next?.expectedOn)?.let { stringResource(resource = Res.string.forecast_approx, it) }
-                        ?: stringResource(resource = Res.string.forecast_dash)
-                ),
-                ForecastStat(
-                    label = stringResource(resource = Res.string.forecast_ms_goal),
-                    value = goalReached
-                        ?: goalExpected?.let { stringResource(resource = Res.string.forecast_approx, it) }
-                        ?: stringResource(resource = Res.string.forecast_dash)
+        if (milestones.isEmpty()) {
+            EmptyMilestones()
+        } else {
+            ForecastStatTiles(
+                stats = listOf(
+                    ForecastStat(label = stringResource(resource = Res.string.forecast_ms_set), value = milestones.size.toString()),
+                    ForecastStat(label = stringResource(resource = Res.string.forecast_ms_reached), value = milestones.count { it.isReached }.toString()),
+                    ForecastStat(
+                        label = stringResource(resource = Res.string.forecast_ms_behind_count),
+                        value = milestones.count { it.track == MilestoneTrack.BEHIND }.toString()
+                    )
                 )
             )
-        )
-        Column {
-            milestones.forEachIndexed { index, milestone ->
-                MilestoneRow(
-                    forecast = forecast,
-                    milestone = milestone,
-                    isFirst = index == 0,
-                    isLast = index == milestones.lastIndex,
-                    isNextReached = milestones.getOrNull(index = index + 1)?.isReached == true,
-                    onShare = { onNavigate(AppDestinations.Root.ShareCard.createRoute(kind = ShareCardKind.WEIGHT.name)) },
-                    onDelete = { milestone.custom?.let { callbacks.onDeleteMilestone(id = it.id) } }
-                )
+            Column {
+                milestones.forEachIndexed { index, milestone ->
+                    MilestoneRow(
+                        forecast = forecast,
+                        milestone = milestone,
+                        isFirst = index == 0,
+                        isLast = index == milestones.lastIndex,
+                        isNextReached = milestones.getOrNull(index = index + 1)?.isReached == true,
+                        onShare = { onNavigate(AppDestinations.Root.ShareCard.createRoute(kind = ShareCardKind.WEIGHT.name)) },
+                        onDelete = { callbacks.onDeleteMilestone(id = milestone.custom.id) }
+                    )
+                }
             }
         }
-        ForecastDashedButton(
-            text = stringResource(resource = Res.string.forecast_add_your_own),
-            icon = Res.drawable.ic_plus,
-            onClick = { showAdd = true }
-        )
+        if (milestones.isEmpty()) {
+            CommonPrimaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = Res.string.forecast_add_your_own,
+                onClick = { showAdd = true }
+            )
+        } else {
+            ForecastDashedButton(
+                text = stringResource(resource = Res.string.forecast_add_your_own),
+                icon = Res.drawable.ic_plus,
+                onClick = { showAdd = true }
+            )
+        }
         ForecastFootnote(text = stringResource(resource = Res.string.forecast_ms_footnote))
+    }
+}
+
+@Composable
+private fun EmptyMilestones() {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 40.dp, bottom = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(space = 10.dp)
+    ) {
+        Box(
+            modifier = Modifier.size(size = 88.dp).background(color = colors.warmSoft, shape = RoundedCornerShape(size = 28.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(painter = painterResource(resource = Res.drawable.ic_flag), contentDescription = null, tint = colors.warmInk, modifier = Modifier.size(size = 40.dp))
+        }
+        Text(text = stringResource(resource = Res.string.forecast_ms_empty_title), style = typography.bold24, color = colors.ink)
+        Text(
+            text = stringResource(resource = Res.string.forecast_ms_empty_body),
+            style = typography.regular13,
+            color = colors.muted,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -221,9 +216,8 @@ private fun MilestoneRow(
     onDelete: () -> Unit
 ) {
     val today = forecast.today
-    val isGoal = milestone.kind == MilestoneKind.GOAL
-    val isCustom = milestone.kind == MilestoneKind.CUSTOM
-    val name = milestone.label(direction = forecast.direction)
+    val name = milestone.custom.name
+    val isBehind = milestone.track == MilestoneTrack.BEHIND
     Row(modifier = Modifier.fillMaxWidth().height(intrinsicSize = IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(space = 12.dp)) {
         Column(modifier = Modifier.width(width = 30.dp).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
@@ -232,7 +226,7 @@ private fun MilestoneRow(
                     .height(height = 14.dp)
                     .background(color = if (isFirst) Color.Transparent else if (milestone.isReached) colors.accent else colors.line)
             )
-            MilestoneNode(milestone = milestone, isGoal = isGoal, isCustom = isCustom)
+            MilestoneNode(isReached = milestone.isReached, isBehind = isBehind)
             Box(
                 modifier = Modifier
                     .width(width = 2.dp)
@@ -247,13 +241,8 @@ private fun MilestoneRow(
                 .weight(weight = 1f)
                 .padding(top = 4.dp, bottom = 10.dp)
                 .clip(shape = shape)
-                .then(
-                    when {
-                        isGoal -> Modifier.background(color = colors.nightSoft)
-                        isCustom -> Modifier.background(color = colors.surface).border(width = 1.5.dp, color = colors.carbs, shape = shape)
-                        else -> Modifier.background(color = colors.surface).border(width = 1.dp, color = colors.line, shape = shape)
-                    }
-                )
+                .background(color = colors.surface)
+                .border(width = if (isBehind) 1.5.dp else 1.dp, color = if (isBehind) colors.carbs else colors.line, shape = shape)
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(space = 2.dp)
         ) {
@@ -262,56 +251,36 @@ private fun MilestoneRow(
                 val whenText = milestone.reachedOn?.forecastDate(today = today)
                     ?: milestone.expectedOn?.let { stringResource(resource = Res.string.forecast_approx, it.forecastDate(today = today)) }
                 if (whenText != null) {
-                    Text(
-                        text = whenText,
-                        style = typography.bold13,
-                        color = if (milestone.isReached) colors.accentInk else colors.muted
-                    )
+                    Text(text = whenText, style = typography.bold13, color = if (milestone.isReached) colors.accentInk else colors.muted)
                 }
-                if (isCustom) {
-                    Icon(
-                        painter = painterResource(resource = Res.drawable.ic_trash),
-                        contentDescription = stringResource(resource = Res.string.forecast_delete_milestone, name),
-                        tint = colors.faint,
-                        modifier = Modifier
-                            .padding(start = 6.dp)
-                            .size(size = 32.dp)
-                            .clip(shape = CircleShape)
-                            .clickable(role = Role.Button, onClick = onDelete)
-                            .padding(all = 7.dp)
-                    )
-                }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
-                val weightText = milestone.weight.oneDecimalWithUnit()
-                val byDate = milestone.custom?.byDate
-                val base = if (byDate != null) {
-                    stringResource(
-                        resource = Res.string.forecast_ms_custom_sub,
-                        stringResource(
-                            resource = if (forecast.direction < 0) Res.string.milestone_under else Res.string.milestone_over,
-                            weightText
-                        ),
-                        byDate.toShortDayMonthDay()
-                    )
-                } else {
-                    weightText
-                }
-                Text(
-                    text = if (milestone.isReached) {
-                        base
-                    } else {
-                        stringResource(
-                            resource = Res.string.forecast_ms_to_go,
-                            base,
-                            abs(forecast.trendWeight - milestone.weight).oneDecimalWithUnit()
-                        )
-                    },
-                    style = typography.regular11,
-                    color = colors.muted
+                Icon(
+                    painter = painterResource(resource = Res.drawable.ic_trash),
+                    contentDescription = stringResource(resource = Res.string.forecast_delete_milestone, name),
+                    tint = colors.faint,
+                    modifier = Modifier
+                        .padding(start = 6.dp)
+                        .size(size = 32.dp)
+                        .clip(shape = CircleShape)
+                        .clickable(role = Role.Button, onClick = onDelete)
+                        .padding(all = 7.dp)
                 )
-                milestone.track?.let { track -> TrackTag(track = track) }
             }
+            val under = stringResource(
+                resource = if (forecast.direction < 0) Res.string.milestone_under else Res.string.milestone_over,
+                milestone.weight.oneDecimalWithUnit()
+            )
+            val toGo = abs(forecast.trendWeight - milestone.weight).oneDecimalWithUnit()
+            val byDate = milestone.custom.byDate
+            Text(
+                text = when {
+                    milestone.isReached -> stringResource(resource = Res.string.forecast_ms_sub_reached, under)
+                    byDate != null -> stringResource(resource = Res.string.forecast_ms_sub_by, under, byDate.toShortDayMonthDay(), toGo)
+                    else -> stringResource(resource = Res.string.forecast_ms_sub_no_date, under, toGo)
+                },
+                style = typography.regular11,
+                color = colors.muted
+            )
+            milestone.track?.let { track -> TrackTag(track = track, behindByKg = milestone.behindByKg) }
             if (milestone.isReached) {
                 Text(
                     text = stringResource(resource = Res.string.forecast_share_card),
@@ -329,39 +298,37 @@ private fun MilestoneRow(
 }
 
 @Composable
-private fun MilestoneNode(milestone: Milestone, isGoal: Boolean, isCustom: Boolean) {
+private fun MilestoneNode(isReached: Boolean, isBehind: Boolean) {
     val modifier = Modifier.size(size = 26.dp)
-    when {
-        milestone.isReached -> Box(modifier = modifier.background(color = colors.accent, shape = CircleShape), contentAlignment = Alignment.Center) {
+    if (isReached) {
+        Box(modifier = modifier.background(color = colors.accent, shape = CircleShape), contentAlignment = Alignment.Center) {
             Icon(painter = painterResource(resource = Res.drawable.ic_check), contentDescription = null, tint = colors.onAccent, modifier = Modifier.size(size = 14.dp))
         }
-        isGoal -> Box(
-            modifier = modifier
-                .background(color = colors.nightSoft, shape = CircleShape)
-                .border(width = 2.dp, color = colors.nightInk, shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(painter = painterResource(resource = Res.drawable.ic_target), contentDescription = null, tint = colors.nightInk, modifier = Modifier.size(size = 14.dp))
-        }
-        else -> Box(
+    } else {
+        Box(
             modifier = modifier
                 .background(color = colors.surface, shape = CircleShape)
-                .border(width = 2.dp, color = if (isCustom) colors.carbs else colors.dashed, shape = CircleShape)
+                .border(width = 2.dp, color = if (isBehind) colors.carbs else colors.accent, shape = CircleShape)
         )
     }
 }
 
 @Composable
-private fun TrackTag(track: MilestoneTrack) {
+private fun TrackTag(track: MilestoneTrack, behindByKg: Double) {
     val isOnTrack = track == MilestoneTrack.ON_TRACK
     Text(
-        text = stringResource(resource = if (isOnTrack) Res.string.forecast_on_track else Res.string.forecast_behind),
+        text = if (isOnTrack) {
+            stringResource(resource = Res.string.forecast_on_track)
+        } else {
+            stringResource(resource = Res.string.forecast_behind_by, behindByKg.oneDecimalWithUnit())
+        },
         style = typography.bold11,
         color = if (isOnTrack) colors.accentInk else colors.warmInk,
         modifier = Modifier
+            .padding(top = 4.dp)
             .clip(shape = RoundedCornerShape(size = 7.dp))
             .background(color = if (isOnTrack) colors.accentSoft else colors.warmSoft)
-            .padding(horizontal = 7.dp, vertical = 1.dp)
+            .padding(horizontal = 8.dp, vertical = 2.dp)
     )
 }
 

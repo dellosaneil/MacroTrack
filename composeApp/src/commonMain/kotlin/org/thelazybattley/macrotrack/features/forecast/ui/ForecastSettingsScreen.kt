@@ -20,7 +20,19 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import macrotrack.composeapp.generated.resources.Res
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.plus
 import macrotrack.composeapp.generated.resources.forecast_basis_from_calories
+import macrotrack.composeapp.generated.resources.forecast_basis_goal_change
+import macrotrack.composeapp.generated.resources.forecast_basis_goal_change_never
+import macrotrack.composeapp.generated.resources.forecast_basis_goal_change_sub
+import macrotrack.composeapp.generated.resources.forecast_basis_goal_change_waiting
+import macrotrack.composeapp.generated.resources.forecast_for_now
+import macrotrack.composeapp.generated.resources.forecast_goal_around
+import macrotrack.composeapp.generated.resources.forecast_settings_explainer
+import org.thelazybattley.macrotrack.core.toShortDayMonthDay
+import org.thelazybattley.macrotrack.domain.model.FORECAST_GOAL_CHANGE_DAYS
+import org.thelazybattley.macrotrack.domain.model.GoalForecast
 import macrotrack.composeapp.generated.resources.forecast_basis_from_calories_sub
 import macrotrack.composeapp.generated.resources.forecast_basis_last_2_weeks
 import macrotrack.composeapp.generated.resources.forecast_basis_last_2_weeks_sub
@@ -63,17 +75,26 @@ private fun ForecastSettingsScreen(
     ForecastScaffold(title = Res.string.forecast_settings_title, onBack = onBack) {
         val snapshot = viewState.snapshot ?: return@ForecastScaffold
         val forecast = snapshot.forecast ?: return@ForecastScaffold
-        ForecastSectionLabel(text = stringResource(resource = Res.string.forecast_work_out_pace_from))
+        Column(verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+            ForecastSectionLabel(text = stringResource(resource = Res.string.forecast_work_out_pace_from))
+            Text(
+                text = stringResource(resource = Res.string.forecast_settings_explainer, forecast.targetWeight.oneDecimalWithUnit()),
+                style = typography.regular11,
+                color = colors.muted
+            )
+        }
         Column(modifier = Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
             ForecastBasis.entries.forEach { basis ->
                 val (title, description) = when (basis) {
                     ForecastBasis.LAST_2_WEEKS -> Res.string.forecast_basis_last_2_weeks to stringResource(resource = Res.string.forecast_basis_last_2_weeks_sub)
                     ForecastBasis.LAST_4_WEEKS -> Res.string.forecast_basis_last_4_weeks to stringResource(resource = Res.string.forecast_basis_last_4_weeks_sub)
+                    ForecastBasis.SINCE_GOAL_CHANGE -> Res.string.forecast_basis_goal_change to goalChangeDescription(forecast = forecast)
                     ForecastBasis.SINCE_START -> Res.string.forecast_basis_since_start to stringResource(resource = Res.string.forecast_basis_since_start_sub)
                     ForecastBasis.FROM_CALORIES -> Res.string.forecast_basis_from_calories to
                         stringResource(resource = Res.string.forecast_basis_from_calories_sub, snapshot.maintenance.withThousands())
                 }
                 val pace = forecast.paceByBasis[basis]
+                val isWaiting = basis == ForecastBasis.SINCE_GOAL_CHANGE && !forecast.isGoalChangeReady
                 val isSelected = forecast.basis == basis
                 val shape = RoundedCornerShape(size = 14.dp)
                 Row(
@@ -91,7 +112,9 @@ private fun ForecastSettingsScreen(
                     Column(modifier = Modifier.weight(weight = 1f)) {
                         Text(text = stringResource(resource = title), style = typography.bold14, color = if (pace != null) colors.ink else colors.faint)
                         Text(
-                            text = if (pace != null) {
+                            text = if (pace != null && isWaiting) {
+                                description
+                            } else if (pace != null) {
                                 stringResource(
                                     resource = Res.string.forecast_basis_pace_sub,
                                     description,
@@ -105,11 +128,19 @@ private fun ForecastSettingsScreen(
                             color = colors.muted
                         )
                     }
-                    Text(
-                        text = forecast.dateFor(basis = basis)?.forecastDate(today = forecast.today) ?: stringResource(resource = Res.string.forecast_dash),
-                        style = typography.bold13,
-                        color = colors.muted
-                    )
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = stringResource(resource = if (isWaiting) Res.string.forecast_for_now else Res.string.forecast_goal_around),
+                            style = typography.regular10,
+                            color = colors.faint
+                        )
+                        Text(
+                            text = forecast.dateFor(basis = basis)?.forecastDate(today = forecast.today)
+                                ?: stringResource(resource = Res.string.forecast_dash),
+                            style = typography.bold13,
+                            color = colors.ink
+                        )
+                    }
                 }
             }
         }
@@ -128,5 +159,22 @@ private fun ForecastSettingsScreen(
                 onToggle = callbacks::onRangeShownToggle
             )
         }
+    }
+}
+
+/** Since your goal changed: when, and whether it has the two weeks it needs yet. */
+@Composable
+private fun goalChangeDescription(forecast: GoalForecast): String {
+    val change = forecast.goalChange ?: return stringResource(resource = Res.string.forecast_basis_goal_change_never)
+    val goal = stringResource(resource = change.goal.title)
+    return if (forecast.isGoalChangeReady) {
+        stringResource(resource = Res.string.forecast_basis_goal_change_sub, goal, change.date.toShortDayMonthDay())
+    } else {
+        stringResource(
+            resource = Res.string.forecast_basis_goal_change_waiting,
+            goal,
+            change.date.toShortDayMonthDay(),
+            change.date.plus(period = DatePeriod(days = FORECAST_GOAL_CHANGE_DAYS)).toShortDayMonthDay()
+        )
     }
 }

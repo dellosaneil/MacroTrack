@@ -5,6 +5,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -30,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
@@ -313,43 +315,35 @@ internal fun ForecastRadioDot(isSelected: Boolean) {
     )
 }
 
-/** Start to goal, with a dot where today's trend weight sits. */
+/** Start to goal, with a dot where today's trend weight sits at the end of the fill. */
 @Composable
 internal fun ForecastProgressBar(progress: Float, start: String, now: String, goal: String) {
+    val fraction = progress.coerceIn(0f, 1f)
     Column(verticalArrangement = Arrangement.spacedBy(space = 6.dp)) {
-        Layout(
-            modifier = Modifier.fillMaxWidth().height(height = 18.dp),
-            content = {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth().height(height = 18.dp), contentAlignment = Alignment.CenterStart) {
+            val dotSize = 18.dp
+            val trackWidth = maxWidth
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(height = 10.dp)
+                    .clip(shape = CircleShape)
+                    .background(color = colors.heroTrack)
+            ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(height = 10.dp)
-                        .clip(shape = CircleShape)
-                        .background(color = colors.heroTrack)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(fraction = progress)
-                            .height(height = 10.dp)
-                            .background(color = colors.accent, shape = CircleShape)
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(size = 18.dp)
-                        .background(color = colors.surface, shape = CircleShape)
-                        .border(width = 4.dp, color = colors.accent, shape = CircleShape)
+                        .width(width = trackWidth * fraction)
+                        .fillMaxHeight()
+                        .background(color = colors.accent, shape = CircleShape)
                 )
             }
-        ) { measurables, constraints ->
-            val track = measurables[0].measure(constraints = constraints)
-            val dot = measurables[1].measure(constraints = constraints.copy(minWidth = 0))
-            layout(width = constraints.maxWidth, height = dot.height) {
-                track.place(x = 0, y = (dot.height - track.height) / 2)
-                val x = (constraints.maxWidth * progress - dot.width / 2f).roundToInt()
-                    .coerceIn(0, constraints.maxWidth - dot.width)
-                dot.place(x = x, y = 0)
-            }
+            Box(
+                modifier = Modifier
+                    .offset(x = (trackWidth * fraction - dotSize / 2).coerceIn(0.dp, trackWidth - dotSize))
+                    .size(size = dotSize)
+                    .background(color = colors.surface, shape = CircleShape)
+                    .border(width = 4.dp, color = colors.accent, shape = CircleShape)
+            )
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(text = start, style = typography.medium11, color = colors.muted)

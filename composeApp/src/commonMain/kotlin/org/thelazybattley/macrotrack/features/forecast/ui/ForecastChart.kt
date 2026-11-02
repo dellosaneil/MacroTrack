@@ -2,7 +2,10 @@ package org.thelazybattley.macrotrack.features.forecast.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
@@ -37,14 +40,39 @@ private const val MIN_AHEAD_DAYS = 30
 private const val BAND_STEP_DAYS = 4
 private val niceSteps = listOf(0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0)
 
+/** The days the chart spans, as epoch days: from the start to a little past the forecast date. */
+internal fun GoalForecast.chartDays(): LongRange {
+    val status = status as? ForecastStatus.OnTheWay
+    val todayDay = today.toEpochDays()
+    val endDay = if (status != null) {
+        min(todayDay + MAX_AHEAD_DAYS, max(status.date.toEpochDays(), todayDay + MIN_AHEAD_DAYS) + 10)
+    } else {
+        todayDay + 7
+    }
+    return startDate.toEpochDays()..max(endDay, startDate.toEpochDays() + 1)
+}
+
+/** Where [day] sits across the chart's plot, from 0 at the left axis to 1 at the right edge. */
+internal fun GoalForecast.chartFraction(day: Long): Float {
+    val days = chartDays()
+    return ((day - days.first).toFloat() / (days.last - days.first)).coerceIn(0f, 1f)
+}
+
+internal val CHART_LEFT = 30.dp
+internal val CHART_RIGHT = 4.dp
+
 /**
- * Weigh-ins as faint dots under the trend line, then, while on the way, a dotted projection to the goal inside the
- * likely range. The goal is a dashed line.
+ * Weigh-ins as faint dots under the trend line, then, while on the way, a dotted projection to the goal, inside the
+ * likely range when [showBand]. The goal is a dashed line. Tapping or dragging picks a day up to [lastSelectable]:
+ * [selected] gets a line and a dot.
  */
 @Composable
 internal fun ForecastChart(
     modifier: Modifier = Modifier,
     forecast: GoalForecast,
+    showBand: Boolean,
+    selected: LocalDate?,
+    onSelect: (LocalDate) -> Unit,
     contentDescription: String
 ) {
     val unitSystem = LocalUnitSystem.current
@@ -60,17 +88,18 @@ internal fun ForecastChart(
     val dotColor = colors.faint
     val todayColor = colors.dashed
     val surface = colors.surface
+    val selectionColor = colors.ink.copy(alpha = 0.5f)
+    val futureColor = colors.nightInk
     val goalLabel = stringResource(resource = Res.string.forecast_chart_goal, forecast.targetWeight.oneDecimalWithUnit())
     val todayLabel = stringResource(resource = Res.string.forecast_chart_today)
 
     val status = forecast.status as? ForecastStatus.OnTheWay
-    val startDay = forecast.startDate.toEpochDays()
+    val chartDays = forecast.chartDays()
+    val startDay = chartDays.first
     val todayDay = forecast.today.toEpochDays()
-    val endDay = if (status != null) {
-        min(todayDay + MAX_AHEAD_DAYS, max(status.date.toEpochDays(), todayDay + MIN_AHEAD_DAYS) + 10)
-    } else {
-        todayDay + 7
-    }
+    val endDay = chartDays.last
+    // Without a forecast there's nothing to show after today.
+    val lastSelectable = if (status != null) endDay else todayDay
     val spanDays = max(1L, endDay - startDay).toFloat()
     fun shown(kg: Double) = unitSystem.weightFromKg(kg = kg)
     val values = forecast.weights.map { shown(it.weight) } + forecast.trend.map { shown(it.weight) } + shown(forecast.targetWeight)
@@ -85,11 +114,33 @@ internal fun ForecastChart(
         return if (forecast.direction < 0) max(forecast.targetWeight, value) else min(forecast.targetWeight, value)
     }
 
-    Canvas(modifier = modifier.semantics { this.contentDescription = contentDescription }) {
-        val left = 30.dp.toPx()
+    fun dayAt(x: Float, width: Float, density: Float): LocalDate {
+        val left = CHART_LEFT.value * density
+        val right = width - CHART_RIGHT.value * density
+        val day = startDay + ((x - left) / (right - left) * spanDays).roundToInt()
+        return LocalDate.fromEpochDays(day.coerceIn(startDay, lastSelectable))
+    }
+
+    Canvas(
+        modifier = modifier
+            .semantics { this.contentDescription = contentDescription }
+            .pointerInput(forecast) {
+                detectTapGestures(onTap = { onSelect(dayAt(x = it.x, width = size.width.toFloat(), density = density)) })
+            }
+            .pointerInput(forecast) {
+                detectHorizontalDragGestures(
+                    onDragStart = { onSelect(dayAt(x = it.x, width = size.width.toFloat(), density = density)) },
+                    onHorizontalDrag = { change, _ ->
+                        change.consume()
+                        onSelect(dayAt(x = change.position.x, width = size.width.toFloat(), density = density))
+                    }
+                )
+            }
+    ) {
+        val left = CHART_LEFT.toPx()
         val top = 14.dp.toPx()
         val bottom = size.height - 18.dp.toPx()
-        val right = size.width - 4.dp.toPx()
+        val right = size.width - CHART_RIGHT.toPx()
         fun x(day: Long) = left + (day - startDay) / spanDays * (right - left)
         fun y(value: Double) = (top + (high - value) / (high - low) * (bottom - top)).toFloat()
 
@@ -99,7 +150,7 @@ internal fun ForecastChart(
             drawText(textLayoutResult = label, topLeft = Offset(0f, y(value) - label.size.height / 2f))
         }
 
-        if (status != null) {
+        if (status != null && showBand) {
             val band = Path()
             val days = (todayDay..endDay step BAND_STEP_DAYS.toLong()).toList() + endDay
             days.forEachIndexed { index, day ->
@@ -181,6 +232,19 @@ internal fun ForecastChart(
             if (day - startDay < 4 || endDay - day < 6) return@forEach
             val label = textMeasurer.measure(text = date.month.shortName(), style = monthStyle)
             drawText(textLayoutResult = label, topLeft = Offset(x(day) - label.size.width / 2f, size.height - label.size.height))
+        }
+
+        if (selected != null) {
+            val day = selected.toEpochDays().coerceIn(startDay, lastSelectable)
+            val isPast = day <= todayDay
+            val value = if (isPast) forecast.trendOn(date = selected) else forecast.projectedOn(date = selected)
+            val selectedX = x(day)
+            drawLine(color = selectionColor, start = Offset(selectedX, top - 4.dp.toPx()), end = Offset(selectedX, bottom), strokeWidth = 1.2.dp.toPx())
+            if (value != null) {
+                val point = Offset(selectedX, y(shown(value)))
+                drawCircle(color = surface, radius = 8.5.dp.toPx(), center = point)
+                drawCircle(color = if (isPast) lineColor else futureColor, radius = 6.dp.toPx(), center = point)
+            }
         }
     }
 }

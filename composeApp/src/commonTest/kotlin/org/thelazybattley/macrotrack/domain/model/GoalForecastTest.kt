@@ -134,33 +134,62 @@ class GoalForecastTest {
     }
 
     @Test
-    fun milestonesRunFromStartToGoalWithoutNearDuplicates() {
-        val weights = steady(days = 60, start = 80.0, perDay = -0.1)
-        val result = assertNotNull(forecast(weights = weights))
-        val milestones = result.milestones(unitSystem = UnitSystem.METRIC, custom = emptyList())
-        assertEquals(
-            listOf(MilestoneKind.FIRST_UNIT, MilestoneKind.FIVE_PERCENT, MilestoneKind.FIVE_UNITS, MilestoneKind.TEN_PERCENT, MilestoneKind.GOAL),
-            milestones.map { it.kind }
+    fun milestonesAreOnlyTheUsersOwnInTheOrderTheyCome() {
+        val result = assertNotNull(forecast(weights = steady(days = 60, start = 80.0, perDay = -0.1)))
+        assertTrue(result.milestones(custom = emptyList()).isEmpty())
+        val custom = listOf(
+            CustomMilestone(id = 1, name = "Later", weight = 71.0),
+            CustomMilestone(id = 2, name = "Done", weight = 78.0),
+            CustomMilestone(id = 3, name = "Next", weight = 73.0)
         )
+        val milestones = result.milestones(custom = custom)
+        assertEquals(listOf("Done", "Next", "Later"), milestones.map { it.custom.name })
         assertTrue(milestones.first().isReached)
         assertNull(milestones.last().reachedOn)
         assertNotNull(milestones.last().expectedOn)
-        milestones.zipWithNext().forEach { (a, b) -> assertTrue(abs(a.weight - b.weight) >= 0.3) }
+        assertNull(milestones.last().track)
     }
 
     @Test
-    fun customMilestoneShowsWhetherItIsOnTrack() {
+    fun datedMilestoneIsOnTrackOrBehindByHowMuch() {
         val result = assertNotNull(forecast(weights = steady(days = 60, start = 80.0, perDay = -0.1)))
         val soon = today.plus(period = DatePeriod(days = 14))
         val custom = listOf(
             CustomMilestone(id = 1, name = "Easy", weight = 73.5, byDate = soon),
             CustomMilestone(id = 2, name = "Hard", weight = 71.0, byDate = soon)
         )
-        val tracks = result.milestones(unitSystem = UnitSystem.METRIC, custom = custom)
-            .filter { it.kind == MilestoneKind.CUSTOM }
-            .associate { it.custom!!.name to it.track }
-        assertEquals(MilestoneTrack.ON_TRACK, tracks["Easy"])
-        assertEquals(MilestoneTrack.BEHIND, tracks["Hard"])
+        val byName = result.milestones(custom = custom).associateBy { it.custom.name }
+        assertEquals(MilestoneTrack.ON_TRACK, byName.getValue("Easy").track)
+        val hard = byName.getValue("Hard")
+        assertEquals(MilestoneTrack.BEHIND, hard.track)
+        assertEquals(result.projectedOn(date = soon)!! - 71.0, hard.behindByKg, absoluteTolerance = 1e-9)
+    }
+
+    @Test
+    fun sinceGoalChangeUsesTheLastFourWeeksUntilTwoWeeksHavePassed() {
+        val weights = steady(days = 60, start = 80.0, perDay = -0.1)
+        val recent = goalForecast(
+            today = today, weights = weights, foodLogs = emptyList(), targetWeight = 70.0, startWeight = 80.0,
+            startDate = weights.first().date, maintenance = 2650, basis = ForecastBasis.SINCE_GOAL_CHANGE,
+            goalChange = GoalChange(date = day(daysAgo = 5), goal = Goal.LOSE_WEIGHT)
+        )!!
+        assertFalse(recent.isGoalChangeReady)
+        assertEquals(recent.paceByBasis[ForecastBasis.LAST_4_WEEKS], recent.pace)
+        val settled = goalForecast(
+            today = today, weights = weights, foodLogs = emptyList(), targetWeight = 70.0, startWeight = 80.0,
+            startDate = weights.first().date, maintenance = 2650, basis = ForecastBasis.SINCE_GOAL_CHANGE,
+            goalChange = GoalChange(date = day(daysAgo = 20), goal = Goal.LOSE_WEIGHT)
+        )!!
+        assertTrue(settled.isGoalChangeReady)
+        assertEquals(ForecastBasis.SINCE_GOAL_CHANGE, settled.basis)
+        assertEquals(-0.7, settled.pace!!, absoluteTolerance = 0.001)
+    }
+
+    @Test
+    fun neverChangedGoalFallsBackToAnotherBasis() {
+        val result = assertNotNull(forecast(weights = steady(days = 60, start = 80.0, perDay = -0.1), basis = ForecastBasis.SINCE_GOAL_CHANGE))
+        assertNull(result.paceByBasis[ForecastBasis.SINCE_GOAL_CHANGE])
+        assertEquals(ForecastBasis.LAST_4_WEEKS, result.basis)
     }
 
     @Test

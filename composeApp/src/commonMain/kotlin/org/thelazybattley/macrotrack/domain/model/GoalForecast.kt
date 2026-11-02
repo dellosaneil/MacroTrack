@@ -51,13 +51,16 @@ private const val MIN_KG_PER_WEEK = 0.01
 /** Further out than this the forecast stops giving a date. */
 private const val MAX_FORECAST_DAYS = 365 * 5
 
-/** Milestones closer than this to one already listed are left out. */
-private const val MILESTONE_GAP_KG = 0.3
+/** Since your goal changed needs this many days of weigh-ins after the change; until then it uses the last 4 weeks. */
+const val FORECAST_GOAL_CHANGE_DAYS = 14
 
 /** What the pace toward the goal is worked out from. */
 enum class ForecastBasis(val days: Int?) {
     LAST_2_WEEKS(days = 14),
     LAST_4_WEEKS(days = 28),
+
+    /** Since the goal last changed between deficit, maintain and surplus. */
+    SINCE_GOAL_CHANGE(days = null),
     SINCE_START(days = null),
 
     /** Calories eaten against maintenance, at 7,700 kcal a kg. */
@@ -124,8 +127,25 @@ data class GoalForecast(
     /** The trend weight since the start, for the chart. */
     val trend: List<Weight>,
     /** The weigh-ins since the start, for the chart. */
-    val weights: List<Weight>
+    val weights: List<Weight>,
+    /** When the goal last changed between deficit, maintain and surplus, and to what; null when it never has. */
+    val goalChange: GoalChange? = null
 ) {
+    /** Since your goal changed has [FORECAST_GOAL_CHANGE_DAYS] days to go on; until then it uses the last 4 weeks. */
+    val isGoalChangeReady: Boolean
+        get() = goalChange != null && today.toEpochDays() - goalChange.date.toEpochDays() >= FORECAST_GOAL_CHANGE_DAYS
+
+    /** The trend weight on [date]: the moving average there, or the last one before it. */
+    fun trendOn(date: LocalDate): Double? = trend.lastOrNull { it.date <= date }?.weight
+
+    /** The forecast at [basis]'s pace [multiplier] times over, never past the goal. */
+    fun projectedOn(date: LocalDate, multiplier: Double): Double? {
+        val pace = pace ?: return null
+        val days = date.toEpochDays() - today.toEpochDays()
+        val projected = trendWeight + pace * multiplier * days / DAYS_PER_WEEK
+        return if (direction < 0) max(targetWeight, projected) else min(targetWeight, projected)
+    }
+
     /** Signed kg a week by [basis]. */
     val pace: Double? get() = paceByBasis[basis]
 
@@ -150,12 +170,7 @@ data class GoalForecast(
     val safeKgPerWeek: Double get() = trendWeight * FORECAST_SAFE_WEEKLY_SHARE
 
     /** The trend weight expected on [date] at [basis]'s pace, never past the goal. */
-    fun projectedOn(date: LocalDate): Double? {
-        val pace = pace ?: return null
-        val days = date.toEpochDays() - today.toEpochDays()
-        val projected = trendWeight + pace * days / DAYS_PER_WEEK
-        return if (direction < 0) max(targetWeight, projected) else min(targetWeight, projected)
-    }
+    fun projectedOn(date: LocalDate): Double? = projectedOn(date = date, multiplier = 1.0)
 
     internal fun dateFor(remaining: Double, kgPerWeekToward: Double): LocalDate? {
         if (kgPerWeekToward < MIN_KG_PER_WEEK) return null
@@ -177,7 +192,8 @@ fun goalForecast(
     startWeight: Double?,
     startDate: LocalDate?,
     maintenance: Int,
-    basis: ForecastBasis
+    basis: ForecastBasis,
+    goalChange: GoalChange? = null
 ): GoalForecast? {
     targetWeight ?: return null
     val sorted = weights.filter { it.date <= today }.sortedBy { it.date }
@@ -192,12 +208,24 @@ fun goalForecast(
         when (entry) {
             ForecastBasis.LAST_2_WEEKS, ForecastBasis.LAST_4_WEEKS ->
                 weeklySlope(weights = sorted, from = today.minus(period = DatePeriod(days = entry.days!!)), minSpanDays = entry.days / 2)
+            ForecastBasis.SINCE_GOAL_CHANGE -> null
             ForecastBasis.SINCE_START -> weeklySlope(weights = sorted, from = start, minSpanDays = DAYS_PER_WEEK)
             ForecastBasis.FROM_CALORIES -> caloriePace(today = today, foodLogs = foodLogs, maintenance = maintenance)
         }
     }
+    val isGoalChangeReady = goalChange != null &&
+        today.toEpochDays() - goalChange.date.toEpochDays() >= FORECAST_GOAL_CHANGE_DAYS
+    // Until there are two weeks since the change, this option shows the last 4 weeks.
+    val sinceGoalChange = goalChange?.let {
+        if (isGoalChangeReady) {
+            weeklySlope(weights = sorted, from = it.date, minSpanDays = FORECAST_GOAL_CHANGE_DAYS / 2)
+        } else {
+            paceByBasis[ForecastBasis.LAST_4_WEEKS]
+        }
+    }
+    val paces = paceByBasis + (ForecastBasis.SINCE_GOAL_CHANGE to sinceGoalChange)
     val effectiveBasis = sequenceOf(basis, ForecastBasis.LAST_4_WEEKS, ForecastBasis.SINCE_START, ForecastBasis.LAST_2_WEEKS)
-        .firstOrNull { paceByBasis[it] != null } ?: basis
+        .firstOrNull { paces[it] != null } ?: basis
 
     val base = GoalForecast(
         today = today,
@@ -208,22 +236,23 @@ fun goalForecast(
         direction = direction,
         weighIns = sorted.size,
         maintenance = maintenance,
-        paceByBasis = paceByBasis,
+        paceByBasis = paces,
         basis = effectiveBasis,
         status = ForecastStatus.WrongWay,
         trend = movingAverage.filter { it.date >= start }.ifEmpty { listOf(movingAverage.last()) },
-        weights = sorted.filter { it.date >= start }
+        weights = sorted.filter { it.date >= start },
+        goalChange = goalChange
     )
     val status = when {
         (targetWeight - trendWeight) * direction <= 0 -> ForecastStatus.Reached(
             date = movingAverage.firstOrNull { it.date >= start && (targetWeight - it.weight) * direction <= 0 }?.date ?: today
         )
         sorted.size < FORECAST_MIN_WEIGH_INS -> ForecastStatus.Collecting(
-            roughDate = paceByBasis[ForecastBasis.FROM_CALORIES]?.let { base.dateAt(kgPerWeekToward = it * direction) }
+            roughDate = paces[ForecastBasis.FROM_CALORIES]?.let { base.dateAt(kgPerWeekToward = it * direction) }
         )
         isFlat(weights = sorted, movingAverage = movingAverage, today = today) -> ForecastStatus.Flat
         else -> {
-            val toward = (paceByBasis[effectiveBasis] ?: 0.0) * direction
+            val toward = (paces[effectiveBasis] ?: 0.0) * direction
             val date = base.dateAt(kgPerWeekToward = toward)
             if (date == null) {
                 ForecastStatus.WrongWay
@@ -351,74 +380,34 @@ fun GoalForecast.deadlinePlan(date: LocalDate): DeadlinePlan {
     )
 }
 
-enum class MilestoneKind {
-    /** The first kg or lb. */
-    FIRST_UNIT,
+/** When the goal last changed between deficit, maintain and surplus, and what it changed to. */
+data class GoalChange(val date: LocalDate, val goal: Goal)
 
-    /** A multiple of 5 in the user's unit, like "Under 75 kg". */
-    ROUND_NUMBER,
-    FIVE_PERCENT,
-
-    /** 5 kg or 10 lb from the start. */
-    FIVE_UNITS,
-    TEN_PERCENT,
-    GOAL,
-    CUSTOM
-}
-
-/** On track means the trend reaches a custom milestone's weight by its date. */
+/** A dated milestone is on track when the trend gets under its weight by its date. */
 enum class MilestoneTrack { ON_TRACK, BEHIND }
 
+/** A milestone the user added, with where the trend stands against it. */
 data class Milestone(
-    val kind: MilestoneKind,
-    /** In kg. */
-    val weight: Double,
+    val custom: CustomMilestone,
     val reachedOn: LocalDate?,
     /** When the trend gets there; null once reached or with no date to give. */
     val expectedOn: LocalDate?,
-    val custom: CustomMilestone? = null,
-    val track: MilestoneTrack? = null
+    /** Only for milestones with a date that aren't reached yet. */
+    val track: MilestoneTrack? = null,
+    /** How far the forecast for its date misses its weight, in kg, when [track] is behind. */
+    val behindByKg: Double = 0.0
 ) {
+    val weight: Double get() = custom.weight
+
     val isReached: Boolean get() = reachedOn != null
 }
 
-/**
- * Milestones from the start to the goal, in the order they come: the first unit, round numbers, 5% and 10% of the
- * start weight, 5 units, the goal, and the user's own. Ones too close to another are left out.
- */
-fun GoalForecast.milestones(unitSystem: UnitSystem, custom: List<CustomMilestone>): List<Milestone> {
-    val unit = unitSystem.weightToKg(value = 1.0)
-    fun between(weight: Double) = (weight - startWeight) * direction > 0 && (targetWeight - weight) * direction > 0
-    val roundStep = 5.0
-    val startShown = unitSystem.weightFromKg(kg = startWeight)
-    val firstRound = if (direction < 0) floor(startShown / roundStep) * roundStep else ceil(startShown / roundStep) * roundStep
-    val roundNumbers = generateSequence(seed = firstRound) { it + roundStep * direction }
-        .map { unitSystem.weightToKg(value = it) }
-        .takeWhile { between(weight = it) || (it - startWeight) * direction <= 0 }
-        .filter { between(weight = it) }
-        .map { MilestoneKind.ROUND_NUMBER to it }
-        .toList()
-    val fiveUnits = if (unitSystem == UnitSystem.IMPERIAL) 10 * unit else 5 * unit
-    val candidates = listOf(
-        MilestoneKind.FIRST_UNIT to startWeight + unit * direction,
-        MilestoneKind.FIVE_PERCENT to startWeight * (1 + 0.05 * direction),
-        MilestoneKind.FIVE_UNITS to startWeight + fiveUnits * direction,
-        MilestoneKind.TEN_PERCENT to startWeight * (1 + 0.10 * direction)
-    ) + roundNumbers
-    val kept = mutableListOf<Pair<MilestoneKind, Double>>()
-    candidates.filter { between(weight = it.second) }.forEach { candidate ->
-        if (kept.none { abs(it.second - candidate.second) < MILESTONE_GAP_KG } &&
-            abs(targetWeight - candidate.second) >= MILESTONE_GAP_KG
-        ) {
-            kept += candidate
-        }
-    }
-    val auto = (kept + (MilestoneKind.GOAL to targetWeight)).map { (kind, weight) -> milestone(kind = kind, weight = weight) }
-    val own = custom.map { milestone(kind = MilestoneKind.CUSTOM, weight = it.weight, custom = it) }
-    return (auto + own).sortedBy { (it.weight - startWeight) * direction }
-}
+/** The user's milestones in the order the trend reaches them. */
+fun GoalForecast.milestones(custom: List<CustomMilestone>): List<Milestone> =
+    custom.map { milestone(custom = it) }.sortedBy { (it.weight - startWeight) * direction }
 
-private fun GoalForecast.milestone(kind: MilestoneKind, weight: Double, custom: CustomMilestone? = null): Milestone {
+private fun GoalForecast.milestone(custom: CustomMilestone): Milestone {
+    val weight = custom.weight
     val reachedOn = trend.firstOrNull { (it.weight - weight) * direction >= 0 }?.date
     val remaining = (trendWeight - weight) * -direction
     val expectedOn = if (reachedOn == null && status is ForecastStatus.OnTheWay) {
@@ -426,15 +415,24 @@ private fun GoalForecast.milestone(kind: MilestoneKind, weight: Double, custom: 
     } else {
         null
     }
-    val byDate = custom?.byDate
+    val byDate = custom.byDate
+    val projected = byDate?.let { projectedOn(date = maxOf(it, today)) } ?: trendWeight
+    // Positive when the forecast for its date is past the milestone weight.
+    val missBy = (weight - projected) * -direction
     val track = when {
         byDate == null || reachedOn != null -> null
         byDate < today -> MilestoneTrack.BEHIND
-        else -> projectedOn(date = byDate)?.let { projected ->
-            if ((projected - weight) * direction >= -1e-9) MilestoneTrack.ON_TRACK else MilestoneTrack.BEHIND
-        }
+        projectedOn(date = byDate) == null -> null
+        missBy >= -1e-9 -> MilestoneTrack.ON_TRACK
+        else -> MilestoneTrack.BEHIND
     }
-    return Milestone(kind = kind, weight = weight, reachedOn = reachedOn, expectedOn = expectedOn, custom = custom, track = track)
+    return Milestone(
+        custom = custom,
+        reachedOn = reachedOn,
+        expectedOn = expectedOn,
+        track = track,
+        behindByKg = if (track == MilestoneTrack.BEHIND) max(0.0, -missBy) else 0.0
+    )
 }
 
 private fun ceilTo(value: Int, step: Int): Int = ceil(value.toDouble() / step).toInt() * step
