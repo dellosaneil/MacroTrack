@@ -618,6 +618,9 @@ fun AppBottomNav() {
                         CheckInScreen(
                             onBack = {
                                 navController.popBack()
+                            },
+                            onOpenForecast = {
+                                navController.navigate(route = AppDestinations.Root.GoalForecast.route)
                             }
                         )
                     }

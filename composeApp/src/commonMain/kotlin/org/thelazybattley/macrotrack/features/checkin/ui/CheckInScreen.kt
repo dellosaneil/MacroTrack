@@ -117,6 +117,7 @@ import org.thelazybattley.macrotrack.features.checkin.CheckInCallbacks
 import org.thelazybattley.macrotrack.features.checkin.CheckInViewModel
 import org.thelazybattley.macrotrack.features.checkin.CheckInViewState
 import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
+import org.thelazybattley.macrotrack.features.forecast.ui.GoalForecastLink
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.pro.ProFeature
 import org.thelazybattley.macrotrack.features.pro.ui.ProBadge
@@ -139,14 +140,15 @@ private const val KCAL_PER_LB = 3500
 @Composable
 fun CheckInScreen(
     modifier: Modifier = Modifier,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenForecast: () -> Unit
 ) {
     val viewModel = koinViewModel<CheckInViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(key1 = viewState.isClosed) {
         if (viewState.isClosed) onBack()
     }
-    CheckInScreen(modifier = modifier, viewState = viewState, callbacks = viewModel, onBack = onBack)
+    CheckInScreen(modifier = modifier, viewState = viewState, callbacks = viewModel, onBack = onBack, onOpenForecast = onOpenForecast)
 }
 
 @Composable
@@ -154,7 +156,8 @@ private fun CheckInScreen(
     modifier: Modifier = Modifier,
     viewState: CheckInViewState,
     callbacks: CheckInCallbacks,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenForecast: () -> Unit
 ) {
     val pro = LocalProAccess.current
     val snapshot = viewState.snapshot
@@ -193,6 +196,10 @@ private fun CheckInScreen(
                     onNextWeek = callbacks::onNextWeek,
                     onDayPicked = callbacks::onDayPicked
                 )
+            }
+            // With the week's summary, once there's a goal weight to forecast.
+            viewState.forecast?.let { forecast ->
+                GoalForecastLink(forecast = forecast, onClick = onOpenForecast)
             }
             when {
                 checkIn == null -> Unit

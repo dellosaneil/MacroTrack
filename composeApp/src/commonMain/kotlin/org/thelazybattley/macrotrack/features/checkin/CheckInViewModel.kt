@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.domain.model.GoalForecast
 import org.thelazybattley.macrotrack.domain.model.WEEK_BALANCE_WEEKS
 import org.thelazybattley.macrotrack.domain.model.WeekBalance
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
@@ -23,6 +24,7 @@ import org.thelazybattley.macrotrack.domain.usecase.checkin.CompleteCheckInUseCa
 import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeekBalanceUseCase
 import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeeklyCheckInUseCase
 import org.thelazybattley.macrotrack.domain.usecase.checkin.MarkCheckInSeenUseCase
+import org.thelazybattley.macrotrack.domain.usecase.forecast.GetGoalForecastUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 
@@ -38,7 +40,9 @@ data class CheckInViewState(
     /** The day tapped on the week balance, by index from Monday. */
     val selectedDay: Int? = null,
     val isApplied: Boolean = false,
-    val isClosed: Boolean = false
+    val isClosed: Boolean = false,
+    /** For the Goal forecast row; null without a goal weight or weigh-ins. Live, so applying moves the date. */
+    val forecast: GoalForecast? = null
 ) {
     val result: WeeklyCheckIn.Result? get() = snapshot?.checkIn as? WeeklyCheckIn.Result
 }
@@ -69,6 +73,7 @@ interface CheckInCallbacks {
 class CheckInViewModel(
     getWeeklyCheckInUseCase: GetWeeklyCheckInUseCase,
     getWeekBalanceUseCase: GetWeekBalanceUseCase,
+    getGoalForecastUseCase: GetGoalForecastUseCase,
     private val markCheckInSeenUseCase: MarkCheckInSeenUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val completeCheckInUseCase: CompleteCheckInUseCase,
@@ -89,6 +94,9 @@ class CheckInViewModel(
                 .distinctUntilChanged()
                 .flatMapLatest { weeksAgo -> flow { emitAll(getWeekBalanceUseCase(weeksAgo = weeksAgo)) } }
                 .collect { balance -> _state.update { it.copy(weekBalance = balance) } }
+        }
+        viewModelScope.launch {
+            getGoalForecastUseCase().collect { snapshot -> _state.update { it.copy(forecast = snapshot?.forecast) } }
         }
     }
 
