@@ -46,6 +46,8 @@ import macrotrack.composeapp.generated.resources.ic_check
 import macrotrack.composeapp.generated.resources.ic_book
 import macrotrack.composeapp.generated.resources.ic_plus
 import macrotrack.composeapp.generated.resources.ic_star_filled
+import macrotrack.composeapp.generated.resources.ic_restore
+import macrotrack.composeapp.generated.resources.food_history_of
 import macrotrack.composeapp.generated.resources.ic_star_outline
 import macrotrack.composeapp.generated.resources.kcal_text
 import macrotrack.composeapp.generated.resources.library_tag
@@ -85,7 +87,9 @@ fun AddMealListItem(
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit,
     onLongPress: (() -> Unit)?,
-    onAmountChanged: (key: String, amount: Double) -> Unit
+    onAmountChanged: (key: String, amount: Double) -> Unit,
+    /** Opens the food's history; only offered for food logged before. */
+    onHistory: () -> Unit = {}
 ) {
     val shape = RoundedCornerShape(size = 16.dp)
     val isSelected = selectedItem != null
@@ -199,6 +203,24 @@ fun AddMealListItem(
                     style = typography.regular10,
                     color = colors.muted
                 )
+            }
+            val loggedBefore = item.lastLogged
+            if (loggedBefore != null && !item.isJustScanned) {
+                val historyText = stringResource(resource = Res.string.food_history_of, food.name, loggedBefore.relativeDay().lowercase())
+                Box(
+                    modifier = Modifier
+                        .size(width = 34.dp, height = 40.dp)
+                        .clip(shape = RoundedCornerShape(size = 12.dp))
+                        .clickable(role = Role.Button, onClickLabel = historyText, onClick = onHistory),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(resource = Res.drawable.ic_restore),
+                        contentDescription = historyText,
+                        tint = colors.muted,
+                        modifier = Modifier.size(size = 19.dp)
+                    )
+                }
             }
             Box(
                 modifier = Modifier

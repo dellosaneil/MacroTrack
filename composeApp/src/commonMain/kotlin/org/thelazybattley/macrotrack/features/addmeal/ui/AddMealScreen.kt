@@ -491,7 +491,12 @@ private fun LazyListScope.mealItems(
                     }
                 },
                 onLongPress = if (item.isLibrary) null else ({ callbacks.onEditItem(item = item) }),
-                onAmountChanged = callbacks::onAmountChanged
+                onAmountChanged = callbacks::onAmountChanged,
+                onHistory = {
+                    callbacks.onNavigateScreen(
+                        route = AppDestinations.Root.FoodHistory.createRoute(foodName = item.food.name, isRecipe = item.isRecipe)
+                    )
+                }
             )
         }
         val modifier = Modifier
