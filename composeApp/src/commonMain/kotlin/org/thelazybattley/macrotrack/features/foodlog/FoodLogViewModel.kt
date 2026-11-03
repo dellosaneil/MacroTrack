@@ -2,7 +2,13 @@ package org.thelazybattley.macrotrack.features.foodlog
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
@@ -11,6 +17,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import org.thelazybattley.macrotrack.core.currentDateFlow
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.DailyGoal
 import org.thelazybattley.macrotrack.domain.model.FoodLog
@@ -45,6 +52,7 @@ import org.thelazybattley.macrotrack.features.calendar.LogDateRequest
 import org.thelazybattley.macrotrack.features.calendar.currentStreak
 import org.thelazybattley.macrotrack.domain.usecase.whatfits.GetWhatFitsInputsUseCase
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FoodLogViewModel(
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val calculateMacrosGoalUseCase: CalculateMacrosGoalUseCase,
@@ -74,9 +82,16 @@ class FoodLogViewModel(
 
     val state = _state.asStateFlow()
 
+    /** Today, changing at midnight; flows that work out what today shows start again on it. */
+    private val today = currentDateFlow().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = getCurrentDate()
+    )
+
     init {
         viewModelScope.launch {
-            combine(
+            today.flatMapLatest { combine(
                 flow = getAllFoodLogUseCase(),
                 flow2 = getAllFoodUseCase(),
                 flow3 = getAllRecipeUseCase(),
@@ -103,19 +118,19 @@ class FoodLogViewModel(
                     val selectedDate = _state.value.selectedDate
                     filterFoodLogsByDate(foodLog = logs.filter { it.date == selectedDate })
                 }
-            }.collect()
+            } }.collect()
         }
         viewModelScope.launch {
-            combine(flow = getAllFoodLogUseCase(), flow2 = getReviewHistoryUseCase()) { logs, history ->
+            today.flatMapLatest { combine(flow = getAllFoodLogUseCase(), flow2 = getReviewHistoryUseCase()) { logs, history ->
                 val today = getCurrentDate()
                 val streak = currentStreak(loggedDates = logs.map { it.date }.toSet(), today = today)
                 history.isDue(currentStreak = streak, today = today)
-            }.collect { isReviewDue ->
+            } }.collect { isReviewDue ->
                 _state.update { it.copy(isReviewDue = isReviewDue) }
             }
         }
         viewModelScope.launch {
-            getWeekCardUseCase().collect { card ->
+            today.flatMapLatest { getWeekCardUseCase() }.collect { card ->
                 _state.update { it.copy(weekBalance = card.balance, isNewCheckInSuggestion = card.isNewSuggestion) }
             }
         }
@@ -123,14 +138,24 @@ class FoodLogViewModel(
             copyEvents.latest.collect { copy -> _state.update { it.copy(copyToast = copy) } }
         }
         viewModelScope.launch {
-            getPlannedTodayUseCase().collect { plannedToday ->
+            today.flatMapLatest { getPlannedTodayUseCase() }.collect { plannedToday ->
                 _state.update { it.copy(plannedToday = plannedToday) }
             }
         }
         viewModelScope.launch {
-            getWhatFitsInputsUseCase().collect { (foods, settings) ->
+            today.flatMapLatest { getWhatFitsInputsUseCase() }.collect { (foods, settings) ->
                 _state.update { it.copy(fitFoods = foods, fitSettings = settings) }
             }
+        }
+        viewModelScope.launch {
+            // Pairs of (yesterday, today) each time the day turns over while the screen is open.
+            today.runningFold(initial = getCurrentDate() to getCurrentDate()) { (_, previous), date -> previous to date }
+                .drop(count = 2)
+                .collect { (previous, date) ->
+                    // Following today: move to the new day. Looking at another day: stay on it.
+                    if (_state.value.selectedDate == previous) onDateFilterSelected(date = date)
+                    plannedFoodActions.sync()
+                }
         }
         updateMacroGoals()
     }
@@ -253,7 +278,7 @@ class FoodLogViewModel(
 
     private fun updateMacroGoals() {
         viewModelScope.launch {
-            combine(
+            today.flatMapLatest { combine(
                 flow = flow { emitAll(getUserDetailsUseCase()) },
                 flow2 = getAllDailyGoalsUseCase()
             ) { user, dailyGoals ->
@@ -275,7 +300,7 @@ class FoodLogViewModel(
                         currentMacroGoals = currentMacroGoals
                     ).withDayGoal()
                 }
-            }.collect()
+            } }.collect()
         }
     }
 

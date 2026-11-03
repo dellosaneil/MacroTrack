@@ -6,8 +6,15 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.c_value_gram
@@ -30,6 +37,23 @@ fun getCurrentDate() = run {
         .toLocalDateTime(TimeZone.currentSystemDefault())
         .date
 }
+
+/**
+ * Today, and the new day each time the date changes at midnight. Checks at least once a minute, so a missed wake-up
+ * while the device slept, or a time zone change, still lands soon after.
+ */
+@OptIn(ExperimentalTime::class)
+fun currentDateFlow(): Flow<LocalDate> = flow {
+    while (true) {
+        val today = getCurrentDate()
+        emit(value = today)
+        val timeZone = TimeZone.currentSystemDefault()
+        val untilMidnight = today.plus(period = DatePeriod(days = 1)).atStartOfDayIn(timeZone = timeZone) - Clock.System.now()
+        delay(timeMillis = untilMidnight.inWholeMilliseconds.coerceIn(minimumValue = 1L, maximumValue = DATE_CHECK_MILLIS))
+    }
+}.distinctUntilChanged()
+
+private const val DATE_CHECK_MILLIS = 60_000L
 
 fun Double.to2Decimal() = round(x = this * 100) / 100
 
