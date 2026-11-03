@@ -85,6 +85,7 @@ import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeekBalanceUseCas
 import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeekCardUseCase
 import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeeklyCheckInUseCase
 import org.thelazybattley.macrotrack.domain.usecase.checkin.MarkCheckInSeenUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checkin.SetCheckInSettingsUseCase
 import io.ktor.client.plugins.HttpTimeout
 import org.thelazybattley.macrotrack.data.repository.FoodLibraryRepositoryImpl
 import org.thelazybattley.macrotrack.data.repository.OpenFoodFactsRepositoryImpl
@@ -404,6 +405,7 @@ val useCaseModule = module {
     factoryOf(::GetWeekBalanceUseCase)
     factoryOf(::GetWeekCardUseCase)
     factoryOf(::MarkCheckInSeenUseCase)
+    factoryOf(::SetCheckInSettingsUseCase)
     factoryOf(::GetFoodLibraryUseCase)
     factoryOf(::IsTelemetryEnabledUseCase)
     factoryOf(::SetTelemetryEnabledUseCase)

@@ -20,7 +20,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,7 +42,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.back
 import macrotrack.composeapp.generated.resources.check_in_apply
@@ -60,6 +65,28 @@ import macrotrack.composeapp.generated.resources.check_in_energy_formula
 import macrotrack.composeapp.generated.resources.check_in_first
 import macrotrack.composeapp.generated.resources.check_in_footnote
 import macrotrack.composeapp.generated.resources.check_in_how
+import macrotrack.composeapp.generated.resources.check_in_settings
+import macrotrack.composeapp.generated.resources.check_in_data_from
+import macrotrack.composeapp.generated.resources.check_in_weeks_option
+import macrotrack.composeapp.generated.resources.check_in_window_counts
+import macrotrack.composeapp.generated.resources.check_in_window_note_short
+import macrotrack.composeapp.generated.resources.check_in_window_note_long
+import macrotrack.composeapp.generated.resources.check_in_weight_change_from
+import macrotrack.composeapp.generated.resources.check_in_burn_it_gives
+import macrotrack.composeapp.generated.resources.check_in_method_trend
+import macrotrack.composeapp.generated.resources.check_in_method_trend_body
+import macrotrack.composeapp.generated.resources.check_in_method_average
+import macrotrack.composeapp.generated.resources.check_in_method_average_body
+import macrotrack.composeapp.generated.resources.check_in_method_not_ready
+import macrotrack.composeapp.generated.resources.check_in_settings_saved
+import macrotrack.composeapp.generated.resources.check_in_how_window
+import macrotrack.composeapp.generated.resources.check_in_how_trend
+import macrotrack.composeapp.generated.resources.check_in_how_average
+import macrotrack.composeapp.generated.resources.check_in_average_first_week
+import macrotrack.composeapp.generated.resources.check_in_average_last_week
+import macrotrack.composeapp.generated.resources.check_in_week_weigh_ins
+import macrotrack.composeapp.generated.resources.check_in_energy_formula_between
+import macrotrack.composeapp.generated.resources.check_in_collecting_week_weigh_ins
 import macrotrack.composeapp.generated.resources.check_in_kcal_a_day
 import macrotrack.composeapp.generated.resources.check_in_keep
 import macrotrack.composeapp.generated.resources.check_in_locked_body
@@ -110,6 +137,10 @@ import org.thelazybattley.macrotrack.domain.model.WEEK_BALANCE_WEEKS
 import org.thelazybattley.macrotrack.domain.model.CHECK_IN_MIN_WEIGH_INS
 import org.thelazybattley.macrotrack.domain.model.CHECK_IN_WINDOW_DAYS
 import org.thelazybattley.macrotrack.domain.model.CheckInPace
+import org.thelazybattley.macrotrack.domain.model.CheckInMethod
+import org.thelazybattley.macrotrack.domain.model.CheckInSettings
+import org.thelazybattley.macrotrack.domain.model.CheckInWeek
+import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistSegmented
 import org.thelazybattley.macrotrack.domain.model.Goal
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
@@ -207,9 +238,31 @@ private fun CheckInScreen(
                     checkIn = checkIn,
                     onUnlock = { pro.openPaywall(ProFeature.CHECK_IN) }
                 )
-                checkIn is WeeklyCheckIn.Collecting -> CollectingContent(checkIn = checkIn)
+                checkIn is WeeklyCheckIn.Collecting -> CollectingContent(
+                    checkIn = checkIn,
+                    settings = {
+                        CheckInSettingsCard(
+                            settings = snapshot.settings,
+                            methodBurns = snapshot.methodBurns,
+                            today = snapshot.today,
+                            loggedDays = checkIn.loggedDays,
+                            weighIns = checkIn.weighIns,
+                            callbacks = callbacks
+                        )
+                    }
+                )
                 checkIn is WeeklyCheckIn.Result -> ResultContent(
                     result = checkIn,
+                    settings = {
+                        CheckInSettingsCard(
+                            settings = snapshot.settings,
+                            methodBurns = snapshot.methodBurns,
+                            today = snapshot.today,
+                            loggedDays = checkIn.loggedDays,
+                            weighIns = checkIn.weighIns,
+                            callbacks = callbacks
+                        )
+                    },
                     goal = snapshot.userDetails.goal,
                     goalPace = snapshot.userDetails.goalPace,
                     macroGoals = snapshot.macroGoals,
@@ -286,9 +339,9 @@ private fun LockedContent(checkIn: WeeklyCheckIn, onUnlock: () -> Unit) {
         }
     }
     // Only the counts show: the burn itself is the Pro part.
-    val (loggedDays, weighIns) = when (checkIn) {
-        is WeeklyCheckIn.Result -> checkIn.loggedDays to checkIn.weighIns
-        is WeeklyCheckIn.Collecting -> checkIn.loggedDays to checkIn.weighIns
+    val (loggedDays, weighIns, windowDays) = when (checkIn) {
+        is WeeklyCheckIn.Result -> Triple(checkIn.loggedDays, checkIn.weighIns, checkIn.windowDays)
+        is WeeklyCheckIn.Collecting -> Triple(checkIn.loggedDays, checkIn.weighIns, checkIn.windowDays)
     }
     Column(
         modifier = Modifier
@@ -303,7 +356,7 @@ private fun LockedContent(checkIn: WeeklyCheckIn, onUnlock: () -> Unit) {
             Text(text = stringResource(resource = Res.string.check_in_locked_burn), style = typography.regular13, color = colors.muted)
         }
         Text(
-            text = stringResource(resource = Res.string.check_in_data_summary, loggedDays, CHECK_IN_WINDOW_DAYS, weighIns),
+            text = stringResource(resource = Res.string.check_in_data_summary, loggedDays, windowDays, weighIns),
             style = typography.regular11,
             color = colors.muted
         )
@@ -319,7 +372,7 @@ private fun LockedContent(checkIn: WeeklyCheckIn, onUnlock: () -> Unit) {
 }
 
 @Composable
-private fun CollectingContent(checkIn: WeeklyCheckIn.Collecting) {
+private fun CollectingContent(checkIn: WeeklyCheckIn.Collecting, settings: @Composable () -> Unit) {
     HeroCard {
         Text(text = stringResource(resource = Res.string.check_in_first), style = typography.regular11, color = colors.muted)
         Text(text = checkIn.firstCheckIn.shortDate(), style = typography.bold24, color = colors.ink)
@@ -338,6 +391,11 @@ private fun CollectingContent(checkIn: WeeklyCheckIn.Collecting) {
             needed = CHECK_IN_MIN_WEIGH_INS,
             tip = Res.string.check_in_weigh_ins_tip
         )
+    }
+    // Average weight can hold the check-in up on its own; the settings stay in reach so the trend line is one tap away.
+    if (checkIn.isShortOfWeekWeighIns) {
+        WarmNote(text = stringResource(resource = Res.string.check_in_collecting_week_weigh_ins))
+        settings()
     }
     Text(text = stringResource(resource = Res.string.check_in_missed_days), style = typography.regular11, color = colors.muted)
 }
@@ -361,6 +419,7 @@ private fun NeedRow(label: StringResource, count: Int, needed: Int, tip: StringR
 @Composable
 private fun ResultContent(
     result: WeeklyCheckIn.Result,
+    settings: @Composable () -> Unit,
     goal: Goal,
     goalPace: Double,
     macroGoals: MacroGoals,
@@ -385,6 +444,8 @@ private fun ResultContent(
         BurnBar(label = Res.string.check_in_profile_estimate, value = result.estimatedBurn, fraction = result.estimatedBurn / most, color = colors.faint)
         Text(text = result.burnSummary(), style = typography.bold13, color = colors.ink)
     }
+
+    settings()
 
     Workings(result = result)
 
@@ -442,9 +503,11 @@ private fun Workings(result: WeeklyCheckIn.Result) {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Text(
             text = stringResource(
-                resource = Res.string.check_in_how,
-                result.windowStart.shortDate().substringAfter(delimiter = ", ") + " – " +
-                    result.windowEnd.shortDate().substringAfter(delimiter = ", ")
+                resource = Res.string.check_in_how_window,
+                stringResource(
+                    resource = if (result.method == CheckInMethod.AVERAGE) Res.string.check_in_how_average else Res.string.check_in_how_trend
+                ),
+                result.windowDays
             ),
             style = typography.bold12,
             color = colors.muted
@@ -459,25 +522,41 @@ private fun Workings(result: WeeklyCheckIn.Result) {
         ) {
             WorkingRow(
                 label = stringResource(resource = Res.string.check_in_average_eaten),
-                sub = stringResource(resource = Res.string.check_in_days_logged_of, result.loggedDays, CHECK_IN_WINDOW_DAYS),
+                sub = stringResource(resource = Res.string.check_in_days_logged_of, result.loggedDays, result.windowDays),
                 value = result.averageIntake.withThousands() + " kcal"
             )
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
-            WorkingRow(
-                label = stringResource(resource = Res.string.check_in_trend_weight),
-                sub = result.startWeight.formatWeight() + " → " + result.endWeight.formatWeightWithUnit(),
-                value = result.weightChange.toSignedWeight() + " " + weightUnitLabel()
-            )
+            val firstWeek = result.firstWeek
+            val lastWeek = result.lastWeek
+            if (result.method == CheckInMethod.AVERAGE && firstWeek != null && lastWeek != null) {
+                WorkingRow(
+                    label = stringResource(resource = Res.string.check_in_average_first_week),
+                    sub = stringResource(resource = Res.string.check_in_week_weigh_ins, firstWeek.label(), firstWeek.weighIns),
+                    value = result.startWeight.formatWeightWithUnit()
+                )
+                HorizontalDivider(thickness = 1.dp, color = colors.divider)
+                WorkingRow(
+                    label = stringResource(resource = Res.string.check_in_average_last_week),
+                    sub = stringResource(resource = Res.string.check_in_week_weigh_ins, lastWeek.label(), lastWeek.weighIns),
+                    value = result.endWeight.formatWeightWithUnit()
+                )
+            } else {
+                WorkingRow(
+                    label = stringResource(resource = Res.string.check_in_trend_weight),
+                    sub = result.startWeight.formatWeight() + " → " + result.endWeight.formatWeightWithUnit(),
+                    value = result.weightChange.toSignedWeight() + " " + weightUnitLabel()
+                )
+            }
             HorizontalDivider(thickness = 1.dp, color = colors.divider)
             WorkingRow(
                 label = stringResource(
                     resource = if (result.energyFromWeight >= 0) Res.string.check_in_weight_lost_energy else Res.string.check_in_weight_gained_energy
                 ),
                 sub = stringResource(
-                    resource = Res.string.check_in_energy_formula,
+                    resource = if (result.method == CheckInMethod.AVERAGE) Res.string.check_in_energy_formula_between else Res.string.check_in_energy_formula,
                     abs(result.weightChange).formatWeightWithUnit(),
                     (if (isImperial) KCAL_PER_LB else KCAL_PER_KG).withThousands(),
-                    CHECK_IN_WINDOW_DAYS
+                    result.weightSpanDays
                 ),
                 value = (if (result.energyFromWeight >= 0) "+" else "−") + abs(result.energyFromWeight).withThousands() + " kcal"
             )
@@ -500,6 +579,133 @@ private fun Workings(result: WeeklyCheckIn.Result) {
         }
     }
 }
+
+/** Data from and Weight change from: saved, and used by the daily suggestion and the Today card too. */
+@Composable
+private fun CheckInSettingsCard(
+    settings: CheckInSettings,
+    methodBurns: Map<CheckInMethod, Int?>,
+    today: LocalDate,
+    loggedDays: Int,
+    weighIns: Int,
+    callbacks: CheckInCallbacks
+) {
+    val window = settings.window
+    val windowEnd = today.minus(period = DatePeriod(days = 1))
+    val windowStart = windowEnd.minus(period = DatePeriod(days = window - 1))
+    val shape = RoundedCornerShape(size = 20.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = shape)
+            .background(color = colors.surface)
+            .border(width = 1.dp, color = colors.line, shape = shape)
+            .padding(all = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 14.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+            SettingsHeading(
+                title = stringResource(resource = Res.string.check_in_data_from),
+                trailing = windowStart.monthDay() + " – " + windowEnd.monthDay()
+            )
+            ChecklistSegmented(
+                labels = CheckInSettings.WINDOW_OPTIONS.map { days -> stringResource(resource = Res.string.check_in_weeks_option, days / 7) },
+                selectedIndex = CheckInSettings.WINDOW_OPTIONS.indexOf(element = window),
+                onSelect = { index -> callbacks.onWindowPicked(days = CheckInSettings.WINDOW_OPTIONS[index]) }
+            )
+            Text(
+                text = stringResource(resource = Res.string.check_in_window_counts, loggedDays, window, weighIns),
+                style = typography.regular11,
+                color = colors.muted
+            )
+            when (window) {
+                CheckInSettings.WINDOW_OPTIONS.first() -> WarmNote(text = stringResource(resource = Res.string.check_in_window_note_short))
+                CheckInSettings.WINDOW_OPTIONS.last() -> WarmNote(text = stringResource(resource = Res.string.check_in_window_note_long))
+                else -> Unit
+            }
+        }
+        HorizontalDivider(thickness = 1.dp, color = colors.divider)
+        Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+            SettingsHeading(
+                title = stringResource(resource = Res.string.check_in_weight_change_from),
+                trailing = stringResource(resource = Res.string.check_in_burn_it_gives)
+            )
+            Column(modifier = Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                listOf(
+                    Triple(CheckInMethod.TREND, Res.string.check_in_method_trend, Res.string.check_in_method_trend_body),
+                    Triple(CheckInMethod.AVERAGE, Res.string.check_in_method_average, Res.string.check_in_method_average_body)
+                ).forEach { (method, label, body) ->
+                    MethodOption(
+                        label = stringResource(resource = label),
+                        body = stringResource(resource = body),
+                        burn = methodBurns[method]?.let { it.withThousands() + " kcal" }
+                            ?: stringResource(resource = Res.string.check_in_method_not_ready),
+                        isSelected = settings.method == method,
+                        onClick = { callbacks.onMethodPicked(method = method) }
+                    )
+                }
+            }
+        }
+        Text(text = stringResource(resource = Res.string.check_in_settings_saved), style = typography.regular11, color = colors.muted)
+    }
+}
+
+@Composable
+private fun SettingsHeading(title: String, trailing: String) {
+    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        Text(text = title, style = typography.bold14, color = colors.ink, modifier = Modifier.weight(weight = 1f))
+        Text(text = trailing, style = typography.regular11, color = colors.muted)
+    }
+}
+
+@Composable
+private fun MethodOption(label: String, body: String, burn: String, isSelected: Boolean, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(size = 14.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = shape)
+            .background(color = if (isSelected) colors.accentSoft else colors.surface)
+            .border(width = if (isSelected) 1.5.dp else 1.dp, color = if (isSelected) colors.accent else colors.line, shape = shape)
+            .selectable(selected = isSelected, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 11.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(size = 20.dp)
+                .background(color = colors.surface, shape = CircleShape)
+                .border(width = if (isSelected) 6.dp else 2.dp, color = if (isSelected) colors.accent else colors.dashed, shape = CircleShape)
+        )
+        Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 2.dp)) {
+            Text(text = label, style = typography.bold13, color = colors.ink)
+            Text(text = body, style = typography.regular11, color = colors.muted)
+        }
+        Text(text = burn, style = typography.bold15, color = colors.ink, maxLines = 1)
+    }
+}
+
+@Composable
+private fun WarmNote(text: String) {
+    Text(
+        text = text,
+        style = typography.regular11,
+        color = colors.warmInk,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(size = 10.dp))
+            .background(color = colors.warmSoft)
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+    )
+}
+
+/** "Sep 17". */
+private fun LocalDate.monthDay(): String = shortDate().substringAfter(delimiter = ", ")
+
+/** "Sep 17–23", or "Sep 28–Oct 4" across a month. */
+private fun CheckInWeek.label(): String =
+    start.monthDay() + "–" + if (start.month == end.month) end.day.toString() else end.monthDay()
 
 @Composable
 private fun WorkingRow(label: String, sub: String, value: String) {
@@ -719,6 +925,16 @@ private fun PreviewCheckInScreen() {
     MacroTrackTheme {
         Column(modifier = Modifier.padding(all = 20.dp), verticalArrangement = Arrangement.spacedBy(space = 16.dp)) {
             ResultContent(
+                settings = {
+                    CheckInSettingsCard(
+                        settings = CheckInSettings(),
+                        methodBurns = mapOf(CheckInMethod.TREND to 2330, CheckInMethod.AVERAGE to 2300),
+                        today = LocalDate(year = 2026, month = 10, day = 8),
+                        loggedDays = 19,
+                        weighIns = 9,
+                        callbacks = CheckInCallbacks.default()
+                    )
+                },
                 result = WeeklyCheckIn.Result(
                     windowStart = LocalDate(year = 2026, month = 9, day = 17),
                     windowEnd = LocalDate(year = 2026, month = 10, day = 7),

@@ -6,6 +6,7 @@ import org.thelazybattley.macrotrack.domain.model.CustomMilestone
 import org.thelazybattley.macrotrack.domain.model.ForecastSettings
 import org.thelazybattley.macrotrack.domain.model.ReviewHistory
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.domain.model.CheckInSettings
 import org.thelazybattley.macrotrack.domain.model.WhatFitsSettings
 
 interface AppFlagRepository {
@@ -56,4 +57,9 @@ interface AppFlagRepository {
     fun getWhatFitsSettings(): Flow<WhatFitsSettings>
 
     suspend fun setWhatFitsSettings(settings: WhatFitsSettings)
+
+    /** How far back the weekly check-in looks and how it measures weight change. */
+    fun getCheckInSettings(): Flow<CheckInSettings>
+
+    suspend fun setCheckInSettings(settings: CheckInSettings)
 }

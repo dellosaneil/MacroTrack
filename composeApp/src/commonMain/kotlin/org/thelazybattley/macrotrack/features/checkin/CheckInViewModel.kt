@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.thelazybattley.macrotrack.domain.model.CheckInMethod
+import org.thelazybattley.macrotrack.domain.model.CheckInSettings
 import org.thelazybattley.macrotrack.domain.model.GoalForecast
 import org.thelazybattley.macrotrack.domain.model.WEEK_BALANCE_WEEKS
 import org.thelazybattley.macrotrack.domain.model.WeekBalance
@@ -24,13 +26,16 @@ import org.thelazybattley.macrotrack.domain.usecase.checkin.CompleteCheckInUseCa
 import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeekBalanceUseCase
 import org.thelazybattley.macrotrack.domain.usecase.checkin.GetWeeklyCheckInUseCase
 import org.thelazybattley.macrotrack.domain.usecase.checkin.MarkCheckInSeenUseCase
+import org.thelazybattley.macrotrack.domain.usecase.checkin.SetCheckInSettingsUseCase
+import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.usecase.forecast.GetGoalForecastUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
 
 /**
- * The check-in as it was when the screen opened. Applying changes the target the check-in compares against, so the
- * screen keeps showing the suggestion it made rather than recomputing it. The week balance above it stays live.
+ * The check-in as it was when the screen opened, or when the user last changed its settings. Applying changes the
+ * target the check-in compares against, so the screen keeps showing the suggestion it made rather than recomputing
+ * it. The week balance above it stays live.
  */
 data class CheckInViewState(
     val snapshot: CheckInSnapshot? = null,
@@ -57,6 +62,12 @@ interface CheckInCallbacks {
     fun onNextWeek()
     fun onDayPicked(index: Int)
 
+    /** Data from: how many days back the check-in looks. */
+    fun onWindowPicked(days: Int)
+
+    /** Weight change from: the trend line or average weight. */
+    fun onMethodPicked(method: CheckInMethod)
+
     companion object {
         fun default() = object : CheckInCallbacks {
             override fun onApply() = Unit
@@ -65,29 +76,34 @@ interface CheckInCallbacks {
             override fun onPreviousWeek() = Unit
             override fun onNextWeek() = Unit
             override fun onDayPicked(index: Int) = Unit
+            override fun onWindowPicked(days: Int) = Unit
+            override fun onMethodPicked(method: CheckInMethod) = Unit
         }
     }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CheckInViewModel(
-    getWeeklyCheckInUseCase: GetWeeklyCheckInUseCase,
+    private val getWeeklyCheckInUseCase: GetWeeklyCheckInUseCase,
     getWeekBalanceUseCase: GetWeekBalanceUseCase,
     getGoalForecastUseCase: GetGoalForecastUseCase,
     private val markCheckInSeenUseCase: MarkCheckInSeenUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val completeCheckInUseCase: CompleteCheckInUseCase,
-    private val insertUserDetailsUseCase: InsertUserDetailsUseCase
+    private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
+    private val setCheckInSettingsUseCase: SetCheckInSettingsUseCase
 ) : ViewModel(), CheckInCallbacks {
 
     private val _state = MutableStateFlow(value = CheckInViewState())
     val state = _state.asStateFlow()
 
+    /** The user as the screen opened, so Undo puts back what was there before any apply, whatever was picked since. */
+    private var openedUserDetails: UserDetails? = null
+
     init {
         viewModelScope.launch {
-            val snapshot = getWeeklyCheckInUseCase().first()
-            _state.update { it.copy(snapshot = snapshot) }
-            (snapshot?.checkIn as? WeeklyCheckIn.Result)?.let { markCheckInSeenUseCase(suggestedTarget = it.suggestedTarget) }
+            loadSnapshot()
+            openedUserDetails = _state.value.snapshot?.userDetails
         }
         viewModelScope.launch {
             _state.map { it.weeksAgo }
@@ -97,6 +113,31 @@ class CheckInViewModel(
         }
         viewModelScope.launch {
             getGoalForecastUseCase().collect { snapshot -> _state.update { it.copy(forecast = snapshot?.forecast) } }
+        }
+    }
+
+    private suspend fun loadSnapshot() {
+        val snapshot = getWeeklyCheckInUseCase().first()
+        _state.update { it.copy(snapshot = snapshot) }
+        (snapshot?.checkIn as? WeeklyCheckIn.Result)?.let { markCheckInSeenUseCase(suggestedTarget = it.suggestedTarget) }
+    }
+
+    override fun onWindowPicked(days: Int) {
+        saveSettings { it.copy(windowDays = days) }
+    }
+
+    override fun onMethodPicked(method: CheckInMethod) {
+        saveSettings { it.copy(method = method) }
+    }
+
+    /** Saves the change and works the check-in out again with it; the daily suggestion and Today card follow. */
+    private fun saveSettings(change: (CheckInSettings) -> CheckInSettings) {
+        val current = _state.value.snapshot?.settings ?: return
+        val settings = change(current)
+        if (settings == current) return
+        viewModelScope.launch {
+            setCheckInSettingsUseCase(settings = settings)
+            loadSnapshot()
         }
     }
 
@@ -138,15 +179,15 @@ class CheckInViewModel(
     }
 
     override fun onUndo() {
-        val snapshot = _state.value.snapshot ?: return
+        val opened = openedUserDetails ?: return
         if (!_state.value.isApplied) return
         _state.update { it.copy(isApplied = false) }
         viewModelScope.launch {
             val userDetails = getUserDetailsUseCase().first() ?: return@launch
             insertUserDetailsUseCase(
                 userDetails = userDetails.copy(
-                    measuredMaintenance = snapshot.userDetails.measuredMaintenance,
-                    customMacroGoals = snapshot.userDetails.customMacroGoals
+                    measuredMaintenance = opened.measuredMaintenance,
+                    customMacroGoals = opened.customMacroGoals
                 )
             )
         }

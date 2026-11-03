@@ -6,6 +6,8 @@ import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.MacroGoals
 import org.thelazybattley.macrotrack.domain.model.CHECK_IN_NO_CHANGE_KCAL
+import org.thelazybattley.macrotrack.domain.model.CheckInMethod
+import org.thelazybattley.macrotrack.domain.model.CheckInSettings
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.WeeklyCheckIn
 import org.thelazybattley.macrotrack.domain.model.weeklyCheckIn
@@ -24,7 +26,10 @@ data class CheckInSnapshot(
     val macroGoals: MacroGoals,
     val checkIn: WeeklyCheckIn,
     /** The suggested target the user last saw on the check-in; null before they first opened it. */
-    val seenSuggestion: Int?
+    val seenSuggestion: Int?,
+    val settings: CheckInSettings = CheckInSettings(),
+    /** The burn each way of measuring weight change gives over the same window; null where it can't be worked out yet. */
+    val methodBurns: Map<CheckInMethod, Int?> = emptyMap()
 ) {
     /** A suggestion worth a look on Today: a change to make, and not the one already seen. */
     val isNewSuggestion: Boolean
@@ -47,8 +52,9 @@ class GetWeeklyCheckInUseCase(
         flow = getAllFoodLogUseCase(),
         flow2 = getAllWeightUseCase(),
         flow3 = getUserDetailsUseCase(),
-        flow4 = appFlagRepository.getSeenCheckInSuggestion()
-    ) { foodLogs, weights, userDetails, seenSuggestion ->
+        flow4 = appFlagRepository.getSeenCheckInSuggestion(),
+        flow5 = appFlagRepository.getCheckInSettings()
+    ) { foodLogs, weights, userDetails, seenSuggestion, settings ->
         userDetails ?: return@combine null
         val today = getCurrentDate()
         val macroGoals = calculateMacrosGoalUseCase(userDetails = userDetails)
@@ -59,20 +65,27 @@ class GetWeeklyCheckInUseCase(
             gender = userDetails.sex,
             activityLevel = userDetails.activityLevel
         )
-        CheckInSnapshot(
-            today = today,
-            userDetails = userDetails,
-            macroGoals = macroGoals,
-            checkIn = weeklyCheckIn(
+        val checkInFor = { method: CheckInMethod ->
+            weeklyCheckIn(
                 today = today,
                 foodLogs = foodLogs,
                 weights = weights,
                 goal = userDetails.goal,
                 goalPace = userDetails.goalPace,
                 currentTarget = macroGoals.calories,
-                estimatedBurn = estimatedBurn
-            ),
-            seenSuggestion = seenSuggestion
+                estimatedBurn = estimatedBurn,
+                settings = settings.copy(method = method)
+            )
+        }
+        val checkIns = CheckInMethod.entries.associateWith(checkInFor)
+        CheckInSnapshot(
+            today = today,
+            userDetails = userDetails,
+            macroGoals = macroGoals,
+            checkIn = checkIns.getValue(key = settings.method),
+            seenSuggestion = seenSuggestion,
+            settings = settings,
+            methodBurns = checkIns.mapValues { (_, checkIn) -> (checkIn as? WeeklyCheckIn.Result)?.measuredBurn }
         )
     }
 }
