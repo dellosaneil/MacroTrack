@@ -74,18 +74,28 @@ class IosChecklistReminderScheduler : ChecklistReminderScheduler {
         replacePendingNotifications(prefix = ID_PREFIX, requests = requests)
     }
 
-    private suspend fun category(): UNNotificationCategory = UNNotificationCategory.categoryWithIdentifier(
-        identifier = CATEGORY_ID,
-        actions = listOf(
-            ChecklistReminderAction.DONE to Res.string.checklist_action_done,
-            ChecklistReminderAction.SNOOZE to Res.string.checklist_action_snooze,
-            ChecklistReminderAction.SKIP to Res.string.checklist_action_skip
-        ).map { (action, label) ->
-            UNNotificationAction.actionWithIdentifier(identifier = action.name, title = getString(resource = label), options = UNNotificationActionOptionNone)
-        },
-        intentIdentifiers = emptyList<String>(),
-        options = UNNotificationCategoryOptionNone
-    )
+    private suspend fun category(): UNNotificationCategory {
+        val labels = listOf(
+            ChecklistReminderAction.DONE to getString(resource = Res.string.checklist_action_done),
+            ChecklistReminderAction.SNOOZE to getString(resource = Res.string.checklist_action_snooze),
+            ChecklistReminderAction.SKIP to getString(resource = Res.string.checklist_action_skip)
+        )
+        return category(labels = labels)
+    }
+
+    /**
+     * Not suspending: making the actions between getString's suspensions crashed in actionWithIdentifier, so the
+     * labels are all read first and the UserNotifications objects are made in one go.
+     */
+    private fun category(labels: List<Pair<ChecklistReminderAction, String>>): UNNotificationCategory =
+        UNNotificationCategory.categoryWithIdentifier(
+            identifier = CATEGORY_ID,
+            actions = labels.map { (action, label) ->
+                UNNotificationAction.actionWithIdentifier(identifier = action.name, title = label, options = UNNotificationActionOptionNone)
+            },
+            intentIdentifiers = emptyList<String>(),
+            options = UNNotificationCategoryOptionNone
+        )
 }
 
 /** A reminder button pressed while the app wasn't running, kept until it starts. */
