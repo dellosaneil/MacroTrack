@@ -1,5 +1,8 @@
 package org.thelazybattley.macrotrack.features.foodhistory.ui
 
+import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
+import macrotrack.composeapp.generated.resources.next_day_link_food_sub
+import org.thelazybattley.macrotrack.features.nextday.ui.NextDayWeightLink
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -150,6 +153,7 @@ fun FoodHistoryScreen(
         callbacks = viewModel,
         onBack = onBack,
         onEdit = { viewState.editRoute?.let(onNavigate) },
+        onOpenNextDay = { onNavigate(AppDestinations.Root.NextDayFood.createRoute(foodName = viewState.name, isRecipe = viewState.isRecipe)) },
         onOpenEntry = { entry ->
             viewModel.onOpenEntry(entry = entry)
             onOpenLog()
@@ -163,6 +167,7 @@ private fun FoodHistoryScreen(
     callbacks: FoodHistoryCallbacks,
     onBack: () -> Unit,
     onEdit: () -> Unit,
+    onOpenNextDay: () -> Unit,
     onOpenEntry: (FoodHistoryEntry) -> Unit
 ) {
     val base = viewState.base
@@ -247,6 +252,15 @@ private fun FoodHistoryScreen(
             StatTiles(viewState = viewState, amount = amount)
             AmountChart(viewState = viewState, amount = amount)
             Insight(viewState = viewState, amount = amount)
+        }
+        // Eaten at dinner, it can say what it does to the next morning's weigh-in.
+        if (viewState.entries.any { it.log.mealType == MealType.DINNER }) {
+            NextDayWeightLink(
+                biggest = null,
+                isNew = false,
+                subtitle = stringResource(resource = Res.string.next_day_link_food_sub),
+                onClick = onOpenNextDay
+            )
         }
         val mealCounts = viewState.mealCounts
         if (mealCounts.size > 1) {
@@ -692,6 +706,7 @@ private fun PreviewFoodHistoryScreen() {
             callbacks = FoodHistoryCallbacks.default(),
             onBack = {},
             onEdit = {},
+            onOpenNextDay = {},
             onOpenEntry = {}
         )
     }

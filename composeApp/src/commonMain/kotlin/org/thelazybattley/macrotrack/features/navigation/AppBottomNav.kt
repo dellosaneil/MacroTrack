@@ -39,6 +39,9 @@ import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistManageScreen
 import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistScreen
 import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
 import org.thelazybattley.macrotrack.features.foodhistory.ui.FoodHistoryScreen
+import org.thelazybattley.macrotrack.features.nextday.ui.NextDayFoodScreen
+import org.thelazybattley.macrotrack.features.nextday.ui.NextDayMorningScreen
+import org.thelazybattley.macrotrack.features.nextday.ui.NextDayWeightScreen
 import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsAmountScreen
 import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsReviewScreen
 import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsScreen
@@ -799,6 +802,28 @@ fun AppBottomNav() {
                     composable(route = AppDestinations.Root.GoalForecast.route) {
                         GoalForecastScreen(onPopBackStack = { navController.popBack() }, onNavigate = navigate)
                     }
+                    composable(route = AppDestinations.Root.NextDayWeight.route) {
+                        NextDayWeightScreen(onBack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(
+                        route = AppDestinations.Root.NextDayFood.routeWithArgs!!,
+                        arguments = listOf(
+                            navArgument(name = AppDestinations.FOOD_NAME) { type = NavType.StringType },
+                            navArgument(name = AppDestinations.IS_RECIPE) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) {
+                        NextDayFoodScreen(onBack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(
+                        route = AppDestinations.Root.NextDayMorning.routeWithArgs!!,
+                        arguments = listOf(navArgument(name = LOG_DATE) { type = NavType.StringType })
+                    ) {
+                        NextDayMorningScreen(onDone = { navController.popBack() }, onNavigate = navigate)
+                    }
                     composable(route = AppDestinations.Root.ForecastWhatIf.route) {
                         ForecastWhatIfScreen(onPopBackStack = { navController.popBack() })
                     }
@@ -973,6 +998,12 @@ fun AppBottomNav() {
                             modifier = Modifier,
                             onPopBackStack = {
                                 navController.popBack()
+                            },
+                            // A jump last night's dinner explains opens its explanation in place of Log weight.
+                            onOpenMorning = { date ->
+                                if (navController.popBack()) {
+                                    navController.navigate(route = AppDestinations.Root.NextDayMorning.createRoute(date = date))
+                                }
                             }
                         )
                     }

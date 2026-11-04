@@ -32,6 +32,13 @@ import org.thelazybattley.macrotrack.domain.usecase.whatfits.PlanFitPicksUseCase
 import org.thelazybattley.macrotrack.domain.usecase.whatfits.SetWhatFitsSettingsUseCase
 import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
 import org.thelazybattley.macrotrack.features.foodhistory.FoodHistoryViewModel
+import org.thelazybattley.macrotrack.features.nextday.NextDayFoodViewModel
+import org.thelazybattley.macrotrack.features.nextday.NextDayMorningViewModel
+import org.thelazybattley.macrotrack.features.nextday.NextDayWeightViewModel
+import org.thelazybattley.macrotrack.domain.usecase.nextday.GetMorningExplanationUseCase
+import org.thelazybattley.macrotrack.domain.usecase.nextday.GetNextDayInputsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.nextday.SetNextDayHeadsUpUseCase
+import org.thelazybattley.macrotrack.domain.usecase.nextday.SetNextDaySettingsUseCase
 import org.thelazybattley.macrotrack.data.local.tour.TourWaterDao
 import org.thelazybattley.macrotrack.data.repository.WaterRepositoryImpl
 import org.thelazybattley.macrotrack.domain.repository.WaterRepository
@@ -406,6 +413,10 @@ val useCaseModule = module {
     factoryOf(::GetWeekCardUseCase)
     factoryOf(::MarkCheckInSeenUseCase)
     factoryOf(::SetCheckInSettingsUseCase)
+    factoryOf(::GetNextDayInputsUseCase)
+    factoryOf(::GetMorningExplanationUseCase)
+    factoryOf(::SetNextDaySettingsUseCase)
+    factoryOf(::SetNextDayHeadsUpUseCase)
     factoryOf(::GetFoodLibraryUseCase)
     factoryOf(::IsTelemetryEnabledUseCase)
     factoryOf(::SetTelemetryEnabledUseCase)
@@ -522,6 +533,9 @@ val viewModelModule = module {
     viewModelOf(::ChecklistManageViewModel)
     viewModelOf(::WhatFitsViewModel)
     viewModelOf(::FoodHistoryViewModel)
+    viewModelOf(::NextDayWeightViewModel)
+    viewModelOf(::NextDayFoodViewModel)
+    viewModelOf(::NextDayMorningViewModel)
 }
 
 fun initKoin(extraModules: List<Module> = emptyList()) {

@@ -271,6 +271,20 @@ sealed class AppDestinations {
 
         object ForecastSettings : Root(route = "forecast_settings")
 
+        /** Dinner foods ranked by how they move the next morning's weigh-in. */
+        object NextDayWeight : Root(route = "next_day_weight")
+
+        /** What [FOOD_NAME] at dinner does to the next morning's weigh-in; [IS_RECIPE] tells a recipe from a food. */
+        object NextDayFood : Root(route = "next_day_food", routeWithArgs = "next_day_food/{$FOOD_NAME}?$IS_RECIPE={$IS_RECIPE}") {
+            fun createRoute(foodName: String, isRecipe: Boolean): String =
+                "$route/${foodName.encodeRouteArg()}" + queryString(IS_RECIPE to if (isRecipe) "true" else null)
+        }
+
+        /** The weigh-in just saved for [LOG_DATE], and the dinner the night before that explains its jump. */
+        object NextDayMorning : Root(route = "next_day_morning", routeWithArgs = "next_day_morning/{$LOG_DATE}") {
+            fun createRoute(date: LocalDate): String = "$route/$date"
+        }
+
         object Paywall : Root(route = "paywall", routeWithArgs = "paywall?$PRO_FEATURE={$PRO_FEATURE}") {
             fun createRoute(feature: String?): String {
                 return if (feature == null) route else "$route?$PRO_FEATURE=$feature"

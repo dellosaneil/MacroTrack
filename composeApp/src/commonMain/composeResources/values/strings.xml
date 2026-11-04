@@ -2285,7 +2285,7 @@
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>
     </plurals>
-    <string name="checklist_percent">%1$d%%</string>
+    <string name="checklist_percent">%1$d%</string>
     <string name="checklist_dash">–</string>
     <string name="checklist_legend_done">Done</string>
     <string name="checklist_legend_skipped">Skipped</string>
@@ -2304,7 +2304,7 @@
     <string name="checklist_row_since_start">Since start</string>
     <string name="checklist_row_status">Status</string>
     <string name="checklist_paused_since">Paused since %1$s · history kept</string>
-    <string name="checklist_since_start_value">%1$d%% done</string>
+    <string name="checklist_since_start_value">%1$d% done</string>
     <plurals name="checklist_refills">
         <item quantity="one">%1$d refill</item>
         <item quantity="other">%1$d refills</item>
@@ -2404,7 +2404,7 @@
     <string name="what_fits_tag_shrunk_start">less than usual (%1$s)</string>
     <string name="what_fits_tag_set">set by you</string>
     <string name="what_fits_macros_line">P %1$d · C %2$d · F %3$d</string>
-    <string name="what_fits_bars_aria">Uses %1$d%% of protein, %2$d%% of carbs, %3$d%% of fat left</string>
+    <string name="what_fits_bars_aria">Uses %1$d% of protein, %2$d% of carbs, %3$d% of fat left</string>
     <string name="what_fits_pick">Pick %1$s</string>
     <string name="what_fits_unpick">Remove %1$s</string>
     <string name="what_fits_change_amount">Change amount of %1$s</string>
@@ -2588,4 +2588,124 @@
     <string name="food_history_logged_to">Logged to %1$s</string>
     <string name="food_history_empty">Not logged in the last %1$d days.</string>
     <string name="what_fits_see_all">See all</string>
+
+    <!-- Next-day weight: what dinner does to the next morning's weigh-in -->
+    <string name="next_day_title">Next-day weight</string>
+    <string name="next_day_subtitle">What dinner does to tomorrow’s weigh-in</string>
+    <string name="next_day_new">NEW</string>
+    <string name="next_day_link_sub">How dinner moves tomorrow’s weigh-in</string>
+    <string name="next_day_link_sub_top">How dinner moves tomorrow’s weigh-in · %1$s %2$s</string>
+    <string name="next_day_link_food_sub">How it moves tomorrow’s weigh-in</string>
+    <string name="next_day_days">%1$d days</string>
+    <string name="next_day_period">Period</string>
+    <string name="next_day_sort">Sort</string>
+    <string name="next_day_biggest_label">BIGGEST JUMP THE MORNING AFTER</string>
+    <string name="next_day_biggest_after">after %1$s, at your usual %2$s.</string>
+    <plurals name="next_day_seen_on">
+        <item quantity="one">Seen on %1$d of %2$d night.</item>
+        <item quantity="other">Seen on %1$d of %2$d nights.</item>
+    </plurals>
+    <string name="next_day_no_jump_title">No big jumps yet</string>
+    <string name="next_day_no_jump_body">Once a food has %1$d dinners with a weigh-in that morning and the next, it shows here.</string>
+    <string name="next_day_usual_dinner">Usual dinner</string>
+    <string name="next_day_nights_counted">Nights counted</string>
+    <string name="next_day_dinner_foods">Dinner foods</string>
+    <string name="next_day_sort_raises">Raises it</string>
+    <string name="next_day_sort_lowers">Lowers it</string>
+    <string name="next_day_lower">LOWER</string>
+    <string name="next_day_higher">HIGHER</string>
+    <plurals name="next_day_row_sub">
+        <item quantity="one">%1$s · %2$d night</item>
+        <item quantity="other">%1$s · %2$d nights</item>
+    </plurals>
+    <string name="next_day_row_waiting">%1$d of %2$d nights · keep weighing in</string>
+    <string name="next_day_row_aria">%1$s, %2$s, next morning %3$s on average over %4$d nights</string>
+    <string name="next_day_row_aria_waiting">%1$s, not enough weigh-ins yet, %2$d of %3$d nights</string>
+    <string name="next_day_empty">No dinners logged in the last %1$d days. Log dinner and weigh in the next morning to see how it moves the scale.</string>
+    <string name="next_day_water_title">Mostly water, not fat.</string>
+    <string name="next_day_water_body">Carbs and salt hold extra water for a day or two. Gaining 1 %1$s of fat takes about %2$s kcal more than you burn.</string>
+    <string name="next_day_how_counted">A dinner counts when you weighed in that morning and the next morning. Change is next morning minus that morning. Foods need %1$d or more nights to show a number.</string>
+    <string name="next_day_heads_up_all">Heads-up while logging dinner</string>
+    <string name="next_day_heads_up_all_sub">Shows the expected change for foods that usually add %1$s or more</string>
+    <string name="next_day_percent">%1$s%</string>
+    <string name="next_day_percent_serving">%1$s% of a serving</string>
+
+    <plurals name="next_day_food_sub">
+        <item quantity="one">Next-day weight · %1$d dinner in %2$d days</item>
+        <item quantity="other">Next-day weight · %1$d dinners in %2$d days</item>
+    </plurals>
+    <string name="next_day_morning_after">The morning after, you usually weigh</string>
+    <string name="next_day_more_unit">%1$s more</string>
+    <string name="next_day_less_unit">%1$s less</string>
+    <string name="next_day_note_usual">At your usual %1$s.</string>
+    <string name="next_day_note_at">At %1$s.</string>
+    <string name="next_day_note_estimated">Not eaten at this amount yet, so it’s estimated from your other dinners.</string>
+    <plurals name="next_day_based_on">
+        <item quantity="one">Based on %1$d dinner.</item>
+        <item quantity="other">Based on %1$d dinners.</item>
+    </plurals>
+    <string name="next_day_based_on_range">Based on %1$d dinners, from %2$s to %3$s.</string>
+    <string name="next_day_amount_eaten">Amount eaten</string>
+    <string name="next_day_how_long">How long it lasts</string>
+    <plurals name="next_day_how_long_sub">
+        <item quantity="one">At %1$s, %2$d dinner</item>
+        <item quantity="other">At %1$s, average of %2$d</item>
+    </plurals>
+    <string name="next_day_fade_dinner">Dinner</string>
+    <string name="next_day_fade_day">Day %1$d</string>
+    <string name="next_day_fade_aria">After the dinner: next morning %1$s, the day after %2$s, by day 3 %3$s.</string>
+    <string name="next_day_no_weigh_in">no weigh-in</string>
+    <string name="next_day_why_title_up">Why so much at %1$s?</string>
+    <string name="next_day_why_title">What’s in it at %1$s</string>
+    <string name="next_day_carbs">Carbs</string>
+    <string name="next_day_energy">Energy</string>
+    <string name="next_day_fat_max">Even if all %1$s kcal were extra, that’s about %2$s of body fat. The rest is water held with the carbs and salt.</string>
+    <string name="next_day_each_dinner">Each dinner</string>
+    <string name="next_day_each_dinner_sub">That morning → next morning</string>
+    <string name="next_day_not_counted">No weigh-in on %1$s · not counted</string>
+    <string name="next_day_heads_up_toggle">Heads-up when I log it</string>
+    <string name="next_day_heads_up_toggle_sub">Shows the expected change before you add it</string>
+    <string name="next_day_heads_up_toggle_all_off">Off for every food on Next-day weight</string>
+    <string name="next_day_food_history">Food history</string>
+    <string name="next_day_log_dinner">Log for dinner</string>
+    <string name="next_day_not_enough">Not enough weigh-ins yet</string>
+    <string name="next_day_not_enough_body">We need %1$d dinners with a weigh-in that morning and the next morning. %2$s has %3$d.</string>
+    <string name="next_day_nights_progress">%1$d of %2$d nights counted</string>
+    <string name="next_day_weigh_tip">Weigh in in the morning, after the bathroom and before eating, so mornings compare fairly.</string>
+    <string name="next_day_reminder">Morning weigh-in reminder</string>
+    <string name="next_day_reminder_on">On · if no weight by %1$s</string>
+    <string name="next_day_reminder_off">Off · set a time to be reminded</string>
+    <string name="next_day_food_none">No dinners with %1$s in the last %2$d days.</string>
+
+    <string name="next_day_saved">Weight saved</string>
+    <string name="next_day_saved_today">Today, %1$s</string>
+    <string name="next_day_since_yesterday">%1$s since yesterday</string>
+    <string name="next_day_expected_label">EXPECTED AFTER LAST NIGHT</string>
+    <string name="next_day_expected_body">%1$s (%2$s) at dinner usually adds about %3$s by the next morning.</string>
+    <string name="next_day_match_right_on">Today is right on it.</string>
+    <string name="next_day_match_more">Today is a bit more, so some of it may be other things too.</string>
+    <string name="next_day_match_less">Today is a bit less than usual.</string>
+    <string name="next_day_expected">Expected</string>
+    <string name="next_day_today">Today</string>
+    <string name="next_day_back_by">Back by</string>
+    <string name="next_day_trend_flat">Your trend didn’t move up</string>
+    <string name="next_day_trend_up">Your trend moved up a little</string>
+    <string name="next_day_this_week">%1$s this week</string>
+    <string name="next_day_trend_legend">Trend %1$s</string>
+    <string name="next_day_daily_legend">Daily weigh-in</string>
+    <string name="next_day_chart_aria">Last %1$d days: daily weigh-ins, and the trend line ending at %2$s.</string>
+    <string name="next_day_see_food">See %1$s</string>
+
+    <string name="next_day_heads_up_label">Tomorrow’s weigh-in</string>
+    <string name="next_day_heads_up_higher">About %1$s higher</string>
+    <string name="next_day_heads_up_lower">About %1$s lower</string>
+    <string name="next_day_heads_up_why">Why?</string>
+    <plurals name="next_day_heads_up_from">
+        <item quantity="one">From %1$d dinner at %2$s.</item>
+        <item quantity="other">From %1$d dinners at %2$s.</item>
+    </plurals>
+    <string name="next_day_heads_up_estimated">Estimated from your %1$d %2$s dinners.</string>
+    <string name="next_day_heads_up_water">Mostly water from carbs and salt, usually back to your trend in 2–3 days.</string>
+    <string name="next_day_heads_up_hide">Don’t show for %1$s</string>
+    <string name="next_day_heads_up_hidden">Heads-up off for %1$s.</string>
 </resources>

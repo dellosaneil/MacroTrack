@@ -1,5 +1,9 @@
 package org.thelazybattley.macrotrack.features.addmeal
 
+import org.thelazybattley.macrotrack.domain.model.NextDayPeriod
+import org.thelazybattley.macrotrack.domain.model.nextDayOverview
+import org.thelazybattley.macrotrack.domain.usecase.nextday.GetNextDayInputsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.nextday.SetNextDayHeadsUpUseCase
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -56,6 +60,8 @@ class AddMealViewModel(
     private val searchOnlineFoodsUseCase: SearchOnlineFoodsUseCase,
     private val getOnlineFoodDetailsUseCase: GetOnlineFoodDetailsUseCase,
     private val saveOnlineFoodUseCase: SaveOnlineFoodUseCase,
+    private val getNextDayInputsUseCase: GetNextDayInputsUseCase,
+    private val setNextDayHeadsUpUseCase: SetNextDayHeadsUpUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), AddMealCallbacks {
 
@@ -117,6 +123,24 @@ class AddMealViewModel(
             onlineRequest.debounce(timeoutMillis = ONLINE_DEBOUNCE_MILLIS).collectLatest { request ->
                 showMoreJob?.cancel()
                 searchOnline(query = request.query)
+            }
+        }
+
+        viewModelScope.launch {
+            // What each food did to the next morning's weight before this day, for the heads-up at dinner.
+            getNextDayInputsUseCase().collect { inputs ->
+                _state.update { currentState ->
+                    currentState.copy(
+                        nextDay = nextDayOverview(
+                            entries = inputs.entries,
+                            weights = inputs.weights,
+                            today = currentState.logDate,
+                            days = NextDayPeriod.DAYS_90.days
+                        ),
+                        nextDaySettings = inputs.settings,
+                        nextDayUnits = inputs.units
+                    )
+                }
             }
         }
 
@@ -221,6 +245,16 @@ class AddMealViewModel(
 
     override fun onDismissOnlineNotice() {
         _state.update { it.copy(onlineNotice = null) }
+    }
+
+    override fun onHideHeadsUp(key: String) {
+        _state.update { it.copy(headsUpTurnedOff = it.headsUpTurnedOff + key) }
+        viewModelScope.launch { setNextDayHeadsUpUseCase(key = key, isShown = false) }
+    }
+
+    override fun onUndoHeadsUp(key: String) {
+        _state.update { it.copy(headsUpTurnedOff = it.headsUpTurnedOff - key) }
+        viewModelScope.launch { setNextDayHeadsUpUseCase(key = key, isShown = true) }
     }
 
     private suspend fun searchOnline(query: String) {

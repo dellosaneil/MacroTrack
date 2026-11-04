@@ -17,6 +17,7 @@ import org.thelazybattley.macrotrack.core.toCleanString
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.Weight
+import org.thelazybattley.macrotrack.domain.usecase.nextday.GetMorningExplanationUseCase
 import org.thelazybattley.macrotrack.domain.usecase.units.GetUnitSystemUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUseCase
 import org.thelazybattley.macrotrack.domain.usecase.userdetails.InsertUserDetailsUseCase
@@ -37,7 +38,9 @@ data class LogWeightViewState(
     val weights: List<Weight> = emptyList(),
     val userDetails: UserDetails? = null,
     val isLoaded: Boolean = false,
-    val isSaved: Boolean = false
+    val isSaved: Boolean = false,
+    /** The day just saved, when its jump since the day before is one last night's dinner usually makes. */
+    val explainedJump: LocalDate? = null
 ) {
     /** The typed weight in kg. */
     val weight: Double? get() = inputValue?.let { unitSystem.weightToKg(value = it) }
@@ -63,7 +66,8 @@ class LogWeightViewModel(
     getUserDetailsUseCase: GetUserDetailsUseCase,
     getUnitSystemUseCase: GetUnitSystemUseCase,
     private val insertWeightUseCase: InsertWeightUseCase,
-    private val insertUserDetailsUseCase: InsertUserDetailsUseCase
+    private val insertUserDetailsUseCase: InsertUserDetailsUseCase,
+    private val getMorningExplanationUseCase: GetMorningExplanationUseCase
 ) : ViewModel() {
 
     // A progress photo's day without a weigh-in opens here on that day.
@@ -132,7 +136,10 @@ class LogWeightViewModel(
             if (userDetails != null && (latestDate == null || currentState.date >= latestDate)) {
                 insertUserDetailsUseCase(userDetails = userDetails.copy(weight = weight))
             }
-            _state.update { it.copy(isSaved = true) }
+            // Only this morning's weigh-in gets explained; backfilled days just save.
+            val isExplained = currentState.date == getCurrentDate() &&
+                runCatching { getMorningExplanationUseCase(date = currentState.date) }.getOrNull() != null
+            _state.update { it.copy(isSaved = true, explainedJump = currentState.date.takeIf { isExplained }) }
         }
     }
 

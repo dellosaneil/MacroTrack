@@ -15,6 +15,7 @@ import org.thelazybattley.macrotrack.domain.model.ForecastSettings
 import org.thelazybattley.macrotrack.domain.model.ReviewHistory
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.CheckInSettings
+import org.thelazybattley.macrotrack.domain.model.NextDaySettings
 import org.thelazybattley.macrotrack.domain.model.WhatFitsSettings
 import org.thelazybattley.macrotrack.domain.repository.AppFlagRepository
 
@@ -123,6 +124,14 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         dao.insertFlag(flag = AppFlagEntity(key = CHECK_IN_SETTINGS, value = json.encodeToString(CheckInSettings.serializer(), settings)))
     }
 
+    override fun getNextDaySettings(): Flow<NextDaySettings> = dao.getFlagValue(key = NEXT_DAY_SETTINGS).map { value ->
+        value?.let { runCatching { json.decodeFromString(NextDaySettings.serializer(), it) }.getOrNull() } ?: NextDaySettings()
+    }
+
+    override suspend fun setNextDaySettings(settings: NextDaySettings) {
+        dao.insertFlag(flag = AppFlagEntity(key = NEXT_DAY_SETTINGS, value = json.encodeToString(NextDaySettings.serializer(), settings)))
+    }
+
     companion object {
         private val json = Json { ignoreUnknownKeys = true }
         private val milestonesSerializer = ListSerializer(CustomMilestone.serializer())
@@ -140,5 +149,6 @@ class AppFlagRepositoryImpl(private val dao: AppFlagDao) : AppFlagRepository {
         const val FORECAST_MILESTONES = "forecast_milestones"
         const val WHAT_FITS_SETTINGS = "what_fits_settings"
         const val CHECK_IN_SETTINGS = "check_in_settings"
+        const val NEXT_DAY_SETTINGS = "next_day_settings"
     }
 }

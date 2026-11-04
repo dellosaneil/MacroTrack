@@ -7,6 +7,7 @@ import org.thelazybattley.macrotrack.domain.model.ForecastSettings
 import org.thelazybattley.macrotrack.domain.model.ReviewHistory
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.CheckInSettings
+import org.thelazybattley.macrotrack.domain.model.NextDaySettings
 import org.thelazybattley.macrotrack.domain.model.WhatFitsSettings
 
 interface AppFlagRepository {
@@ -62,4 +63,9 @@ interface AppFlagRepository {
     fun getCheckInSettings(): Flow<CheckInSettings>
 
     suspend fun setCheckInSettings(settings: CheckInSettings)
+
+    /** The next-day weight heads-up while logging dinner, and the foods it's turned off for. */
+    fun getNextDaySettings(): Flow<NextDaySettings>
+
+    suspend fun setNextDaySettings(settings: NextDaySettings)
 }

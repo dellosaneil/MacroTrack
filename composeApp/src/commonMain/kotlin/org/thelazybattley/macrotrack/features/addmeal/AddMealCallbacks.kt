@@ -27,6 +27,10 @@ interface AddMealCallbacks {
     fun onUndoOnlineNotice()
     fun onDismissOnlineNotice()
 
+    /** Stops the next-day heads-up for the food with [key], with Undo. */
+    fun onHideHeadsUp(key: String)
+    fun onUndoHeadsUp(key: String)
+
     companion object {
         fun default() = object : AddMealCallbacks {
             override fun onMealFilterSelected(mealFilter: MealFilter) {}
@@ -51,6 +55,8 @@ interface AddMealCallbacks {
             override fun onShowMoreOnline() {}
             override fun onUndoOnlineNotice() {}
             override fun onDismissOnlineNotice() {}
+            override fun onHideHeadsUp(key: String) {}
+            override fun onUndoHeadsUp(key: String) {}
         }
     }
 }

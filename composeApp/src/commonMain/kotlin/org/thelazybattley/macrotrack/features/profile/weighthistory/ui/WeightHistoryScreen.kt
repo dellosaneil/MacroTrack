@@ -62,6 +62,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.domain.model.GoalForecast
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.forecast.ui.GoalForecastLink
+import org.thelazybattley.macrotrack.features.nextday.ui.NextDayWeightLink
+import org.thelazybattley.macrotrack.domain.model.NextDayFood
 import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.pro.ProFeature
@@ -95,7 +97,8 @@ fun WeightHistoryScreen(
         onBack = onPopBackStack,
         onLogWeight = { onNavigate(AppDestinations.Root.LogWeight.route) },
         onOpenMovingAverage = { onNavigate(AppDestinations.Root.MovingAverage.route) },
-        onOpenForecast = { onNavigate(AppDestinations.Root.GoalForecast.route) }
+        onOpenForecast = { onNavigate(AppDestinations.Root.GoalForecast.route) },
+        onOpenNextDay = { onNavigate(AppDestinations.Root.NextDayWeight.route) }
     )
 }
 
@@ -107,7 +110,8 @@ private fun WeightHistoryScreen(
     onBack: () -> Unit,
     onLogWeight: () -> Unit,
     onOpenMovingAverage: () -> Unit,
-    onOpenForecast: () -> Unit
+    onOpenForecast: () -> Unit,
+    onOpenNextDay: () -> Unit
 ) {
 
     Scaffold(
@@ -161,7 +165,10 @@ private fun WeightHistoryScreen(
                     goalPhases = viewState.goalPhases,
                     onOpenMovingAverage = onOpenMovingAverage,
                     forecast = viewState.forecast,
-                    onOpenForecast = onOpenForecast
+                    onOpenForecast = onOpenForecast,
+                    nextDayBiggest = viewState.nextDayBiggest,
+                    isNextDayNew = viewState.isNextDayNew,
+                    onOpenNextDay = onOpenNextDay
                 )
             }
             WeightHistoryAverageCard(modifier = Modifier.fillMaxWidth(), viewState = viewState)
@@ -182,7 +189,10 @@ private fun ChartCard(
     goalPhases: List<GoalPhase>,
     onOpenMovingAverage: () -> Unit,
     forecast: GoalForecast?,
-    onOpenForecast: () -> Unit
+    onOpenForecast: () -> Unit,
+    nextDayBiggest: NextDayFood?,
+    isNextDayNew: Boolean,
+    onOpenNextDay: () -> Unit
 ) {
     var selection by remember(period) { mutableStateOf<WeightRange?>(value = null) }
     var isSelecting by remember(period) { mutableStateOf(value = false) }
@@ -277,6 +287,7 @@ private fun ChartCard(
         }
         MovingAverageLink(isLocked = !pro.isActive, onClick = onOpenMovingAverage)
         GoalForecastLink(forecast = forecast, onClick = onOpenForecast)
+        NextDayWeightLink(biggest = nextDayBiggest, isNew = isNextDayNew, onClick = onOpenNextDay)
     }
 }
 
@@ -398,6 +409,7 @@ private fun PreviewWeightHistoryScreen() {
             onBack = {},
             onLogWeight = {},
             onOpenMovingAverage = {},
+            onOpenNextDay = {},
             onOpenForecast = {}
         )
     }

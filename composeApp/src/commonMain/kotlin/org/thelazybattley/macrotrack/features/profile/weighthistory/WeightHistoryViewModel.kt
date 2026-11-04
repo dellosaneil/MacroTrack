@@ -15,12 +15,16 @@ import org.thelazybattley.macrotrack.domain.usecase.userdetails.GetUserDetailsUs
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.MovingAverageWindow
 import org.thelazybattley.macrotrack.features.profile.weighthistory.ui.WeightHistoryTimeRangeEnum
+import org.thelazybattley.macrotrack.domain.model.NextDayPeriod
+import org.thelazybattley.macrotrack.domain.model.nextDayOverview
+import org.thelazybattley.macrotrack.domain.usecase.nextday.GetNextDayInputsUseCase
 
 class WeightHistoryViewModel(
     private val getAllWeightUseCase: GetAllWeightUseCase,
     private val getUserDetailsUseCase: GetUserDetailsUseCase,
     private val getAllDailyGoalsUseCase: GetAllDailyGoalsUseCase,
-    private val getGoalForecastUseCase: GetGoalForecastUseCase
+    private val getGoalForecastUseCase: GetGoalForecastUseCase,
+    private val getNextDayInputsUseCase: GetNextDayInputsUseCase
 ) : ViewModel(), WeightHistoryCallbacks {
 
     private val _state = MutableStateFlow(value = WeightHistoryViewState())
@@ -57,6 +61,17 @@ class WeightHistoryViewModel(
         }
         viewModelScope.launch {
             getGoalForecastUseCase().collect { snapshot -> _state.update { it.copy(forecast = snapshot?.forecast) } }
+        }
+        viewModelScope.launch {
+            getNextDayInputsUseCase().collect { inputs ->
+                val overview = nextDayOverview(
+                    entries = inputs.entries,
+                    weights = inputs.weights,
+                    today = getCurrentDate(),
+                    days = NextDayPeriod.DAYS_90.days
+                )
+                _state.update { it.copy(nextDayBiggest = overview.biggest, isNextDayNew = !inputs.settings.isSeen) }
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
+import org.thelazybattley.macrotrack.domain.model.nextDayFoodKey
 import androidx.compose.foundation.background
 import org.jetbrains.compose.resources.DrawableResource
 import macrotrack.composeapp.generated.resources.quick_add
@@ -496,7 +497,15 @@ private fun LazyListScope.mealItems(
                     callbacks.onNavigateScreen(
                         route = AppDestinations.Root.FoodHistory.createRoute(foodName = item.food.name, isRecipe = item.isRecipe)
                     )
-                }
+                },
+                headsUp = selectedItem?.let { viewState.headsUp(item = it) },
+                onHeadsUpWhy = {
+                    callbacks.onNavigateScreen(
+                        route = AppDestinations.Root.NextDayFood.createRoute(foodName = item.food.name, isRecipe = item.isRecipe)
+                    )
+                },
+                onHideHeadsUp = { callbacks.onHideHeadsUp(key = nextDayFoodKey(name = item.food.name, isRecipe = item.isRecipe)) },
+                onUndoHeadsUp = { callbacks.onUndoHeadsUp(key = nextDayFoodKey(name = item.food.name, isRecipe = item.isRecipe)) }
             )
         }
         val modifier = Modifier

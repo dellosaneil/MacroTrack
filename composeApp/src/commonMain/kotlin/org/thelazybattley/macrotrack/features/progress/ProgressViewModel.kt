@@ -6,12 +6,17 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.MeasurementType
+import org.thelazybattley.macrotrack.domain.model.NextDayFood
+import org.thelazybattley.macrotrack.domain.model.NextDayPeriod
+import org.thelazybattley.macrotrack.domain.model.nextDayOverview
+import org.thelazybattley.macrotrack.domain.usecase.nextday.GetNextDayInputsUseCase
 import org.thelazybattley.macrotrack.domain.model.UserDetails
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.domain.usecase.measurement.GetAllMeasurementsUseCase
@@ -47,7 +52,11 @@ data class ProgressViewState(
     val measurementCount: Int = 0,
     val photoAlbums: List<AlbumSummary> = emptyList(),
     /** A weight trend card needs two weigh-ins. */
-    val canShareWeight: Boolean = false
+    val canShareWeight: Boolean = false,
+    /** The dinner food that raises the next morning's weight most, over the last 90 days. */
+    val nextDayBiggest: NextDayFood? = null,
+    /** Next-day weight hasn't been opened yet. */
+    val isNextDayNew: Boolean = false
 )
 
 class ProgressViewModel(
@@ -56,8 +65,15 @@ class ProgressViewModel(
     getAllMeasurementsUseCase: GetAllMeasurementsUseCase,
     unitPreference: MeasurementUnitPreference,
     getPhotoAlbumsUseCase: GetPhotoAlbumsUseCase,
-    getProgressPhotosUseCase: GetProgressPhotosUseCase
+    getProgressPhotosUseCase: GetProgressPhotosUseCase,
+    getNextDayInputsUseCase: GetNextDayInputsUseCase
 ) : ViewModel() {
+
+    private val nextDay = getNextDayInputsUseCase().map { inputs ->
+        val today = getCurrentDate()
+        nextDayOverview(entries = inputs.entries, weights = inputs.weights, today = today, days = NextDayPeriod.DAYS_90.days).biggest to
+            !inputs.settings.isSeen
+    }
 
     private val photoAlbums = combine(
         flow = getPhotoAlbumsUseCase(),
@@ -67,7 +83,7 @@ class ProgressViewModel(
         albumSummaries(albums = albums, photos = photos, weightsByDate = weights.byDate())
     }
 
-    val state = combine(
+    private val progress = combine(
         flow = getAllWeightUseCase(),
         flow2 = flow { emitAll(getUserDetailsUseCase()) },
         flow3 = getAllMeasurementsUseCase(),
@@ -103,6 +119,10 @@ class ProgressViewModel(
             photoAlbums = photoAlbums,
             canShareWeight = sorted.size > 1
         )
+    }
+
+    val state = combine(flow = progress, flow2 = nextDay) { viewState, (biggest, isNew) ->
+        viewState.copy(nextDayBiggest = biggest, isNextDayNew = isNew)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),

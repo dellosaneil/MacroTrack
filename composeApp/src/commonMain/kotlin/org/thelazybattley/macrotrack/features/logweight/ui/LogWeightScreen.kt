@@ -100,12 +100,16 @@ private val QUICK_ADJUSTMENTS = listOf(-0.5, -0.25, 0.0, 0.25, 0.5)
 @Composable
 fun LogWeightScreen(
     modifier: Modifier = Modifier,
-    onPopBackStack: () -> Unit
+    onPopBackStack: () -> Unit,
+    /** Opens the explanation of a jump on the day saved, which last night's dinner usually does. */
+    onOpenMorning: (LocalDate) -> Unit = {}
 ) {
     val viewModel = koinViewModel<LogWeightViewModel>()
     val viewState by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(key1 = viewState.isSaved) {
-        if (viewState.isSaved) onPopBackStack()
+        if (!viewState.isSaved) return@LaunchedEffect
+        val morning = viewState.explainedJump
+        if (morning != null) onOpenMorning(morning) else onPopBackStack()
     }
     LogWeightScreen(
         modifier = modifier,
