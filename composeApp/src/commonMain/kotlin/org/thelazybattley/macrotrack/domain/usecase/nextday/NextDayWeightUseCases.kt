@@ -6,11 +6,11 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDate
-import org.thelazybattley.macrotrack.domain.model.DinnerEntry
+import org.thelazybattley.macrotrack.domain.model.DinnerItem
 import org.thelazybattley.macrotrack.domain.model.MorningExplanation
 import org.thelazybattley.macrotrack.domain.model.NextDaySettings
 import org.thelazybattley.macrotrack.domain.model.Weight
-import org.thelazybattley.macrotrack.domain.model.dinnerEntries
+import org.thelazybattley.macrotrack.domain.model.dinnerItems
 import org.thelazybattley.macrotrack.domain.model.morningExplanation
 import org.thelazybattley.macrotrack.domain.repository.AppFlagRepository
 import org.thelazybattley.macrotrack.domain.usecase.CalculateAdjustMacrosUseCase
@@ -21,9 +21,9 @@ import org.thelazybattley.macrotrack.domain.usecase.recipe.GetAllRecipeUseCase
 import org.thelazybattley.macrotrack.domain.usecase.weight.GetAllWeightUseCase
 import org.thelazybattley.macrotrack.features.addmeal.toRecipeMeals
 
-/** Every food logged at dinner, every weigh-in, and the heads-up settings: all the next-day weight screens work from. */
+/** Everything logged at dinner, every weigh-in, and the heads-up settings: all the next-day weight screens work from. */
 data class NextDayInputs(
-    val entries: List<DinnerEntry>,
+    val items: List<DinnerItem>,
     val weights: List<Weight>,
     val settings: NextDaySettings,
     /** The unit each saved or library food is stored in, by name; a saved food wins over a library food. */
@@ -51,13 +51,13 @@ class GetNextDayInputsUseCase(
             val recipeCalories = recipes
                 .toRecipeMeals(foods = foods, calculateAdjustMacros = calculateAdjustMacrosUseCase)
                 .associate { it.name to it.food.macros.calories }
-            dinnerEntries(logs = logs, recipeCalories = recipeCalories) to
+            dinnerItems(logs = logs, recipeCalories = recipeCalories) to
                 (libraryFoods.associate { it.food.name to it.food.unit } + foods.associate { it.name to it.unit })
         },
         flow2 = getAllWeightUseCase(),
         flow3 = repository.getNextDaySettings()
-    ) { (entries, units), weights, settings ->
-        NextDayInputs(entries = entries, weights = weights.sortedBy { it.date }, settings = settings, units = units)
+    ) { (items, units), weights, settings ->
+        NextDayInputs(items = items, weights = weights.sortedBy { it.date }, settings = settings, units = units)
     }
 }
 
@@ -65,7 +65,7 @@ class GetNextDayInputsUseCase(
 class GetMorningExplanationUseCase(private val getNextDayInputsUseCase: GetNextDayInputsUseCase) {
     suspend operator fun invoke(date: LocalDate): MorningExplanation? {
         val inputs = getNextDayInputsUseCase().first()
-        return morningExplanation(date = date, entries = inputs.entries, weights = inputs.weights)
+        return morningExplanation(date = date, items = inputs.items, weights = inputs.weights)
     }
 }
 
@@ -75,7 +75,7 @@ class SetNextDaySettingsUseCase(private val repository: AppFlagRepository) {
     }
 }
 
-/** Turns the heads-up while logging dinner on or off for one food. */
+/** Turns the heads-up while logging dinner on or off for one dinner. */
 class SetNextDayHeadsUpUseCase(private val repository: AppFlagRepository) {
     suspend operator fun invoke(key: String, isShown: Boolean) {
         val settings = repository.getNextDaySettings().first()

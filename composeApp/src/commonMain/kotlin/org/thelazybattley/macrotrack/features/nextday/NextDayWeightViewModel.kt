@@ -16,15 +16,14 @@ import org.thelazybattley.macrotrack.domain.usecase.nextday.GetNextDayInputsUseC
 import org.thelazybattley.macrotrack.domain.usecase.nextday.NextDayInputs
 import org.thelazybattley.macrotrack.domain.usecase.nextday.SetNextDaySettingsUseCase
 
-/** Dinner foods ranked by the next morning's change, over [period]; [isRaisesFirst] puts the biggest jumps on top. */
+/** The summary: the biggest jump, every dinner split by what it does, and the top few each way, over [period]. */
 data class NextDayWeightViewState(
     val today: LocalDate = getCurrentDate(),
     val inputs: NextDayInputs? = null,
-    val period: NextDayPeriod = NextDayPeriod.DAYS_90,
-    val isRaisesFirst: Boolean = true
+    val period: NextDayPeriod = NextDayPeriod.YEAR
 ) {
     val overview: NextDayOverview? =
-        inputs?.let { nextDayOverview(entries = it.entries, weights = it.weights, today = today, days = period.days) }
+        inputs?.let { nextDayOverview(items = it.items, weights = it.weights, today = today, period = period) }
 
     val isHeadsUpOn: Boolean get() = inputs?.settings?.isHeadsUpOn ?: true
 
@@ -33,13 +32,11 @@ data class NextDayWeightViewState(
 
 interface NextDayWeightCallbacks {
     fun onPeriodSelected(period: NextDayPeriod)
-    fun onSortSelected(isRaisesFirst: Boolean)
     fun onHeadsUpToggled()
 
     companion object {
         fun default() = object : NextDayWeightCallbacks {
             override fun onPeriodSelected(period: NextDayPeriod) = Unit
-            override fun onSortSelected(isRaisesFirst: Boolean) = Unit
             override fun onHeadsUpToggled() = Unit
         }
     }
@@ -68,10 +65,6 @@ class NextDayWeightViewModel(
 
     override fun onPeriodSelected(period: NextDayPeriod) {
         _state.update { it.copy(period = period) }
-    }
-
-    override fun onSortSelected(isRaisesFirst: Boolean) {
-        _state.update { it.copy(isRaisesFirst = isRaisesFirst) }
     }
 
     override fun onHeadsUpToggled() {

@@ -1,44 +1,58 @@
 package org.thelazybattley.macrotrack.features.nextday.ui
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import macrotrack.composeapp.generated.resources.Res
 import macrotrack.composeapp.generated.resources.ic_chevron_right
 import macrotrack.composeapp.generated.resources.ic_scale
 import macrotrack.composeapp.generated.resources.next_day_heads_up_estimated
-import macrotrack.composeapp.generated.resources.next_day_heads_up_from
+import macrotrack.composeapp.generated.resources.next_day_heads_up_footer
 import macrotrack.composeapp.generated.resources.next_day_heads_up_hidden
 import macrotrack.composeapp.generated.resources.next_day_heads_up_hide
 import macrotrack.composeapp.generated.resources.next_day_heads_up_higher
 import macrotrack.composeapp.generated.resources.next_day_heads_up_label
 import macrotrack.composeapp.generated.resources.next_day_heads_up_lower
+import macrotrack.composeapp.generated.resources.next_day_heads_up_usual
 import macrotrack.composeapp.generated.resources.next_day_heads_up_water
 import macrotrack.composeapp.generated.resources.next_day_heads_up_why
 import macrotrack.composeapp.generated.resources.next_day_link_sub
@@ -46,12 +60,21 @@ import macrotrack.composeapp.generated.resources.next_day_link_sub_top
 import macrotrack.composeapp.generated.resources.next_day_new
 import macrotrack.composeapp.generated.resources.next_day_percent
 import macrotrack.composeapp.generated.resources.next_day_percent_serving
+import macrotrack.composeapp.generated.resources.next_day_row_aria
+import macrotrack.composeapp.generated.resources.next_day_row_aria_waiting
+import macrotrack.composeapp.generated.resources.next_day_nights
+import macrotrack.composeapp.generated.resources.next_day_row_waiting
 import macrotrack.composeapp.generated.resources.next_day_title
 import macrotrack.composeapp.generated.resources.undo
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
-import org.thelazybattley.macrotrack.domain.model.NextDayFood
+import org.thelazybattley.macrotrack.domain.model.DinnerFood
+import org.thelazybattley.macrotrack.domain.model.DinnerHeadsUp
+import org.thelazybattley.macrotrack.domain.model.DinnerItem
+import org.thelazybattley.macrotrack.domain.model.DinnerSize
+import org.thelazybattley.macrotrack.domain.model.NEXT_DAY_MIN_NIGHTS
+import org.thelazybattley.macrotrack.domain.model.NextDayDinner
 import org.thelazybattley.macrotrack.ui.common.LocalUnitSystem
 import org.thelazybattley.macrotrack.ui.common.formatPortion
 import org.thelazybattley.macrotrack.ui.common.weightUnitLabel
@@ -60,6 +83,9 @@ import org.thelazybattley.macrotrack.ui.theme.MacroTrackTheme.typography
 import kotlin.math.abs
 import kotlin.math.round
 import kotlin.math.roundToInt
+
+/** A bar this long, in kg, fills its half of a dinner row. */
+private const val BAR_FULL_KG = 1.4
 
 /** A change in kg in the user's unit to one decimal with its sign: "+1.0", "−0.2", or "±0.0" when it barely moved. */
 @Composable
@@ -94,6 +120,24 @@ internal fun nextDayAmount(isRecipe: Boolean, unit: String, amount: Double, isLo
     formatPortion(amount = amount, storedUnit = unit)
 }
 
+/** The amount of each food, as in "250 g · 70%"; a quick add has no amount, so it's left out. */
+@Composable
+internal fun foodAmounts(foods: List<DinnerFood>, unitOf: (String, Boolean) -> String): String =
+    foods.filterNot { it.isQuickAdd }
+        .map { nextDayAmount(isRecipe = it.isRecipe, unit = unitOf(it.name, it.isRecipe), amount = it.amount) }
+        .joinToString(separator = " · ")
+
+/** One night's dinner as eaten: "250 g Rice + 8 pcs Chicken wings", the most kcal first. */
+@Composable
+internal fun nightAmounts(items: List<DinnerItem>, unitOf: (String, Boolean) -> String, separator: String = " + "): String =
+    items.sortedByDescending { it.calories }.map { item ->
+        if (item.isQuickAdd) {
+            item.name
+        } else {
+            nextDayAmount(isRecipe = item.isRecipe, unit = unitOf(item.name, item.isRecipe), amount = item.amount) + " " + item.name
+        }
+    }.joinToString(separator = separator)
+
 /** [this] with the first appearance of each of [parts] in bold. */
 internal fun String.withBold(vararg parts: String): AnnotatedString = buildAnnotatedString {
     val ranges = parts.mapNotNull { part ->
@@ -111,9 +155,9 @@ internal fun String.withBold(vararg parts: String): AnnotatedString = buildAnnot
     append(this@withBold.substring(startIndex = at))
 }
 
-/** The rounded box around a screen's icon, as on the other rows under the weight chart. */
+/** The rounded box around the scale icon, as on the other rows under the weight chart. */
 @Composable
-internal fun NextDayIconBox(tint: androidx.compose.ui.graphics.Color, background: androidx.compose.ui.graphics.Color = colors.surface) {
+internal fun NextDayIconBox(tint: Color, background: Color = colors.surface) {
     Box(
         modifier = Modifier
             .size(size = 36.dp)
@@ -130,13 +174,13 @@ internal fun NextDayIconBox(tint: androidx.compose.ui.graphics.Color, background
 }
 
 /**
- * The Next-day weight row on Progress and Weight history: what it is, and the food that raises the next morning's
+ * The Next-day weight row on Progress and Weight history: what it is, and the dinner that raises the next morning's
  * weight most when there is one. [isNew] tags it until it's been opened.
  */
 @Composable
 fun NextDayWeightLink(
     modifier: Modifier = Modifier,
-    biggest: NextDayFood?,
+    biggest: NextDayDinner?,
     isNew: Boolean,
     subtitle: String? = null,
     onClick: () -> Unit
@@ -184,29 +228,149 @@ fun NextDayWeightLink(
     }
 }
 
+/** The foods of a dinner as chips joined by "+"; ones matching [highlight] stand out. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun FoodChips(foods: List<String>, highlight: String = "") {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(space = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(space = 4.dp),
+        itemVerticalAlignment = Alignment.CenterVertically
+    ) {
+        foods.forEachIndexed { index, food ->
+            if (index > 0) Text(text = "+", style = typography.bold13, color = colors.faint)
+            val isHit = highlight.isNotBlank() && food.contains(other = highlight.trim(), ignoreCase = true)
+            Text(
+                text = food,
+                style = typography.bold14,
+                color = if (isHit) colors.accentInk else colors.ink,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .background(color = if (isHit) colors.accentSoft else colors.background, shape = RoundedCornerShape(size = 8.dp))
+                    .border(width = 1.dp, color = if (isHit) colors.accent else colors.line, shape = RoundedCornerShape(size = 8.dp))
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+        }
+    }
+}
+
 /**
- * What [amount] of [food] at dinner usually does to tomorrow's weigh-in, shown under the amount while adding it to
- * Dinner. [isOff] shows the line that undoes turning it off instead.
+ * A dinner in a list: its foods, usual amounts and nights (or how close it is to a number), a bar left for lower and
+ * right for higher, and the average change.
+ */
+@Composable
+internal fun DinnerRow(
+    dinner: NextDayDinner,
+    unitOf: (String, Boolean) -> String,
+    highlight: String = "",
+    onClick: () -> Unit
+) {
+    val average = dinner.average
+    val counted = dinner.counted.size
+    val amounts = foodAmounts(foods = dinner.usualFoods, unitOf = unitOf)
+    val description = if (average != null) {
+        stringResource(resource = Res.string.next_day_row_aria, dinner.name, amounts, average.signedTenthsWithUnit(), counted)
+    } else {
+        stringResource(resource = Res.string.next_day_row_aria_waiting, dinner.name, counted, NEXT_DAY_MIN_NIGHTS)
+    }
+    val upColor = colors.fat
+    val downColor = colors.accent
+    val lineColor = colors.dashed
+    val waitingColor = colors.faint
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 64.dp)
+            .clickable(role = Role.Button, onClick = onClick)
+            .clearAndSetSemantics { contentDescription = description }
+            .padding(horizontal = 14.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(space = 10.dp)
+    ) {
+        Column(modifier = Modifier.weight(weight = 1f), verticalArrangement = Arrangement.spacedBy(space = 3.dp)) {
+            FoodChips(foods = dinner.foods, highlight = highlight)
+            if (average != null) {
+                Text(
+                    text = listOf(amounts, pluralStringResource(resource = Res.plurals.next_day_nights, quantity = counted, counted))
+                        .filter { it.isNotEmpty() }
+                        .joinToString(separator = " · "),
+                    style = typography.regular11,
+                    color = colors.muted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            } else {
+                Text(
+                    text = stringResource(resource = Res.string.next_day_row_waiting, counted, NEXT_DAY_MIN_NIGHTS),
+                    style = typography.bold11,
+                    color = colors.warmInk,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        Canvas(modifier = Modifier.width(width = 72.dp).height(height = 22.dp)) {
+            val center = size.width / 2
+            drawLine(color = lineColor, start = Offset(x = center, y = 0f), end = Offset(x = center, y = size.height), strokeWidth = 1.5.dp.toPx())
+            if (average == null) {
+                drawLine(
+                    color = waitingColor,
+                    start = Offset(x = size.width * 0.25f, y = size.height / 2),
+                    end = Offset(x = size.width * 0.75f, y = size.height / 2),
+                    strokeWidth = 2.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(2.dp.toPx(), 3.dp.toPx()))
+                )
+            } else {
+                val width = (center * (abs(average) / BAR_FULL_KG).toFloat()).coerceIn(minimumValue = 2.dp.toPx(), maximumValue = center)
+                val barHeight = 12.dp.toPx()
+                drawRoundRect(
+                    color = if (average > 0) upColor else downColor,
+                    topLeft = Offset(x = if (average > 0) center else center - width, y = (size.height - barHeight) / 2),
+                    size = Size(width = width, height = barHeight),
+                    cornerRadius = CornerRadius(x = 4.dp.toPx())
+                )
+            }
+        }
+        Text(
+            text = average?.signedTenthsWithUnit() ?: "—",
+            style = typography.bold15,
+            color = when {
+                average == null -> colors.faint
+                average >= 0.05 -> colors.danger
+                average <= -0.05 -> colors.accentInk
+                else -> colors.muted
+            },
+            maxLines = 1,
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(width = 64.dp)
+        )
+    }
+}
+
+/**
+ * What tonight's dinner so far usually does to tomorrow's weigh-in, under the foods picked for Dinner. Once it's been
+ * turned off, it offers Undo instead.
  */
 @Composable
 fun NextDayHeadsUpCard(
-    food: NextDayFood,
-    amount: Double,
-    estimate: Double,
-    unit: String,
-    isOff: Boolean,
+    headsUp: DinnerHeadsUp,
     onWhy: () -> Unit,
     onHide: () -> Unit,
     onUndo: () -> Unit
 ) {
-    HorizontalDivider(thickness = 1.dp, color = colors.divider)
-    if (isOff) {
+    val dinner = headsUp.dinner
+    if (headsUp.isOff) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(size = 14.dp))
+                .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 14.dp))
+                .padding(start = 14.dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(resource = Res.string.next_day_heads_up_hidden, food.name),
+                text = stringResource(resource = Res.string.next_day_heads_up_hidden, dinner.name),
                 style = typography.regular11,
                 color = colors.muted,
                 modifier = Modifier.weight(weight = 1f)
@@ -224,25 +388,25 @@ fun NextDayHeadsUpCard(
         }
         return
     }
+    val estimate = headsUp.estimate
     val isUp = estimate >= 0
-    val amountText = nextDayAmount(isRecipe = food.isRecipe, unit = unit, amount = amount)
-    val portion = food.portion(amount = amount)
-    val basis = if (portion != null) {
-        pluralStringResource(resource = Res.plurals.next_day_heads_up_from, quantity = portion.nights.size, portion.nights.size, amountText)
+    val basis = if (headsUp.isUsualSize) {
+        stringResource(resource = Res.string.next_day_heads_up_usual, dinner.name, dinner.size(size = DinnerSize.USUAL)?.nights?.size ?: dinner.counted.size)
     } else {
-        stringResource(resource = Res.string.next_day_heads_up_estimated, food.counted.size, food.name)
+        stringResource(resource = Res.string.next_day_heads_up_estimated, dinner.counted.size, dinner.name)
     }
     val value = abs(estimate).tenths() + " " + weightUnitLabel()
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = colors.dangerSoft)
+            .clip(shape = RoundedCornerShape(size = 18.dp))
+            .background(color = if (isUp) colors.dangerSoft else colors.hero)
             .semantics { liveRegion = LiveRegionMode.Polite }
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .padding(all = 14.dp),
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(space = 10.dp)) {
-            NextDayIconBox(tint = colors.danger)
+            NextDayIconBox(tint = if (isUp) colors.danger else colors.accentInk)
             Column(modifier = Modifier.weight(weight = 1f)) {
                 Text(text = stringResource(resource = Res.string.next_day_heads_up_label), style = typography.regular11, color = colors.muted)
                 val line = stringResource(
@@ -280,16 +444,21 @@ fun NextDayHeadsUpCard(
             color = colors.ink
         )
         Text(
-            text = stringResource(resource = Res.string.next_day_heads_up_hide, food.name),
+            text = stringResource(resource = Res.string.next_day_heads_up_hide),
             style = typography.bold11,
             color = colors.muted,
             modifier = Modifier
-                .heightIn(min = 34.dp)
+                .heightIn(min = 36.dp)
                 .clip(shape = RoundedCornerShape(size = 10.dp))
                 .background(color = colors.surface)
                 .border(width = 1.dp, color = colors.line, shape = RoundedCornerShape(size = 10.dp))
                 .clickable(role = Role.Button, onClick = onHide)
-                .padding(horizontal = 10.dp, vertical = 9.dp)
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+        )
+        Text(
+            text = stringResource(resource = Res.string.next_day_heads_up_footer),
+            style = typography.regular10,
+            color = colors.muted
         )
     }
 }

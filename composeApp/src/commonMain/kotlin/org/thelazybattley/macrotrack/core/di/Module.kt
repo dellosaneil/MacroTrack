@@ -32,7 +32,8 @@ import org.thelazybattley.macrotrack.domain.usecase.whatfits.PlanFitPicksUseCase
 import org.thelazybattley.macrotrack.domain.usecase.whatfits.SetWhatFitsSettingsUseCase
 import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
 import org.thelazybattley.macrotrack.features.foodhistory.FoodHistoryViewModel
-import org.thelazybattley.macrotrack.features.nextday.NextDayFoodViewModel
+import org.thelazybattley.macrotrack.features.nextday.NextDayAllViewModel
+import org.thelazybattley.macrotrack.features.nextday.NextDayDinnerViewModel
 import org.thelazybattley.macrotrack.features.nextday.NextDayMorningViewModel
 import org.thelazybattley.macrotrack.features.nextday.NextDayWeightViewModel
 import org.thelazybattley.macrotrack.domain.usecase.nextday.GetMorningExplanationUseCase
@@ -534,7 +535,8 @@ val viewModelModule = module {
     viewModelOf(::WhatFitsViewModel)
     viewModelOf(::FoodHistoryViewModel)
     viewModelOf(::NextDayWeightViewModel)
-    viewModelOf(::NextDayFoodViewModel)
+    viewModelOf(::NextDayAllViewModel)
+    viewModelOf(::NextDayDinnerViewModel)
     viewModelOf(::NextDayMorningViewModel)
 }
 

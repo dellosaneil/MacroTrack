@@ -274,10 +274,19 @@ sealed class AppDestinations {
         /** Dinner foods ranked by how they move the next morning's weigh-in. */
         object NextDayWeight : Root(route = "next_day_weight")
 
-        /** What [FOOD_NAME] at dinner does to the next morning's weigh-in; [IS_RECIPE] tells a recipe from a food. */
-        object NextDayFood : Root(route = "next_day_food", routeWithArgs = "next_day_food/{$FOOD_NAME}?$IS_RECIPE={$IS_RECIPE}") {
-            fun createRoute(foodName: String, isRecipe: Boolean): String =
-                "$route/${foodName.encodeRouteArg()}" + queryString(IS_RECIPE to if (isRecipe) "true" else null)
+        /** One dinner, the foods in [DINNER_KEY], over [NEXT_DAY_PERIOD] (a year when it's left out). */
+        object NextDayDinner : Root(route = "next_day_dinner", routeWithArgs = "next_day_dinner/{$DINNER_KEY}?$NEXT_DAY_PERIOD={$NEXT_DAY_PERIOD}") {
+            fun createRoute(key: String, period: String? = null): String =
+                "$route/${key.encodeRouteArg()}" + queryString(NEXT_DAY_PERIOD to period)
+        }
+
+        /** Every dinner, opening on [DINNER_FILTER] and searching [QUERY] when given. */
+        object NextDayAll : Root(
+            route = "next_day_all",
+            routeWithArgs = "next_day_all?$DINNER_FILTER={$DINNER_FILTER}&$QUERY={$QUERY}&$NEXT_DAY_PERIOD={$NEXT_DAY_PERIOD}"
+        ) {
+            fun createRoute(filter: String? = null, query: String? = null, period: String? = null): String =
+                route + queryString(DINNER_FILTER to filter, QUERY to query?.takeIf { it.isNotBlank() }, NEXT_DAY_PERIOD to period)
         }
 
         /** The weigh-in just saved for [LOG_DATE], and the dinner the night before that explains its jump. */
@@ -332,6 +341,9 @@ sealed class AppDestinations {
         const val CHECKLIST_KIND = "checklistKind"
         const val CHECKLIST_PRESET = "checklistPreset"
         const val IS_RECIPE = "isRecipe"
+        const val DINNER_KEY = "dinnerKey"
+        const val DINNER_FILTER = "dinnerFilter"
+        const val NEXT_DAY_PERIOD = "nextDayPeriod"
         /** Set on Repeating meals' back stack entry when Edit repeating meal asks for that one to be deleted. */
         const val DELETE_REPEATING_MEAL_ID = "deleteRepeatingMealId"
     }

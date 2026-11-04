@@ -127,18 +127,18 @@ class AddMealViewModel(
         }
 
         viewModelScope.launch {
-            // What each food did to the next morning's weight before this day, for the heads-up at dinner.
+            // What each dinner did to the next morning's weight before this day, for the heads-up at dinner.
             getNextDayInputsUseCase().collect { inputs ->
                 _state.update { currentState ->
                     currentState.copy(
                         nextDay = nextDayOverview(
-                            entries = inputs.entries,
+                            items = inputs.items,
                             weights = inputs.weights,
                             today = currentState.logDate,
-                            days = NextDayPeriod.DAYS_90.days
+                            period = NextDayPeriod.YEAR
                         ),
                         nextDaySettings = inputs.settings,
-                        nextDayUnits = inputs.units
+                        loggedDinner = inputs.items.filter { it.date == currentState.logDate }
                     )
                 }
             }

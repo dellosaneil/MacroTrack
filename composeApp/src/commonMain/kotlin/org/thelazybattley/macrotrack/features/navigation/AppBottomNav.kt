@@ -39,7 +39,8 @@ import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistManageScreen
 import org.thelazybattley.macrotrack.features.checklist.ui.ChecklistScreen
 import org.thelazybattley.macrotrack.features.whatfits.WhatFitsViewModel
 import org.thelazybattley.macrotrack.features.foodhistory.ui.FoodHistoryScreen
-import org.thelazybattley.macrotrack.features.nextday.ui.NextDayFoodScreen
+import org.thelazybattley.macrotrack.features.nextday.ui.NextDayAllScreen
+import org.thelazybattley.macrotrack.features.nextday.ui.NextDayDinnerScreen
 import org.thelazybattley.macrotrack.features.nextday.ui.NextDayMorningScreen
 import org.thelazybattley.macrotrack.features.nextday.ui.NextDayWeightScreen
 import org.thelazybattley.macrotrack.features.whatfits.ui.WhatFitsAmountScreen
@@ -806,17 +807,29 @@ fun AppBottomNav() {
                         NextDayWeightScreen(onBack = { navController.popBack() }, onNavigate = navigate)
                     }
                     composable(
-                        route = AppDestinations.Root.NextDayFood.routeWithArgs!!,
+                        route = AppDestinations.Root.NextDayDinner.routeWithArgs!!,
                         arguments = listOf(
-                            navArgument(name = AppDestinations.FOOD_NAME) { type = NavType.StringType },
-                            navArgument(name = AppDestinations.IS_RECIPE) {
+                            navArgument(name = AppDestinations.DINNER_KEY) { type = NavType.StringType },
+                            navArgument(name = AppDestinations.NEXT_DAY_PERIOD) {
                                 type = NavType.StringType
                                 nullable = true
                                 defaultValue = null
                             }
                         )
                     ) {
-                        NextDayFoodScreen(onBack = { navController.popBack() }, onNavigate = navigate)
+                        NextDayDinnerScreen(onBack = { navController.popBack() }, onNavigate = navigate)
+                    }
+                    composable(
+                        route = AppDestinations.Root.NextDayAll.routeWithArgs!!,
+                        arguments = listOf(AppDestinations.DINNER_FILTER, AppDestinations.QUERY, AppDestinations.NEXT_DAY_PERIOD).map { name ->
+                            navArgument(name = name) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        }
+                    ) {
+                        NextDayAllScreen(onBack = { navController.popBack() }, onNavigate = navigate)
                     }
                     composable(
                         route = AppDestinations.Root.NextDayMorning.routeWithArgs!!,

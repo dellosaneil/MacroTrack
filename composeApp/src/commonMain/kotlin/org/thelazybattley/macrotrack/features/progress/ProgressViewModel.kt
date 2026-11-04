@@ -13,7 +13,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.MeasurementType
-import org.thelazybattley.macrotrack.domain.model.NextDayFood
+import org.thelazybattley.macrotrack.domain.model.NextDayDinner
 import org.thelazybattley.macrotrack.domain.model.NextDayPeriod
 import org.thelazybattley.macrotrack.domain.model.nextDayOverview
 import org.thelazybattley.macrotrack.domain.usecase.nextday.GetNextDayInputsUseCase
@@ -53,8 +53,8 @@ data class ProgressViewState(
     val photoAlbums: List<AlbumSummary> = emptyList(),
     /** A weight trend card needs two weigh-ins. */
     val canShareWeight: Boolean = false,
-    /** The dinner food that raises the next morning's weight most, over the last 90 days. */
-    val nextDayBiggest: NextDayFood? = null,
+    /** The dinner that raises the next morning's weight most, over the last year. */
+    val nextDayBiggest: NextDayDinner? = null,
     /** Next-day weight hasn't been opened yet. */
     val isNextDayNew: Boolean = false
 )
@@ -71,7 +71,7 @@ class ProgressViewModel(
 
     private val nextDay = getNextDayInputsUseCase().map { inputs ->
         val today = getCurrentDate()
-        nextDayOverview(entries = inputs.entries, weights = inputs.weights, today = today, days = NextDayPeriod.DAYS_90.days).biggest to
+        nextDayOverview(items = inputs.items, weights = inputs.weights, today = today, period = NextDayPeriod.YEAR).biggest to
             !inputs.settings.isSeen
     }
 

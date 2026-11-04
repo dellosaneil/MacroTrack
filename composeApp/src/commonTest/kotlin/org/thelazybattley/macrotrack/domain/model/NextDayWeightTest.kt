@@ -18,13 +18,22 @@ class NextDayWeightTest {
 
     private fun daysAgo(days: Int): LocalDate = today.minus(period = DatePeriod(days = days))
 
-    private fun dinner(daysAgo: Int, name: String = "Carbonara", isRecipe: Boolean = true, amount: Double = 70.0) = DinnerEntry(
+    private fun item(daysAgo: Int, name: String, calories: Int, amount: Double = 200.0, carbs: Double = 40.0) = DinnerItem(
         name = name,
-        isRecipe = isRecipe,
+        isRecipe = false,
+        isQuickAdd = false,
         date = daysAgo(days = daysAgo),
         amount = amount,
-        calories = (920 * amount / 100).toInt(),
-        carbs = 96 * amount / 100
+        calories = calories,
+        protein = 20.0,
+        carbs = carbs,
+        fat = 10.0
+    )
+
+    /** Chicken wings and rice on [daysAgo], [scale] times the usual amounts. */
+    private fun wingsAndRice(daysAgo: Int, scale: Double = 1.0) = listOf(
+        item(daysAgo = daysAgo, name = "Chicken wings", calories = (720 * scale).toInt(), amount = 8 * scale),
+        item(daysAgo = daysAgo, name = "Rice", calories = (325 * scale).toInt(), amount = 250 * scale, carbs = 70 * scale)
     )
 
     /** A weigh-in of [before] on the dinner's day and [after] the next morning. */
@@ -39,158 +48,212 @@ class NextDayWeightTest {
     }
 
     @Test
-    fun aDinnerOnlyCountsWithAWeighInThatMorningAndTheNext() {
-        val entries = listOf(dinner(daysAgo = 10), dinner(daysAgo = 20), dinner(daysAgo = 30))
-        val weights = night(daysAgo = 10, before = 75.0, after = 76.0) + Weight(date = daysAgo(days = 20), weight = 75.0)
-        val food = nextDayOverview(entries = entries, weights = weights, today = today, days = 90).foods.single()
-        assertEquals(expected = 3, actual = food.nights.size)
-        assertEquals(expected = 1, actual = food.counted.size)
-        assertFalse(food.isReady)
-        assertNull(food.average)
-        assertNull(food.estimate(amount = 70.0))
+    fun aDinnerIsTheFoodsLoggedThatDayWhateverTheAmounts() {
+        val items = wingsAndRice(daysAgo = 2) + wingsAndRice(daysAgo = 9, scale = 1.5)
+        val dinner = nextDayOverview(items = items, weights = emptyList(), today = today, period = NextDayPeriod.YEAR).dinners.single()
+        assertEquals(expected = listOf("Chicken wings", "Rice"), actual = dinner.foods)
+        assertEquals(expected = "Chicken wings + Rice", actual = dinner.name)
+        assertEquals(expected = 2, actual = dinner.nights.size)
     }
 
     @Test
-    fun aFoodNeedsThreeCountedDinners() {
-        val entries = listOf(dinner(daysAgo = 2), dinner(daysAgo = 9), dinner(daysAgo = 16))
-        val weights = night(daysAgo = 2, before = 75.0, after = 76.0) +
-            night(daysAgo = 9, before = 75.0, after = 75.9) +
-            night(daysAgo = 16, before = 75.0, after = 76.1)
-        val food = nextDayOverview(entries = entries, weights = weights, today = today, days = 90).foods.single()
-        assertTrue(food.isReady)
-        assertClose(expected = 1.0, actual = food.average)
-        assertEquals(expected = 70.0, actual = food.usual)
+    fun aSmallSideOrDrinkDoesNotChangeTheDinner() {
+        val items = wingsAndRice(daysAgo = 2) + item(daysAgo = 2, name = "Iced tea", calories = 60) + wingsAndRice(daysAgo = 9)
+        val overview = nextDayOverview(items = items, weights = emptyList(), today = today, period = NextDayPeriod.YEAR)
+        assertEquals(expected = 1, actual = overview.dinners.size)
+        assertEquals(expected = "Chicken wings + Rice", actual = overview.dinners.single().name)
     }
 
     @Test
-    fun todaysDinnerAndOnesBeforeThePeriodAreLeftOut() {
-        val entries = listOf(dinner(daysAgo = 0), dinner(daysAgo = 5), dinner(daysAgo = 40))
-        val overview = nextDayOverview(entries = entries, weights = emptyList(), today = today, days = 30)
-        assertEquals(expected = listOf(daysAgo(days = 5)), actual = overview.foods.single().nights.map { it.date })
+    fun aDinnerEatenOnceIsLeftOutUntilItRepeats() {
+        val items = wingsAndRice(daysAgo = 2) + wingsAndRice(daysAgo = 9) + item(daysAgo = 5, name = "Pad thai", calories = 700)
+        val overview = nextDayOverview(items = items, weights = emptyList(), today = today, period = NextDayPeriod.YEAR)
+        assertEquals(expected = listOf("Chicken wings + Rice"), actual = overview.dinners.map { it.name })
     }
 
     @Test
-    fun theSameFoodTwiceAtOneDinnerIsOneNight() {
-        val entries = listOf(dinner(daysAgo = 3, amount = 50.0), dinner(daysAgo = 3, amount = 20.0))
-        val food = nextDayOverview(entries = entries, weights = emptyList(), today = today, days = 90).foods.single()
-        assertEquals(expected = 1, actual = food.nights.size)
-        assertEquals(expected = 70.0, actual = food.nights.single().amount)
+    fun tonightAndDinnersBeforeThePeriodAreLeftOut() {
+        val items = wingsAndRice(daysAgo = 0) + wingsAndRice(daysAgo = 5) + wingsAndRice(daysAgo = 20) + wingsAndRice(daysAgo = 200)
+        val dinner = nextDayOverview(items = items, weights = emptyList(), today = today, period = NextDayPeriod.MONTHS_3).dinners.single()
+        assertEquals(expected = listOf(daysAgo(days = 5), daysAgo(days = 20)), actual = dinner.nights.map { it.date })
+        val all = nextDayOverview(items = items, weights = emptyList(), today = today, period = NextDayPeriod.ALL).dinners.single()
+        assertEquals(expected = 3, actual = all.nights.size)
     }
 
     @Test
-    fun aRecipeAndAFoodWithTheSameNameStayApart() {
-        val entries = listOf(dinner(daysAgo = 3), dinner(daysAgo = 3, isRecipe = false, amount = 200.0))
-        val overview = nextDayOverview(entries = entries, weights = emptyList(), today = today, days = 90)
-        assertEquals(expected = 2, actual = overview.foods.size)
+    fun aDinnerNeedsThreeCountedNights() {
+        val items = listOf(2, 9, 16).flatMap { wingsAndRice(daysAgo = it) }
+        val twoNights = night(daysAgo = 2, before = 75.0, after = 76.0) + night(daysAgo = 9, before = 75.0, after = 76.2)
+        val waiting = nextDayOverview(items = items, weights = twoNights, today = today, period = NextDayPeriod.YEAR).dinners.single()
+        assertFalse(waiting.isReady)
+        assertEquals(expected = DinnerEffect.WAITING, actual = waiting.effect)
+        val ready = nextDayOverview(items = items, weights = twoNights + night(daysAgo = 16, before = 75.0, after = 76.1), today = today, period = NextDayPeriod.YEAR)
+            .dinners.single()
+        assertClose(expected = 1.1, actual = ready.average)
+        assertEquals(expected = DinnerEffect.RAISES, actual = ready.effect)
     }
 
     @Test
-    fun anAmountEatenBeforeUsesThoseDinners() {
-        val entries = listOf(dinner(daysAgo = 2), dinner(daysAgo = 9), dinner(daysAgo = 16), dinner(daysAgo = 23, amount = 100.0))
-        val weights = night(daysAgo = 2, before = 75.0, after = 76.0) +
+    fun effectsSplitAtUpFourTenthsAndDownTwoTenths() {
+        fun dinnerWith(change: Double): NextDayDinner {
+            val items = listOf(2, 9, 16).flatMap { wingsAndRice(daysAgo = it) }
+            val weights = listOf(2, 9, 16).flatMap { night(daysAgo = it, before = 75.0, after = 75.0 + change) }
+            return nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR).dinners.single()
+        }
+        assertEquals(expected = DinnerEffect.RAISES, actual = dinnerWith(change = 0.4).effect)
+        assertEquals(expected = DinnerEffect.EVEN, actual = dinnerWith(change = 0.3).effect)
+        assertEquals(expected = DinnerEffect.EVEN, actual = dinnerWith(change = -0.1).effect)
+        assertEquals(expected = DinnerEffect.LOWERS, actual = dinnerWith(change = -0.2).effect)
+    }
+
+    @Test
+    fun nightsAreGroupedBySizeAgainstTheUsualDinner() {
+        val items = wingsAndRice(daysAgo = 2) + wingsAndRice(daysAgo = 9) + wingsAndRice(daysAgo = 16) +
+            wingsAndRice(daysAgo = 23, scale = 0.7) + wingsAndRice(daysAgo = 30, scale = 1.4)
+        val weights = night(daysAgo = 2, before = 75.0, after = 76.1) +
+            night(daysAgo = 9, before = 75.0, after = 76.1) +
+            night(daysAgo = 16, before = 75.0, after = 76.1) +
+            night(daysAgo = 23, before = 75.0, after = 75.8) +
+            night(daysAgo = 30, before = 75.0, after = 76.4)
+        val dinner = nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR).dinners.single()
+        assertEquals(expected = listOf(DinnerSize.LIGHT, DinnerSize.USUAL, DinnerSize.BIG), actual = dinner.sizes.map { it.size })
+        assertClose(expected = 0.8, actual = dinner.size(size = DinnerSize.LIGHT)?.average)
+        assertClose(expected = 1.1, actual = dinner.size(size = DinnerSize.USUAL)?.average)
+        assertClose(expected = 1.4, actual = dinner.size(size = DinnerSize.BIG)?.average)
+        assertEquals(expected = 3, actual = dinner.size(size = DinnerSize.USUAL)?.nights?.size)
+    }
+
+    @Test
+    fun otherSizesFollowALineThroughTheNightsByKcal() {
+        val items = wingsAndRice(daysAgo = 2, scale = 0.5) + wingsAndRice(daysAgo = 9) + wingsAndRice(daysAgo = 16, scale = 1.5)
+        val weights = night(daysAgo = 2, before = 75.0, after = 75.5) +
             night(daysAgo = 9, before = 75.0, after = 76.0) +
-            night(daysAgo = 16, before = 75.0, after = 76.0) +
-            night(daysAgo = 23, before = 75.0, after = 76.4)
-        val food = nextDayOverview(entries = entries, weights = weights, today = today, days = 90).foods.single()
-        assertClose(expected = 1.0, actual = food.estimate(amount = 70.0))
-        assertClose(expected = 1.4, actual = food.estimate(amount = 100.0))
-        assertEquals(expected = listOf(70.0, 100.0), actual = food.portions.map { it.amount })
+            night(daysAgo = 16, before = 75.0, after = 76.5)
+        val dinner = nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR).dinners.single()
+        val estimate = dinner.estimate(calories = 1045 * 2)
+        assertNotNull(estimate)
+        assertTrue(abs(2.0 - estimate) < 0.01, "was $estimate")
     }
 
     @Test
-    fun otherAmountsFollowALineThroughTheDinners() {
-        // +0.6 at 50%, +1.0 at 70% and +1.4 at 90%: 0.02 kg for every percent.
-        val entries = listOf(dinner(daysAgo = 2, amount = 50.0), dinner(daysAgo = 9), dinner(daysAgo = 16, amount = 90.0))
-        val weights = night(daysAgo = 2, before = 75.0, after = 75.6) +
-            night(daysAgo = 9, before = 75.0, after = 76.0) +
-            night(daysAgo = 16, before = 75.0, after = 76.4)
-        val food = nextDayOverview(entries = entries, weights = weights, today = today, days = 90).foods.single()
-        assertClose(expected = 1.2, actual = food.estimate(amount = 80.0))
-    }
-
-    @Test
-    fun withOneAmountOtherAmountsScaleTheAverage() {
-        val entries = listOf(dinner(daysAgo = 2), dinner(daysAgo = 9), dinner(daysAgo = 16))
-        val weights = night(daysAgo = 2, before = 75.0, after = 75.7) +
-            night(daysAgo = 9, before = 75.0, after = 75.7) +
-            night(daysAgo = 16, before = 75.0, after = 75.7)
-        val food = nextDayOverview(entries = entries, weights = weights, today = today, days = 90).foods.single()
-        assertClose(expected = 1.4, actual = food.estimate(amount = 140.0))
+    fun usualFoodsAreTheAmountsEatenMostOften() {
+        val items = wingsAndRice(daysAgo = 2) + wingsAndRice(daysAgo = 9) + wingsAndRice(daysAgo = 16, scale = 1.5)
+        val dinner = nextDayOverview(items = items, weights = emptyList(), today = today, period = NextDayPeriod.YEAR).dinners.single()
+        assertEquals(expected = listOf(8.0, 250.0), actual = dinner.usualFoods.map { it.amount })
     }
 
     @Test
     fun fadeAveragesEachMorningAndFindsWhenItsBack() {
-        val entries = listOf(dinner(daysAgo = 10), dinner(daysAgo = 20), dinner(daysAgo = 30))
+        val items = listOf(10, 20, 30).flatMap { wingsAndRice(daysAgo = it) }
         val weights = listOf(10, 20, 30).flatMap { back ->
             val date = daysAgo(days = back)
-            listOf(75.0, 76.0, 75.5, 75.1).mapIndexed { day, kg -> Weight(date = date.plus(period = DatePeriod(days = day)), weight = kg) }
+            listOf(75.0, 76.1, 75.6, 75.1).mapIndexed { day, kg -> Weight(date = date.plus(period = DatePeriod(days = day)), weight = kg) }
         }
-        val food = nextDayOverview(entries = entries, weights = weights, today = today, days = 90).foods.single()
-        val fade = food.fade(amount = 70.0)
-        assertClose(expected = 1.0, actual = fade[0])
-        assertClose(expected = 0.5, actual = fade[1])
+        val dinner = nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR).dinners.single()
+        val fade = dinner.fade(size = DinnerSize.USUAL)
+        assertClose(expected = 1.1, actual = fade[0])
+        assertClose(expected = 0.6, actual = fade[1])
         assertClose(expected = 0.1, actual = fade[2])
-        assertEquals(expected = 3, actual = food.backOnDay(amount = 70.0))
+        assertEquals(expected = 3, actual = dinner.backOnDay(size = DinnerSize.USUAL))
     }
 
     @Test
-    fun foodsWithANumberSortFirstAndBiggestIsTheTopJump() {
-        val entries = listOf(2, 9, 16).flatMap { back ->
-            listOf(dinner(daysAgo = back), dinner(daysAgo = back + 1, name = "Salad", isRecipe = false, amount = 200.0))
-        } + dinner(daysAgo = 4, name = "Lasagna")
+    fun raisesAndLowersAreSortedAndBiggestIsTheTopJump() {
+        val items = listOf(2, 9, 16).flatMap { wingsAndRice(daysAgo = it) } +
+            listOf(4, 11, 18).flatMap { listOf(item(daysAgo = it, name = "Grilled chicken", calories = 300), item(daysAgo = it, name = "Salad", calories = 120)) } +
+            listOf(5, 12, 19).flatMap { listOf(item(daysAgo = it, name = "Pork adobo", calories = 600), item(daysAgo = it, name = "Rice", calories = 325)) }
+        val weights = listOf(2, 9, 16).flatMap { night(daysAgo = it, before = 75.0, after = 76.1) } +
+            listOf(4, 11, 18).flatMap { night(daysAgo = it, before = 75.0, after = 74.7) } +
+            listOf(5, 12, 19).flatMap { night(daysAgo = it, before = 75.0, after = 75.9) }
+        val overview = nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR)
+        assertEquals(expected = listOf("Chicken wings + Rice", "Pork adobo + Rice"), actual = overview.raises.map { it.name })
+        assertEquals(expected = listOf("Grilled chicken + Salad"), actual = overview.lowers.map { it.name })
+        assertEquals(expected = "Chicken wings + Rice", actual = overview.biggest?.name)
+        assertEquals(expected = 9, actual = overview.nights)
+    }
+
+    @Test
+    fun searchFindsEveryDinnerWithThatFoodAndAveragesThem() {
+        val items = listOf(2, 9, 16).flatMap { wingsAndRice(daysAgo = it) } +
+            listOf(5, 12, 19).flatMap { listOf(item(daysAgo = it, name = "Pork adobo", calories = 600), item(daysAgo = it, name = "Rice", calories = 325)) } +
+            listOf(4, 11).flatMap { listOf(item(daysAgo = it, name = "Grilled chicken", calories = 300)) }
         val weights = listOf(2, 9, 16).flatMap { night(daysAgo = it, before = 75.0, after = 76.0) } +
-            listOf(3, 10, 17).flatMap { night(daysAgo = it, before = 75.0, after = 74.7) }
-        val overview = nextDayOverview(entries = entries, weights = weights, today = today, days = 90)
-        assertEquals(expected = listOf("Carbonara", "Salad", "Lasagna"), actual = overview.sorted(raisesFirst = true).map { it.name })
-        assertEquals(expected = listOf("Salad", "Carbonara", "Lasagna"), actual = overview.sorted(raisesFirst = false).map { it.name })
-        assertEquals(expected = "Carbonara", actual = overview.biggest?.name)
+            listOf(5, 12, 19).flatMap { night(daysAgo = it, before = 75.0, after = 75.8) }
+        val overview = nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR)
+        val rice = overview.matching(query = " RICE ")
+        assertEquals(expected = 2, actual = rice.size)
+        val average = rice.foodAverage()
+        assertNotNull(average)
+        assertEquals(expected = 2, actual = average.dinners)
+        assertEquals(expected = 6, actual = average.nights)
+        assertClose(expected = 0.9, actual = average.average)
+        assertEquals(expected = 3, actual = overview.matching(query = "").size)
     }
 
     @Test
-    fun noBiggestWhenNothingRaisesIt() {
-        val entries = listOf(2, 9, 16).map { dinner(daysAgo = it, name = "Salad", isRecipe = false, amount = 200.0) }
-        val weights = listOf(2, 9, 16).flatMap { night(daysAgo = it, before = 75.0, after = 74.8) }
-        assertNull(nextDayOverview(entries = entries, weights = weights, today = today, days = 90).biggest)
+    fun sortsPutDinnersWithANumberFirst() {
+        val items = listOf(2, 9, 16).flatMap { wingsAndRice(daysAgo = it) } +
+            listOf(4, 11, 18, 25).flatMap { listOf(item(daysAgo = it, name = "Grilled chicken", calories = 300)) }
+        val weights = listOf(2, 9, 16).flatMap { night(daysAgo = it, before = 75.0, after = 76.0) }
+        val dinners = nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR).dinners
+        assertEquals(expected = "Chicken wings + Rice", actual = dinners.sortedFor(sort = DinnerSort.MOST_UP).first().name)
+        assertEquals(expected = "Chicken wings + Rice", actual = dinners.sortedFor(sort = DinnerSort.MOST_DOWN).first().name)
+        assertEquals(expected = "Grilled chicken", actual = dinners.sortedFor(sort = DinnerSort.MOST_OFTEN).first().name)
     }
 
     @Test
-    fun usualDinnerAveragesEveryCountedNightOnce() {
-        val entries = listOf(dinner(daysAgo = 2), dinner(daysAgo = 2, name = "Bread", isRecipe = false, amount = 50.0), dinner(daysAgo = 5))
-        val weights = night(daysAgo = 2, before = 75.0, after = 76.0) + night(daysAgo = 5, before = 75.0, after = 74.8)
-        val overview = nextDayOverview(entries = entries, weights = weights, today = today, days = 90)
-        assertEquals(expected = 2, actual = overview.nights)
-        assertClose(expected = 0.4, actual = overview.usual)
+    fun headsUpShowsForAMatchingDinnerThatUsuallyAddsHalfAKilo() {
+        val items = listOf(2, 9, 16).flatMap { wingsAndRice(daysAgo = it) }
+        val weights = listOf(2, 9, 16).flatMap { night(daysAgo = it, before = 75.0, after = 76.1) }
+        val overview = nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR)
+        val tonight = wingsAndRice(daysAgo = 0)
+        val headsUp = dinnerHeadsUp(items = tonight, overview = overview, settings = NextDaySettings(), keepOff = emptySet())
+        assertNotNull(headsUp)
+        assertTrue(headsUp.isUsualSize)
+        assertClose(expected = 1.1, actual = headsUp.estimate)
+        // Only one of the two foods so far isn't this dinner yet.
+        assertNull(dinnerHeadsUp(items = tonight.take(n = 1), overview = overview, settings = NextDaySettings(), keepOff = emptySet()))
+        // Turned off for this dinner, or for every dinner.
+        val key = headsUp.dinner.key
+        val muted = NextDaySettings().withHeadsUp(key = key, isShown = false)
+        assertNull(dinnerHeadsUp(items = tonight, overview = overview, settings = muted, keepOff = emptySet()))
+        assertTrue(dinnerHeadsUp(items = tonight, overview = overview, settings = muted, keepOff = setOf(key))?.isOff == true)
+        assertNull(dinnerHeadsUp(items = tonight, overview = overview, settings = NextDaySettings(isHeadsUpOn = false), keepOff = emptySet()))
+    }
+
+    @Test
+    fun noHeadsUpForADinnerThatBarelyMovesIt() {
+        val items = listOf(2, 9, 16).flatMap { wingsAndRice(daysAgo = it) }
+        val weights = listOf(2, 9, 16).flatMap { night(daysAgo = it, before = 75.0, after = 75.2) }
+        val overview = nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR)
+        assertNull(dinnerHeadsUp(items = wingsAndRice(daysAgo = 0), overview = overview, settings = NextDaySettings(), keepOff = emptySet()))
     }
 
     @Test
     fun aJumpThatLastNightsDinnerUsuallyMakesIsExplained() {
-        val entries = listOf(dinner(daysAgo = 1), dinner(daysAgo = 9), dinner(daysAgo = 16), dinner(daysAgo = 23))
-        val weights = night(daysAgo = 9, before = 75.0, after = 76.0) +
-            night(daysAgo = 16, before = 75.0, after = 76.0) +
-            night(daysAgo = 23, before = 75.0, after = 76.0) +
-            night(daysAgo = 1, before = 74.2, after = 75.2)
-        val explanation = morningExplanation(date = today, entries = entries, weights = weights)
+        val items = listOf(1, 9, 16, 23).flatMap { wingsAndRice(daysAgo = it) }
+        val weights = listOf(9, 16, 23).flatMap { night(daysAgo = it, before = 75.0, after = 76.1) } + night(daysAgo = 1, before = 74.2, after = 75.3)
+        val explanation = morningExplanation(date = today, items = items, weights = weights)
         assertNotNull(explanation)
-        assertEquals(expected = "Carbonara", actual = explanation.food.name)
-        assertClose(expected = 1.0, actual = explanation.expected)
-        assertClose(expected = 1.0, actual = explanation.change)
+        assertEquals(expected = "Chicken wings + Rice", actual = explanation.dinner.name)
+        assertClose(expected = 1.1, actual = explanation.expected)
         assertEquals(expected = MorningMatch.RIGHT_ON, actual = explanation.match)
-        // Last night isn't one of the dinners it's judged on.
-        assertEquals(expected = 3, actual = explanation.food.counted.size)
+        // Last night isn't one of the nights it's judged on.
+        assertEquals(expected = 3, actual = explanation.dinner.counted.size)
+        assertEquals(expected = daysAgo(days = 1), actual = explanation.night.date)
     }
 
     @Test
-    fun noExplanationForASmallChangeOrAnUnknownFood() {
-        val entries = listOf(dinner(daysAgo = 1), dinner(daysAgo = 9), dinner(daysAgo = 16), dinner(daysAgo = 23))
-        val history = night(daysAgo = 9, before = 75.0, after = 76.0) +
-            night(daysAgo = 16, before = 75.0, after = 76.0) +
-            night(daysAgo = 23, before = 75.0, after = 76.0)
-        assertNull(morningExplanation(date = today, entries = entries, weights = history + night(daysAgo = 1, before = 75.0, after = 75.1)))
-        assertNull(morningExplanation(date = today, entries = listOf(dinner(daysAgo = 1)), weights = history + night(daysAgo = 1, before = 75.0, after = 76.0)))
+    fun noExplanationForASmallChangeOrADinnerWithoutANumber() {
+        val items = listOf(1, 9, 16, 23).flatMap { wingsAndRice(daysAgo = it) }
+        val history = listOf(9, 16, 23).flatMap { night(daysAgo = it, before = 75.0, after = 76.1) }
+        assertNull(morningExplanation(date = today, items = items, weights = history + night(daysAgo = 1, before = 75.0, after = 75.1)))
+        val other = items.filter { it.date != daysAgo(days = 1) } + item(daysAgo = 1, name = "Pad thai", calories = 700)
+        assertNull(morningExplanation(date = today, items = other, weights = history + night(daysAgo = 1, before = 75.0, after = 76.0)))
     }
 
     @Test
-    fun dinnerEntriesSkipOtherMealsAndQuickAdds() {
+    fun dinnerItemsAreEverythingUnderDinner() {
         fun log(mealType: MealType, weight: Double, calories: Int, isQuickAdd: Boolean = false, name: String = "Carbonara") = FoodLog(
             mealType = mealType,
             calories = calories,
@@ -204,30 +267,21 @@ class NextDayWeightTest {
             date = today,
             isQuickAdd = isQuickAdd
         )
-        val entries = dinnerEntries(
+        val items = dinnerItems(
             logs = listOf(
                 log(mealType = MealType.DINNER, weight = 0.0, calories = 644),
                 log(mealType = MealType.LUNCH, weight = 0.0, calories = 644),
-                log(mealType = MealType.DINNER, weight = 0.0, calories = 500, isQuickAdd = true),
+                log(mealType = MealType.DINNER, weight = 0.0, calories = 500, isQuickAdd = true, name = "Dinner out"),
                 log(mealType = MealType.DINNER, weight = 150.0, calories = 248, name = "Chicken")
             ),
             recipeCalories = mapOf("Carbonara" to 920)
         )
-        assertEquals(expected = listOf(70.0, 150.0), actual = entries.map { it.amount })
-        assertEquals(expected = listOf(true, false), actual = entries.map { it.isRecipe })
-    }
-
-    @Test
-    fun headsUpCanBeTurnedOffPerFoodOrForEveryFood() {
-        val key = nextDayFoodKey(name = "Carbonara", isRecipe = true)
-        val off = NextDaySettings().withHeadsUp(key = key, isShown = false)
-        assertFalse(off.isHeadsUpShown(key = key))
-        assertTrue(off.withHeadsUp(key = key, isShown = true).isHeadsUpShown(key = key))
-        assertFalse(NextDaySettings(isHeadsUpOn = false).isHeadsUpShown(key = key))
+        assertEquals(expected = listOf(70.0, 0.0, 150.0), actual = items.map { it.amount })
+        assertEquals(expected = listOf("recipe:Carbonara", "quick:Dinner out", "food:Chicken"), actual = items.map { it.key })
     }
 
     @Test
     fun maxFatGainIsCaloriesOverSevenThousandSevenHundred() {
-        assertClose(expected = 644 / 7700.0, actual = maxFatGain(calories = 644))
+        assertClose(expected = 1045 / 7700.0, actual = maxFatGain(calories = 1045))
     }
 }

@@ -153,7 +153,7 @@ fun FoodHistoryScreen(
         callbacks = viewModel,
         onBack = onBack,
         onEdit = { viewState.editRoute?.let(onNavigate) },
-        onOpenNextDay = { onNavigate(AppDestinations.Root.NextDayFood.createRoute(foodName = viewState.name, isRecipe = viewState.isRecipe)) },
+        onOpenNextDay = { onNavigate(AppDestinations.Root.NextDayAll.createRoute(query = viewState.name)) },
         onOpenEntry = { entry ->
             viewModel.onOpenEntry(entry = entry)
             onOpenLog()
@@ -253,7 +253,7 @@ private fun FoodHistoryScreen(
             AmountChart(viewState = viewState, amount = amount)
             Insight(viewState = viewState, amount = amount)
         }
-        // Eaten at dinner, it can say what it does to the next morning's weigh-in.
+        // Eaten at dinner, All dinners searched for it shows what dinners with it do to the next morning's weigh-in.
         if (viewState.entries.any { it.log.mealType == MealType.DINNER }) {
             NextDayWeightLink(
                 biggest = null,

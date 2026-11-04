@@ -1,10 +1,11 @@
 package org.thelazybattley.macrotrack.features.addmeal
 
+import org.thelazybattley.macrotrack.domain.model.DinnerHeadsUp
+import org.thelazybattley.macrotrack.domain.model.DinnerItem
 import org.thelazybattley.macrotrack.domain.model.NEXT_DAY_HEADS_UP_KG
-import org.thelazybattley.macrotrack.domain.model.NextDayFood
 import org.thelazybattley.macrotrack.domain.model.NextDayOverview
 import org.thelazybattley.macrotrack.domain.model.NextDaySettings
-import org.thelazybattley.macrotrack.domain.model.nextDayFoodKey
+import org.thelazybattley.macrotrack.domain.model.dinnerHeadsUp
 import kotlinx.datetime.LocalDate
 import org.thelazybattley.macrotrack.core.getCurrentDate
 import org.thelazybattley.macrotrack.domain.model.Food
@@ -43,34 +44,36 @@ data class AddMealViewState(
     /** Online foods saved to My foods while on this screen: barcode to the name they were saved under. */
     val savedOnline: Map<String, String> = emptyMap(),
     val onlineNotice: OnlineNotice? = null,
-    /** What each dinner food did to the next morning's weigh-in over the 90 days before [logDate]. */
+    /** What each dinner did to the next morning's weigh-in over the year before [logDate]. */
     val nextDay: NextDayOverview? = null,
     val nextDaySettings: NextDaySettings = NextDaySettings(),
-    /** The unit each food is stored in, for the heads-up's amounts. */
-    val nextDayUnits: Map<String, String> = emptyMap(),
-    /** Foods whose heads-up was turned off on this screen, so their row can offer Undo. */
+    /** What's already logged under Dinner on [logDate]. */
+    val loggedDinner: List<DinnerItem> = emptyList(),
+    /** Dinners whose heads-up was turned off on this screen, so the card can offer Undo. */
     val headsUpTurnedOff: Set<String> = emptySet()
 ) {
     /**
-     * Tomorrow's weigh-in after [item], when it's going to Dinner and that food usually adds
-     * [NEXT_DAY_HEADS_UP_KG] or more. Turned off here, it stays to offer Undo.
+     * Tomorrow's weigh-in after tonight's dinner: what's logged plus what's picked, when it's going to Dinner and
+     * matches a past dinner that usually adds [NEXT_DAY_HEADS_UP_KG] or more.
      */
-    fun headsUp(item: SelectedMealItem): NextDayHeadsUp? {
-        if (selectedMealType != MealType.DINNER || !nextDaySettings.isHeadsUpOn) return null
-        val key = nextDayFoodKey(name = item.baseFood.name, isRecipe = item.isRecipe)
-        val isOff = key in nextDaySettings.mutedFoods
-        if (isOff && key !in headsUpTurnedOff) return null
-        val food = nextDay?.food(key = key) ?: return null
-        val estimate = food.estimate(amount = item.amount) ?: return null
-        if (estimate < NEXT_DAY_HEADS_UP_KG && (food.average ?: 0.0) < NEXT_DAY_HEADS_UP_KG) return null
-        return NextDayHeadsUp(
-            food = food,
-            amount = item.amount,
-            estimate = estimate,
-            unit = if (item.isRecipe) "" else nextDayUnits[food.name] ?: item.baseFood.unit,
-            isOff = isOff
-        )
-    }
+    val dinnerHeadsUp: DinnerHeadsUp?
+        get() {
+            if (selectedMealType != MealType.DINNER || selection.isEmpty()) return null
+            val picked = selection.map { item ->
+                DinnerItem(
+                    name = item.food.name,
+                    isRecipe = item.isRecipe,
+                    isQuickAdd = false,
+                    date = logDate,
+                    amount = item.amount,
+                    calories = item.food.macros.calories,
+                    protein = item.food.macros.protein,
+                    carbs = item.food.macros.carbs,
+                    fat = item.food.macros.fat
+                )
+            }
+            return dinnerHeadsUp(items = loggedDinner + picked, overview = nextDay, settings = nextDaySettings, keepOff = headsUpTurnedOff)
+        }
 
     /** Opens on Recent once anything has been logged, otherwise on My foods. */
     val activeFilter: MealFilter
@@ -241,12 +244,3 @@ data class RecipeMeal(
 
 /** Favorites and last-logged portions are stored under this key. */
 fun mealItemKey(name: String, kind: MealItemKind): String = kind.keyPrefix + name
-
-/** What [amount] of [food] at dinner usually does to tomorrow's weigh-in; [isOff] once it's been turned off for it. */
-data class NextDayHeadsUp(
-    val food: NextDayFood,
-    val amount: Double,
-    val estimate: Double,
-    val unit: String,
-    val isOff: Boolean
-)

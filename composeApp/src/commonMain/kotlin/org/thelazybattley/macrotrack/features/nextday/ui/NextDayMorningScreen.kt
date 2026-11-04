@@ -49,7 +49,7 @@ import macrotrack.composeapp.generated.resources.next_day_match_more
 import macrotrack.composeapp.generated.resources.next_day_match_right_on
 import macrotrack.composeapp.generated.resources.next_day_saved
 import macrotrack.composeapp.generated.resources.next_day_saved_today
-import macrotrack.composeapp.generated.resources.next_day_see_food
+import macrotrack.composeapp.generated.resources.next_day_see_dinner
 import macrotrack.composeapp.generated.resources.next_day_since_yesterday
 import macrotrack.composeapp.generated.resources.next_day_this_week
 import macrotrack.composeapp.generated.resources.next_day_today
@@ -61,7 +61,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.thelazybattley.macrotrack.core.toShortDayMonthDay
 import org.thelazybattley.macrotrack.core.toShortDayName
-import org.thelazybattley.macrotrack.domain.model.DinnerEntry
+import org.thelazybattley.macrotrack.domain.model.DinnerItem
 import org.thelazybattley.macrotrack.domain.model.MorningMatch
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.domain.model.morningExplanation
@@ -87,8 +87,8 @@ fun NextDayMorningScreen(onDone: () -> Unit, onNavigate: (String) -> Unit) {
         viewState = viewState,
         onDone = onDone,
         onOpenFood = {
-            viewState.explanation?.food?.let { food ->
-                onNavigate(AppDestinations.Root.NextDayFood.createRoute(foodName = food.name, isRecipe = food.isRecipe))
+            viewState.explanation?.dinner?.let { dinner ->
+                onNavigate(AppDestinations.Root.NextDayDinner.createRoute(key = dinner.key))
             }
         }
     )
@@ -110,7 +110,7 @@ private fun NextDayMorningScreen(viewState: NextDayMorningViewState, onDone: () 
         bottomBar = {
             if (explanation != null) {
                 WhatFitsBottomButtons(
-                    secondary = stringResource(resource = Res.string.next_day_see_food, explanation.food.name),
+                    secondary = stringResource(resource = Res.string.next_day_see_dinner),
                     onSecondary = onOpenFood,
                     primary = stringResource(resource = Res.string.done),
                     onPrimary = onDone
@@ -132,10 +132,10 @@ private fun NextDayMorningScreen(viewState: NextDayMorningViewState, onDone: () 
         val weight = viewState.weight ?: return@WhatFitsScaffold
         WeightCard(weight = weight, change = viewState.change)
         if (explanation != null) {
-            val amount = nextDayAmount(
-                isRecipe = explanation.food.isRecipe,
-                unit = viewState.unitOf(name = explanation.food.name, isRecipe = explanation.food.isRecipe),
-                amount = explanation.amount
+            val amount = nightAmounts(
+                items = explanation.night.items,
+                unitOf = { name, isRecipe -> viewState.unitOf(name = name, isRecipe = isRecipe) },
+                separator = ", "
             )
             val expectedText = explanation.expected.signedTenthsWithUnit()
             Column(
@@ -156,7 +156,7 @@ private fun NextDayMorningScreen(viewState: NextDayMorningViewState, onDone: () 
                     Text(text = stringResource(resource = Res.string.next_day_expected_label), style = typography.bold11, color = colors.nightInk)
                 }
                 val about = explanation.expected.tenths() + " " + weightUnitLabel()
-                val body = stringResource(resource = Res.string.next_day_expected_body, explanation.food.name, amount, about) + " " +
+                val body = stringResource(resource = Res.string.next_day_expected_body, explanation.dinner.name, amount, about) + " " +
                     stringResource(
                         resource = when (explanation.match) {
                             MorningMatch.RIGHT_ON -> Res.string.next_day_match_right_on
@@ -164,7 +164,7 @@ private fun NextDayMorningScreen(viewState: NextDayMorningViewState, onDone: () 
                             MorningMatch.LESS -> Res.string.next_day_match_less
                         }
                     )
-                Text(text = body.withBold("${explanation.food.name} ($amount)", about), style = typography.regular13, color = colors.ink)
+                Text(text = body.withBold(explanation.dinner.name, about), style = typography.regular13, color = colors.ink)
                 Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                     StatTile(modifier = Modifier.weight(weight = 1f), label = stringResource(resource = Res.string.next_day_expected), value = expectedText)
                     StatTile(modifier = Modifier.weight(weight = 1f), label = stringResource(resource = Res.string.next_day_today), value = explanation.change.signedTenthsWithUnit())
@@ -309,13 +309,17 @@ private fun PreviewNextDayMorningScreen() {
         list.mapIndexed { index, kg -> Weight(date = day(index + 1), weight = kg) }
     } + Weight(date = today, weight = 75.2) +
         listOf(8, 15, 22).flatMap { listOf(Weight(date = day(it + 10), weight = 75.5), Weight(date = day(it + 9), weight = 76.5)) }
-    val entries = listOf(1, 18, 25, 32).map { DinnerEntry(name = "Carbonara", isRecipe = true, date = day(it), amount = 70.0, calories = 644, carbs = 67.0) }
+    val items = listOf(1, 18, 25, 32).flatMap { back ->
+        listOf("Chicken wings" to 720, "Rice" to 325).map { (name, kcal) ->
+            DinnerItem(name = name, isRecipe = false, isQuickAdd = false, date = day(back), amount = 200.0, calories = kcal, protein = 20.0, carbs = 40.0, fat = 10.0)
+        }
+    }
     MacroTrackTheme {
         NextDayMorningScreen(
             viewState = morningState(
                 date = today,
                 weights = weights.sortedBy { it.date },
-                explanation = morningExplanation(date = today, entries = entries, weights = weights)
+                explanation = morningExplanation(date = today, items = items, weights = weights)
             ).copy(today = today),
             onDone = {},
             onOpenFood = {}

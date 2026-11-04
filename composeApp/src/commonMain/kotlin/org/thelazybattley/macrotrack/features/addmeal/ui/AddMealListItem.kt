@@ -1,7 +1,5 @@
 package org.thelazybattley.macrotrack.features.addmeal.ui
 
-import org.thelazybattley.macrotrack.features.addmeal.NextDayHeadsUp
-import org.thelazybattley.macrotrack.features.nextday.ui.NextDayHeadsUpCard
 import androidx.compose.foundation.ExperimentalFoundationApi
 import org.thelazybattley.macrotrack.ui.common.formatPortion
 import androidx.compose.foundation.background
@@ -91,12 +89,7 @@ fun AddMealListItem(
     onLongPress: (() -> Unit)?,
     onAmountChanged: (key: String, amount: Double) -> Unit,
     /** Opens the food's history; only offered for food logged before. */
-    onHistory: () -> Unit = {},
-    /** What this amount at dinner usually does to tomorrow's weigh-in, shown under the amount. */
-    headsUp: NextDayHeadsUp? = null,
-    onHeadsUpWhy: () -> Unit = {},
-    onHideHeadsUp: () -> Unit = {},
-    onUndoHeadsUp: () -> Unit = {}
+    onHistory: () -> Unit = {}
 ) {
     val shape = RoundedCornerShape(size = 16.dp)
     val isSelected = selectedItem != null
@@ -278,18 +271,6 @@ fun AddMealListItem(
                 item = selectedItem,
                 onAmountChanged = onAmountChanged
             )
-            if (headsUp != null) {
-                NextDayHeadsUpCard(
-                    food = headsUp.food,
-                    amount = headsUp.amount,
-                    estimate = headsUp.estimate,
-                    unit = headsUp.unit,
-                    isOff = headsUp.isOff,
-                    onWhy = onHeadsUpWhy,
-                    onHide = onHideHeadsUp,
-                    onUndo = onUndoHeadsUp
-                )
-            }
         }
     }
 }

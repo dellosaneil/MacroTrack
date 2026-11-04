@@ -63,7 +63,7 @@ import org.thelazybattley.macrotrack.domain.model.GoalForecast
 import org.thelazybattley.macrotrack.domain.model.Weight
 import org.thelazybattley.macrotrack.features.forecast.ui.GoalForecastLink
 import org.thelazybattley.macrotrack.features.nextday.ui.NextDayWeightLink
-import org.thelazybattley.macrotrack.domain.model.NextDayFood
+import org.thelazybattley.macrotrack.domain.model.NextDayDinner
 import org.thelazybattley.macrotrack.features.profile.ui.ProfilePillButton
 import org.thelazybattley.macrotrack.features.pro.LocalProAccess
 import org.thelazybattley.macrotrack.features.pro.ProFeature
@@ -190,7 +190,7 @@ private fun ChartCard(
     onOpenMovingAverage: () -> Unit,
     forecast: GoalForecast?,
     onOpenForecast: () -> Unit,
-    nextDayBiggest: NextDayFood?,
+    nextDayBiggest: NextDayDinner?,
     isNextDayNew: Boolean,
     onOpenNextDay: () -> Unit
 ) {

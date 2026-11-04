@@ -74,7 +74,7 @@ class NextDayMorningViewModel(
             morningState(
                 date = date,
                 weights = inputs.weights,
-                explanation = morningExplanation(date = date, entries = inputs.entries, weights = inputs.weights)
+                explanation = morningExplanation(date = date, items = inputs.items, weights = inputs.weights)
             ).copy(units = inputs.units)
         }
         .stateIn(

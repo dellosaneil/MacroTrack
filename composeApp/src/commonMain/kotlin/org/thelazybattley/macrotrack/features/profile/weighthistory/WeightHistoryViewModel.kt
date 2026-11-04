@@ -65,10 +65,10 @@ class WeightHistoryViewModel(
         viewModelScope.launch {
             getNextDayInputsUseCase().collect { inputs ->
                 val overview = nextDayOverview(
-                    entries = inputs.entries,
+                    items = inputs.items,
                     weights = inputs.weights,
                     today = getCurrentDate(),
-                    days = NextDayPeriod.DAYS_90.days
+                    period = NextDayPeriod.YEAR
                 )
                 _state.update { it.copy(nextDayBiggest = overview.biggest, isNextDayNew = !inputs.settings.isSeen) }
             }
