@@ -8,6 +8,17 @@ import macrotrack.composeapp.generated.resources.lb
 import macrotrack.composeapp.generated.resources.protein
 import macrotrack.composeapp.generated.resources.value_unit
 import macrotrack.composeapp.generated.resources.widget_add_amount
+import macrotrack.composeapp.generated.resources.widget_detail_eaten
+import macrotrack.composeapp.generated.resources.widget_detail_of
+import macrotrack.composeapp.generated.resources.widget_detail_streak
+import macrotrack.composeapp.generated.resources.widget_detail_weight
+import macrotrack.composeapp.generated.resources.widget_detail_weight_none
+import macrotrack.composeapp.generated.resources.widget_detail_weight_week
+import macrotrack.composeapp.generated.resources.widget_kcal
+import macrotrack.composeapp.generated.resources.widget_water_added
+import macrotrack.composeapp.generated.resources.widget_water_badge
+import macrotrack.composeapp.generated.resources.widget_water_undo
+import macrotrack.composeapp.generated.resources.widget_water_undone
 import macrotrack.composeapp.generated.resources.widget_eaten
 import macrotrack.composeapp.generated.resources.widget_food
 import macrotrack.composeapp.generated.resources.widget_grams
@@ -40,7 +51,9 @@ import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
 import org.thelazybattley.macrotrack.core.toShortDayMonthDay
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
+import org.thelazybattley.macrotrack.domain.model.WIDGET_WATER_AMOUNTS_ML
 import org.thelazybattley.macrotrack.domain.model.WidgetAmount
+import org.thelazybattley.macrotrack.domain.model.WidgetDetail
 import org.thelazybattley.macrotrack.domain.model.WidgetSnapshot
 import org.thelazybattley.macrotrack.domain.model.waterFromMl
 import org.thelazybattley.macrotrack.domain.model.waterUnit
@@ -52,6 +65,12 @@ import kotlin.math.roundToInt
 
 /** A macro row: its name, "74 / 160g", "86g left", and how far along it is. */
 data class MacroText(val name: String, val value: String, val left: String, val progress: Float)
+
+/** A detail next to the Today widget's ring: "Water", "1,250 / 2,600 ml", and its bar, or no bar for weight. */
+data class DetailText(val name: String, val value: String, val progress: Float?)
+
+/** What the water button says for one amount: "250 ml" on the button, "+250" as it's added. */
+data class WaterAmountText(val label: String, val badge: String)
 
 /** A meal row in the large Today widget: "Lunch", "2 items · Chicken rice bowl, iced latte", and "640", or no calories when empty. */
 data class MealText(val name: String, val detail: String, val calories: String?)
@@ -89,8 +108,17 @@ data class WidgetContent(
     val streakDays: String,
     val streakUnit: String,
     val streakNote: String,
-    val dayLetters: List<String>
+    val dayLetters: List<String>,
+    val details: Map<WidgetDetail, DetailText>,
+    /** Water so far with its unit, "1,500 ml", which the water button shows just after it's tapped. */
+    val waterTotalText: String,
+    val waterAmounts: Map<Int, WaterAmountText>,
+    val waterAdded: String,
+    val waterUndo: String,
+    val waterUndone: String
 ) {
+    fun waterAmount(ml: Int): WaterAmountText = waterAmounts[ml] ?: WaterAmountText(label = "$ml ml", badge = "+$ml")
+
     fun bigNumber(isProtein: Boolean): String = if (isProtein) proteinNumber else caloriesNumber
 
     fun bigLabel(isProtein: Boolean): String = if (isProtein) proteinLabel else caloriesLabel
@@ -104,6 +132,57 @@ suspend fun WidgetSnapshot.toContent(): WidgetContent {
     val weightUnit = getString(resource = if (units == UnitSystem.IMPERIAL) Res.string.lb else Res.string.kg)
     val change = weight?.weekChangeKg
     val changeText = change?.takeIf { abs(it) >= SAME_WEIGHT_THRESHOLD_KG }?.let { getString(resource = Res.string.value_unit, units.signedWeight(kg = it), weightUnit) }
+    val macros = listOf(
+        macroText(name = getString(resource = Res.string.protein), amount = protein),
+        macroText(name = getString(resource = Res.string.carbs), amount = carbs),
+        macroText(name = getString(resource = Res.string.fat), amount = fat)
+    )
+    val waterTitle = getString(resource = Res.string.widget_water)
+    val weightTitle = getString(resource = Res.string.widget_weight)
+    val streakTitle = getString(resource = Res.string.widget_streak)
+    val details = mapOf(
+        WidgetDetail.PROTEIN to macros[0].toDetail(),
+        WidgetDetail.CARBS to macros[1].toDetail(),
+        WidgetDetail.FAT to macros[2].toDetail(),
+        WidgetDetail.WATER to DetailText(
+            name = waterTitle,
+            value = getString(
+                resource = Res.string.widget_detail_of,
+                units.waterFromMl(ml = water.totalMl).withThousands(),
+                getString(resource = Res.string.value_unit, units.waterFromMl(ml = water.goalMl).withThousands(), units.waterUnit)
+            ),
+            progress = water.progress
+        ),
+        WidgetDetail.EATEN to DetailText(
+            name = getString(resource = Res.string.widget_detail_eaten),
+            value = getString(
+                resource = Res.string.widget_detail_of,
+                calories.eaten.withThousands(),
+                getString(resource = Res.string.value_unit, calories.goal.withThousands(), getString(resource = Res.string.widget_kcal))
+            ),
+            progress = calories.progress
+        ),
+        WidgetDetail.WEIGHT to DetailText(
+            name = weightTitle,
+            value = when {
+                weight == null -> getString(resource = Res.string.widget_detail_weight_none)
+                !isWeightShown -> changeText?.let { getString(resource = Res.string.widget_detail_weight_week, it) }
+                    ?: getString(resource = Res.string.widget_weight_steady)
+                else -> {
+                    val shown = getString(resource = Res.string.value_unit, units.oneDecimal(kg = weight.trendKg), weightUnit)
+                    change?.takeIf { abs(it) >= SAME_WEIGHT_THRESHOLD_KG }
+                        ?.let { getString(resource = Res.string.widget_detail_weight, shown, units.signedWeight(kg = it)) }
+                        ?: shown
+                }
+            },
+            progress = null
+        ),
+        WidgetDetail.STREAK to DetailText(
+            name = streakTitle,
+            value = getPluralString(resource = Res.plurals.widget_detail_streak, quantity = streak.days, streak.days),
+            progress = (streak.days / 7f).coerceAtMost(maximumValue = 1f)
+        )
+    )
     return WidgetContent(
         snapshot = this,
         today = getString(resource = Res.string.widget_today),
@@ -115,11 +194,7 @@ suspend fun WidgetSnapshot.toContent(): WidgetContent {
         proteinLabel = getString(resource = if (protein.left < 0) Res.string.widget_protein_over else Res.string.widget_protein_left),
         proteinLeft = getString(resource = Res.string.widget_protein_left_short, protein.left.coerceAtLeast(minimumValue = 0).withThousands()),
         eaten = getString(resource = Res.string.widget_eaten, calories.eaten.withThousands()),
-        macros = listOf(
-            macroText(name = getString(resource = Res.string.protein), amount = protein),
-            macroText(name = getString(resource = Res.string.carbs), amount = carbs),
-            macroText(name = getString(resource = Res.string.fat), amount = fat)
-        ),
+        macros = macros,
         meals = meals.map { meal ->
             MealText(
                 name = getString(resource = meal.mealType.title),
@@ -140,13 +215,13 @@ suspend fun WidgetSnapshot.toContent(): WidgetContent {
         food = getString(resource = Res.string.widget_food),
         scan = getString(resource = Res.string.widget_scan),
         addWater = getString(resource = Res.string.widget_add_amount, formatWater(ml = water.glassMl, unitSystem = units)),
-        waterTitle = getString(resource = Res.string.widget_water),
+        waterTitle = waterTitle,
         waterTotal = units.waterFromMl(ml = water.totalMl).withThousands(),
         waterOf = getString(
             resource = Res.string.widget_water_of,
             getString(resource = Res.string.value_unit, units.waterFromMl(ml = water.goalMl).withThousands(), units.waterUnit)
         ),
-        weightTitle = getString(resource = Res.string.widget_weight),
+        weightTitle = weightTitle,
         weightNumber = when {
             weight == null -> ""
             isWeightShown -> units.oneDecimal(kg = weight.trendKg)
@@ -159,7 +234,7 @@ suspend fun WidgetSnapshot.toContent(): WidgetContent {
         },
         weightCaption = getString(resource = Res.string.widget_weight_caption),
         weightEmpty = getString(resource = Res.string.widget_weight_empty),
-        streakTitle = getString(resource = Res.string.widget_streak),
+        streakTitle = streakTitle,
         streakDays = streak.days.toString(),
         streakUnit = getPluralString(resource = Res.plurals.widget_streak_days, quantity = streak.days),
         streakNote = when {
@@ -167,9 +242,22 @@ suspend fun WidgetSnapshot.toContent(): WidgetContent {
             streak.days > 0 -> getString(resource = Res.string.widget_streak_next, streak.days + 1)
             else -> getString(resource = Res.string.widget_streak_start)
         },
-        dayLetters = streak.week.map { it.dayOfWeek.name.take(n = 1) }
+        dayLetters = streak.week.map { it.dayOfWeek.name.take(n = 1) },
+        details = details,
+        waterTotalText = formatWater(ml = water.totalMl, unitSystem = units),
+        waterAmounts = WIDGET_WATER_AMOUNTS_ML.associateWith { ml ->
+            WaterAmountText(
+                label = formatWater(ml = ml, unitSystem = units),
+                badge = getString(resource = Res.string.widget_water_badge, units.waterFromMl(ml = ml).withThousands())
+            )
+        },
+        waterAdded = getString(resource = Res.string.widget_water_added),
+        waterUndo = getString(resource = Res.string.widget_water_undo),
+        waterUndone = getString(resource = Res.string.widget_water_undone)
     )
 }
+
+private fun MacroText.toDetail() = DetailText(name = name, value = value, progress = progress)
 
 private suspend fun macroText(name: String, amount: WidgetAmount) = MacroText(
     name = name,

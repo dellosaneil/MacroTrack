@@ -12,9 +12,12 @@ import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.UnitSystem
 import org.thelazybattley.macrotrack.domain.model.WaterKind
 import org.thelazybattley.macrotrack.domain.model.WidgetSnapshot
+import org.thelazybattley.macrotrack.domain.model.waterFromMl
+import org.thelazybattley.macrotrack.domain.model.waterUnit
 import org.thelazybattley.macrotrack.domain.usecase.water.AddWaterUseCase
 import org.thelazybattley.macrotrack.domain.usecase.water.ScheduleWaterRemindersUseCase
 import org.thelazybattley.macrotrack.domain.usecase.widget.GetWidgetSnapshotUseCase
+import org.thelazybattley.macrotrack.features.foodlog.ui.withThousands
 import org.thelazybattley.macrotrack.features.widgets.toContent
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
 
@@ -70,6 +73,14 @@ data class IosWidgetData(val today: IosWidgetDay, val next: IosWidgetDay, val is
 @Serializable
 data class IosWidgetMacro(val name: String, val short: String, val value: String, val left: String, val progress: Float)
 
+/** A detail the Today widget can show next to its ring; [id] is a [org.thelazybattley.macrotrack.domain.model.WidgetDetail] name. */
+@Serializable
+data class IosWidgetDetail(val id: String, val name: String, val value: String, val progress: Float?)
+
+/** One amount the water button can add: "250 ml" on the button, "+250" as it's added. */
+@Serializable
+data class IosWidgetWaterAmount(val ml: Int, val label: String, val badge: String)
+
 @Serializable
 data class IosWidgetMeal(val url: String, val name: String, val detail: String, val calories: String?)
 
@@ -112,7 +123,15 @@ data class IosWidgetDay(
     val streakUnit: String,
     val streakNote: String,
     val streakLetters: List<String>,
-    val streakStates: List<String>
+    val streakStates: List<String>,
+    val details: List<IosWidgetDetail>,
+    /** The water goal as a number in the user's unit, "2,600", and that unit, "ml", for the water detail. */
+    val waterGoalText: String,
+    val waterUnit: String,
+    val waterAmounts: List<IosWidgetWaterAmount>,
+    val waterAdded: String,
+    val waterUndo: String,
+    val waterUndone: String
 )
 
 private suspend fun WidgetSnapshot.toDay(): IosWidgetDay {
@@ -156,7 +175,16 @@ private suspend fun WidgetSnapshot.toDay(): IosWidgetDay {
         streakUnit = content.streakUnit,
         streakNote = content.streakNote,
         streakLetters = content.dayLetters,
-        streakStates = streak.week.map { it.state.name }
+        streakStates = streak.week.map { it.state.name },
+        details = content.details.map { (detail, text) ->
+            IosWidgetDetail(id = detail.name, name = text.name, value = text.value, progress = text.progress)
+        },
+        waterGoalText = unitSystem.waterFromMl(ml = water.goalMl).withThousands(),
+        waterUnit = unitSystem.waterUnit,
+        waterAmounts = content.waterAmounts.map { (ml, text) -> IosWidgetWaterAmount(ml = ml, label = text.label, badge = text.badge) },
+        waterAdded = content.waterAdded,
+        waterUndo = content.waterUndo,
+        waterUndone = content.waterUndone
     )
 }
 

@@ -85,21 +85,41 @@ struct Ring: View {
     }
 }
 
-struct MacroBars: View {
-    let macros: [WidgetMacro]
+/// The chosen details next to the ring. A detail without progress, like weight, has no bar.
+struct DetailBars: View {
+    let rows: [DetailRow]
 
     var body: some View {
         VStack(spacing: 7) {
-            ForEach(Array(macros.enumerated()), id: \.offset) { index, macro in
+            ForEach(rows, id: \.kind) { row in
                 VStack(spacing: 3) {
                     HStack {
-                        Text(macro.name).font(.system(size: 11, weight: .bold)).foregroundStyle(Palette.ink)
+                        Text(row.name).font(.system(size: 11, weight: .bold)).foregroundStyle(Palette.ink)
                         Spacer(minLength: 4)
-                        Text(macro.value).font(.system(size: 11, weight: .semibold)).foregroundStyle(Palette.muted)
+                        Text(row.value)
+                            .font(.system(size: 11, weight: row.isHighlighted ? .heavy : .semibold))
+                            .foregroundStyle(row.isHighlighted ? Palette.water : Palette.muted)
+                            .lineLimit(1)
+                            .contentTransition(.numericText())
                     }
-                    Bar(progress: macro.progress, color: Palette.macros[index % Palette.macros.count])
+                    if let progress = row.progress {
+                        Bar(progress: progress, color: Palette.color(of: row.kind))
+                    }
                 }
             }
+        }
+    }
+}
+
+extension Palette {
+    static func color(of kind: WidgetDetailKind) -> Color {
+        switch kind {
+        case .protein: protein
+        case .carbs: carbs
+        case .fat: fat
+        case .water: water
+        case .eaten, .weight: accent
+        case .streak: warm
         }
     }
 }
@@ -113,7 +133,7 @@ struct Bar: View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Capsule().fill(Palette.track)
-                Capsule().fill(color).frame(width: proxy.size.width * progress)
+                Capsule().fill(color).frame(width: proxy.size.width * min(max(progress, 0), 1))
             }
         }
         .frame(height: height)
@@ -168,14 +188,50 @@ private struct ScanButton: View {
     }
 }
 
-private struct WaterButton: View {
+private struct WeightButton: View {
     let day: WidgetDay
 
     var body: some View {
-        Button(intent: AddWaterIntent()) {
-            Pill(label: day.addWater, systemImage: "drop.fill", background: Palette.waterSoft, foreground: Palette.water)
+        Link(destination: Links.logWeight) {
+            Pill(label: day.weightTitle, systemImage: "scalemass", background: Palette.tonal, foreground: Palette.tonalInk)
+        }
+    }
+}
+
+/// Adds [ml] right from the widget. Just after a tap it turns solid and shows the new total.
+private struct WaterButton: View {
+    let day: WidgetDay
+    let ml: Int
+    let tap: WaterTap?
+
+    var body: some View {
+        Button(intent: AddWaterIntent(ml: ml)) {
+            if tap?.isAdded == true {
+                Pill(label: day.waterTotalText, systemImage: "checkmark", background: Palette.water, foreground: Palette.background)
+            } else {
+                Pill(label: day.waterAmount(ml: ml).label, systemImage: "plus", background: Palette.waterSoft, foreground: Palette.water)
+            }
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// The buttons picked in Edit Widget, up to [limit] of them.
+private struct ButtonRow: View {
+    let entry: DayEntry
+    let limit: Int
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(entry.setup.buttons.prefix(limit)), id: \.self) { button in
+                switch button {
+                case .food: FoodButton(day: entry.day)
+                case .scan: ScanButton(day: entry.day)
+                case .weight: WeightButton(day: entry.day)
+                case .water: WaterButton(day: entry.day, ml: entry.setup.waterMl, tap: entry.waterTap)
+                }
+            }
+        }
     }
 }
 
@@ -204,7 +260,8 @@ struct TodayView: View {
     @Environment(\.widgetFamily) private var family
 
     private var day: WidgetDay { entry.day }
-    private var isProtein: Bool { entry.bigNumber == .protein }
+    private var isProtein: Bool { entry.setup.bigNumber == .protein }
+    private var rows: [DetailRow] { day.rows(entry.setup.details, tap: entry.waterTap) }
     private var number: String { isProtein ? day.proteinNumber : day.caloriesNumber }
     private var label: String { isProtein ? day.proteinLabel : day.caloriesLabel }
     private var progress: Double { isProtein ? day.proteinProgress : day.caloriesProgress }
@@ -254,11 +311,10 @@ struct TodayView: View {
             }
             .frame(width: 112)
             VStack(spacing: 8) {
-                MacroBars(macros: day.macros)
+                DetailBars(rows: rows)
                 Spacer(minLength: 0)
-                HStack(spacing: 6) {
-                    FoodButton(day: day)
-                    WaterButton(day: day)
+                if !entry.setup.buttons.isEmpty {
+                    ButtonRow(entry: entry, limit: 2)
                 }
             }
         }
@@ -269,7 +325,7 @@ struct TodayView: View {
             WidgetTitle(title: day.title, trailing: day.dateText)
             HStack(spacing: 14) {
                 Ring(progress: progress, number: number, label: label).frame(width: 96, height: 96)
-                MacroBars(macros: day.macros)
+                DetailBars(rows: rows)
             }
             VStack(spacing: 0) {
                 Divider().overlay(Palette.track)
@@ -296,10 +352,8 @@ struct TodayView: View {
                     Divider().overlay(Palette.track)
                 }
             }
-            HStack(spacing: 6) {
-                FoodButton(day: day)
-                ScanButton(day: day)
-                WaterButton(day: day)
+            if !entry.setup.buttons.isEmpty {
+                ButtonRow(entry: entry, limit: 3)
             }
         }
     }
@@ -345,8 +399,14 @@ struct TodayView: View {
 
 // MARK: - Water, weight, streak
 
+/// Today's water and the water button. Just after a tap, the total counts up with a "+250" tag and the button
+/// offers Undo; after Undo it says so, then it's back to adding.
 struct WaterView: View {
-    let day: WidgetDay
+    let entry: DayEntry
+
+    private var day: WidgetDay { entry.day }
+    private var ml: Int { entry.setup.waterMl }
+    private var tap: WaterTap? { entry.waterTap }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -363,12 +423,51 @@ struct WaterView: View {
                 .frame(width: 30)
                 .frame(maxHeight: 66)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(day.waterText).font(.number(24)).foregroundStyle(Palette.ink)
+                    HStack(spacing: 5) {
+                        Text(day.waterText)
+                            .font(.number(24))
+                            .foregroundStyle(Palette.ink)
+                            .contentTransition(.numericText(value: Double(day.waterWithPendingMl)))
+                        if let tap, tap.isAdded {
+                            Text(day.waterAmount(ml: tap.ml).badge)
+                                .font(.system(size: 11, weight: .heavy))
+                                .foregroundStyle(Palette.background)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Palette.water, in: RoundedRectangle(cornerRadius: 8))
+                                .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
                     Text(day.waterOf).font(.system(size: 11, weight: .semibold)).foregroundStyle(Palette.muted)
                 }
                 Spacer(minLength: 0)
             }
-            WaterButton(day: day)
+            if let tap, tap.isAdded {
+                HStack(spacing: 5) {
+                    Button(intent: AddWaterIntent(ml: ml)) {
+                        Pill(label: day.waterAdded ?? "Added", systemImage: "checkmark", background: Palette.water, foreground: Palette.background)
+                    }
+                    .buttonStyle(.plain)
+                    Button(intent: UndoWaterIntent()) {
+                        Text(day.waterUndo ?? "Undo")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(Palette.water)
+                            .padding(.horizontal, 10)
+                            .frame(minHeight: 30)
+                            .background(Palette.waterSoft, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            } else if tap?.isUndone == true {
+                Button(intent: AddWaterIntent(ml: ml)) {
+                    Pill(label: day.waterUndone ?? "Undone", systemImage: "arrow.uturn.backward", background: Palette.track, foreground: Palette.muted)
+                }
+                .buttonStyle(.plain)
+            } else {
+                WaterButton(day: day, ml: ml, tap: nil)
+            }
         }
         .widgetURL(Links.open)
         .widgetCard()

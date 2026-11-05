@@ -38,36 +38,47 @@ import org.thelazybattley.macrotrack.R
 import org.thelazybattley.macrotrack.features.widgets.WidgetContent
 import org.thelazybattley.macrotrack.core.platform.AppShortcut
 import org.thelazybattley.macrotrack.domain.model.StreakDayState
+import org.thelazybattley.macrotrack.domain.model.WidgetButton
+import org.thelazybattley.macrotrack.domain.model.WidgetDetail
 
-/** Calories left in a ring with the macros, and buttons to log. Made taller, it lists each meal too. */
+/**
+ * Calories left in a ring with up to three chosen details, and up to three chosen buttons. Made taller, it lists
+ * each meal too. With no buttons, the details get the room.
+ */
 internal class TodayWidget : SnapshotWidget() {
 
     override val sizeMode = SizeMode.Responsive(sizes = setOf(MEDIUM, LARGE))
 
     @Composable
-    override fun Content(content: WidgetContent, prefs: Preferences?) {
+    override fun Content(content: WidgetContent, prefs: Preferences?, tap: WaterTap?) {
         val palette = widgetPalette(colours = prefs.colours())
-        val isProtein = prefs?.get(WidgetConfig.BIG_PROTEIN) == true
+        val setup = TodaySetup(
+            isProtein = prefs?.get(WidgetConfig.BIG_PROTEIN) == true,
+            details = prefs.details(),
+            buttons = prefs.buttons(),
+            waterMl = prefs.waterMl()
+        )
         WidgetFrame(palette = palette, padding = FRAME_PADDING.dp) {
             when {
                 !content.snapshot.isSetUp -> WidgetSetUp(content = content, palette = palette)
-                LocalSize.current.height >= LARGE.height -> Large(content = content, palette = palette, isProtein = isProtein)
-                else -> Medium(content = content, palette = palette, isProtein = isProtein)
+                LocalSize.current.height >= LARGE.height -> Large(content = content, palette = palette, setup = setup, tap = tap)
+                else -> Medium(content = content, palette = palette, setup = setup, tap = tap)
             }
         }
     }
 
     @Composable
-    private fun Medium(content: WidgetContent, palette: WidgetPalette, isProtein: Boolean) {
+    private fun Medium(content: WidgetContent, palette: WidgetPalette, setup: TodaySetup, tap: WaterTap?) {
         // What's left of a short widget after its padding and buttons, so the ring never pushes them off.
-        val ringDp = (LocalSize.current.height.value - 2 * FRAME_PADDING - BUTTONS_HEIGHT).toInt().coerceIn(minimumValue = 56, maximumValue = 92)
+        val buttonsHeight = if (setup.buttons.isEmpty()) 0 else BUTTONS_HEIGHT
+        val ringDp = (LocalSize.current.height.value - 2 * FRAME_PADDING - buttonsHeight).toInt().coerceIn(minimumValue = 56, maximumValue = 92)
         Column(modifier = GlanceModifier.fillMaxSize()) {
             Row(modifier = GlanceModifier.fillMaxWidth().defaultWeight(), verticalAlignment = Alignment.CenterVertically) {
                 WidgetRing(
                     sizeDp = ringDp,
-                    progress = content.bigProgress(isProtein = isProtein),
-                    number = content.bigNumber(isProtein = isProtein),
-                    label = content.bigLabel(isProtein = isProtein),
+                    progress = content.bigProgress(isProtein = setup.isProtein),
+                    number = content.bigNumber(isProtein = setup.isProtein),
+                    label = content.bigLabel(isProtein = setup.isProtein),
                     palette = palette
                 )
                 Spacer(modifier = GlanceModifier.width(width = 16.dp))
@@ -76,16 +87,18 @@ internal class TodayWidget : SnapshotWidget() {
                         WidgetText(text = content.today, color = palette.ink, isBold = true, modifier = GlanceModifier.defaultWeight())
                         WidgetText(text = content.date, color = palette.muted)
                     }
-                    Macros(content = content, palette = palette, gap = 4.dp)
+                    Details(content = content, palette = palette, details = setup.details, tap = tap, gap = 4.dp)
                 }
             }
-            Spacer(modifier = GlanceModifier.height(height = 8.dp))
-            Buttons(content = content, palette = palette)
+            if (setup.buttons.isNotEmpty()) {
+                Spacer(modifier = GlanceModifier.height(height = 8.dp))
+                Buttons(content = content, palette = palette, setup = setup, tap = tap)
+            }
         }
     }
 
     @Composable
-    private fun Large(content: WidgetContent, palette: WidgetPalette, isProtein: Boolean) {
+    private fun Large(content: WidgetContent, palette: WidgetPalette, setup: TodaySetup, tap: WaterTap?) {
         val context = LocalContext.current
         Column(modifier = GlanceModifier.fillMaxSize()) {
             WidgetHeader(title = content.today, palette = palette, trailing = content.date)
@@ -93,14 +106,14 @@ internal class TodayWidget : SnapshotWidget() {
             Row(modifier = GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 WidgetRing(
                     sizeDp = 88,
-                    progress = content.bigProgress(isProtein = isProtein),
-                    number = content.bigNumber(isProtein = isProtein),
-                    label = content.bigLabel(isProtein = isProtein),
+                    progress = content.bigProgress(isProtein = setup.isProtein),
+                    number = content.bigNumber(isProtein = setup.isProtein),
+                    label = content.bigLabel(isProtein = setup.isProtein),
                     palette = palette
                 )
                 Spacer(modifier = GlanceModifier.width(width = 16.dp))
                 Column(modifier = GlanceModifier.defaultWeight()) {
-                    Macros(content = content, palette = palette, gap = 6.dp)
+                    Details(content = content, palette = palette, details = setup.details, tap = tap, gap = 6.dp)
                 }
             }
             Spacer(modifier = GlanceModifier.height(height = 10.dp))
@@ -139,52 +152,86 @@ internal class TodayWidget : SnapshotWidget() {
                     }
                 }
             }
-            Spacer(modifier = GlanceModifier.height(height = 10.dp))
-            Buttons(content = content, palette = palette)
+            if (setup.buttons.isNotEmpty()) {
+                Spacer(modifier = GlanceModifier.height(height = 10.dp))
+                Buttons(content = content, palette = palette, setup = setup, tap = tap)
+            }
         }
     }
 
+    /** The chosen details in the order picked. Water stands out while the water button's tap is showing. */
     @Composable
-    private fun Macros(content: WidgetContent, palette: WidgetPalette, gap: Dp) {
-        val colors = listOf(palette.protein, palette.carbs, palette.fat)
-        content.macros.zip(colors).forEach { (macro, color) ->
+    private fun Details(content: WidgetContent, palette: WidgetPalette, details: List<WidgetDetail>, tap: WaterTap?, gap: Dp) {
+        details.forEach { detail ->
+            val text = content.details[detail] ?: return@forEach
             Spacer(modifier = GlanceModifier.height(height = gap))
-            WidgetMacroBar(macro = macro, color = color, palette = palette)
+            WidgetDetailBar(
+                detail = text,
+                color = palette.colorOf(detail = detail),
+                palette = palette,
+                valueColor = if (detail == WidgetDetail.WATER && tap?.isAdded == true) palette.water else palette.muted
+            )
         }
     }
 
     @Composable
-    private fun Buttons(content: WidgetContent, palette: WidgetPalette) {
+    private fun Buttons(content: WidgetContent, palette: WidgetPalette, setup: TodaySetup, tap: WaterTap?) {
         val context = LocalContext.current
         Row(modifier = GlanceModifier.fillMaxWidth()) {
-            WidgetPill(
-                label = content.logFood,
-                icon = R.drawable.ic_widget_add,
-                background = palette.accent,
-                content = palette.onAccent,
-                onClick = WidgetActions.shortcut(context = context, shortcut = AppShortcut.LOG_FOOD),
-                modifier = GlanceModifier.defaultWeight()
-            )
-            Spacer(modifier = GlanceModifier.width(width = 6.dp))
-            WidgetPill(
-                label = content.scan,
-                icon = R.drawable.ic_widget_scan,
-                background = palette.tonal,
-                content = palette.tonalInk,
-                onClick = WidgetActions.shortcut(context = context, shortcut = AppShortcut.SCAN_BARCODE),
-                modifier = GlanceModifier.defaultWeight()
-            )
-            Spacer(modifier = GlanceModifier.width(width = 6.dp))
-            WidgetPill(
-                label = content.addWater,
-                icon = R.drawable.ic_widget_water,
-                background = palette.waterSoft,
-                content = palette.water,
-                onClick = WidgetActions.addGlass,
-                modifier = GlanceModifier.defaultWeight()
-            )
+            setup.buttons.forEachIndexed { index, button ->
+                if (index > 0) Spacer(modifier = GlanceModifier.width(width = 6.dp))
+                val modifier = GlanceModifier.defaultWeight()
+                when (button) {
+                    WidgetButton.FOOD -> WidgetPill(
+                        label = content.logFood,
+                        icon = R.drawable.ic_widget_add,
+                        background = palette.accent,
+                        content = palette.onAccent,
+                        onClick = WidgetActions.shortcut(context = context, shortcut = AppShortcut.LOG_FOOD),
+                        modifier = modifier
+                    )
+                    WidgetButton.SCAN -> WidgetPill(
+                        label = content.scan,
+                        icon = R.drawable.ic_widget_scan,
+                        background = palette.tonal,
+                        content = palette.tonalInk,
+                        onClick = WidgetActions.shortcut(context = context, shortcut = AppShortcut.SCAN_BARCODE),
+                        modifier = modifier
+                    )
+                    WidgetButton.WEIGHT -> WidgetPill(
+                        label = content.weightTitle,
+                        icon = R.drawable.ic_widget_weight,
+                        background = palette.tonal,
+                        content = palette.tonalInk,
+                        onClick = WidgetActions.shortcut(context = context, shortcut = AppShortcut.LOG_WEIGHT),
+                        modifier = modifier
+                    )
+                    // Just after a tap it turns solid and shows the new total.
+                    WidgetButton.WATER -> if (tap?.isAdded == true) {
+                        WidgetPill(
+                            label = content.waterTotalText,
+                            icon = R.drawable.ic_widget_check,
+                            background = palette.water,
+                            content = palette.background,
+                            onClick = WidgetActions.addWater(ml = setup.waterMl),
+                            modifier = modifier
+                        )
+                    } else {
+                        WidgetPill(
+                            label = content.waterAmount(ml = setup.waterMl).label,
+                            icon = R.drawable.ic_widget_add,
+                            background = palette.waterSoft,
+                            content = palette.water,
+                            onClick = WidgetActions.addWater(ml = setup.waterMl),
+                            modifier = modifier
+                        )
+                    }
+                }
+            }
         }
     }
+
+    private data class TodaySetup(val isProtein: Boolean, val details: List<WidgetDetail>, val buttons: List<WidgetButton>, val waterMl: Int)
 
     companion object {
         val MEDIUM = DpSize(width = 250.dp, height = 110.dp)
@@ -195,13 +242,17 @@ internal class TodayWidget : SnapshotWidget() {
     }
 }
 
-/** Today's water against the goal, and a button that adds a glass without opening the app. */
+/**
+ * Today's water against the goal, and a button that adds water without opening the app. Just after a tap the
+ * total shows what was added and the button offers Undo; after Undo it says so, then it's back to adding.
+ */
 internal class WaterWidget : SnapshotWidget() {
 
     @Composable
-    override fun Content(content: WidgetContent, prefs: Preferences?) {
+    override fun Content(content: WidgetContent, prefs: Preferences?, tap: WaterTap?) {
         val palette = widgetPalette(colours = prefs.colours())
         val water = content.snapshot.water
+        val ml = prefs.waterMl()
         WidgetFrame(palette = palette, padding = 14.dp) {
             Column(modifier = GlanceModifier.fillMaxSize()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -229,19 +280,63 @@ internal class WaterWidget : SnapshotWidget() {
                     }
                     Spacer(modifier = GlanceModifier.width(width = 10.dp))
                     Column {
-                        WidgetText(text = content.waterTotal, color = palette.ink, size = 24.sp, isNumber = true)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            WidgetText(text = content.waterTotal, color = palette.ink, size = 24.sp, isNumber = true)
+                            if (tap?.isAdded == true) {
+                                Spacer(modifier = GlanceModifier.width(width = 5.dp))
+                                WidgetText(
+                                    text = content.waterAmount(ml = tap.ml).badge,
+                                    color = palette.background,
+                                    size = 11.sp,
+                                    isBold = true,
+                                    modifier = GlanceModifier
+                                        .background(colorProvider = palette.water)
+                                        .cornerRadius(radius = 8.dp)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                         WidgetText(text = content.waterOf, color = palette.muted, size = 11.sp)
                     }
                 }
                 Spacer(modifier = GlanceModifier.height(height = 8.dp))
-                WidgetPill(
-                    label = content.addWater,
-                    icon = R.drawable.ic_widget_water,
-                    background = palette.waterSoft,
-                    content = palette.water,
-                    onClick = WidgetActions.addGlass,
-                    modifier = GlanceModifier.fillMaxWidth()
-                )
+                when {
+                    tap?.isAdded == true -> Row(modifier = GlanceModifier.fillMaxWidth()) {
+                        WidgetPill(
+                            label = content.waterAdded,
+                            icon = R.drawable.ic_widget_check,
+                            background = palette.water,
+                            content = palette.background,
+                            onClick = WidgetActions.addWater(ml = ml),
+                            modifier = GlanceModifier.defaultWeight()
+                        )
+                        Spacer(modifier = GlanceModifier.width(width = 5.dp))
+                        WidgetPill(
+                            label = content.waterUndo,
+                            icon = null,
+                            background = palette.waterSoft,
+                            content = palette.water,
+                            onClick = WidgetActions.undoWater,
+                            modifier = GlanceModifier.padding(horizontal = 2.dp)
+                        )
+                    }
+                    tap?.isUndone == true -> WidgetPill(
+                        label = content.waterUndone,
+                        icon = R.drawable.ic_widget_undo,
+                        background = palette.track,
+                        content = palette.muted,
+                        onClick = WidgetActions.addWater(ml = ml),
+                        modifier = GlanceModifier.fillMaxWidth()
+                    )
+                    else -> WidgetPill(
+                        label = content.waterAmount(ml = ml).label,
+                        icon = R.drawable.ic_widget_add,
+                        background = palette.waterSoft,
+                        content = palette.water,
+                        onClick = WidgetActions.addWater(ml = ml),
+                        modifier = GlanceModifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }
@@ -255,7 +350,7 @@ internal class WaterWidget : SnapshotWidget() {
 internal class WeightWidget : SnapshotWidget() {
 
     @Composable
-    override fun Content(content: WidgetContent, prefs: Preferences?) {
+    override fun Content(content: WidgetContent, prefs: Preferences?, tap: WaterTap?) {
         val palette = widgetPalette(colours = prefs.colours())
         val context = LocalContext.current
         val weight = content.snapshot.weight
@@ -305,7 +400,7 @@ internal class WeightWidget : SnapshotWidget() {
 internal class StreakWidget : SnapshotWidget() {
 
     @Composable
-    override fun Content(content: WidgetContent, prefs: Preferences?) {
+    override fun Content(content: WidgetContent, prefs: Preferences?, tap: WaterTap?) {
         val palette = widgetPalette(colours = prefs.colours())
         WidgetFrame(palette = palette, padding = 14.dp) {
             Column(modifier = GlanceModifier.fillMaxSize()) {
@@ -351,7 +446,7 @@ internal class StreakWidget : SnapshotWidget() {
 internal class QuickLogWidget : SnapshotWidget() {
 
     @Composable
-    override fun Content(content: WidgetContent, prefs: Preferences?) {
+    override fun Content(content: WidgetContent, prefs: Preferences?, tap: WaterTap?) {
         val palette = widgetPalette(colours = prefs.colours())
         val context = LocalContext.current
         val buttons = listOf(

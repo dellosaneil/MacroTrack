@@ -179,4 +179,14 @@ class HomeWidgetTest {
         assertEquals(expected = 0, actual = result.streak.days)
         assertEquals(expected = listOf(StreakDayState.OPEN) + List(size = 6) { StreakDayState.LATER }, actual = result.streak.week.map { it.state })
     }
+
+    @Test
+    fun detailsAreKeptInTheOrderPickedAndCappedAtThree() {
+        val picked = WIDGET_DEFAULT_DETAILS
+            .toggledUpTo(item = WidgetDetail.CARBS, max = WIDGET_MAX_DETAILS)
+            .toggledUpTo(item = WidgetDetail.WATER, max = WIDGET_MAX_DETAILS)
+        assertEquals(expected = listOf(WidgetDetail.PROTEIN, WidgetDetail.FAT, WidgetDetail.WATER), actual = picked)
+        assertEquals(expected = picked, actual = picked.toggledUpTo(item = WidgetDetail.STREAK, max = WIDGET_MAX_DETAILS))
+        assertEquals(expected = emptyList(), actual = listOf(WidgetButton.FOOD).toggledUpTo(item = WidgetButton.FOOD, max = 3))
+    }
 }

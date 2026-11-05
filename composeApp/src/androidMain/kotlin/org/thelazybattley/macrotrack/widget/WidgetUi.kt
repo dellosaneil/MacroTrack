@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -43,11 +45,17 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.koin.core.context.GlobalContext
 import org.thelazybattley.macrotrack.R
-import org.thelazybattley.macrotrack.features.widgets.MacroText
+import org.thelazybattley.macrotrack.domain.model.WIDGET_DEFAULT_DETAILS
+import org.thelazybattley.macrotrack.domain.model.WIDGET_WATER_AMOUNTS_ML
+import org.thelazybattley.macrotrack.domain.model.WIDGET_WATER_DEFAULT_ML
+import org.thelazybattley.macrotrack.domain.model.WidgetButton
+import org.thelazybattley.macrotrack.domain.model.WidgetDetail
+import org.thelazybattley.macrotrack.features.widgets.DetailText
 import org.thelazybattley.macrotrack.features.widgets.WidgetContent
 import org.thelazybattley.macrotrack.features.widgets.toContent
 import org.thelazybattley.macrotrack.domain.usecase.widget.GetWidgetSnapshotUseCase
@@ -59,7 +67,32 @@ internal object WidgetConfig {
 
     /** The widget uses the app's colours instead of the wallpaper's. */
     val APP_COLOURS = booleanPreferencesKey(name = "app_colours")
+
+    /** The Today widget's details next to the ring, as [WidgetDetail] names in the order picked. */
+    val DETAILS = stringPreferencesKey(name = "details")
+
+    /** The Today widget's buttons, as [WidgetButton] names; empty for none. */
+    val BUTTONS = stringPreferencesKey(name = "buttons")
+
+    /** How much the water button adds, in ml. */
+    val WATER_ML = intPreferencesKey(name = "water_ml")
 }
+
+/** Buttons fit three to a row on Android. */
+internal const val WIDGET_MAX_BUTTONS = 3
+
+internal val WIDGET_DEFAULT_BUTTONS = listOf(WidgetButton.FOOD, WidgetButton.SCAN, WidgetButton.WATER)
+
+internal fun Preferences?.details(): List<WidgetDetail> = this?.get(WidgetConfig.DETAILS)?.let { decodeNames<WidgetDetail>(text = it) } ?: WIDGET_DEFAULT_DETAILS
+
+internal fun Preferences?.buttons(): List<WidgetButton> = this?.get(WidgetConfig.BUTTONS)?.let { decodeNames<WidgetButton>(text = it) } ?: WIDGET_DEFAULT_BUTTONS
+
+internal fun Preferences?.waterMl(): Int = this?.get(WidgetConfig.WATER_ML)?.takeIf { it in WIDGET_WATER_AMOUNTS_ML } ?: WIDGET_WATER_DEFAULT_ML
+
+internal fun List<Enum<*>>.encodeNames(): String = joinToString(separator = ",") { it.name }
+
+private inline fun <reified T : Enum<T>> decodeNames(text: String): List<T> =
+    text.split(',').mapNotNull { name -> enumValues<T>().find { it.name == name } }.distinct()
 
 /**
  * A widget drawn from today's snapshot, redrawn while it's on screen as anything logged changes. Before Android 15
@@ -74,9 +107,10 @@ internal abstract class SnapshotWidget : GlanceAppWidget() {
         val first = contents.first()
         provideContent {
             val content by contents.collectAsState(initial = first)
+            val tap by WaterFeedback.tap.collectAsState()
             val prefs = currentState<Preferences>()
             GlanceTheme {
-                Content(content = content, prefs = prefs)
+                Content(content = content, prefs = prefs, tap = tap)
             }
         }
     }
@@ -85,14 +119,14 @@ internal abstract class SnapshotWidget : GlanceAppWidget() {
         val content = sampleSnapshot().toContent()
         provideContent {
             GlanceTheme {
-                Content(content = content, prefs = null)
+                Content(content = content, prefs = null, tap = null)
             }
         }
     }
 
-    /** [prefs] is this widget's [WidgetConfig], null in the widget list. */
+    /** [prefs] is this widget's [WidgetConfig], null in the widget list. [tap] is the water button's feedback, if showing. */
     @Composable
-    abstract fun Content(content: WidgetContent, prefs: Preferences?)
+    abstract fun Content(content: WidgetContent, prefs: Preferences?, tap: WaterTap?)
 }
 
 internal fun Preferences?.colours(): WidgetColours =
@@ -183,28 +217,41 @@ internal fun WidgetRing(sizeDp: Int, progress: Float, number: String, label: Str
     }
 }
 
+/** A detail next to the Today ring: its name and value, and a bar unless it has no progress, like weight. */
 @Composable
-internal fun WidgetMacroBar(macro: MacroText, color: ColorProvider, palette: WidgetPalette) {
+internal fun WidgetDetailBar(detail: DetailText, color: ColorProvider, palette: WidgetPalette, valueColor: ColorProvider = palette.muted) {
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         Row(modifier = GlanceModifier.fillMaxWidth()) {
-            WidgetText(text = macro.name, color = palette.ink, size = 11.sp, isBold = true, modifier = GlanceModifier.defaultWeight())
-            WidgetText(text = macro.value, color = palette.muted, size = 11.sp)
+            WidgetText(text = detail.name, color = palette.ink, size = 11.sp, isBold = true, modifier = GlanceModifier.defaultWeight())
+            WidgetText(text = detail.value, color = valueColor, size = 11.sp, isBold = valueColor != palette.muted)
         }
-        Spacer(modifier = GlanceModifier.height(height = 3.dp))
-        LinearProgressIndicator(
-            progress = macro.progress,
-            modifier = GlanceModifier.fillMaxWidth().height(height = 6.dp).cornerRadius(radius = 3.dp),
-            color = color,
-            backgroundColor = palette.track
-        )
+        detail.progress?.let { progress ->
+            Spacer(modifier = GlanceModifier.height(height = 3.dp))
+            LinearProgressIndicator(
+                progress = progress,
+                modifier = GlanceModifier.fillMaxWidth().height(height = 6.dp).cornerRadius(radius = 3.dp),
+                color = color,
+                backgroundColor = palette.track
+            )
+        }
     }
+}
+
+/** The colour of a detail's bar. */
+internal fun WidgetPalette.colorOf(detail: WidgetDetail): ColorProvider = when (detail) {
+    WidgetDetail.PROTEIN -> protein
+    WidgetDetail.CARBS -> carbs
+    WidgetDetail.FAT -> fat
+    WidgetDetail.WATER -> water
+    WidgetDetail.EATEN, WidgetDetail.WEIGHT -> accent
+    WidgetDetail.STREAK -> warm
 }
 
 /** A rounded button with an icon and a label. */
 @Composable
 internal fun WidgetPill(
     label: String,
-    icon: Int,
+    icon: Int?,
     background: ColorProvider,
     content: ColorProvider,
     onClick: Action,
@@ -220,13 +267,15 @@ internal fun WidgetPill(
         verticalAlignment = Alignment.CenterVertically,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            provider = ImageProvider(resId = icon),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(colorProvider = content),
-            modifier = GlanceModifier.size(size = 14.dp)
-        )
-        Spacer(modifier = GlanceModifier.width(width = 4.dp))
+        icon?.let {
+            Image(
+                provider = ImageProvider(resId = it),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(colorProvider = content),
+                modifier = GlanceModifier.size(size = 14.dp)
+            )
+            Spacer(modifier = GlanceModifier.width(width = 4.dp))
+        }
         WidgetText(text = label, color = content, size = 12.sp, isBold = true)
     }
 }

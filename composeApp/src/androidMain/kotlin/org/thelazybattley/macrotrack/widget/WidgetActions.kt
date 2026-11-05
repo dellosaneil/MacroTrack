@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.glance.GlanceId
 import androidx.glance.action.Action
 import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionParametersOf
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
@@ -15,11 +16,14 @@ import org.thelazybattley.macrotrack.core.platform.EXTRA_APP_SHORTCUT
 import org.thelazybattley.macrotrack.core.platform.HomeWidgetRefresher
 import org.thelazybattley.macrotrack.domain.model.MealType
 import org.thelazybattley.macrotrack.domain.model.WaterKind
+import org.thelazybattley.macrotrack.domain.model.WIDGET_WATER_ADDED_MILLIS
+import org.thelazybattley.macrotrack.domain.model.WIDGET_WATER_DEFAULT_ML
+import org.thelazybattley.macrotrack.domain.model.WIDGET_WATER_UNDONE_MILLIS
 import org.thelazybattley.macrotrack.domain.usecase.water.AddWaterUseCase
-import org.thelazybattley.macrotrack.domain.usecase.water.GetWaterSettingsUseCase
+import org.thelazybattley.macrotrack.domain.usecase.water.DeleteWaterUseCase
 import org.thelazybattley.macrotrack.domain.usecase.water.ScheduleWaterRemindersUseCase
 import org.thelazybattley.macrotrack.ui.navigation.AppDestinations
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.delay
 
 /** On the intent that opens the app from a widget: the screen to show over the main one. */
 const val EXTRA_WIDGET_ROUTE = "widget_route"
@@ -42,19 +46,47 @@ internal object WidgetActions {
             .putExtra(EXTRA_WIDGET_ROUTE, AppDestinations.Root.AddMeal.createRoute(mealType = mealType.name))
     )
 
-    /** Adds a glass of water without opening the app. */
-    val addGlass: Action get() = actionRunCallback<AddGlassAction>()
+    /** Adds [ml] of water without opening the app. */
+    fun addWater(ml: Int): Action = actionRunCallback<AddGlassAction>(parameters = actionParametersOf(WATER_ML to ml))
+
+    /** Takes back the water just added from a widget. */
+    val undoWater: Action get() = actionRunCallback<UndoWaterAction>()
+
+    val WATER_ML = ActionParameters.Key<Int>(name = "water_ml")
 }
 
-/** The water button: logs one glass of the size set in Water settings, then redraws the widgets. */
+/**
+ * The water button: logs the amount the widget was set up with, and every widget showing water answers for
+ * [WIDGET_WATER_ADDED_MILLIS] with the new total and Undo, then goes back to how it was.
+ */
 class AddGlassAction : ActionCallback {
 
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val koin = GlobalContext.getOrNull() ?: return
-        val glassMl = koin.get<GetWaterSettingsUseCase>()().first().glassMl
-        koin.get<AddWaterUseCase>()(amountMl = glassMl, kind = WaterKind.GLASS)
-        koin.get<HomeWidgetRefresher>().refresh()
+        val ml = parameters[WidgetActions.WATER_ML] ?: WIDGET_WATER_DEFAULT_ML
+        val entry = koin.get<AddWaterUseCase>()(amountMl = ml, kind = WaterKind.GLASS)
+        val token = WaterFeedback.show(entryId = entry.id, ml = ml, isUndone = false)
+        val refresher = koin.get<HomeWidgetRefresher>()
+        refresher.refresh()
         // Catching up on water takes back reminders that are no longer due.
         koin.get<ScheduleWaterRemindersUseCase>()()
+        delay(timeMillis = WIDGET_WATER_ADDED_MILLIS)
+        if (WaterFeedback.clear(token = token)) refresher.refresh()
+    }
+}
+
+/** Undo on a widget: deletes the water just added, and the button says so for [WIDGET_WATER_UNDONE_MILLIS]. */
+class UndoWaterAction : ActionCallback {
+
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        val koin = GlobalContext.getOrNull() ?: return
+        val tap = WaterFeedback.tap.value?.takeIf { it.isAdded } ?: return
+        koin.get<DeleteWaterUseCase>()(id = tap.entryId)
+        val token = WaterFeedback.show(entryId = tap.entryId, ml = tap.ml, isUndone = true)
+        val refresher = koin.get<HomeWidgetRefresher>()
+        refresher.refresh()
+        koin.get<ScheduleWaterRemindersUseCase>()()
+        delay(timeMillis = WIDGET_WATER_UNDONE_MILLIS)
+        if (WaterFeedback.clear(token = token)) refresher.refresh()
     }
 }

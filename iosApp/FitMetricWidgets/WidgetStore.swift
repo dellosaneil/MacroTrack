@@ -7,6 +7,7 @@ enum WidgetStore {
     static let appGroup = "group.org.thelazybattley.macrotrack"
     private static let dataKey = "widget_data"
     private static let pendingWaterKey = "pending_water"
+    private static let waterTapKey = "water_tap"
 
     private static var defaults: UserDefaults? { UserDefaults(suiteName: appGroup) }
 
@@ -20,11 +21,56 @@ enum WidgetStore {
         return (try? JSONDecoder().decode([PendingWater].self, from: data)) ?? []
     }
 
-    static func addPendingWater(ml: Int) {
+    @discardableResult
+    static func addPendingWater(ml: Int) -> PendingWater {
         let glass = PendingWater(ml: ml, atMillis: Int64(Date().timeIntervalSince1970 * 1000))
-        guard let data = try? JSONEncoder().encode(pendingWater() + [glass]) else { return }
+        savePendingWater(pendingWater() + [glass])
+        return glass
+    }
+
+    /// Takes back water added at [atMillis] that the app hasn't logged yet. False when it already has.
+    static func removePendingWater(atMillis: Int64) -> Bool {
+        let pending = pendingWater()
+        guard let index = pending.lastIndex(where: { $0.atMillis == atMillis }) else { return false }
+        var kept = pending
+        kept.remove(at: index)
+        savePendingWater(kept)
+        return true
+    }
+
+    private static func savePendingWater(_ pending: [PendingWater]) {
+        guard let data = try? JSONEncoder().encode(pending) else { return }
         defaults?.set(String(decoding: data, as: UTF8.self), forKey: pendingWaterKey)
     }
+
+    /// The water button's last tap while it's still showing at [date], shared by every widget showing water.
+    static func waterTap(at date: Date = Date()) -> WaterTap? {
+        guard let json = defaults?.string(forKey: waterTapKey), let data = json.data(using: .utf8),
+              let tap = try? JSONDecoder().decode(WaterTap.self, from: data), tap.until > date else { return nil }
+        return tap
+    }
+
+    static func setWaterTap(_ tap: WaterTap?) {
+        guard let tap, let data = try? JSONEncoder().encode(tap) else {
+            defaults?.removeObject(forKey: waterTapKey)
+            return
+        }
+        defaults?.set(String(decoding: data, as: UTF8.self), forKey: waterTapKey)
+    }
+}
+
+/// The water button just tapped: [ml] added at [atMillis], or taken back when [isUndone], shown until [until].
+/// A widget can't vibrate or pop anything up, so the widget itself answers the tap.
+struct WaterTap: Codable {
+    static let addedSeconds: TimeInterval = 3
+    static let undoneSeconds: TimeInterval = 2
+
+    let ml: Int
+    let atMillis: Int64
+    let isUndone: Bool
+    let until: Date
+
+    var isAdded: Bool { !isUndone }
 }
 
 /// A glass added from a widget, as the app's Kotlin side reads it.
@@ -54,6 +100,29 @@ struct WidgetMacro: Codable, Hashable {
     let value: String
     let left: String
     let progress: Double
+}
+
+/// A detail next to the Today ring, as Kotlin wrote it; [id] is the detail's name, like "PROTEIN".
+struct WidgetDetail: Codable, Hashable {
+    let id: String
+    let name: String
+    let value: String
+    let progress: Double?
+}
+
+struct WidgetWaterAmount: Codable, Hashable {
+    let ml: Int
+    let label: String
+    let badge: String
+}
+
+/// A detail ready to draw. [isHighlighted] is the water row just after the water button is tapped.
+struct DetailRow: Hashable {
+    let kind: WidgetDetailKind
+    let name: String
+    let value: String
+    let progress: Double?
+    var isHighlighted = false
 }
 
 struct WidgetMeal: Codable, Hashable {
@@ -101,6 +170,14 @@ struct WidgetDay: Codable {
     let streakNote: String
     let streakLetters: [String]
     let streakStates: [String]
+    // Optional so what an older app version wrote still loads.
+    let details: [WidgetDetail]?
+    let waterGoalText: String?
+    let waterUnit: String?
+    let waterAmounts: [WidgetWaterAmount]?
+    let waterAdded: String?
+    let waterUndo: String?
+    let waterUndone: String?
 
     /// "2026-10-08", as Kotlin writes dates.
     static func key(for date: Date) -> String {
@@ -122,6 +199,30 @@ struct WidgetDay: Codable {
     var waterText: String {
         let shown = isImperial ? Int((Double(waterWithPendingMl) / 29.5735295625).rounded()) : waterWithPendingMl
         return shown.formatted(.number.grouping(.automatic))
+    }
+
+    /// "1,500 ml": what the water button shows just after it's tapped.
+    var waterTotalText: String { "\(waterText) \(waterUnit ?? (isImperial ? "fl oz" : "ml"))" }
+
+    func waterAmount(ml: Int) -> WidgetWaterAmount {
+        waterAmounts?.first { $0.ml == ml } ?? WidgetWaterAmount(ml: ml, label: "\(ml) ml", badge: "+\(ml)")
+    }
+
+    /// The chosen details in the order picked. Water counts what was just added from a widget, too.
+    func rows(_ kinds: [WidgetDetailKind], tap: WaterTap?) -> [DetailRow] {
+        kinds.compactMap { kind in
+            if kind == .water, let goal = waterGoalText {
+                let name = details?.first { $0.id == kind.id }?.name ?? waterTitle
+                return DetailRow(kind: kind, name: name, value: "\(waterText) / \(goal) \(waterUnit ?? "ml")", progress: waterProgress, isHighlighted: tap?.isAdded == true)
+            }
+            if let detail = details?.first(where: { $0.id == kind.id }) {
+                return DetailRow(kind: kind, name: detail.name, value: detail.value, progress: detail.progress)
+            }
+            // Before the app has written details: the macros it always wrote.
+            let macroIndex = [WidgetDetailKind.protein, .carbs, .fat].firstIndex(of: kind)
+            return macroIndex.flatMap { index in macros.indices.contains(index) ? macros[index] : nil }
+                .map { DetailRow(kind: kind, name: $0.name, value: $0.value, progress: $0.progress) }
+        }
     }
 }
 
@@ -174,7 +275,22 @@ extension WidgetData {
             streakUnit: "days",
             streakNote: "Log today to make it 4",
             streakLetters: ["M", "T", "W", "T", "F", "S", "S"],
-            streakStates: ["LOGGED", "LOGGED", "LOGGED", "OPEN", "LATER", "LATER", "LATER"]
+            streakStates: ["LOGGED", "LOGGED", "LOGGED", "OPEN", "LATER", "LATER", "LATER"],
+            details: [
+                WidgetDetail(id: "PROTEIN", name: "Protein", value: "74 / 160g", progress: 0.46),
+                WidgetDetail(id: "CARBS", name: "Carbs", value: "140 / 220g", progress: 0.64),
+                WidgetDetail(id: "FAT", name: "Fat", value: "30 / 70g", progress: 0.43),
+                WidgetDetail(id: "WATER", name: "Water", value: "1,250 / 2,600 ml", progress: 0.48),
+                WidgetDetail(id: "EATEN", name: "Eaten", value: "1,100 / 2,150 kcal", progress: 0.51),
+                WidgetDetail(id: "WEIGHT", name: "Weight", value: "74.2 kg · −0.7", progress: nil),
+                WidgetDetail(id: "STREAK", name: "Streak", value: "3 days", progress: 0.43)
+            ],
+            waterGoalText: "2,600",
+            waterUnit: "ml",
+            waterAmounts: [150, 250, 330, 500].map { WidgetWaterAmount(ml: $0, label: "\($0) ml", badge: "+\($0)") },
+            waterAdded: "Added",
+            waterUndo: "Undo",
+            waterUndone: "Undone"
         )
         return WidgetData(today: day, next: day, isLockNumbersShown: true)
     }()

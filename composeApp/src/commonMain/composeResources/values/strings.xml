@@ -1843,11 +1843,11 @@
     <string name="shortcut_log_weight">Log weight</string>
     <!-- Home screen widgets -->
     <string name="widgets_title">Home screen widgets</string>
-    <string name="widgets_blurb">Five widgets in different sizes: calories and macros, meals, water, weight, streak and a quick log bar. They can match your wallpaper colours.</string>
+    <string name="widgets_blurb">Five widgets in different sizes. Choose the details and buttons each one shows when you place it, or touch and hold it and tap the pencil. They can match your wallpaper colours.</string>
     <string name="widgets_step_1">Touch and hold an empty spot on your home screen.</string>
     <string name="widgets_step_2">Tap Widgets, then find FitMetric in the list.</string>
     <string name="widgets_step_3">Touch and hold a widget, drag it into place, then choose what it shows.</string>
-    <string name="widgets_blurb_ios">Four widgets for your Home Screen and Today on your Lock Screen too: calories, macros, meals, water, weight and your streak. Log water straight from the widget.</string>
+    <string name="widgets_blurb_ios">Four widgets for your Home Screen, and Today on your Lock Screen too. Choose what each one shows: touch and hold it, then tap Edit Widget. Log food or water straight from the widget.</string>
     <string name="widgets_step_1_ios">Touch and hold an empty spot on your Home Screen until the apps jiggle.</string>
     <string name="widgets_step_2_ios">Tap Edit in the top corner, then Add Widget. Search for FitMetric.</string>
     <string name="widgets_step_3_ios">Swipe to pick a size, then tap Add Widget. For the Lock Screen, touch and hold it and tap Customize.</string>
@@ -1904,6 +1904,28 @@
     <string name="widget_setup_hint">Change these any time: touch and hold the widget, then tap the pencil.</string>
     <string name="widget_setup_add">Add widget</string>
     <string name="widget_setup_save">Save</string>
+    <string name="widget_setup_title_water">Set up Water widget</string>
+    <string name="widget_setup_title_other">Set up widget</string>
+    <string name="widget_setup_details">Details next to the ring</string>
+    <string name="widget_setup_buttons">Buttons</string>
+    <string name="widget_setup_count">%1$d of %2$d</string>
+    <string name="widget_setup_water_amount">Water button adds</string>
+    <string name="widget_setup_chip_water">+ Water</string>
+    <string name="widget_setup_preview">How the widget will look</string>
+    <string name="widget_detail_eaten">Eaten</string>
+    <string name="widget_detail_of">%1$s / %2$s</string>
+    <string name="widget_detail_weight">%1$s · %2$s</string>
+    <string name="widget_detail_weight_week">%1$s this wk</string>
+    <string name="widget_detail_weight_none">No weigh-ins</string>
+    <plurals name="widget_detail_streak">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="widget_kcal">kcal</string>
+    <string name="widget_water_added">Added</string>
+    <string name="widget_water_undo">Undo</string>
+    <string name="widget_water_undone">Undone</string>
+    <string name="widget_water_badge">+%1$s</string>
     <!-- Goal forecast -->
     <string name="forecast_title">Goal forecast</string>
     <string name="forecast_what_if_title">What if…</string>

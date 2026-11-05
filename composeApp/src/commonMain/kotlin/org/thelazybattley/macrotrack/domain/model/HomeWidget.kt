@@ -13,6 +13,35 @@ import org.thelazybattley.macrotrack.features.profile.weighthistory.movingAverag
 /** The days the weight widget's trend averages, and how many days of it the line shows. */
 const val WIDGET_TREND_DAYS = 7
 
+/** A detail the Today widget can show next to its ring, chosen when it's set up. */
+enum class WidgetDetail { PROTEIN, CARBS, FAT, WATER, EATEN, WEIGHT, STREAK }
+
+/** A button the Today widget can show. [WATER] logs water right from the widget; the others open the app. */
+enum class WidgetButton { FOOD, SCAN, WATER, WEIGHT }
+
+/** How many details fit next to the Today widget's ring. */
+const val WIDGET_MAX_DETAILS = 3
+
+val WIDGET_DEFAULT_DETAILS = listOf(WidgetDetail.PROTEIN, WidgetDetail.CARBS, WidgetDetail.FAT)
+
+/** What the water button can add, in ml. */
+val WIDGET_WATER_AMOUNTS_ML = listOf(150, 250, 330, 500)
+
+const val WIDGET_WATER_DEFAULT_ML = 250
+
+/** After the water button is tapped, how long it shows the new total and offers Undo. */
+const val WIDGET_WATER_ADDED_MILLIS = 3_000L
+
+/** After Undo, how long the button says so before it's back to adding. */
+const val WIDGET_WATER_UNDONE_MILLIS = 2_000L
+
+/** [item] taken out when it's in, or added at the end while there are fewer than [max]; the order is the order picked. */
+fun <T> List<T>.toggledUpTo(item: T, max: Int): List<T> = when {
+    item in this -> this - item
+    size < max -> this + item
+    else -> this
+}
+
 /** How much of something is eaten against its goal for the day. */
 data class WidgetAmount(val eaten: Int, val goal: Int) {
     val left: Int get() = goal - eaten
