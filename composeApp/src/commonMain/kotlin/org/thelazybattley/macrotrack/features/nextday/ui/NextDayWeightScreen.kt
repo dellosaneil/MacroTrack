@@ -164,7 +164,7 @@ private fun NextDayWeightScreen(
             val unitOf = { name: String, isRecipe: Boolean -> viewState.unitOf(name = name, isRecipe = isRecipe) }
             TopSection(
                 title = stringResource(resource = Res.string.next_day_raises_most),
-                hint = stringResource(resource = Res.string.next_day_raises_hint, NEXT_DAY_RAISES_KG.tenths() + " " + weightUnitLabel()),
+                hint = stringResource(resource = Res.string.next_day_raises_hint, NEXT_DAY_RAISES_KG.hundredths() + " " + weightUnitLabel()),
                 dinners = overview.raises,
                 unitOf = unitOf,
                 onOpenDinner = onOpenDinner,
@@ -172,7 +172,7 @@ private fun NextDayWeightScreen(
             )
             TopSection(
                 title = stringResource(resource = Res.string.next_day_lowers_most),
-                hint = stringResource(resource = Res.string.next_day_lowers_hint, NEXT_DAY_LOWERS_KG.tenths() + " " + weightUnitLabel()),
+                hint = stringResource(resource = Res.string.next_day_lowers_hint, NEXT_DAY_LOWERS_KG.hundredths() + " " + weightUnitLabel()),
                 dinners = overview.lowers,
                 unitOf = unitOf,
                 onOpenDinner = onOpenDinner,
@@ -183,8 +183,8 @@ private fun NextDayWeightScreen(
         Text(
             text = stringResource(
                 resource = Res.string.next_day_how_counted,
-                NEXT_DAY_RAISES_KG.tenths() + " " + weightUnitLabel(),
-                NEXT_DAY_LOWERS_KG.tenths() + " " + weightUnitLabel()
+                NEXT_DAY_RAISES_KG.hundredths() + " " + weightUnitLabel(),
+                NEXT_DAY_LOWERS_KG.hundredths() + " " + weightUnitLabel()
             ),
             style = typography.regular11,
             color = colors.muted,
@@ -307,7 +307,7 @@ private fun BiggestJumpCard(biggest: NextDayDinner?, viewState: NextDayWeightVie
     ) {
         Text(text = stringResource(resource = Res.string.next_day_biggest_label), style = typography.bold11, color = colors.danger)
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-            Text(text = average.signedTenths(), style = typography.bold36, color = colors.danger)
+            Text(text = average.signedHundredths(), style = typography.bold36, color = colors.danger)
             Text(text = weightUnitLabel(), style = typography.bold16, color = colors.danger, modifier = Modifier.padding(bottom = 6.dp))
         }
         val amounts = foodAmounts(foods = biggest.usualFoods, unitOf = { name, isRecipe -> viewState.unitOf(name = name, isRecipe = isRecipe) })
@@ -530,7 +530,7 @@ private fun HeadsUpSetting(isOn: Boolean, onToggle: () -> Unit) {
         Column(modifier = Modifier.weight(weight = 1f)) {
             Text(text = title, style = typography.bold14, color = colors.ink)
             Text(
-                text = stringResource(resource = Res.string.next_day_heads_up_all_sub, NEXT_DAY_HEADS_UP_KG.tenths() + " " + weightUnitLabel()),
+                text = stringResource(resource = Res.string.next_day_heads_up_all_sub, NEXT_DAY_HEADS_UP_KG.hundredths() + " " + weightUnitLabel()),
                 style = typography.regular11,
                 color = colors.muted
             )

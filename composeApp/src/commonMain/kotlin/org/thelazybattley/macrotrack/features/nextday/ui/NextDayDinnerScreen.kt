@@ -224,7 +224,7 @@ private fun SizeHero(dinner: NextDayDinner, picked: DinnerSizeGroup, onPick: (Di
     ) {
         Text(text = stringResource(resource = Res.string.next_day_morning_after), style = typography.regular13, color = colors.ink)
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-            Text(text = abs(average).tenths(), style = typography.bold36, color = tint)
+            Text(text = abs(average).hundredths(), style = typography.bold36, color = tint)
             Text(
                 text = stringResource(resource = if (average >= 0) Res.string.next_day_more_unit else Res.string.next_day_less_unit, weightUnitLabel()),
                 style = typography.bold16,
@@ -243,7 +243,7 @@ private fun SizeHero(dinner: NextDayDinner, picked: DinnerSizeGroup, onPick: (Di
         )
         val count = picked.nights.size
         val basis = if (count > 1 && picked.min != picked.max) {
-            stringResource(resource = Res.string.next_day_based_on_range, count, picked.min.signedTenths(), picked.max.signedTenths())
+            stringResource(resource = Res.string.next_day_based_on_range, count, picked.min.signedHundredths(), picked.max.signedHundredths())
         } else {
             pluralStringResource(resource = Res.plurals.next_day_based_on, quantity = count, count)
         }
@@ -275,7 +275,7 @@ private fun SizeHero(dinner: NextDayDinner, picked: DinnerSizeGroup, onPick: (Di
                             color = colors.muted
                         )
                         Text(
-                            text = option.average.signedTenths(),
+                            text = option.average.signedHundredths(),
                             style = typography.bold15,
                             color = if (option.average > 0) colors.danger else colors.accentInk
                         )
@@ -396,7 +396,7 @@ private fun FadeCard(dinner: NextDayDinner, size: DinnerSizeGroup) {
     val fade = dinner.fade(size = size.size)
     val top = maxOf(fade.maxOf { abs(it ?: 0.0) }, 0.1)
     val noWeighIn = stringResource(resource = Res.string.next_day_no_weigh_in)
-    val labels = fade.map { it?.signedTenthsWithUnit() ?: noWeighIn }
+    val labels = fade.map { it?.signedHundredthsWithUnit() ?: noWeighIn }
     val description = stringResource(resource = Res.string.next_day_fade_aria, labels[0], labels[1], labels[2])
     val barUp = colors.fat
     val barDown = colors.accent
@@ -435,7 +435,7 @@ private fun FadeCard(dinner: NextDayDinner, size: DinnerSizeGroup) {
                         text = when {
                             index == 0 -> "0"
                             value == null -> "–"
-                            else -> value.signedTenths()
+                            else -> value.signedHundredths()
                         },
                         style = typography.bold12,
                         color = when {
@@ -501,7 +501,7 @@ private fun NightRow(night: DinnerNight, unitOf: (String, Boolean) -> String, is
     val before = night.before
     val after = night.nextMorning
     val weights = if (before != null && after != null) {
-        "${before.tenths()} → ${after.tenths()} ${weightUnitLabel()}"
+        "${before.hundredths()} → ${after.hundredths()} ${weightUnitLabel()}"
     } else {
         val missing = if (before == null) night.date else night.date.plus(period = DatePeriod(days = 1))
         stringResource(resource = Res.string.next_day_not_counted, missing.toShortDayName() + " " + missing.toAbbreviatedMonthDay())
@@ -544,7 +544,7 @@ private fun NightRow(night: DinnerNight, unitOf: (String, Boolean) -> String, is
             )
         }
         Text(
-            text = change?.signedTenths() ?: "—",
+            text = change?.signedHundredths() ?: "—",
             style = typography.bold14,
             color = when {
                 change == null -> colors.muted

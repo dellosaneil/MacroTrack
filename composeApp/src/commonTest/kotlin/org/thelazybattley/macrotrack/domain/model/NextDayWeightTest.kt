@@ -94,16 +94,16 @@ class NextDayWeightTest {
     }
 
     @Test
-    fun effectsSplitAtUpFourTenthsAndDownTwoTenths() {
+    fun effectsSplitAtThreeTenthsEitherWay() {
         fun dinnerWith(change: Double): NextDayDinner {
             val items = listOf(2, 9, 16).flatMap { wingsAndRice(daysAgo = it) }
             val weights = listOf(2, 9, 16).flatMap { night(daysAgo = it, before = 75.0, after = 75.0 + change) }
             return nextDayOverview(items = items, weights = weights, today = today, period = NextDayPeriod.YEAR).dinners.single()
         }
-        assertEquals(expected = DinnerEffect.RAISES, actual = dinnerWith(change = 0.4).effect)
-        assertEquals(expected = DinnerEffect.EVEN, actual = dinnerWith(change = 0.3).effect)
-        assertEquals(expected = DinnerEffect.EVEN, actual = dinnerWith(change = -0.1).effect)
-        assertEquals(expected = DinnerEffect.LOWERS, actual = dinnerWith(change = -0.2).effect)
+        assertEquals(expected = DinnerEffect.RAISES, actual = dinnerWith(change = 0.3).effect)
+        assertEquals(expected = DinnerEffect.EVEN, actual = dinnerWith(change = 0.29).effect)
+        assertEquals(expected = DinnerEffect.EVEN, actual = dinnerWith(change = -0.29).effect)
+        assertEquals(expected = DinnerEffect.LOWERS, actual = dinnerWith(change = -0.3).effect)
     }
 
     @Test

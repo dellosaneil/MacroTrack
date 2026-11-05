@@ -134,7 +134,7 @@ private fun NextDayAllScreen(
                 )
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = average.average.signedTenthsWithUnit(),
+                        text = average.average.signedHundredthsWithUnit(),
                         style = typography.bold18,
                         color = when {
                             average.average >= 0.05 -> colors.danger

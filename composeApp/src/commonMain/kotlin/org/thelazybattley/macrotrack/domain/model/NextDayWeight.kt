@@ -6,6 +6,7 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 /** A dinner needs this many counted nights before it shows a number. */
@@ -15,10 +16,10 @@ const val NEXT_DAY_MIN_NIGHTS = 3
 const val NEXT_DAY_HEADS_UP_KG = 0.5
 
 /** A dinner that usually adds at least this much, in kg, raises it. */
-const val NEXT_DAY_RAISES_KG = 0.4
+const val NEXT_DAY_RAISES_KG = 0.3
 
 /** A dinner that usually takes off at least this much, in kg, lowers it. */
-const val NEXT_DAY_LOWERS_KG = 0.2
+const val NEXT_DAY_LOWERS_KG = 0.3
 
 /** Foods under this many kcal (a drink, a side) don't change which dinner it is. */
 const val NEXT_DAY_MINOR_KCAL = 100
@@ -206,7 +207,8 @@ data class NextDayDinner(
 
     val effect: DinnerEffect
         get() {
-            val average = average ?: return DinnerEffect.WAITING
+            // Compared as shown, to the hundredth, so a "+0.30" never reads as about even.
+            val average = (average ?: return DinnerEffect.WAITING).let { round(it * 100) / 100 }
             return when {
                 average >= NEXT_DAY_RAISES_KG -> DinnerEffect.RAISES
                 average <= -NEXT_DAY_LOWERS_KG -> DinnerEffect.LOWERS

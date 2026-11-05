@@ -137,7 +137,7 @@ private fun NextDayMorningScreen(viewState: NextDayMorningViewState, onDone: () 
                 unitOf = { name, isRecipe -> viewState.unitOf(name = name, isRecipe = isRecipe) },
                 separator = ", "
             )
-            val expectedText = explanation.expected.signedTenthsWithUnit()
+            val expectedText = explanation.expected.signedHundredthsWithUnit()
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -155,7 +155,7 @@ private fun NextDayMorningScreen(viewState: NextDayMorningViewState, onDone: () 
                     )
                     Text(text = stringResource(resource = Res.string.next_day_expected_label), style = typography.bold11, color = colors.nightInk)
                 }
-                val about = explanation.expected.tenths() + " " + weightUnitLabel()
+                val about = explanation.expected.hundredths() + " " + weightUnitLabel()
                 val body = stringResource(resource = Res.string.next_day_expected_body, explanation.dinner.name, amount, about) + " " +
                     stringResource(
                         resource = when (explanation.match) {
@@ -167,7 +167,7 @@ private fun NextDayMorningScreen(viewState: NextDayMorningViewState, onDone: () 
                 Text(text = body.withBold(explanation.dinner.name, about), style = typography.regular13, color = colors.ink)
                 Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                     StatTile(modifier = Modifier.weight(weight = 1f), label = stringResource(resource = Res.string.next_day_expected), value = expectedText)
-                    StatTile(modifier = Modifier.weight(weight = 1f), label = stringResource(resource = Res.string.next_day_today), value = explanation.change.signedTenthsWithUnit())
+                    StatTile(modifier = Modifier.weight(weight = 1f), label = stringResource(resource = Res.string.next_day_today), value = explanation.change.signedHundredthsWithUnit())
                     StatTile(modifier = Modifier.weight(weight = 1f), label = stringResource(resource = Res.string.next_day_back_by), value = explanation.backBy.toShortDayName())
                 }
             }
@@ -189,13 +189,13 @@ private fun WeightCard(weight: Double, change: Double?) {
         verticalArrangement = Arrangement.spacedBy(space = 6.dp)
     ) {
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
-            Text(text = weight.tenths(), style = typography.bold36, color = colors.ink)
+            Text(text = weight.hundredths(), style = typography.bold36, color = colors.ink)
             Text(text = weightUnitLabel(), style = typography.bold18, color = colors.muted, modifier = Modifier.padding(bottom = 6.dp))
         }
         if (change != null) {
             val isUp = change > 0
             Text(
-                text = stringResource(resource = Res.string.next_day_since_yesterday, change.signedTenthsWithUnit()),
+                text = stringResource(resource = Res.string.next_day_since_yesterday, change.signedHundredthsWithUnit()),
                 style = typography.bold13,
                 color = if (isUp) colors.danger else colors.accentInk,
                 modifier = Modifier
@@ -212,7 +212,7 @@ private fun TrendCard(viewState: NextDayMorningViewState) {
     val days = viewState.days
     val trend = viewState.trend ?: return
     val unitSystem = LocalUnitSystem.current
-    val trendText = trend.tenths() + " " + weightUnitLabel()
+    val trendText = trend.hundredths() + " " + weightUnitLabel()
     val description = stringResource(resource = Res.string.next_day_chart_aria, days.size, trendText)
     val trendColor = colors.accent
     val dotColor = colors.faint
@@ -237,7 +237,7 @@ private fun TrendCard(viewState: NextDayMorningViewState) {
             )
             viewState.trendWeekChange?.let { weekChange ->
                 Text(
-                    text = stringResource(resource = Res.string.next_day_this_week, weekChange.signedTenthsWithUnit()),
+                    text = stringResource(resource = Res.string.next_day_this_week, weekChange.signedHundredthsWithUnit()),
                     style = typography.bold12,
                     color = if (weekChange > 0.05) colors.danger else colors.accentInk
                 )

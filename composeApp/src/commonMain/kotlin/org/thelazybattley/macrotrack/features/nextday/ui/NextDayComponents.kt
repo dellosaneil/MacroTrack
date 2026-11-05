@@ -87,29 +87,30 @@ import kotlin.math.roundToInt
 /** A bar this long, in kg, fills its half of a dinner row. */
 private const val BAR_FULL_KG = 1.4
 
-/** A change in kg in the user's unit to one decimal with its sign: "+1.0", "−0.2", or "±0.0" when it barely moved. */
+/** A change in kg in the user's unit to two decimals with its sign: "+0.35", "−0.20", "+1", or "±0" when it barely moved. */
 @Composable
-internal fun Double.signedTenths(): String {
+internal fun Double.signedHundredths(): String {
     val value = LocalUnitSystem.current.weightFromKg(kg = this)
-    val tenths = round(abs(value) * 10).toInt()
+    val hundredths = round(abs(value) * 100).toInt()
     val sign = when {
-        tenths == 0 -> "±"
+        hundredths == 0 -> "±"
         value > 0 -> "+"
         else -> "−"
     }
-    return "$sign${tenths / 10}.${tenths % 10}"
+    return sign + hundredths.hundredthsText()
 }
 
-/** [signedTenths] with the unit: "+1.0 kg". */
+/** [signedHundredths] with the unit: "+0.35 kg". */
 @Composable
-internal fun Double.signedTenthsWithUnit(): String = signedTenths() + " " + weightUnitLabel()
+internal fun Double.signedHundredthsWithUnit(): String = signedHundredths() + " " + weightUnitLabel()
 
-/** A weight in kg in the user's unit to one decimal, without the unit: "75.2". */
+/** A weight in kg in the user's unit to two decimals, without the unit: "75.25", or "75" when it's whole. */
 @Composable
-internal fun Double.tenths(): String {
-    val tenths = round(abs(LocalUnitSystem.current.weightFromKg(kg = this)) * 10).toInt()
-    return "${tenths / 10}.${tenths % 10}"
-}
+internal fun Double.hundredths(): String = round(abs(LocalUnitSystem.current.weightFromKg(kg = this)) * 100).toInt().hundredthsText()
+
+/** Hundredths as "0.35", leaving off the decimals when they're zero: "1". */
+private fun Int.hundredthsText(): String =
+    if (this % 100 == 0) "${this / 100}" else "${this / 100}." + (this % 100).toString().padStart(length = 2, padChar = '0')
 
 /** An amount eaten: "70%" (or "70% of a serving" when [isLong]) for a recipe, "150 g" for a food. */
 @Composable
@@ -187,7 +188,7 @@ fun NextDayWeightLink(
 ) {
     val change = biggest?.average
     val text = subtitle ?: if (biggest != null && change != null) {
-        stringResource(resource = Res.string.next_day_link_sub_top, biggest.name, change.signedTenthsWithUnit())
+        stringResource(resource = Res.string.next_day_link_sub_top, biggest.name, change.signedHundredthsWithUnit())
     } else {
         stringResource(resource = Res.string.next_day_link_sub)
     }
@@ -270,7 +271,7 @@ internal fun DinnerRow(
     val counted = dinner.counted.size
     val amounts = foodAmounts(foods = dinner.usualFoods, unitOf = unitOf)
     val description = if (average != null) {
-        stringResource(resource = Res.string.next_day_row_aria, dinner.name, amounts, average.signedTenthsWithUnit(), counted)
+        stringResource(resource = Res.string.next_day_row_aria, dinner.name, amounts, average.signedHundredthsWithUnit(), counted)
     } else {
         stringResource(resource = Res.string.next_day_row_aria_waiting, dinner.name, counted, NEXT_DAY_MIN_NIGHTS)
     }
@@ -333,7 +334,7 @@ internal fun DinnerRow(
             }
         }
         Text(
-            text = average?.signedTenthsWithUnit() ?: "—",
+            text = average?.signedHundredthsWithUnit() ?: "—",
             style = typography.bold15,
             color = when {
                 average == null -> colors.faint
@@ -395,7 +396,7 @@ fun NextDayHeadsUpCard(
     } else {
         stringResource(resource = Res.string.next_day_heads_up_estimated, dinner.counted.size, dinner.name)
     }
-    val value = abs(estimate).tenths() + " " + weightUnitLabel()
+    val value = abs(estimate).hundredths() + " " + weightUnitLabel()
     Column(
         modifier = Modifier
             .fillMaxWidth()
