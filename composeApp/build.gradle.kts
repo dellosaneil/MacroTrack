@@ -109,8 +109,8 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     val appMajor = 1
-    val appMinor = 2
-    val appPatch = 1
+    val appMinor = 3
+    val appPatch = 0
 
     val appBuild = 0
     val isForClosedTesting = false
