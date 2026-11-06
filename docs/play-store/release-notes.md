@@ -2,7 +2,21 @@
 
 Play Console's "What's new" box takes up to 500 characters per language. Each block below fits on its own.
 
-## Next upload (everything since 1.0.0)
+## Next upload (everything since 1.2.1)
+
+```
+New in FitMetric:
+• Next-day weight: see which dinners move tomorrow's weigh-in
+• Goal forecast: the date you'll reach your goal, plus what-ifs
+• What fits?: foods you already eat that fit what's left
+• Home screen widgets: log water in one tap, with undo
+• Supplements and habits checklist
+• Water tracking and online food search
+• Reminders only when you forget to log
+• Share progress cards, food history and check-in settings
+```
+
+## Earlier draft: everything since 1.0.0
 
 For users updating from the first release in one step.
 
